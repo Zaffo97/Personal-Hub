@@ -1,0 +1,169 @@
+{% extends "base.html" %}
+{% block title %}Regulations – Hub{% endblock %}
+{% block topbar_title %}📌 Regulations{% endblock %}
+{% block content %}
+<div class="page-header">
+  <div class="flex items-center justify-between flex-wrap gap-2">
+    <div class="flex items-center gap-2">
+      <a href="/pokemon" class="btn btn-secondary btn-sm">&#8592; Pokémon</a>
+      <h1>📌 Regulation Manager</h1>
+    </div>
+    <button class="btn btn-primary" onclick="document.getElementById('modal_new').style.display='flex'">
+      + Nuova Regulation
+    </button>
+  </div>
+</div>
+
+<!-- Griglia regulation esistenti -->
+<div style="display:grid;grid-template-columns:repeat(auto-fill,minmax(280px,1fr));gap:1rem">
+  {% for reg in regulations %}
+  <div class="card">
+    <div class="card-header">
+      <span class="card-title">📌 {{ reg.label }}</span>
+      <span style="font-size:.7rem;color:var(--text-muted);font-family:monospace">{{ reg.id }}</span>
+    </div>
+    <div class="card-body">
+      <div style="display:grid;grid-template-columns:repeat(4,1fr);gap:.4rem;margin-bottom:1rem;text-align:center">
+        <div style="background:var(--surface-off);border-radius:var(--radius-md);padding:.5rem">
+          <div style="font-size:1.3rem;font-weight:800;color:var(--primary)">{{ reg.roster_count }}</div>
+          <div style="font-size:.6rem;color:var(--text-muted);text-transform:uppercase;font-weight:700">Pokémon</div>
+        </div>
+        <div style="background:var(--surface-off);border-radius:var(--radius-md);padding:.5rem">
+          <div style="font-size:1.3rem;font-weight:800;color:var(--primary)">{{ reg.moves_count }}</div>
+          <div style="font-size:.6rem;color:var(--text-muted);text-transform:uppercase;font-weight:700">Mosse</div>
+        </div>
+        <div style="background:var(--surface-off);border-radius:var(--radius-md);padding:.5rem">
+          <div style="font-size:1.3rem;font-weight:800;color:var(--primary)">{{ reg.items_count }}</div>
+          <div style="font-size:.6rem;color:var(--text-muted);text-transform:uppercase;font-weight:700">Oggetti</div>
+        </div>
+        <div style="background:var(--surface-off);border-radius:var(--radius-md);padding:.5rem">
+          <div style="font-size:1.3rem;font-weight:800;color:var(--primary)">{{ reg.teams_count }}</div>
+          <div style="font-size:.6rem;color:var(--text-muted);text-transform:uppercase;font-weight:700">Team</div>
+        </div>
+      </div>
+      <div style="font-size:.72rem;color:var(--text-muted);margin-bottom:.75rem">
+        <div>🦢 <code>{{ reg.roster_file }}</code></div>
+        <div>⚡ <code>{{ reg.moves_file }}</code></div>
+        <div>🎒 <code>{{ reg.items_file }}</code></div>
+      </div>
+      <div style="display:flex;gap:.5rem">
+        <a href="/pokemon/regulation/{{ reg.id }}" class="btn btn-primary btn-sm" style="flex:1;text-align:center">🔍 Apri</a>
+        {% if reg.teams_count == 0 %}
+        <button class="btn btn-danger btn-sm" onclick="confirmDelete('{{ reg.id }}', '{{ reg.label }}')">🗑</button>
+        {% else %}
+        <button class="btn btn-sm" style="background:var(--surface-off);color:var(--text-faint);cursor:not-allowed"
+                title="{{ reg.teams_count }} team attivi — non eliminabile" disabled>🗑</button>
+        {% endif %}
+      </div>
+    </div>
+  </div>
+  {% endfor %}
+</div>
+
+<!-- Modale nuova regulation -->
+<div id="modal_new" style="display:none;position:fixed;inset:0;background:rgba(0,0,0,.6);
+     z-index:9999;align-items:center;justify-content:center">
+  <div class="card" style="width:100%;max-width:460px;margin:1rem">
+    <div class="card-header">
+      <span class="card-title">+ Nuova Regulation</span>
+      <button class="btn-icon" onclick="document.getElementById('modal_new').style.display='none'">✕</button>
+    </div>
+    <div class="card-body">
+      <div class="form-group">
+        <label>ID univoco (es. <code>mb</code>, <code>set2</code>)</label>
+        <input id="new_id" class="form-control" placeholder="mb" maxlength="20">
+      </div>
+      <div class="form-group">
+        <label>Label (nome visualizzato)</label>
+        <input id="new_label" class="form-control" placeholder="Regulation MB">
+      </div>
+      <div class="form-group">
+        <label>Meccaniche (separato da virgola)</label>
+        <input id="new_mechanics" class="form-control" placeholder="mega" value="mega">
+      </div>
+      <p style="font-size:.75rem;color:var(--text-muted);margin-bottom:.75rem">
+        I file JSON verranno creati automaticamente come
+        <code>roster_&lt;id&gt;.json</code>, <code>moves_&lt;id&gt;.json</code>, <code>items_&lt;id&gt;.json</code>.
+      </p>
+      <div style="display:flex;gap:.5rem;justify-content:flex-end">
+        <button class="btn btn-secondary" onclick="document.getElementById('modal_new').style.display='none'">Annulla</button>
+        <button class="btn btn-primary" onclick="createRegulation()">Crea Regulation</button>
+      </div>
+      <div id="new_error" style="color:var(--error);font-size:.8rem;margin-top:.5rem;display:none"></div>
+    </div>
+  </div>
+</div>
+
+<!-- Modale conferma eliminazione -->
+<div id="modal_delete" style="display:none;position:fixed;inset:0;background:rgba(0,0,0,.6);
+     z-index:9999;align-items:center;justify-content:center">
+  <div class="card" style="width:100%;max-width:400px;margin:1rem">
+    <div class="card-header">
+      <span class="card-title" style="color:var(--error)">🗑 Elimina Regulation</span>
+      <button class="btn-icon" onclick="document.getElementById('modal_delete').style.display='none'">✕</button>
+    </div>
+    <div class="card-body">
+      <p style="margin-bottom:.75rem">
+        Stai per eliminare <strong id="del_label"></strong> (<code id="del_id_text"></code>).<br><br>
+        <span style="color:var(--error);font-size:.8rem">
+          ⚠️ Verranno eliminati anche i file roster, mosse e oggetti associati. Operazione irreversibile.
+        </span>
+      </p>
+      <div style="display:flex;gap:.5rem;justify-content:flex-end">
+        <button class="btn btn-secondary" onclick="document.getElementById('modal_delete').style.display='none'">Annulla</button>
+        <button class="btn btn-danger" onclick="deleteRegulation()">Elimina definitivamente</button>
+      </div>
+      <div id="del_error" style="color:var(--error);font-size:.8rem;margin-top:.5rem;display:none"></div>
+    </div>
+  </div>
+</div>
+
+<script>
+let _deleteId = null;
+
+function confirmDelete(id, label) {
+  _deleteId = id;
+  document.getElementById('del_label').textContent = label;
+  document.getElementById('del_id_text').textContent = id;
+  document.getElementById('del_error').style.display = 'none';
+  document.getElementById('modal_delete').style.display = 'flex';
+}
+
+async function deleteRegulation() {
+  const errEl = document.getElementById('del_error');
+  const res = await fetch(`/api/regulations/${_deleteId}/delete`, { method: 'POST' });
+  const data = await res.json();
+  if (data.ok) {
+    window.location.reload();
+  } else {
+    errEl.textContent = 'Errore: ' + data.error;
+    errEl.style.display = 'block';
+  }
+}
+
+async function createRegulation() {
+  const id        = document.getElementById('new_id').value.trim().toLowerCase().replace(/\s+/g,'_');
+  const label     = document.getElementById('new_label').value.trim();
+  const mechanics = document.getElementById('new_mechanics').value.split(',').map(m=>m.trim()).filter(Boolean);
+  const errEl     = document.getElementById('new_error');
+
+  if (!id || !label) {
+    errEl.textContent = 'ID e Label sono obbligatori.';
+    errEl.style.display = 'block'; return;
+  }
+
+  const res = await fetch('/api/regulations/create', {
+    method: 'POST',
+    headers: {'Content-Type':'application/json'},
+    body: JSON.stringify({ id, label, mechanics })
+  });
+  const data = await res.json();
+  if (data.ok) {
+    window.location.href = '/pokemon/regulation/' + id;
+  } else {
+    errEl.textContent = 'Errore: ' + data.error;
+    errEl.style.display = 'block';
+  }
+}
+</script>
+{% endblock %}

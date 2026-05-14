@@ -1,0 +1,130 @@
+{% extends "base.html" %}
+{% block title %}Arduino – Hub{% endblock %}
+{% block topbar_title %}&#128268; Arduino Projects{% endblock %}
+{% block extra_head %}
+<style>
+#codeModal{display:none;position:fixed;inset:0;background:rgba(0,0,0,.6);z-index:999;
+  align-items:center;justify-content:center;padding:1rem}
+#codeModal.open{display:flex}
+.modal-box{background:var(--surface);border:1px solid var(--border);border-radius:var(--radius-xl);
+  width:100%;max-width:780px;max-height:92dvh;display:flex;flex-direction:column;overflow:hidden}
+.modal-header{display:flex;align-items:center;justify-content:space-between;
+  padding:.75rem 1.1rem;border-bottom:1px solid var(--border)}
+.modal-body{flex:1;padding:1rem;overflow-y:auto}
+.modal-footer{padding:.75rem 1.1rem;border-top:1px solid var(--border);display:flex;gap:.6rem;flex-wrap:wrap}
+.code-area{font-family:"JetBrains Mono",monospace;font-size:.78rem;line-height:1.6;
+  min-height:260px;resize:vertical;tab-size:4}
+</style>
+{% endblock %}
+{% block content %}
+<div class="page-header">
+  <div class="flex items-center justify-between flex-wrap gap-2">
+    <div><h1>&#128268; Arduino Projects</h1>
+      <p class="text-muted text-sm">I tuoi sketch e progetti microcontrollore</p></div>
+    <button class="btn btn-primary" onclick="openModal()">+ Nuovo progetto</button>
+  </div>
+</div>
+
+{% if projects %}
+<div style="display:grid;grid-template-columns:repeat(auto-fill,minmax(290px,1fr));gap:.85rem">
+{% for p in projects %}
+<div class="card mb-0">
+  <div class="card-header">
+    <div>
+      <div class="card-title">{{ p.name }}</div>
+      <div class="text-xs text-muted mt-1">{{ p.board }}</div>
+    </div>
+    <span class="badge {% if p.status=='Completato' %}badge-success{% elif p.status=='In sviluppo' %}badge-warning{% elif p.status=='Pubblicato' %}badge-primary{% else %}badge-neutral{% endif %}">{{ p.status }}</span>
+  </div>
+  <div style="padding:.75rem 1rem">
+    {% if p.description %}<p class="text-sm text-muted mb-2">{{ p.description[:120] }}{% if p.description|length > 120 %}...{% endif %}</p>{% endif %}
+    {% if p.code %}<div style="background:var(--surface-off);border-radius:var(--radius-sm);padding:.45rem .65rem;
+      font-family:'JetBrains Mono',monospace;font-size:.7rem;color:var(--text-muted);
+      overflow:hidden;max-height:64px;margin-bottom:.65rem">{{ p.code[:200] }}</div>{% endif %}
+    <div class="flex gap-1 flex-wrap">
+      <button class="btn btn-secondary btn-sm" onclick='openModal({{ p|tojson }})'>&#9998; Modifica</button>
+      {% if p.tinkercad_url %}
+        <a href="{{ p.tinkercad_url }}" target="_blank" class="btn btn-secondary btn-sm">&#128279; Tinkercad</a>{% endif %}
+      <form method="POST" action="/arduino/{{ p.id }}/delete"
+            style="display:inline" onsubmit="return confirm('Eliminare?')">
+        <button class="btn btn-danger btn-sm">&#128465;</button>
+      </form>
+    </div>
+  </div>
+</div>
+{% endfor %}
+</div>
+{% else %}
+<div style="text-align:center;padding:4rem 1rem;color:var(--text-muted)">
+  <div style="font-size:3rem;margin-bottom:.75rem">&#128268;</div>
+  <h3>Nessun progetto Arduino</h3>
+  <p class="text-sm mt-1">Inizia a documentare i tuoi sketch!</p>
+  <button class="btn btn-primary mt-3" onclick="openModal()">+ Nuovo progetto</button>
+</div>
+{% endif %}
+
+<div id="codeModal">
+  <div class="modal-box">
+    <div class="modal-header">
+      <span id="modalTitle" style="font-weight:700;font-size:.9rem">Nuovo progetto Arduino</span>
+      <button class="btn-icon" onclick="closeModal()">&#10005;</button>
+    </div>
+    <div class="modal-body">
+      <form method="POST" action="/arduino/save" id="arduinoForm">
+        <input type="hidden" name="proj_id" id="proj_id" value="">
+        <div class="form-row">
+          <div class="form-group"><label>Nome *</label>
+            <input name="name" id="f_name" class="form-control" required placeholder="Es. LED Matrix Clock"></div>
+          <div class="form-group"><label>Board</label>
+            <select name="board" id="f_board" class="form-control">
+              {% for b in boards %}<option>{{ b }}</option>{% endfor %}
+            </select></div>
+          <div class="form-group"><label>Stato</label>
+            <select name="status" id="f_status" class="form-control">
+              {% for s in statuses %}<option>{{ s }}</option>{% endfor %}
+            </select></div>
+        </div>
+        <div class="form-group"><label>Tinkercad URL</label>
+          <input name="tinkercad_url" id="f_tinkercad" class="form-control"
+            placeholder="https://www.tinkercad.com/things/..."></div>
+        <div class="form-group"><label>Descrizione</label>
+          <textarea name="description" id="f_desc" class="form-control" rows="2"
+            placeholder="Cosa fa, componenti usati..."></textarea></div>
+        <div class="form-group"><label>Codice Arduino</label>
+          <textarea name="code" id="f_code" class="form-control code-area"
+            placeholder="// Incolla qui il tuo sketch Arduino&#10;void setup() {&#10;}&#10;void loop() {&#10;}"></textarea></div>
+      </form>
+    </div>
+    <div class="modal-footer">
+      <button class="btn btn-primary" onclick="document.getElementById('arduinoForm').submit()">&#128190; Salva</button>
+      <button class="btn btn-secondary" onclick="closeModal()">Annulla</button>
+    </div>
+  </div>
+</div>
+
+<script>
+function openModal(p) {
+  const m = document.getElementById('codeModal');
+  if (p) {
+    document.getElementById('modalTitle').textContent = 'Modifica: ' + p.name;
+    document.getElementById('proj_id').value  = p.id;
+    document.getElementById('f_name').value   = p.name || '';
+    document.getElementById('f_board').value  = p.board || '';
+    document.getElementById('f_status').value = p.status || '';
+    document.getElementById('f_tinkercad').value = p.tinkercad_url || '';
+    document.getElementById('f_desc').value   = p.description || '';
+    document.getElementById('f_code').value   = p.code || '';
+  } else {
+    document.getElementById('arduinoForm').reset();
+    document.getElementById('proj_id').value = '';
+    document.getElementById('modalTitle').textContent = 'Nuovo progetto Arduino';
+  }
+  m.classList.add('open');
+}
+function closeModal() { document.getElementById('codeModal').classList.remove('open'); }
+document.getElementById('codeModal').addEventListener('click', e => {
+  if (e.target === e.currentTarget) closeModal();
+});
+document.addEventListener('keydown', e => { if (e.key === 'Escape') closeModal(); });
+</script>
+{% endblock %}

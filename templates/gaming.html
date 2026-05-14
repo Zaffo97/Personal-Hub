@@ -1,0 +1,65 @@
+{% extends "base.html" %}
+{% block title %}Gaming – Hub{% endblock %}
+{% block topbar_title %}&#127918; Gaming{% endblock %}
+{% block content %}
+<div class="page-header">
+  <div class="flex items-center justify-between flex-wrap gap-2">
+    <div><h1>&#127918; Gaming Tracker</h1><p class="text-muted text-sm">La tua libreria di giochi</p></div>
+    <a href="/gaming/new" class="btn btn-primary">+ Aggiungi gioco</a>
+  </div>
+</div>
+
+<div class="flex gap-1 flex-wrap mb-3">
+  <a href="/gaming" class="btn btn-sm {% if not current_filter %}btn-primary{% else %}btn-secondary{% endif %}">Tutti ({{ counts.Tutti }})</a>
+  {% for s in statuses %}
+  <a href="/gaming?status={{ s }}" class="btn btn-sm {% if current_filter==s %}btn-primary{% else %}btn-secondary{% endif %}">{{ s }} ({{ counts[s] }})</a>
+  {% endfor %}
+</div>
+
+<form method="GET" class="mb-3 flex gap-2">
+  {% if current_filter %}<input type="hidden" name="status" value="{{ current_filter }}">{% endif %}
+  <input name="q" value="{{ q }}" class="form-control" style="max-width:280px" placeholder="Cerca gioco...">
+  <button class="btn btn-secondary" type="submit">&#128269;</button>
+  {% if q %}<a href="/gaming{% if current_filter %}?status={{ current_filter }}{% endif %}" class="btn btn-secondary">&#x2715;</a>{% endif %}
+</form>
+
+{% if games %}
+<div style="display:grid;grid-template-columns:repeat(auto-fill,minmax(215px,1fr));gap:.85rem">
+{% for g in games %}
+<div class="card mb-0" style="transition:.15s"
+     onmouseover="this.style.borderColor='var(--primary)'" onmouseout="this.style.borderColor='var(--border)'">
+  <div style="aspect-ratio:2/1;overflow:hidden;background:var(--surface-off);position:relative">
+    {% if g.cover_url %}
+      <img src="{{ g.cover_url }}" style="width:100%;height:100%;object-fit:cover" loading="lazy" alt="{{ g.title }}">
+    {% else %}
+      <div style="display:flex;align-items:center;justify-content:center;height:100%;font-size:2rem">&#127918;</div>
+    {% endif %}
+    <span style="position:absolute;top:6px;right:6px"
+          class="badge {% if g.status=='Completato' %}badge-success{% elif g.status=='In corso' %}badge-primary{% elif g.status=='Wishlist' %}badge-warning{% else %}badge-neutral{% endif %}">{{ g.status }}</span>
+  </div>
+  <div style="padding:.75rem .85rem">
+    <div class="font-600 text-sm mb-1" style="white-space:nowrap;overflow:hidden;text-overflow:ellipsis">{{ g.title }}</div>
+    <div class="text-xs text-muted mb-2">{{ g.platform }}{% if g.genre %} &middot; {{ g.genre }}{% endif %}</div>
+    {% if g.status in ['In corso','Completato'] %}
+    <div class="progress-bar mb-2"><div class="progress-fill" style="width:{{ g.prog_story }}%"></div></div>
+    {% endif %}
+    {% if g.hours_hltb %}<div class="text-xs text-muted mb-2">&#9201; HLTB: {{ g.hours_hltb|int }}h</div>{% endif %}
+    <div class="flex gap-1">
+      <a href="/gaming/{{ g.id }}/edit" class="btn btn-secondary btn-sm">&#9998;</a>
+      <form method="POST" action="/gaming/{{ g.id }}/delete" onsubmit="return confirm('Eliminare?')">
+        <button class="btn btn-danger btn-sm">&#128465;</button>
+      </form>
+    </div>
+  </div>
+</div>
+{% endfor %}
+</div>
+{% else %}
+<div style="text-align:center;padding:4rem 1rem;color:var(--text-muted)">
+  <div style="font-size:3rem;margin-bottom:.75rem">&#127918;</div>
+  <h3>Nessun gioco trovato</h3>
+  <p class="text-sm mt-1">{% if q %}Nessun risultato per "{{ q }}"{% else %}Aggiungi il tuo primo gioco!{% endif %}</p>
+  {% if not q %}<a href="/gaming/new" class="btn btn-primary mt-3">+ Aggiungi gioco</a>{% endif %}
+</div>
+{% endif %}
+{% endblock %}

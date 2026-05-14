@@ -1,0 +1,276 @@
+{% extends "base.html" %}
+{% block title %}{{ reg.label }} – Hub{% endblock %}
+{% block topbar_title %}📌 Regulation Editor{% endblock %}
+{% block extra_head %}
+<style>
+.meta-field{display:flex;flex-direction:column;gap:.25rem;margin-bottom:.75rem}
+.meta-field label{font-size:.7rem;font-weight:700;color:var(--text-muted);text-transform:uppercase}
+.mech-tag{display:inline-flex;align-items:center;gap:.35rem;background:var(--primary-dim);
+  color:var(--primary);border-radius:20px;padding:.2rem .6rem;font-size:.75rem;font-weight:700}
+.mech-tag button{background:none;border:none;color:var(--primary);cursor:pointer;font-size:.85rem;padding:0;line-height:1}
+.file-row{display:grid;grid-template-columns:80px 1fr auto;gap:.5rem;align-items:center;margin-bottom:.5rem}
+.file-row label{font-size:.72rem;font-weight:700;color:var(--text-muted)}
+.toast{position:fixed;bottom:1.5rem;right:1.5rem;background:var(--primary);color:#fff;
+  padding:.6rem 1.1rem;border-radius:var(--radius-md);font-size:.85rem;font-weight:600;
+  z-index:9999;opacity:0;transition:opacity .3s;pointer-events:none}
+.toast.show{opacity:1}
+</style>
+{% endblock %}
+{% block content %}
+<div class="page-header">
+  <div class="flex items-center justify-between flex-wrap gap-2">
+    <div class="flex items-center gap-2">
+      <a href="/pokemon/regulations" class="btn btn-secondary btn-sm">&#8592; Tutte le Regulation</a>
+      <h1>📌 {{ reg.label }}</h1>
+      <span style="font-size:.75rem;color:var(--text-muted);font-family:monospace;background:var(--surface-off);
+                   padding:.2rem .5rem;border-radius:var(--radius-sm);border:1px solid var(--border)">{{ reg.id }}</span>
+    </div>
+    <a href="/pokemon/team/new?regulation_id={{ reg.id }}" class="btn btn-primary btn-sm">+ Nuovo Team</a>
+  </div>
+</div>
+
+<!-- Stat cards -->
+<div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(120px,1fr));gap:.75rem;margin-bottom:1.25rem">
+  <div class="card" style="text-align:center;padding:.9rem">
+    <div style="font-size:1.8rem;font-weight:800;color:var(--primary)">{{ roster_count }}</div>
+    <div style="font-size:.72rem;color:var(--text-muted);text-transform:uppercase;font-weight:700">Pok&eacute;mon</div>
+  </div>
+  <div class="card" style="text-align:center;padding:.9rem">
+    <div style="font-size:1.8rem;font-weight:800;color:var(--primary)">{{ moves_count }}</div>
+    <div style="font-size:.72rem;color:var(--text-muted);text-transform:uppercase;font-weight:700">Mosse</div>
+  </div>
+  <div class="card" style="text-align:center;padding:.9rem">
+    <div style="font-size:1.8rem;font-weight:800;color:var(--primary)">{{ items_count }}</div>
+    <div style="font-size:.72rem;color:var(--text-muted);text-transform:uppercase;font-weight:700">Oggetti</div>
+  </div>
+  <div class="card" style="text-align:center;padding:.9rem">
+    <div style="font-size:1.8rem;font-weight:800;color:var(--primary)">{{ teams_count }}</div>
+    <div style="font-size:.72rem;color:var(--text-muted);text-transform:uppercase;font-weight:700">Team</div>
+  </div>
+</div>
+
+<div style="display:grid;grid-template-columns:1fr 1fr;gap:1rem;margin-bottom:1rem">
+
+  <!-- Editor metadati regulation -->
+  <div class="card">
+    <div class="card-header"><span class="card-title">⚙️ Metadati Regulation</span></div>
+    <div class="card-body">
+      <div class="meta-field">
+        <label>Label (nome visualizzato)</label>
+        <input id="meta_label" class="form-control" value="{{ reg.label }}" placeholder="Es. Regulation MB">
+      </div>
+      <div class="meta-field">
+        <label>Meccaniche disponibili</label>
+        <div id="mech_list" style="display:flex;flex-wrap:wrap;gap:.4rem;margin-bottom:.4rem">
+          {% for m in reg.mechanics %}
+          <span class="mech-tag" data-mech="{{ m }}">{{ m }}<button onclick="removeMech('{{ m }}')">×</button></span>
+          {% endfor %}
+        </div>
+        <div style="display:flex;gap:.4rem">
+          <select id="mech_add_select" class="form-control" style="flex:1">
+            <option value="mega">mega</option>
+            <option value="tera">tera</option>
+            <option value="zmove">zmove</option>
+            <option value="dynamax">dynamax</option>
+          </select>
+          <button class="btn btn-secondary btn-sm" onclick="addMech()">+ Aggiungi</button>
+        </div>
+      </div>
+      <div class="meta-field">
+        <label>File JSON Roster</label>
+        <div class="file-row">
+          <span style="font-size:.7rem;color:var(--text-muted)">Roster</span>
+          <input id="meta_roster_file" class="form-control" value="{{ reg.roster_file }}">
+          <a id="link_roster" href="/pokemon/roster?reg={{ reg.id }}" class="btn btn-secondary btn-sm">&#9998;</a>
+        </div>
+        <div class="file-row">
+          <span style="font-size:.7rem;color:var(--text-muted)">Mosse</span>
+          <input id="meta_moves_file" class="form-control" value="{{ reg.moves_file }}">
+          <a id="link_moves" href="/pokemon/mosse?reg={{ reg.id }}" class="btn btn-secondary btn-sm">&#9998;</a>
+        </div>
+        <div class="file-row">
+          <span style="font-size:.7rem;color:var(--text-muted)">Oggetti</span>
+          <input id="meta_items_file" class="form-control" value="{{ reg.items_file }}">
+          <a id="link_items" href="/pokemon/oggetti?reg={{ reg.id }}" class="btn btn-secondary btn-sm">&#9998;</a>
+        </div>
+      </div>
+      <button class="btn btn-primary" style="width:100%" onclick="saveMeta()">&#128190; Salva Metadati</button>
+    </div>
+  </div>
+
+  <!-- File collegati + azioni rapide -->
+  <div class="card">
+    <div class="card-header"><span class="card-title">&#128196; Editor Contenuti</span></div>
+    <div class="card-body">
+      <p style="font-size:.82rem;color:var(--text-muted);margin-bottom:1rem">
+        Modifica direttamente roster, mosse e oggetti di questa regulation.
+        Ogni editor carica e salva solo i file di <strong>{{ reg.label }}</strong>.
+      </p>
+      <div style="display:flex;flex-direction:column;gap:.6rem">
+        <a href="/pokemon/roster?reg={{ reg.id }}" class="btn btn-secondary" style="display:flex;align-items:center;gap:.5rem;justify-content:space-between">
+          <span>🦢 Roster Pok&eacute;mon</span>
+          <span style="font-size:.72rem;font-family:monospace;opacity:.7">{{ reg.roster_file }}</span>
+        </a>
+        <a href="/pokemon/mosse?reg={{ reg.id }}" class="btn btn-secondary" style="display:flex;align-items:center;gap:.5rem;justify-content:space-between">
+          <span>⚡ Editor Mosse</span>
+          <span style="font-size:.72rem;font-family:monospace;opacity:.7">{{ reg.moves_file }}</span>
+        </a>
+        <a href="/pokemon/oggetti?reg={{ reg.id }}" class="btn btn-secondary" style="display:flex;align-items:center;gap:.5rem;justify-content:space-between">
+          <span>🎒 Editor Oggetti</span>
+          <span style="font-size:.72rem;font-family:monospace;opacity:.7">{{ reg.items_file }}</span>
+        </a>
+      </div>
+
+      <hr style="margin:1rem 0;border-color:var(--border)">
+
+      <!-- JSON raw visualizzazione -->
+      <div style="margin-bottom:.5rem;display:flex;align-items:center;justify-content:space-between">
+        <span style="font-size:.75rem;font-weight:700;color:var(--text-muted);text-transform:uppercase">JSON Regulation</span>
+        <button class="btn btn-secondary btn-sm" onclick="toggleRawJson()">&#128196; Mostra/Nascondi JSON</button>
+      </div>
+      <div id="raw_json_wrap" style="display:none">
+        <textarea id="raw_json" class="form-control" rows="8" style="font-family:monospace;font-size:.72rem"
+          readonly>{{ reg | tojson(indent=2) }}</textarea>
+      </div>
+    </div>
+  </div>
+
+</div>
+
+<!-- Roster preview -->
+{% if roster %}
+<div class="card mb-4">
+  <div class="card-header" style="display:flex;align-items:center;justify-content:space-between">
+    <span class="card-title">🦢 Roster ({{ roster_count }} Pok&eacute;mon)</span>
+    <a href="/pokemon/roster?reg={{ reg.id }}" class="btn btn-secondary btn-sm">&#9998; Modifica Roster</a>
+  </div>
+  <div class="card-body">
+    <div style="display:flex;flex-wrap:wrap;gap:.4rem">
+      {% for pk in roster %}
+      <span style="background:var(--surface-off);border:1px solid var(--border);border-radius:20px;
+                   padding:.2rem .65rem;font-size:.75rem;font-weight:600">{{ pk }}</span>
+      {% endfor %}
+    </div>
+  </div>
+</div>
+{% endif %}
+
+<!-- Team collegati -->
+<div class="card">
+  <div class="card-header" style="display:flex;align-items:center;justify-content:space-between">
+    <span class="card-title">🏆 Team con questa Regulation ({{ teams_count }})</span>
+    <a href="/pokemon/team/new?regulation_id={{ reg.id }}" class="btn btn-primary btn-sm">+ Nuovo Team</a>
+  </div>
+  <div class="card-body">
+    {% if teams %}
+    <div style="display:flex;flex-direction:column;gap:.5rem">
+      {% for t in teams %}
+      <div style="display:flex;align-items:center;justify-content:space-between;
+                  background:var(--surface-off);border:1px solid var(--border);
+                  border-radius:var(--radius-md);padding:.6rem .9rem">
+        <div>
+          <span style="font-weight:700;font-size:.9rem">{{ t.name }}</span>
+          <span style="font-size:.72rem;color:var(--text-muted);margin-left:.5rem">{{ t.format }}</span>
+          {% if t.record %}<span style="font-size:.72rem;color:var(--primary);margin-left:.5rem">{{ t.record }}</span>{% endif %}
+        </div>
+        <a href="/pokemon/team/{{ t.id }}/edit" class="btn btn-secondary btn-sm">&#9998;</a>
+      </div>
+      {% endfor %}
+    </div>
+    {% else %}
+    <p style="color:var(--text-muted);font-size:.85rem">Nessun team usa questa regulation.
+      <a href="/pokemon/team/new?regulation_id={{ reg.id }}">Crea il primo →</a>
+    </p>
+    {% endif %}
+  </div>
+</div>
+
+<div id="toast" class="toast"></div>
+
+<script>
+const REG_ID = "{{ reg.id }}";
+
+function showToast(msg, ok=true) {
+  const t = document.getElementById('toast');
+  t.textContent = msg;
+  t.style.background = ok ? 'var(--primary)' : 'var(--error, #c33)';
+  t.classList.add('show');
+  setTimeout(() => t.classList.remove('show'), 2800);
+}
+
+function toggleRawJson() {
+  const w = document.getElementById('raw_json_wrap');
+  w.style.display = w.style.display === 'none' ? '' : 'none';
+}
+
+function getMechs() {
+  return [...document.querySelectorAll('#mech_list .mech-tag')].map(el => el.dataset.mech);
+}
+
+function removeMech(m) {
+  const el = document.querySelector(`#mech_list .mech-tag[data-mech="${m}"]`);
+  if (el) el.remove();
+}
+
+function addMech() {
+  const sel = document.getElementById('mech_add_select');
+  const val = sel.value;
+  if (!val) return;
+  if (document.querySelector(`#mech_list .mech-tag[data-mech="${val}"]`)) {
+    showToast(`Meccanica '${val}' già presente`, false); return;
+  }
+  const span = document.createElement('span');
+  span.className = 'mech-tag';
+  span.dataset.mech = val;
+  span.innerHTML = `${val}<button onclick="removeMech('${val}')">×</button>`;
+  document.getElementById('mech_list').appendChild(span);
+}
+
+async function saveMeta() {
+  const label       = document.getElementById('meta_label').value.trim();
+  const roster_file = document.getElementById('meta_roster_file').value.trim();
+  const moves_file  = document.getElementById('meta_moves_file').value.trim();
+  const items_file  = document.getElementById('meta_items_file').value.trim();
+  const mechanics   = getMechs();
+
+  if (!label) { showToast('Label obbligatoria', false); return; }
+
+  // Carica la lista completa di regulations, aggiorna solo questa
+  try {
+    const r1 = await fetch('/api/regulations');
+    const d1 = await r1.json();
+    if (!d1.ok) { showToast('Errore caricamento regulations', false); return; }
+
+    const regs = d1.regulations.map(reg =>
+      reg.id === REG_ID
+        ? { ...reg, label, roster_file, moves_file, items_file, mechanics }
+        : reg
+    );
+
+    const r2 = await fetch('/api/regulations/save', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ regulations: regs })
+    });
+    const d2 = await r2.json();
+    if (d2.ok) {
+      showToast('✅ Metadati salvati!');
+      // Aggiorna anche il JSON raw visualizzato
+      const rawEl = document.getElementById('raw_json');
+      if (rawEl) {
+        const updated = regs.find(r => r.id === REG_ID);
+        rawEl.value = JSON.stringify(updated, null, 2);
+      }
+      // Aggiorna link editor
+      document.getElementById('link_roster').href = `/pokemon/roster?reg=${REG_ID}`;
+      document.getElementById('link_moves').href  = `/pokemon/mosse?reg=${REG_ID}`;
+      document.getElementById('link_items').href  = `/pokemon/oggetti?reg=${REG_ID}`;
+    } else {
+      showToast('Errore: ' + d2.error, false);
+    }
+  } catch(e) {
+    showToast('Errore rete: ' + e, false);
+  }
+}
+</script>
+{% endblock %}

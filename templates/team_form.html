@@ -1,0 +1,324 @@
+{% extends "base.html" %}
+{% block title %}Team Builder – Hub{% endblock %}
+{% block topbar_title %}🏆 Team Builder{% endblock %}
+{% block extra_head %}
+<style>
+.slot-card{background:var(--surface-off);border:1px solid var(--border);
+  border-radius:var(--radius-lg);padding:.9rem;margin-bottom:.9rem}
+.slot-header{display:flex;align-items:center;gap:.75rem;margin-bottom:.75rem;flex-wrap:wrap}
+.slot-num{width:26px;height:26px;border-radius:50%;background:var(--primary);color:#fff;
+  font-size:.72rem;font-weight:800;display:flex;align-items:center;justify-content:center;flex-shrink:0}
+.ev-grid{display:grid;grid-template-columns:repeat(6,1fr);gap:.35rem}
+.stat-inp{text-align:center;font-size:.7rem;padding:.28rem .15rem}
+.stat-lbl{font-size:.6rem;text-align:center;color:var(--text-muted);margin-top:.1rem;font-weight:700}
+.sprite-wrap{width:62px;height:62px;flex-shrink:0;display:flex;align-items:center;
+  justify-content:center;background:var(--surface);border-radius:var(--radius-md);
+  border:1px solid var(--border);overflow:hidden}
+.ev-sum{font-size:.68rem;font-weight:700;padding:.15rem .45rem;border-radius:20px;
+  background:var(--primary-dim);color:var(--primary)}
+.mechanic-wrap{min-width:200px;display:flex;gap:.4rem;align-items:flex-end}
+</style>
+{% endblock %}
+{% block content %}
+<div class="page-header">
+  <div class="flex items-center justify-between flex-wrap gap-2">
+    <div class="flex items-center gap-2">
+      <a href="/pokemon" class="btn btn-secondary btn-sm">&#8592; Indietro</a>
+      <h1>{% if team %}&#9998; {{ team.name }}{% else %}🏆 Nuovo Team{% endif %}</h1>
+    </div>
+    <button type="submit" form="teamForm" class="btn btn-primary btn-sm">&#128190; Salva team</button>
+  </div>
+</div>
+<form method="POST" id="teamForm">
+  <div class="card">
+    <div class="card-header"><span class="card-title">Informazioni Team</span></div>
+    <div class="card-body">
+      <div class="form-row">
+        <div class="form-group"><label>Nome team *</label>
+          <input name="team_name" class="form-control" required
+            value="{{ team.name if team else '' }}" placeholder="Es. Rain Team"></div>
+        <div class="form-group"><label>Formato</label>
+          <input name="team_format" class="form-control"
+            value="{{ team.format if team else 'VGC Reg MA' }}"></div>
+        <div class="form-group"><label>Record (W/L)</label>
+          <input name="team_record" class="form-control"
+            value="{{ team.record if team else '' }}" placeholder="10-5"></div>
+        <div class="form-group"><label>Regulation</label>
+          <select name="regulation_id" id="regulation_id" class="form-control" onchange="loadRegulationData()">
+            <option value="ma">Regulation MA</option>
+          </select>
+        </div>
+      </div>
+      <div class="form-group"><label>Descrizione</label>
+        <textarea name="team_description" class="form-control" rows="2"
+          placeholder="Strategia, lead, matchup...">{{ team.description if team and team.description else '' }}</textarea></div>
+    </div>
+  </div>
+
+  {% for i in range(6) %}
+  {% set m = members[i] if members and members[i] else none %}
+  <div class="slot-card">
+    <div class="slot-header">
+      <div class="slot-num">{{ i+1 }}</div>
+      <div class="sprite-wrap" id="sw_{{ i }}">
+        {% if m and m.sprite_url %}
+          <img src="{{ m.sprite_url }}" style="width:58px;height:58px;image-rendering:pixelated" loading="lazy">
+        {% elif m and m.pokemon %}
+          <span style="font-size:1.8rem">🥚</span>
+        {% else %}
+          <span style="font-size:1.4rem;opacity:.3">&mdash;</span>
+        {% endif %}
+      </div>
+      <input type="hidden" name="sprite_url_{{ i }}" id="sprite_url_{{ i }}"
+             value="{{ m.sprite_url if m and m.sprite_url else '' }}">
+      <div style="flex:1;min-width:140px">
+        <label style="font-size:.7rem;color:var(--text-muted)">Pok&eacute;mon</label>
+        <input list="roster_list" name="pk_{{ i }}" id="pk_{{ i }}" class="form-control"
+          value="{{ m.pokemon if m else '' }}" placeholder="Cerca nel roster..."
+          oninput="fetchPkmn({{ i }})">
+      </div>
+
+      <!-- Meccanica dinamica -->
+      <div class="mechanic-wrap" id="mechanic_wrap_{{ i }}">
+        <div>
+          <label style="font-size:.7rem;color:var(--text-muted)">Meccanica</label>
+          <select name="mechanic_type_{{ i }}" id="mechanic_type_{{ i }}" class="form-control"
+                  onchange="updateMechanicValue({{ i }})" style="min-width:100px">
+            <option value="">&mdash; nessuna &mdash;</option>
+            {# Le option vengono popolate via JS in base alla regulation #}
+          </select>
+        </div>
+        <div id="mechanic_value_wrap_{{ i }}" style="display:none">
+          <label style="font-size:.7rem;color:var(--text-muted)" id="mechanic_value_lbl_{{ i }}">Valore</label>
+          <select name="mechanic_value_{{ i }}" id="mechanic_value_{{ i }}" class="form-control" style="min-width:130px">
+          </select>
+        </div>
+      </div>
+      <!-- Valori correnti salvati (per ripristino JS) -->
+      <input type="hidden" id="saved_mtype_{{ i }}" value="{{ m.mechanic_type if m and m.mechanic_type else '' }}">
+      <input type="hidden" id="saved_mvalue_{{ i }}" value="{{ m.mechanic_value if m and m.mechanic_value else '' }}">
+    </div>
+
+    <div class="form-row">
+      <div class="form-group"><label>Natura</label>
+        <select name="nature_{{ i }}" class="form-control">
+          <option value="">&mdash;</option>
+          {% for n in natures %}
+          <option {% if m and m.nature==n %}selected{% endif %} value="{{ n }}">
+            {{ n }}{% if n in nature_effects %} ({{ nature_effects[n][0] }} {{ nature_effects[n][1] }}){% endif %}
+          </option>{% endfor %}
+        </select></div>
+      <div class="form-group"><label>Abilit&agrave;</label>
+        <input list="ab_list_{{ i }}" name="ability_{{ i }}" class="form-control"
+          value="{{ m.ability if m else '' }}" placeholder="Abilit&agrave;...">
+        <datalist id="ab_list_{{ i }}"></datalist></div>
+      <div class="form-group"><label>Held Item</label>
+        <input name="item_{{ i }}" class="form-control" list="item_list_{{ i }}"
+          value="{{ m.held_item if m else '' }}" placeholder="Life Orb...">
+        <datalist id="item_list_{{ i }}">
+          {% for iname, idata in items_data["items"]|dictsort %}<option value="{{ iname }}">{% endfor %}
+        </datalist></div>
+    </div>
+
+    <div class="form-row mb-2">
+      {% for mv in range(1,5) %}
+      <div class="form-group mb-0"><label>Mossa {{ mv }}</label>
+        <input list="mv_list_{{ i }}" name="move{{ mv }}_{{ i }}" class="form-control"
+          value="{{ m['move'~mv] if m and m['move'~mv] else '' }}" placeholder="Mossa {{ mv }}...">
+      </div>{% endfor %}
+      <datalist id="mv_list_{{ i }}"></datalist>
+    </div>
+
+    <div>
+      <div class="text-xs font-700 text-muted mb-1" style="text-transform:uppercase">
+        SP (Stat Points) <span class="ev-sum" id="ev_sum_{{ i }}">0/66</span>
+        <span style="font-size:.6rem;font-weight:400;margin-left:.4rem">max 32 per stat &middot; 66 totali</span>
+      </div>
+      <div class="ev-grid">
+        {% for stat in ['hp','atk','def','spatk','spdef','spe'] %}
+        <div>
+          <input name="sp_{{ stat }}_{{ i }}" type="number" min="0" max="32"
+            class="form-control stat-inp ev-inp"
+            data-slot="{{ i }}"
+            value="{{ m['sp_'+stat] if m and m['sp_'+stat] is not none else 0 }}"
+            oninput="updEV({{ i }})">
+          <div class="stat-lbl">{{ stat|upper }}</div>
+        </div>{% endfor %}
+      </div>
+    </div>
+  </div>{% endfor %}
+
+  <datalist id="roster_list">
+    {% for pk in roster %}<option value="{{ pk }}">{% endfor %}
+  </datalist>
+
+  <div class="flex gap-2 mb-4">
+    <button type="submit" class="btn btn-primary">&#128190; Salva team</button>
+    <a href="/pokemon" class="btn btn-secondary">Annulla</a>
+  </div>
+</form>
+
+<script>
+const MEGA_MAP = {{ mega_map|tojson }};
+const CURRENT_REG_ID = "{{ team.regulation_id if team and team.regulation_id else 'ma' }}";
+
+// Meccaniche disponibili per la regulation corrente (popolato da loadRegulationData)
+let CURRENT_MECHANICS = [];
+
+// Etichette e valori per tipo meccanica
+const MECHANIC_LABELS = {
+  mega: 'Mega Stone',
+  tera: 'Tera Type'
+};
+const TERA_TYPES = ['Normal','Fire','Water','Electric','Grass','Ice','Fighting',
+  'Poison','Ground','Flying','Psychic','Bug','Rock','Ghost','Dragon','Dark','Steel','Fairy'];
+
+for (let i = 0; i < 6; i++) updEV(i);
+
+function updEV(slot) {
+  const FIELD_MAX = 32, TOTAL_MAX = 66;
+  const inps = [...document.querySelectorAll(`.ev-inp[data-slot="${slot}"]`)];
+  inps.forEach(e => {
+    let v = parseInt(e.value, 10);
+    if (isNaN(v) || v < 0) v = 0;
+    if (v > FIELD_MAX) { v = FIELD_MAX; e.value = v; }
+  });
+  let tot = inps.reduce((s, e) => s + (parseInt(e.value, 10)||0), 0);
+  if (tot > TOTAL_MAX) {
+    const excess = tot - TOTAL_MAX;
+    for (let i = inps.length - 1; i >= 0; i--) {
+      const v = parseInt(inps[i].value, 10)||0;
+      if (v > 0) { inps[i].value = Math.max(0, v - excess); break; }
+    }
+    tot = TOTAL_MAX;
+  }
+  const el = document.getElementById('ev_sum_' + slot);
+  if (!el) return;
+  el.textContent = tot + '/66';
+  el.style.background = tot >= TOTAL_MAX ? 'var(--error-dim)' : 'var(--primary-dim)';
+  el.style.color = tot >= TOTAL_MAX ? 'var(--error)' : 'var(--primary)';
+}
+
+async function initRegulations() {
+  try {
+    const r = await fetch('/api/regulations');
+    const d = await r.json();
+    if (!d.ok) return;
+    const sel = document.getElementById('regulation_id');
+    sel.innerHTML = d.regulations.map(reg =>
+      `<option value="${reg.id}" ${reg.id === CURRENT_REG_ID ? 'selected' : ''}>${reg.label}</option>`
+    ).join('');
+  } catch(e) {}
+}
+
+async function loadRegulationData() {
+  const regId = document.getElementById('regulation_id').value;
+  try {
+    const r = await fetch(`/api/regulation/${regId}/data`);
+    const d = await r.json();
+    if (!d.ok) return;
+
+    // Aggiorna datalist roster
+    const rosterDl = document.getElementById('roster_list');
+    if (rosterDl && d.roster) {
+      rosterDl.innerHTML = d.roster.map(pk => `<option value="${pk}">`).join('');
+    }
+
+    // Aggiorna datalist oggetti
+    for (let i = 0; i < 6; i++) {
+      const itemDl = document.getElementById('item_list_' + i);
+      if (itemDl && d.items) {
+        itemDl.innerHTML = Object.keys(d.items).sort().map(n => `<option value="${n}">`).join('');
+      }
+    }
+
+    // Aggiorna meccaniche disponibili
+    CURRENT_MECHANICS = (d.regulation && d.regulation.mechanics) ? d.regulation.mechanics : [];
+    for (let i = 0; i < 6; i++) updateMechanicOptions(i);
+
+  } catch(e) {}
+}
+
+// Ricostruisce il <select> mechanic_type in base alle meccaniche della regulation
+function updateMechanicOptions(slot) {
+  const sel = document.getElementById('mechanic_type_' + slot);
+  if (!sel) return;
+  const savedType = document.getElementById('saved_mtype_' + slot).value;
+  sel.innerHTML = '<option value="">&mdash; nessuna &mdash;</option>' +
+    CURRENT_MECHANICS.map(m =>
+      `<option value="${m}" ${m === savedType ? 'selected' : ''}>${MECHANIC_LABELS[m] || m}</option>`
+    ).join('');
+  updateMechanicValue(slot);
+}
+
+// Mostra/nasconde il campo valore e popola le opzioni in base al tipo scelto
+function updateMechanicValue(slot) {
+  const typeEl = document.getElementById('mechanic_type_' + slot);
+  const wrapEl = document.getElementById('mechanic_value_wrap_' + slot);
+  const lblEl  = document.getElementById('mechanic_value_lbl_' + slot);
+  const valEl  = document.getElementById('mechanic_value_' + slot);
+  if (!typeEl || !wrapEl || !valEl) return;
+
+  const mtype = typeEl.value;
+  const savedValue = document.getElementById('saved_mvalue_' + slot).value;
+
+  if (!mtype) {
+    wrapEl.style.display = 'none';
+    return;
+  }
+
+  wrapEl.style.display = '';
+  lblEl.textContent = MECHANIC_LABELS[mtype] || 'Valore';
+
+  if (mtype === 'mega') {
+    const pkName = document.getElementById('pk_' + slot).value.trim();
+    const megas = MEGA_MAP[pkName] || [];
+    valEl.innerHTML = '<option value="">&mdash;</option>' +
+      megas.map(mg => `<option ${mg === savedValue ? 'selected' : ''}>${mg}</option>`).join('');
+  } else if (mtype === 'tera') {
+    valEl.innerHTML = '<option value="">&mdash;</option>' +
+      TERA_TYPES.map(t => `<option ${t === savedValue ? 'selected' : ''}>${t}</option>`).join('');
+  } else {
+    // Meccanica generica futura: campo testo libero convertito in select con un'unica opzione
+    valEl.innerHTML = `<option value="${savedValue}">${savedValue || '—'}</option>`;
+  }
+}
+
+// Aggiorna le opzioni mega quando cambia il pokemon
+function onPokemonChange(slot) {
+  const mtype = document.getElementById('mechanic_type_' + slot).value;
+  if (mtype === 'mega') updateMechanicValue(slot);
+}
+
+initRegulations().then(() => loadRegulationData());
+
+let fetchTimers = {};
+function fetchPkmn(slot) {
+  const name = document.getElementById('pk_' + slot).value.trim();
+  if (name.length < 3) return;
+  clearTimeout(fetchTimers[slot]);
+  fetchTimers[slot] = setTimeout(async () => {
+    try {
+      const r = await fetch('/api/pokemon/' + encodeURIComponent(name));
+      const d = await r.json();
+      if (!d.ok) return;
+
+      const spriteUrl = d.sprite || '';
+      const hiddenInp = document.getElementById('sprite_url_' + slot);
+      if (hiddenInp) hiddenInp.value = spriteUrl;
+      const sw = document.getElementById('sw_' + slot);
+      if (sw && spriteUrl) {
+        sw.innerHTML = '<img src="' + spriteUrl + '" style="width:58px;height:58px;image-rendering:pixelated">';
+      }
+      const abDl = document.getElementById('ab_list_' + slot);
+      if (abDl && d.abilities) abDl.innerHTML = d.abilities.map(a => '<option value="' + a + '">').join('');
+      const mvDl = document.getElementById('mv_list_' + slot);
+      if (mvDl && d.moves) mvDl.innerHTML = d.moves.map(m => '<option value="' + m + '">').join('');
+
+      // Aggiorna opzioni mega se la meccanica corrente è mega
+      onPokemonChange(slot);
+    } catch (e) {}
+  }, 600);
+}
+</script>
+{% endblock %}

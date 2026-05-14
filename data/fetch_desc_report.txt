@@ -1,0 +1,6 @@
+=== Fetch descrizioni mosse ===
+Totale: 317 | Aggiornate: 315 | Saltate: 0 | Non trovate: 2
+
+Mosse non trovate su PokeAPI (aggiungi desc manualmente nell'editor):
+  - Bolt Tackle  (slug: bolt-tackle)  [404 not found]
+  - Hi Jump Kick  (slug: hi-jump-kick)  [404 not found]

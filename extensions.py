@@ -1,0 +1,144 @@
+import sqlite3, os, hashlib, math
+from functools import wraps
+from flask import session, redirect, url_for
+from data import PYTHON_TOPICS
+
+DB = os.path.join(os.path.dirname(__file__), "hub.db")
+DATA_DIR = os.path.join(os.path.dirname(__file__), "data")
+
+
+def get_db():
+    db = sqlite3.connect(DB)
+    db.row_factory = sqlite3.Row
+    db.execute("PRAGMA foreign_keys = ON")
+    return db
+
+
+def init_db():
+    db = get_db()
+    db.executescript("""
+    CREATE TABLE IF NOT EXISTS users(
+        id INTEGER PRIMARY KEY, username TEXT UNIQUE,
+        password TEXT, display_name TEXT, role TEXT DEFAULT 'user');
+    CREATE TABLE IF NOT EXISTS games(
+        id INTEGER PRIMARY KEY, title TEXT NOT NULL, platform TEXT, genre TEXT,
+        status TEXT DEFAULT 'Wishlist', hours_hltb REAL, cover_url TEXT,
+        prog_story INTEGER DEFAULT 0, prog_side INTEGER DEFAULT 0,
+        prog_collect INTEGER DEFAULT 0,
+        date_start TEXT, date_end TEXT, notes TEXT,
+        created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP);
+    CREATE TABLE IF NOT EXISTS teams(
+        id INTEGER PRIMARY KEY, name TEXT NOT NULL, format TEXT,
+        record TEXT, description TEXT, notes TEXT,
+        created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP);
+    CREATE TABLE IF NOT EXISTS team_members(
+        id INTEGER PRIMARY KEY,
+        team_id INTEGER REFERENCES teams(id) ON DELETE CASCADE,
+        slot INTEGER, pokemon TEXT, mega_stone TEXT, nature TEXT,
+        ability TEXT, held_item TEXT, tera_type TEXT,
+        move1 TEXT, move2 TEXT, move3 TEXT, move4 TEXT,
+        sp_hp INTEGER DEFAULT 0, sp_atk INTEGER DEFAULT 0,
+        sp_def INTEGER DEFAULT 0, sp_spatk INTEGER DEFAULT 0,
+        sp_spdef INTEGER DEFAULT 0, sp_spe INTEGER DEFAULT 0,
+        sprite_url TEXT DEFAULT NULL);
+    CREATE TABLE IF NOT EXISTS arduino_projects(
+        id INTEGER PRIMARY KEY, name TEXT NOT NULL, board TEXT,
+        status TEXT DEFAULT 'Idea', tinkercad_url TEXT,
+        code TEXT, description TEXT,
+        created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP);
+    CREATE TABLE IF NOT EXISTS python_topics(
+        id INTEGER PRIMARY KEY, category TEXT, name TEXT, done INTEGER DEFAULT 0);
+    CREATE TABLE IF NOT EXISTS pc_builds(
+        id INTEGER PRIMARY KEY, name TEXT NOT NULL, notes TEXT,
+        created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP);
+    CREATE TABLE IF NOT EXISTS pc_components(
+        id INTEGER PRIMARY KEY,
+        build_id INTEGER REFERENCES pc_builds(id) ON DELETE CASCADE,
+        category TEXT, name TEXT, price REAL DEFAULT 0, notes TEXT);
+    """)
+    pw = hashlib.sha256(b"admin123").hexdigest()
+    db.execute("INSERT OR IGNORE INTO users(username,password,display_name,role)"
+               " VALUES(?,?,'Admin','admin')", ("admin", pw))
+    if db.execute("SELECT COUNT(*) FROM python_topics").fetchone()[0] == 0:
+        for cat, topics in PYTHON_TOPICS.items():
+            for t in topics:
+                db.execute("INSERT INTO python_topics(category,name) VALUES(?,?)", (cat, t))
+    db.commit()
+    # Migrazione colonne team_members
+    for col, defval in [
+        ("sp_hp","0"),("sp_atk","0"),("sp_def","0"),
+        ("sp_spatk","0"),("sp_spdef","0"),("sp_spe","0"),
+        ("sprite_url","NULL"),
+    ]:
+        try:
+            db.execute(f"ALTER TABLE team_members ADD COLUMN {col} INTEGER DEFAULT {defval}")
+            db.commit()
+        except Exception:
+            pass
+    # Migrazione mechanic_type / mechanic_value
+    for col in ["mechanic_type", "mechanic_value"]:
+        try:
+            db.execute(f"ALTER TABLE team_members ADD COLUMN {col} TEXT DEFAULT ''")
+            db.commit()
+        except Exception:
+            pass
+    db.execute("""
+        UPDATE team_members
+        SET mechanic_type = 'mega', mechanic_value = mega_stone
+        WHERE (mega_stone IS NOT NULL AND mega_stone != '')
+        AND (mechanic_type IS NULL OR mechanic_type = '')
+    """)
+    db.execute("""
+        UPDATE team_members
+        SET mechanic_type = 'tera', mechanic_value = tera_type
+        WHERE (tera_type IS NOT NULL AND tera_type != '')
+        AND (mechanic_type IS NULL OR mechanic_type = '')
+    """)
+    db.commit()
+    # Tabella regulations
+    db.executescript("""
+        CREATE TABLE IF NOT EXISTS regulations(
+            id TEXT PRIMARY KEY,
+            label TEXT NOT NULL,
+            roster_file TEXT,
+            moves_file TEXT,
+            items_file TEXT,
+            created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+        );
+        INSERT OR IGNORE INTO regulations(id, label, roster_file, moves_file, items_file)
+        VALUES('ma', 'Regulation MA', 'roster_ma.json', 'moves_ma.json', 'items_ma.json');
+    """)
+    db.commit()
+    try:
+        db.execute("ALTER TABLE teams ADD COLUMN regulation_id TEXT DEFAULT 'ma'")
+        db.commit()
+    except Exception:
+        pass
+    db.execute("UPDATE teams SET regulation_id='ma' WHERE regulation_id IS NULL")
+    db.commit()
+    db.close()
+
+
+def login_required(f):
+    @wraps(f)
+    def wrap(*a, **kw):
+        if "username" not in session:
+            return redirect(url_for("auth.login"))
+        return f(*a, **kw)
+    return wrap
+
+
+def _i(v, d=0):
+    try: return int(v)
+    except: return d
+
+
+def _f(v, d=0.0):
+    try: return float(v)
+    except: return d
+
+
+def calc_stat_champions(base, sp, alignment, is_hp=False):
+    if is_hp:
+        return base + sp
+    return math.floor((base + sp) * alignment)

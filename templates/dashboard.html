@@ -1,0 +1,107 @@
+{% extends "base.html" %}
+{% block title %}Dashboard – Hub{% endblock %}
+{% block topbar_title %}&#128202; Dashboard{% endblock %}
+{% block content %}
+<div class="page-header">
+  <h1>Ciao, {{ display_name }} &#128075;</h1>
+  <p class="text-muted text-sm">{{ now }}</p>
+</div>
+
+<div style="display:grid;grid-template-columns:repeat(auto-fill,minmax(170px,1fr));gap:.75rem;margin-bottom:1.25rem">
+  <a href="/gaming" style="text-decoration:none">
+    <div class="card mb-0" style="padding:.85rem 1rem;cursor:pointer;transition:.15s"
+         onmouseover="this.style.borderColor='var(--primary)'" onmouseout="this.style.borderColor='var(--border)'">
+      <div class="text-xs text-muted mb-1">&#127918; Giochi</div>
+      <div style="font-size:1.6rem;font-weight:700">{{ stats.games }}</div>
+      <div class="text-xs text-muted mt-1">{{ stats.games_active }} in corso &middot; {{ stats.games_done }} completati</div>
+    </div></a>
+  <a href="/pokemon" style="text-decoration:none">
+    <div class="card mb-0" style="padding:.85rem 1rem;cursor:pointer;transition:.15s"
+         onmouseover="this.style.borderColor='var(--primary)'" onmouseout="this.style.borderColor='var(--border)'">
+      <div class="text-xs text-muted mb-1">&#129409; Team Pok&eacute;mon</div>
+      <div style="font-size:1.6rem;font-weight:700">{{ stats.teams }}</div>
+      <div class="text-xs text-muted mt-1">VGC Reg MA</div>
+    </div></a>
+  <a href="/arduino" style="text-decoration:none">
+    <div class="card mb-0" style="padding:.85rem 1rem;cursor:pointer;transition:.15s"
+         onmouseover="this.style.borderColor='var(--primary)'" onmouseout="this.style.borderColor='var(--border)'">
+      <div class="text-xs text-muted mb-1">&#128268; Progetti Arduino</div>
+      <div style="font-size:1.6rem;font-weight:700">{{ stats.arduino }}</div>
+      <div class="text-xs text-muted mt-1">microcontrollori</div>
+    </div></a>
+  <a href="/python" style="text-decoration:none">
+    <div class="card mb-0" style="padding:.85rem 1rem;cursor:pointer;transition:.15s"
+         onmouseover="this.style.borderColor='var(--primary)'" onmouseout="this.style.borderColor='var(--border)'">
+      <div class="text-xs text-muted mb-1">&#128013; Python W3Schools</div>
+      <div style="font-size:1.6rem;font-weight:700">{{ stats.python_pct }}%</div>
+      <div class="progress-bar mt-2"><div class="progress-fill" style="width:{{ stats.python_pct }}%"></div></div>
+    </div></a>
+  <a href="/pcbuilder" style="text-decoration:none">
+    <div class="card mb-0" style="padding:.85rem 1rem;cursor:pointer;transition:.15s"
+         onmouseover="this.style.borderColor='var(--primary)'" onmouseout="this.style.borderColor='var(--border)'">
+      <div class="text-xs text-muted mb-1">&#128421; PC Build</div>
+      <div style="font-size:1.6rem;font-weight:700">{{ stats.builds }}</div>
+      <div class="text-xs text-muted mt-1">configurazioni salvate</div>
+    </div></a>
+</div>
+
+<div style="display:grid;grid-template-columns:1fr 1fr;gap:1rem">
+  <div class="card">
+    <div class="card-header">
+      <span class="card-title">&#127918; Giochi recenti</span>
+      <a href="/gaming" class="btn btn-secondary btn-sm">Tutti</a>
+    </div>
+    {% if recent_games %}{% for g in recent_games %}
+    <div style="display:flex;align-items:center;gap:.65rem;padding:.5rem .9rem;
+         border-bottom:1px solid color-mix(in oklch,var(--border) 40%,transparent)">
+      {% if g.cover_url %}
+        <img src="{{ g.cover_url }}" style="width:34px;height:46px;object-fit:cover;border-radius:5px;flex-shrink:0" loading="lazy">
+      {% else %}
+        <div style="width:34px;height:46px;background:var(--surface-off);border-radius:5px;
+             display:flex;align-items:center;justify-content:center;font-size:1.1rem;flex-shrink:0">&#127918;</div>
+      {% endif %}
+      <div style="flex:1;min-width:0">
+        <div class="font-600 text-sm" style="white-space:nowrap;overflow:hidden;text-overflow:ellipsis">{{ g.title }}</div>
+        <div class="text-xs text-muted">{{ g.platform }}</div>
+      </div>
+      <span class="badge {% if g.status=='Completato' %}badge-success{% elif g.status=='In corso' %}badge-primary{% else %}badge-neutral{% endif %}">{{ g.status }}</span>
+    </div>
+    {% endfor %}{% else %}
+    <div style="padding:1.5rem;text-align:center;color:var(--text-muted);font-size:.82rem">
+      Nessun gioco. <a href="/gaming/new" style="color:var(--primary)">Aggiungine uno!</a>
+    </div>{% endif %}
+  </div>
+
+  <div>
+    <div class="card">
+      <div class="card-header">
+        <span class="card-title">&#128268; Arduino recenti</span>
+        <a href="/arduino" class="btn btn-secondary btn-sm">Tutti</a>
+      </div>
+      {% if arduino_recent %}{% for p in arduino_recent %}
+      <div style="display:flex;align-items:center;justify-content:space-between;padding:.45rem .9rem;
+           border-bottom:1px solid color-mix(in oklch,var(--border) 30%,transparent)">
+        <div><div class="text-sm font-600">{{ p.name }}</div><div class="text-xs text-muted">{{ p.board }}</div></div>
+        <span class="badge {% if p.status=='Completato' %}badge-success{% elif p.status=='In sviluppo' %}badge-warning{% elif p.status=='Pubblicato' %}badge-primary{% else %}badge-neutral{% endif %}">{{ p.status }}</span>
+      </div>
+      {% endfor %}{% else %}
+      <div style="padding:1rem;text-align:center;color:var(--text-muted);font-size:.8rem">Nessun progetto</div>
+      {% endif %}
+    </div>
+    {% if pc_builds %}
+    <div class="card">
+      <div class="card-header">
+        <span class="card-title">&#128421; PC Builds</span>
+        <a href="/pcbuilder" class="btn btn-secondary btn-sm">Gestisci</a>
+      </div>
+      {% for b in pc_builds %}
+      <div style="display:flex;align-items:center;justify-content:space-between;padding:.45rem .9rem;
+           border-bottom:1px solid color-mix(in oklch,var(--border) 30%,transparent)">
+        <span class="text-sm font-600">{{ b.name }}</span>
+        <span style="color:var(--primary);font-size:.8rem;font-weight:700">&#8364; {{ b.total|int }}</span>
+      </div>
+      {% endfor %}
+    </div>{% endif %}
+  </div>
+</div>
+{% endblock %}

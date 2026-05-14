@@ -1,0 +1,73 @@
+{% extends "base.html" %}
+{% block title %}Python Tracker – Hub{% endblock %}
+{% block topbar_title %}&#128013; Python Tracker{% endblock %}
+{% block content %}
+<div class="page-header">
+  <div class="flex items-center justify-between flex-wrap gap-2">
+    <div>
+      <h1>&#128013; Python Tracker &mdash; W3Schools</h1>
+      <p class="text-muted text-sm">{{ done }} / {{ total }} argomenti completati</p>
+    </div>
+    <div style="text-align:right">
+      <div style="font-size:1.5rem;font-weight:800;color:var(--primary)">{{ pct }}%</div>
+      <div class="progress-bar" style="width:160px">
+        <div class="progress-fill" style="width:{{ pct }}%"></div>
+      </div>
+    </div>
+  </div>
+</div>
+
+{% for cat, topics in by_cat.items() %}
+{% set cat_done = topics|selectattr('done','eq',1)|list|length %}
+<div class="card">
+  <div class="card-header" style="cursor:pointer" onclick="toggleCat('cat_{{ loop.index }}')">
+    <div class="flex items-center gap-2">
+      <svg id="arr_{{ loop.index }}" width="12" height="12" viewBox="0 0 24 24" fill="none"
+           stroke="currentColor" stroke-width="3" style="transition:.2s;flex-shrink:0">
+        <polyline points="6 9 12 15 18 9"/>
+      </svg>
+      <span class="card-title">{{ cat }}</span>
+      <span class="badge {% if cat_done==topics|length %}badge-success{% elif cat_done > 0 %}badge-warning{% else %}badge-neutral{% endif %}">
+        {{ cat_done }}/{{ topics|length }}
+      </span>
+    </div>
+    <div class="progress-bar" style="width:100px">
+      <div class="progress-fill" style="width:{{ (cat_done/topics|length*100)|int }}%"></div>
+    </div>
+  </div>
+  <div id="cat_{{ loop.index }}">
+    {% for t in topics %}
+    <form method="POST" action="/python/toggle/{{ t.id }}" style="display:contents">
+      <label style="display:flex;align-items:center;gap:.65rem;padding:.42rem 1rem;cursor:pointer;
+             border-bottom:1px solid color-mix(in oklch,var(--border) 35%,transparent);
+             transition:.12s;{% if t.done %}background:var(--success-dim){% endif %}"
+             onmouseover="this.style.background=this.style.background||'var(--surface-off)'"
+             onmouseout="this.style.background='{% if t.done %}var(--success-dim){% else %}''{% endif %}'">
+        <input type="checkbox" {% if t.done %}checked{% endif %}
+               onchange="this.form.submit()" style="accent-color:var(--success);width:15px;height:15px">
+        <span class="text-sm {% if t.done %}font-600{% endif %}" style="{% if t.done %}color:var(--success){% endif %}">
+          {{ t.name }}
+        </span>
+        {% if t.done %}<span style="margin-left:auto;font-size:.8rem">&#10003;</span>{% endif %}
+      </label>
+    </form>
+    {% endfor %}
+  </div>
+</div>
+{% endfor %}
+
+<script>
+function toggleCat(id) {
+  const el = document.getElementById(id);
+  const idx = id.split('_')[1];
+  const arr = document.getElementById('arr_' + idx);
+  if (el.style.display === 'none') {
+    el.style.display = '';
+    arr.style.transform = '';
+  } else {
+    el.style.display = 'none';
+    arr.style.transform = 'rotate(-90deg)';
+  }
+}
+</script>
+{% endblock %}

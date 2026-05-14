@@ -1,0 +1,245 @@
+{% extends "base.html" %}
+{% block title %}Roster Editor – Hub{% endblock %}
+{% block topbar_title %}📋 Roster Reg MA{% endblock %}
+{% block extra_head %}
+<style>
+.tag-list{display:flex;flex-wrap:wrap;gap:.35rem;padding:.65rem;background:var(--surface-off);
+  border-radius:var(--radius-md);min-height:60px;border:1px solid var(--border)}
+.tag{display:inline-flex;align-items:center;gap:.3rem;padding:.2rem .55rem;border-radius:20px;
+  background:var(--primary-dim);color:var(--primary);font-size:.72rem;font-weight:600}
+.tag button{background:none;border:none;cursor:pointer;color:var(--primary);font-size:.8rem;
+  line-height:1;padding:0 .1rem;opacity:.7}
+.tag button:hover{opacity:1}
+.code-area{font-family:"JetBrains Mono","Courier New",monospace;font-size:.72rem;
+  line-height:1.6;resize:vertical;min-height:300px}
+</style>
+{% endblock %}
+{% block content %}
+<div class="page-header">
+  <div class="flex items-center gap-2">
+    <a href="/pokemon" class="btn btn-secondary btn-sm">← Indietro</a>
+    <div>
+      <h1>📋 Roster Reg MA — Editor</h1>
+      <p class="text-muted text-sm">Aggiorna la lista Pokémon e le Mega Evoluzioni senza toccare il codice</p>
+    </div>
+  </div>
+</div>
+
+<div style="display:grid;grid-template-columns:1fr 1fr;gap:1rem">
+
+<!-- Colonna sinistra: UI visuale -->
+{% if current_reg %}
+<div style="font-size:.75rem;color:var(--text-muted);margin-bottom:.5rem">
+  Stai modificando: <strong>{{ current_reg.label }}</strong>
+  <a href="/pokemon/regulation/{{ current_reg.id }}" style="margin-left:.5rem">← torna alla regulation</a>
+</div>
+{% endif %}
+
+  <div>
+    <div class="card">
+      <div class="card-header">
+        <span class="card-title">🦁 Pokémon nel Roster ({{ roster_data.pokemon|length }})</span>
+        <div class="flex gap-1">
+          <input id="addInput" class="form-control" style="max-width:160px" placeholder="Es. Pikachu"
+                 onkeydown="if(event.key==='Enter'){event.preventDefault();addPkmn()}">
+          <button id="addBtn" class="btn btn-primary btn-sm" onclick="addPkmn()">+</button>
+        </div>
+      </div>
+      <div id="roster_msg" style="display:none;padding:.3rem .6rem;border-radius:6px;margin:.25rem 0;font-size:.78rem"></div>
+      <div class="card-body">
+        <div class="tag-list" id="pkmnTags">
+          {% for pk in roster_data.pokemon|sort %}
+          <span class="tag" data-name="{{ pk }}">
+            {{ pk }}<button onclick="removeTag(this)" title="Rimuovi">✕</button>
+          </span>
+          {% endfor %}
+        </div>
+      </div>
+    </div>
+
+    <div class="card mt-2">
+      <div class="card-header">
+        <span class="card-title">✨ Mega Evoluzioni ({{ roster_data.mega_map|length }} Pokémon)</span>
+      </div>
+      <div class="card-body">
+        <p class="text-xs text-muted mb-2">Modifica direttamente nel JSON a destra.</p>
+        <div style="max-height:200px;overflow-y:auto">
+        {% for pk, megas in roster_data.mega_map.items()|sort %}
+        <div style="display:flex;align-items:center;gap:.5rem;padding:.25rem 0;
+             border-bottom:1px solid color-mix(in oklch,var(--border) 30%,transparent)">
+          <span class="text-sm font-600" style="min-width:130px">{{ pk }}</span>
+          <div class="flex gap-1 flex-wrap">
+            {% for mg in megas %}<span class="badge badge-primary" style="font-size:.65rem">{{ mg }}</span>{% endfor %}
+          </div>
+        </div>
+        {% endfor %}
+        </div>
+      </div>
+    </div>
+
+    <div class="card mt-2">
+      <div class="card-body">
+        <div class="text-sm">
+          <div><strong>Regolamento:</strong> {{ roster_data.regulation }}</div>
+          <div><strong>Aggiornato:</strong> {{ roster_data.last_updated }}</div>
+          <div class="mt-1"><strong>File:</strong> <code style="font-size:.72rem">data/roster_ma.json</code></div>
+        </div>
+        <p class="text-xs text-muted mt-2" style="line-height:1.6">
+          💡 Puoi anche modificare direttamente il file <code>data/roster_ma.json</code>
+          con qualsiasi editor di testo e riavviare Flask.
+        </p>
+      </div>
+    </div>
+
+    <div class="card mt-2">
+      <div class="card-header">
+        <span class="card-title">Archivio Regulation</span>
+      </div>
+      <div class="card-body">
+        <p class="text-xs text-muted mb-2">
+          Prima di cambiare regulation, archivia il roster corrente.
+          Potrai ripristinarlo in futuro con un click.
+        </p>
+        <form method="POST" action="/pokemon/roster/archive"
+              onsubmit="return confirm('Archivia roster corrente ({{ roster_data.regulation }})?')"
+              style="margin-bottom:.5rem">
+          <button type="submit" class="btn btn-secondary btn-sm">Archivia Roster Corrente</button>
+        </form>
+        <div>
+          <button class="btn btn-sm" style="font-size:.72rem" onclick="loadArchives()">
+            Vedi archivi salvati
+          </button>
+          <div id="archives_list" style="margin-top:.5rem"></div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Colonna destra: JSON raw -->
+  <div>
+    <div class="card">
+      <div class="card-header">
+        <span class="card-title">📄 JSON raw</span>
+        <div class="flex gap-1">
+          <button class="btn btn-secondary btn-sm" onclick="syncTagsToJson()">↺ Sync da UI</button>
+          <button class="btn btn-secondary btn-sm" onclick="formatJson()">✦ Formatta</button>
+        </div>
+      </div>
+      <div class="card-body">
+        <form method="POST" id="rosterForm">
+          <textarea name="roster_json" id="rosterJson" class="form-control code-area">{{ roster_json }}</textarea>
+          <div class="flex gap-2 mt-2">
+            <button type="submit" class="btn btn-primary" onclick="syncTagsToJson()">
+              💾 Salva e ricarica roster
+            </button>
+            <button type="button" class="btn btn-secondary" onclick="resetJson()">↩ Ripristina</button>
+          </div>
+        </form>
+      </div>
+    </div>
+  </div>
+</div>
+
+<script>
+const originalJson = document.getElementById('rosterJson').value;
+
+function showMsg(msg, type) {
+  const el = document.getElementById('roster_msg');
+  if (!el) return;
+  el.textContent = msg;
+  el.style.display = msg ? 'block' : 'none';
+  el.style.color = type === 'error' ? '#c33' : type === 'warning' ? '#a06000' : '#2a6';
+  el.style.background = type === 'error'
+    ? 'color-mix(in oklch,#c33 10%,transparent)'
+    : type === 'warning' ? 'color-mix(in oklch,#b96 10%,transparent)'
+    : 'color-mix(in oklch,#3a7 10%,transparent)';
+  el.style.border = '1px solid ' + (type==='error'?'#c33':type==='warning'?'#b96':'#3a7');
+}
+
+async function addPkmn() {
+  const inp = document.getElementById('addInput');
+  const name = inp.value.trim();
+  if (!name) return;
+  if (document.querySelector('.tag[data-name="' + name + '"]')) {
+    showMsg(name + ' e\u00e0 gia\u0027 nel roster.', 'warning');
+    inp.value = ''; return;
+  }
+  const btn = document.getElementById('addBtn');
+  btn.textContent = '...'; btn.disabled = true;
+  showMsg('', '');
+  try {
+    const res = await fetch('/api/pokemon/' + encodeURIComponent(name));
+    if (!res.ok) throw new Error('"' + name + '" non trovato su PokeAPI. Controlla il nome esatto (in inglese).');
+    const d = await res.json();
+    const tag = document.createElement('span');
+    tag.className = 'tag'; tag.dataset.name = name;
+    const types = (d.types || []).join('/');
+    if (types) tag.title = 'Tipi: ' + types;
+    tag.innerHTML = name + ' <button onclick="removeTag(this)" title="Rimuovi">\u2715</button>';
+    document.getElementById('pkmnTags').appendChild(tag);
+    inp.value = '';
+    syncTagsToJson();
+    showMsg('\u2705 ' + name + ' aggiunto' + (types ? ' (' + types + ')' : '') + '.', 'success');
+  } catch(e) {
+    showMsg('\u274c ' + e.message, 'error');
+  } finally {
+    btn.textContent = '+'; btn.disabled = false;
+  }
+}
+
+function removeTag(btn) {
+  btn.closest('.tag').remove();
+  syncTagsToJson();
+}
+
+function syncTagsToJson() {
+  const tags = [...document.querySelectorAll('.tag')].map(t => t.dataset.name);
+  try {
+    const data = JSON.parse(document.getElementById('rosterJson').value);
+    data.pokemon = tags;
+    document.getElementById('rosterJson').value = JSON.stringify(data, null, 2);
+  } catch(e) {}
+}
+
+function formatJson() {
+  try {
+    const data = JSON.parse(document.getElementById('rosterJson').value);
+    document.getElementById('rosterJson').value = JSON.stringify(data, null, 2);
+  } catch(e) { alert('JSON non valido: ' + e.message); }
+}
+
+function resetJson() {
+  if (confirm('Ripristinare il JSON originale?'))
+    document.getElementById('rosterJson').value = originalJson;
+}
+
+async function loadArchives() {
+  const el = document.getElementById('archives_list');
+  el.innerHTML = '<span class="text-xs text-muted">Caricamento...</span>';
+  try {
+    const res = await fetch('/pokemon/roster/archives');
+    const data = await res.json();
+    if (!data.length) {
+      el.innerHTML = '<p class="text-xs text-muted mt-1">Nessun archivio salvato.</p>';
+      return;
+    }
+    el.innerHTML = data.map(function(a) {
+      return '<div style="display:flex;align-items:center;justify-content:space-between;'
+        + 'padding:.4rem 0;border-bottom:1px solid var(--border);gap:.5rem;flex-wrap:wrap">'
+        + '<div>'
+        + '<span style="font-size:.8rem;font-weight:600">' + a.regulation + '</span>'
+        + '<span class="text-muted" style="font-size:.72rem"> &mdash; ' + a.last_updated
+        + ' &mdash; ' + a.count + ' Pokemon</span>'
+        + '<code style="font-size:.62rem;display:block;color:var(--text-faint)">' + a.filename + '</code>'
+        + '</div>'
+        + '<form method="POST" action="/pokemon/roster/restore/' + encodeURIComponent(a.filename) + '"'
+        + ' onsubmit="return confirm(\'Ripristinare ' + a.regulation + '? Il roster corrente verra\u0027 salvato come backup.\')">"'
+        + '<button type="submit" class="btn btn-secondary btn-sm" style="font-size:.7rem">Ripristina</button>'
+        + '</form></div>';
+    }).join('');
+  } catch(e) {
+    el.innerHTML = '<span style="color:#c33;font-size:.75rem">Errore caricamento archivi.</span>';
+  }
+}
+</script>
+{% endblock %}

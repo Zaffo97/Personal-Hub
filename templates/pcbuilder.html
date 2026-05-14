@@ -1,0 +1,281 @@
+{% extends "base.html" %}
+{% block title %}PC Builder – Hub{% endblock %}
+{% block topbar_title %}&#128421; PC Builder{% endblock %}
+{% block extra_head %}
+<style>
+.tab-bar{display:flex;gap:.3rem;overflow-x:auto;padding-bottom:.25rem;margin-bottom:1rem;flex-wrap:wrap}
+.tab-btn{padding:.35rem .85rem;border-radius:var(--radius-md);font-size:.78rem;font-weight:600;
+  cursor:pointer;border:1px solid var(--border);background:var(--surface-off);color:var(--text-muted);
+  white-space:nowrap;transition:.15s}
+.tab-btn.active{background:var(--primary);color:#fff;border-color:var(--primary)}
+.tab-panel{display:none}.tab-panel.active{display:block}
+.comp-row{display:grid;grid-template-columns:140px 1fr 90px 1fr 32px;gap:.45rem;
+  align-items:center;margin-bottom:.35rem}
+@media(max-width:600px){.comp-row{grid-template-columns:1fr 1fr;gap:.35rem}}
+.drag-zone{border:2px dashed var(--border);border-radius:var(--radius-lg);
+  padding:2rem;text-align:center;cursor:pointer;transition:.2s;color:var(--text-muted)}
+.drag-zone.dragover{border-color:var(--primary);background:var(--primary-dim)}
+#dxModal,#buildModal{display:none;position:fixed;inset:0;background:rgba(0,0,0,.6);
+  z-index:999;align-items:center;justify-content:center;padding:1rem}
+#dxModal.open,#buildModal.open{display:flex}
+.modal-box{background:var(--surface);border:1px solid var(--border);border-radius:var(--radius-xl);
+  width:100%;max-width:680px;max-height:92dvh;display:flex;flex-direction:column;overflow:hidden}
+.modal-header{display:flex;align-items:center;justify-content:space-between;
+  padding:.75rem 1.1rem;border-bottom:1px solid var(--border)}
+.modal-body{flex:1;padding:1rem;overflow-y:auto}
+.modal-footer{padding:.75rem 1.1rem;border-top:1px solid var(--border);display:flex;gap:.6rem;flex-wrap:wrap}
+.total-badge{font-size:1.25rem;font-weight:800;color:var(--primary)}
+</style>
+{% endblock %}
+{% block content %}
+<div class="page-header">
+  <div class="flex items-center justify-between flex-wrap gap-2">
+    <div><h1>&#128421; PC Builder</h1>
+      <p class="text-muted text-sm">Gestisci le tue configurazioni hardware</p></div>
+    <div class="flex gap-2 flex-wrap">
+      <button class="btn btn-secondary" onclick="openDx()">&#128190; Import DxDiag</button>
+      <button class="btn btn-primary" onclick="openBuildModal()">+ Nuova Build</button>
+    </div>
+  </div>
+</div>
+
+{% if builds %}
+<div class="tab-bar">
+  {% for b in builds %}
+  <button class="tab-btn {% if loop.first %}active{% endif %}"
+          onclick="switchTab('build_{{ b.data.id }}',this)">
+    {{ b.data.name }}
+    <span style="opacity:.65;font-weight:400;margin-left:.3rem">&euro;{{ b.total|int }}</span>
+  </button>
+  {% endfor %}
+</div>
+
+{% for b in builds %}
+<div id="build_{{ b.data.id }}" class="tab-panel {% if loop.first %}active{% endif %}">
+  <div class="card">
+    <div class="card-header">
+      <div>
+        <span class="card-title">{{ b.data.name }}</span>
+        <span class="total-badge" style="margin-left:.75rem">&euro; {{ b.total|int }}</span>
+      </div>
+      <div class="flex gap-1">
+        <button class="btn btn-secondary btn-sm"
+                onclick='openBuildModal({{ b.data|tojson }}, {{ b.components|tojson }})'>
+          &#9998; Modifica
+        </button>
+        <form method="POST" action="/pcbuilder/{{ b.data.id }}/delete"
+              onsubmit="return confirm('Eliminare la build?')">
+          <button class="btn btn-danger btn-sm">&#128465;</button>
+        </form>
+      </div>
+    </div>
+    <div style="padding:.85rem 1rem">
+      {% if b.data.notes %}<p class="text-sm text-muted mb-3">{{ b.data.notes }}</p>{% endif %}
+      {% if b.components %}
+      <table class="table">
+        <thead><tr>
+          <th>Categoria</th><th>Componente</th>
+          <th style="text-align:right">Prezzo</th><th>Note</th>
+        </tr></thead>
+        <tbody>
+        {% for c in b.components %}
+        <tr>
+          <td><span class="badge badge-neutral">{{ c.category }}</span></td>
+          <td class="font-600">{{ c.name }}</td>
+          <td style="text-align:right;color:var(--primary);font-weight:700">
+            {% if c.price %}&euro; {{ "%.2f"|format(c.price) }}{% else %}&mdash;{% endif %}
+          </td>
+          <td class="text-muted text-xs">{{ c.notes or '' }}</td>
+        </tr>{% endfor %}
+        </tbody>
+      </table>
+      {% else %}
+      <div style="text-align:center;padding:1.5rem;color:var(--text-muted);font-size:.83rem">
+        Nessun componente &mdash; modifica la build per aggiungerne
+      </div>{% endif %}
+    </div>
+  </div>
+</div>
+{% endfor %}
+
+{% else %}
+<div style="text-align:center;padding:4rem 1rem;color:var(--text-muted)">
+  <div style="font-size:3rem;margin-bottom:.75rem">&#128421;</div>
+  <h3>Nessuna build salvata</h3>
+  <p class="text-sm mt-1">Crea la tua prima configurazione PC!</p>
+  <div class="flex gap-2 mt-3" style="justify-content:center">
+    <button class="btn btn-primary" onclick="openBuildModal()">+ Nuova Build</button>
+    <button class="btn btn-secondary" onclick="openDx()">&#128190; Import DxDiag</button>
+  </div>
+</div>
+{% endif %}
+
+<!-- ── DxDiag Modal ──────────────────────────────────────── -->
+<div id="dxModal">
+  <div class="modal-box">
+    <div class="modal-header">
+      <span style="font-weight:700">&#128190; Importa da DxDiag</span>
+      <button class="btn-icon" onclick="closeDx()">&#10005;</button>
+    </div>
+    <div class="modal-body">
+      <p class="text-sm text-muted mb-3">
+        Apri <strong>Esegui</strong> &rarr; <code>dxdiag</code> &rarr; <em>Salva tutte le informazioni</em>.
+        Poi trascina il file .txt qui sotto, oppure incollane il contenuto.
+      </p>
+      <div id="dropZone" class="drag-zone mb-3"
+           ondragover="event.preventDefault();this.classList.add('dragover')"
+           ondragleave="this.classList.remove('dragover')"
+           ondrop="handleDrop(event)">
+        &#128229; Trascina il file DxDiag.txt oppure clicca per selezionarlo
+        <input type="file" id="dxFile" accept=".txt" style="display:none" onchange="loadFile(event)">
+      </div>
+      <script>document.getElementById('dropZone').onclick=()=>document.getElementById('dxFile').click()</script>
+      <div class="form-group">
+        <label>Oppure incolla il testo DxDiag</label>
+        <textarea id="dxText" class="form-control" rows="7"
+          style="font-family:'JetBrains Mono',monospace;font-size:.72rem"
+          placeholder="Incolla qui il contenuto del file DxDiag.txt..."></textarea>
+      </div>
+      <div id="dxResult" style="display:none;margin-top:.75rem">
+        <div class="text-xs font-700 text-muted mb-2" style="text-transform:uppercase">Componenti rilevati</div>
+        <div id="dxResultItems"></div>
+      </div>
+    </div>
+    <div class="modal-footer">
+      <button class="btn btn-primary" onclick="parseDx()">&#128269; Rileva componenti</button>
+      <button class="btn btn-secondary" id="useDxBtn" style="display:none"
+              onclick="useDxComponents()">&#10133; Usa in nuova build</button>
+      <button class="btn btn-secondary" onclick="closeDx()">Annulla</button>
+    </div>
+  </div>
+</div>
+
+<!-- ── Build Modal ──────────────────────────────────────── -->
+<div id="buildModal">
+  <div class="modal-box" style="max-width:820px">
+    <div class="modal-header">
+      <span id="buildModalTitle" style="font-weight:700;font-size:.9rem">Nuova Build</span>
+      <button class="btn-icon" onclick="closeBuildModal()">&#10005;</button>
+    </div>
+    <div class="modal-body">
+      <form method="POST" action="/pcbuilder/save" id="buildForm">
+        <input type="hidden" name="build_id" id="bid" value="">
+        <div class="form-row mb-3">
+          <div class="form-group mb-0"><label>Nome Build *</label>
+            <input name="build_name" id="bname" class="form-control" required placeholder="Es. Gaming Rig 2025"></div>
+          <div class="form-group mb-0"><label>Note</label>
+            <input name="build_notes" id="bnotes" class="form-control" placeholder="Uso principale..."></div>
+        </div>
+        <div class="text-xs font-700 text-muted mb-2" style="text-transform:uppercase">Componenti</div>
+        <div id="compRows"></div>
+        <button type="button" class="btn btn-secondary btn-sm mt-1" onclick="addRow()">+ Aggiungi componente</button>
+      </form>
+    </div>
+    <div class="modal-footer">
+      <button class="btn btn-primary" onclick="document.getElementById('buildForm').submit()">&#128190; Salva Build</button>
+      <button class="btn btn-secondary" onclick="closeBuildModal()">Annulla</button>
+    </div>
+  </div>
+</div>
+
+<script>
+const CATEGORIES = {{ categories|tojson }};
+let dxComponents = [];
+
+function switchTab(id, btn) {
+  document.querySelectorAll('.tab-panel').forEach(p => p.classList.remove('active'));
+  document.querySelectorAll('.tab-btn').forEach(b => b.classList.remove('active'));
+  document.getElementById(id).classList.add('active');
+  btn.classList.add('active');
+}
+
+function addRow(cat='', name='', price='', notes='') {
+  const d = document.getElementById('compRows');
+  const r = document.createElement('div');
+  r.className = 'comp-row';
+  r.innerHTML = '<select name="comp_cat" class="form-control" style="font-size:.74rem">'
+    + CATEGORIES.map(c => '<option' + (c===cat?' selected':'') + '>' + c + '</option>').join('')
+    + '</select>'
+    + '<input name="comp_name" class="form-control" style="font-size:.74rem" placeholder="Nome componente" value="' + escHtml(name) + '" required>'
+    + '<input name="comp_price" type="number" step="0.01" min="0" class="form-control" style="font-size:.74rem" placeholder="&euro;" value="' + escHtml(String(price||'')) + '">'
+    + '<input name="comp_notes" class="form-control" style="font-size:.74rem" placeholder="Note" value="' + escHtml(notes||'') + '">'
+    + '<button type="button" class="btn-icon" onclick="this.closest('.comp-row').remove()" title="Rimuovi">&#10005;</button>';
+  d.appendChild(r);
+}
+
+function escHtml(s) { return s.replace(/&/g,'&amp;').replace(/"/g,'&quot;').replace(/</g,'&lt;'); }
+
+function openBuildModal(bdata, comps) {
+  document.getElementById('compRows').innerHTML = '';
+  if (bdata) {
+    document.getElementById('buildModalTitle').textContent = 'Modifica: ' + bdata.name;
+    document.getElementById('bid').value = bdata.id;
+    document.getElementById('bname').value = bdata.name;
+    document.getElementById('bnotes').value = bdata.notes || '';
+    (comps || []).forEach(c => addRow(c.category, c.name, c.price, c.notes));
+  } else {
+    document.getElementById('buildModalTitle').textContent = 'Nuova Build';
+    document.getElementById('bid').value = '';
+    document.getElementById('bname').value = '';
+    document.getElementById('bnotes').value = '';
+    if (dxComponents.length) dxComponents.forEach(c => addRow(c.category, c.name, c.price, c.notes));
+    else addRow();
+  }
+  document.getElementById('buildModal').classList.add('open');
+}
+function closeBuildModal() { document.getElementById('buildModal').classList.remove('open'); }
+function openDx() { document.getElementById('dxModal').classList.add('open'); }
+function closeDx() { document.getElementById('dxModal').classList.remove('open'); }
+
+function handleDrop(e) {
+  e.preventDefault(); e.currentTarget.classList.remove('dragover');
+  const file = e.dataTransfer.files[0];
+  if (file) readFile(file);
+}
+function loadFile(e) { const f = e.target.files[0]; if (f) readFile(f); }
+function readFile(f) {
+  const r = new FileReader();
+  r.onload = ev => document.getElementById('dxText').value = ev.target.result;
+  r.readAsText(f);
+}
+
+function parseDx() {
+  const text = document.getElementById('dxText').value;
+  if (!text.trim()) return;
+  fetch('/pcbuilder/import_dxdiag', {
+    method:'POST', headers:{'Content-Type':'application/x-www-form-urlencoded'},
+    body:'dxdiag_text=' + encodeURIComponent(text)
+  }).then(r => r.json()).then(d => {
+    if (!d.ok) { alert('Errore: ' + d.error); return; }
+    dxComponents = d.components;
+    const el = document.getElementById('dxResultItems');
+    if (!dxComponents.length) {
+      el.innerHTML = '<p style="color:var(--text-muted);font-size:.8rem">Nessun componente rilevato automaticamente.</p>';
+    } else {
+      el.innerHTML = dxComponents.map(c =>
+        '<div style="display:flex;align-items:center;justify-content:space-between;padding:.35rem .5rem;background:var(--surface-off);border-radius:var(--radius-sm);margin-bottom:.3rem">'
+        + '<span class="badge badge-neutral">' + c.category + '</span>'
+        + '<span style="flex:1;margin:0 .5rem;font-size:.8rem;font-weight:600">' + c.name + '</span>'
+        + '</div>').join('');
+    }
+    document.getElementById('dxResult').style.display = 'block';
+    document.getElementById('useDxBtn').style.display = dxComponents.length ? 'inline-flex' : 'none';
+  });
+}
+
+function useDxComponents() {
+  closeDx();
+  openBuildModal();
+}
+
+document.getElementById('buildModal').addEventListener('click', e => {
+  if (e.target === e.currentTarget) closeBuildModal();
+});
+document.getElementById('dxModal').addEventListener('click', e => {
+  if (e.target === e.currentTarget) closeDx();
+});
+document.addEventListener('keydown', e => {
+  if (e.key === 'Escape') { closeBuildModal(); closeDx(); }
+});
+</script>
+{% endblock %}

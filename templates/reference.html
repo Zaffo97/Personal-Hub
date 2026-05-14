@@ -1,0 +1,70 @@
+{% extends "base.html" %}
+{% block title %}Reference VGC – Hub{% endblock %}
+{% block topbar_title %}📚 Reference VGC{% endblock %}
+{% block extra_head %}
+<style>
+.ref-tabs{display:flex;gap:.4rem;margin-bottom:1.2rem;border-bottom:1px solid var(--border);padding-bottom:.5rem}
+.ref-tab{padding:.38rem .9rem;border-radius:var(--radius-md) var(--radius-md) 0 0;font-size:.82rem;font-weight:600;border:none;cursor:pointer;background:transparent;color:var(--text-muted);transition:all .15s}
+.ref-tab.active{background:var(--primary);color:#fff}
+.ref-panel{display:none}.ref-panel.active{display:block}
+</style>
+{% endblock %}
+{% block content %}
+<div class="page-header">
+  <div class="flex items-center justify-between flex-wrap gap-2">
+    <div class="flex items-center gap-2">
+      <a href="/pokemon/calcolatori" class="btn btn-secondary btn-sm">← Calcolatori</a>
+      <div>
+        <h1>📚 Reference VGC — Reg MA</h1>
+        <p class="text-muted text-sm">Tabelle di riferimento rapido per i calcoli</p>
+      </div>
+    </div>
+  </div>
+</div>
+
+<div class="ref-tabs">
+  <button class="ref-tab active" onclick="switchRefTab('types',this)">🗂️ Tabella Tipi</button>
+  <button class="ref-tab" onclick="switchRefTab('natures',this)">🌿 Nature</button>
+</div>
+
+<!-- TAB TIPI -->
+<div id="reftab_types" class="ref-panel active card" style="display:block">
+  <div class="card-header"><span class="card-title">🗂️ Tabella Efficacia Tipi — Gen 9</span></div>
+  <div class="card-body">
+    <p style="font-size:.8rem;color:var(--text-muted);margin-bottom:.8rem">
+      Righe = tipo <strong>attaccante</strong> · Colonne = tipo <strong>difensore</strong>
+      &nbsp;|&nbsp;
+      <span style="background:#2a8a3a;color:#fff;padding:.15rem .4rem;border-radius:4px;font-size:.7rem">2×</span> super efficace &nbsp;
+      <span style="background:#c33322;color:#fff;padding:.15rem .4rem;border-radius:4px;font-size:.7rem">½</span> poco efficace &nbsp;
+      <span style="background:#555;color:#fff;padding:.15rem .4rem;border-radius:4px;font-size:.7rem">0</span> immune &nbsp;
+      <span style="color:var(--text-muted);font-size:.7rem">· = neutro</span>
+    </p>
+    <div style="overflow-x:auto">
+      {{ type_table|safe }}
+    </div>
+  </div>
+</div>
+
+<!-- TAB NATURE -->
+<div id="reftab_natures" class="ref-panel card" style="display:none">
+  <div class="card-header"><span class="card-title">🌿 Tabella Nature</span></div>
+  <div class="card-body">
+    <p style="font-size:.8rem;color:var(--text-muted);margin-bottom:.8rem">
+      Ogni natura aumenta una stat del <strong style="color:#2a8a3a">+10%</strong> e ne diminuisce un'altra del <strong style="color:#c33322">-10%</strong>. Le nature neutre non modificano nessuna stat.
+    </p>
+    <div style="max-width:400px">
+      {{ nature_table|safe }}
+    </div>
+  </div>
+</div>
+
+<script>
+function switchRefTab(id, btn){
+  document.querySelectorAll('.ref-panel').forEach(p=>{p.style.display='none';p.classList.remove('active');});
+  document.querySelectorAll('.ref-tab').forEach(b=>b.classList.remove('active'));
+  const el=document.getElementById('reftab_'+id);
+  if(el){el.style.display='block';el.classList.add('active');}
+  btn.classList.add('active');
+}
+</script>
+{% endblock %}

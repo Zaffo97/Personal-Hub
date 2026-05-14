@@ -1,0 +1,4722 @@
+{
+  "venusaur": {
+    "name": "Venusaur",
+    "types": [
+      "Erba",
+      "Veleno"
+    ],
+    "abilities": [
+      "Overgrow"
+    ],
+    "base_stats": {
+      "hp": 80,
+      "atk": 82,
+      "def": 83,
+      "spa": 100,
+      "spd": 100,
+      "spe": 80
+    },
+    "forms": {
+      "Mega Venusaur": {
+        "types": [
+          "Erba",
+          "Veleno"
+        ],
+        "base_stats": {
+          "hp": 155,
+          "atk": 120,
+          "def": 143,
+          "spa": 142,
+          "spd": 140,
+          "spe": 100
+        },
+        "abilities": [
+          "Thick Fat"
+        ]
+      }
+    }
+  },
+  "charizard": {
+    "name": "Charizard",
+    "types": [
+      "Fuoco",
+      "Volante"
+    ],
+    "abilities": [
+      "Blaze"
+    ],
+    "base_stats": {
+      "hp": 78,
+      "atk": 84,
+      "def": 78,
+      "spa": 109,
+      "spd": 85,
+      "spe": 100
+    },
+    "forms": {
+      "Mega Charizard X": {
+        "types": [
+          "Fuoco",
+          "Drago"
+        ],
+        "base_stats": {
+          "hp": 153,
+          "atk": 150,
+          "def": 131,
+          "spa": 150,
+          "spd": 105,
+          "spe": 120
+        },
+        "abilities": [
+          "Tough Claws"
+        ]
+      },
+      "Mega Charizard Y": {
+        "types": [
+          "Fuoco",
+          "Volante"
+        ],
+        "base_stats": {
+          "hp": 153,
+          "atk": 124,
+          "def": 98,
+          "spa": 179,
+          "spd": 135,
+          "spe": 120
+        },
+        "abilities": [
+          "Drought"
+        ]
+      }
+    }
+  },
+  "blastoise": {
+    "name": "Blastoise",
+    "types": [
+      "Acqua"
+    ],
+    "abilities": [
+      "Torrent"
+    ],
+    "base_stats": {
+      "hp": 79,
+      "atk": 83,
+      "def": 100,
+      "spa": 85,
+      "spd": 105,
+      "spe": 78
+    },
+    "forms": {
+      "Mega Blastoise": {
+        "types": [
+          "Acqua"
+        ],
+        "base_stats": {
+          "hp": 154,
+          "atk": 123,
+          "def": 140,
+          "spa": 155,
+          "spd": 135,
+          "spe": 98
+        },
+        "abilities": [
+          "Mega Launcher"
+        ]
+      }
+    }
+  },
+  "beedrill": {
+    "name": "Beedrill",
+    "types": [
+      "Coleottero",
+      "Veleno"
+    ],
+    "abilities": [
+      "Swarm"
+    ],
+    "base_stats": {
+      "hp": 65,
+      "atk": 90,
+      "def": 40,
+      "spa": 45,
+      "spd": 80,
+      "spe": 75
+    },
+    "forms": {
+      "Mega Beedrill": {
+        "types": [
+          "Coleottero",
+          "Veleno"
+        ],
+        "base_stats": {
+          "hp": 140,
+          "atk": 170,
+          "def": 60,
+          "spa": 35,
+          "spd": 100,
+          "spe": 165
+        },
+        "abilities": [
+          "Adaptability"
+        ]
+      }
+    }
+  },
+  "pidgeot": {
+    "name": "Pidgeot",
+    "types": [
+      "Normale",
+      "Volante"
+    ],
+    "abilities": [
+      "Keen Eye",
+      "Tangled Feet"
+    ],
+    "base_stats": {
+      "hp": 83,
+      "atk": 80,
+      "def": 75,
+      "spa": 70,
+      "spd": 70,
+      "spe": 101
+    },
+    "forms": {
+      "Mega Pidgeot": {
+        "types": [
+          "Normale",
+          "Volante"
+        ],
+        "base_stats": {
+          "hp": 158,
+          "atk": 100,
+          "def": 100,
+          "spa": 155,
+          "spd": 100,
+          "spe": 141
+        },
+        "abilities": [
+          "No Guard"
+        ]
+      }
+    }
+  },
+  "arbok": {
+    "name": "Arbok",
+    "types": [
+      "Veleno"
+    ],
+    "abilities": [
+      "Intimidate",
+      "Shed Skin"
+    ],
+    "base_stats": {
+      "hp": 60,
+      "atk": 95,
+      "def": 69,
+      "spa": 65,
+      "spd": 79,
+      "spe": 80
+    }
+  },
+  "pikachu": {
+    "name": "Pikachu",
+    "types": [
+      "Elettro"
+    ],
+    "abilities": [
+      "Static"
+    ],
+    "base_stats": {
+      "hp": 35,
+      "atk": 55,
+      "def": 40,
+      "spa": 50,
+      "spd": 50,
+      "spe": 90
+    }
+  },
+  "raichu": {
+    "name": "Raichu",
+    "types": [
+      "Elettro"
+    ],
+    "abilities": [
+      "Static"
+    ],
+    "base_stats": {
+      "hp": 60,
+      "atk": 90,
+      "def": 55,
+      "spa": 90,
+      "spd": 80,
+      "spe": 110
+    },
+    "forms": {
+      "Alolan Raichu": {
+        "types": [
+          "Elettro",
+          "Psico"
+        ],
+        "base_stats": {
+          "hp": 60,
+          "atk": 85,
+          "def": 50,
+          "spa": 95,
+          "spd": 85,
+          "spe": 110
+        },
+        "abilities": [
+          "Surge Surfer"
+        ]
+      }
+    }
+  },
+  "clefable": {
+    "name": "Clefable",
+    "types": [
+      "Folletto"
+    ],
+    "abilities": [
+      "Cute Charm",
+      "Magic Guard"
+    ],
+    "base_stats": {
+      "hp": 95,
+      "atk": 70,
+      "def": 73,
+      "spa": 95,
+      "spd": 90,
+      "spe": 60
+    },
+    "forms": {
+      "Mega Clefable": {
+        "types": [
+          "Folletto"
+        ],
+        "base_stats": {
+          "hp": 170,
+          "atk": 100,
+          "def": 113,
+          "spa": 155,
+          "spd": 130,
+          "spe": 90
+        },
+        "abilities": [
+          "Friend Guard"
+        ]
+      }
+    }
+  },
+  "ninetales": {
+    "name": "Ninetales",
+    "types": [
+      "Fuoco"
+    ],
+    "abilities": [
+      "Flash Fire"
+    ],
+    "base_stats": {
+      "hp": 73,
+      "atk": 76,
+      "def": 75,
+      "spa": 81,
+      "spd": 100,
+      "spe": 100
+    },
+    "forms": {
+      "Alolan Ninetales": {
+        "types": [
+          "Ghiaccio",
+          "Folletto"
+        ],
+        "base_stats": {
+          "hp": 73,
+          "atk": 67,
+          "def": 75,
+          "spa": 81,
+          "spd": 100,
+          "spe": 109
+        },
+        "abilities": [
+          "Snow Cloak",
+          "Snow Warning"
+        ]
+      }
+    }
+  },
+  "arcanine": {
+    "name": "Arcanine",
+    "types": [
+      "Fuoco"
+    ],
+    "abilities": [
+      "Intimidate",
+      "Flash Fire"
+    ],
+    "base_stats": {
+      "hp": 90,
+      "atk": 110,
+      "def": 80,
+      "spa": 100,
+      "spd": 80,
+      "spe": 95
+    },
+    "forms": {
+      "Hisuian Arcanine": {
+        "types": [
+          "Fuoco",
+          "Roccia"
+        ],
+        "base_stats": {
+          "hp": 95,
+          "atk": 115,
+          "def": 80,
+          "spa": 95,
+          "spd": 80,
+          "spe": 90
+        },
+        "abilities": [
+          "Intimidate",
+          "Flash Fire",
+          "Rock Head"
+        ]
+      }
+    }
+  },
+  "alakazam": {
+    "name": "Alakazam",
+    "types": [
+      "Psico"
+    ],
+    "abilities": [
+      "Synchronize",
+      "Inner Focus"
+    ],
+    "base_stats": {
+      "hp": 55,
+      "atk": 50,
+      "def": 45,
+      "spa": 135,
+      "spd": 95,
+      "spe": 120
+    },
+    "forms": {
+      "Mega Alakazam": {
+        "types": [
+          "Psico"
+        ],
+        "base_stats": {
+          "hp": 130,
+          "atk": 70,
+          "def": 85,
+          "spa": 195,
+          "spd": 125,
+          "spe": 170
+        },
+        "abilities": [
+          "Trace"
+        ]
+      }
+    }
+  },
+  "machamp": {
+    "name": "Machamp",
+    "types": [
+      "Lotta"
+    ],
+    "abilities": [
+      "Guts",
+      "No Guard"
+    ],
+    "base_stats": {
+      "hp": 90,
+      "atk": 130,
+      "def": 80,
+      "spa": 65,
+      "spd": 85,
+      "spe": 55
+    },
+    "forms": {
+      "Mega Machamp": {
+        "types": [
+          "Lotta"
+        ],
+        "base_stats": {},
+        "abilities": [
+          "No Guard"
+        ]
+      }
+    }
+  },
+  "victreebel": {
+    "name": "Victreebel",
+    "types": [
+      "Erba",
+      "Veleno"
+    ],
+    "abilities": [
+      "Chlorophyll"
+    ],
+    "base_stats": {
+      "hp": 80,
+      "atk": 105,
+      "def": 65,
+      "spa": 100,
+      "spd": 70,
+      "spe": 70
+    },
+    "forms": {
+      "Mega Victreebel": {
+        "types": [
+          "Erba",
+          "Veleno"
+        ],
+        "base_stats": {
+          "hp": 155,
+          "atk": 145,
+          "def": 105,
+          "spa": 155,
+          "spd": 115,
+          "spe": 90
+        },
+        "abilities": [
+          "Chlorophyll"
+        ]
+      }
+    }
+  },
+  "slowbro": {
+    "name": "Slowbro",
+    "types": [
+      "Acqua",
+      "Psico"
+    ],
+    "abilities": [
+      "Oblivious",
+      "Own Tempo"
+    ],
+    "base_stats": {
+      "hp": 95,
+      "atk": 75,
+      "def": 110,
+      "spa": 100,
+      "spd": 80,
+      "spe": 30
+    },
+    "forms": {
+      "Mega Slowbro": {
+        "types": [
+          "Acqua",
+          "Psico"
+        ],
+        "base_stats": {
+          "hp": 170,
+          "atk": 95,
+          "def": 200,
+          "spa": 150,
+          "spd": 100,
+          "spe": 50
+        },
+        "abilities": [
+          "Shell Armor"
+        ]
+      },
+      "Galarian Slowbro": {
+        "types": [
+          "Veleno",
+          "Psico"
+        ],
+        "base_stats": {
+          "hp": 95,
+          "atk": 100,
+          "def": 95,
+          "spa": 100,
+          "spd": 70,
+          "spe": 30
+        },
+        "abilities": [
+          "Quick Draw",
+          "Own Tempo"
+        ]
+      }
+    }
+  },
+  "gengar": {
+    "name": "Gengar",
+    "types": [
+      "Spettro",
+      "Veleno"
+    ],
+    "abilities": [
+      "Cursed Body"
+    ],
+    "base_stats": {
+      "hp": 60,
+      "atk": 65,
+      "def": 60,
+      "spa": 130,
+      "spd": 75,
+      "spe": 110
+    },
+    "forms": {
+      "Mega Gengar": {
+        "types": [
+          "Spettro",
+          "Veleno"
+        ],
+        "base_stats": {
+          "hp": 135,
+          "atk": 85,
+          "def": 100,
+          "spa": 190,
+          "spd": 115,
+          "spe": 150
+        },
+        "abilities": [
+          "Shadow Tag"
+        ]
+      }
+    }
+  },
+  "kangaskhan": {
+    "name": "Kangaskhan",
+    "types": [
+      "Normale"
+    ],
+    "abilities": [
+      "Early Bird",
+      "Scrappy"
+    ],
+    "base_stats": {
+      "hp": 105,
+      "atk": 95,
+      "def": 80,
+      "spa": 40,
+      "spd": 80,
+      "spe": 90
+    },
+    "forms": {
+      "Mega Kangaskhan": {
+        "types": [
+          "Normale"
+        ],
+        "base_stats": {
+          "hp": 180,
+          "atk": 145,
+          "def": 120,
+          "spa": 80,
+          "spd": 120,
+          "spe": 120
+        },
+        "abilities": [
+          "Parental Bond"
+        ]
+      }
+    }
+  },
+  "starmie": {
+    "name": "Starmie",
+    "types": [
+      "Acqua",
+      "Psico"
+    ],
+    "abilities": [
+      "Illuminate",
+      "Natural Cure"
+    ],
+    "base_stats": {
+      "hp": 60,
+      "atk": 75,
+      "def": 85,
+      "spa": 100,
+      "spd": 85,
+      "spe": 115
+    },
+    "forms": {
+      "Mega Starmie": {
+        "types": [
+          "Acqua",
+          "Psico"
+        ],
+        "base_stats": {
+          "hp": 135,
+          "atk": 120,
+          "def": 125,
+          "spa": 150,
+          "spd": 125,
+          "spe": 140
+        },
+        "abilities": [
+          "Natural Cure"
+        ]
+      }
+    }
+  },
+  "pinsir": {
+    "name": "Pinsir",
+    "types": [
+      "Coleottero"
+    ],
+    "abilities": [
+      "Hyper Cutter",
+      "Mold Breaker"
+    ],
+    "base_stats": {
+      "hp": 65,
+      "atk": 125,
+      "def": 100,
+      "spa": 55,
+      "spd": 70,
+      "spe": 85
+    },
+    "forms": {
+      "Mega Pinsir": {
+        "types": [
+          "Coleottero",
+          "Volante"
+        ],
+        "base_stats": {
+          "hp": 140,
+          "atk": 175,
+          "def": 140,
+          "spa": 85,
+          "spd": 110,
+          "spe": 125
+        },
+        "abilities": [
+          "Aerilate"
+        ]
+      }
+    }
+  },
+  "tauros": {
+    "name": "Tauros",
+    "types": [
+      "Normale"
+    ],
+    "abilities": [
+      "Intimidate",
+      "Anger Point"
+    ],
+    "base_stats": {
+      "hp": 75,
+      "atk": 100,
+      "def": 95,
+      "spa": 40,
+      "spd": 70,
+      "spe": 110
+    },
+    "forms": {
+      "Tauros (Combat Breed)": {
+        "types": [
+          "Lotta"
+        ],
+        "base_stats": {
+          "hp": 75,
+          "atk": 110,
+          "def": 105,
+          "spa": 30,
+          "spd": 70,
+          "spe": 100
+        },
+        "abilities": [
+          "Intimidate",
+          "Anger Point",
+          "Cud Chew"
+        ]
+      },
+      "Tauros (Blaze Breed)": {
+        "types": [
+          "Lotta",
+          "Fuoco"
+        ],
+        "base_stats": {
+          "hp": 75,
+          "atk": 110,
+          "def": 105,
+          "spa": 30,
+          "spd": 70,
+          "spe": 100
+        },
+        "abilities": [
+          "Intimidate",
+          "Anger Point",
+          "Cud Chew"
+        ]
+      },
+      "Tauros (Aqua Breed)": {
+        "types": [
+          "Lotta",
+          "Acqua"
+        ],
+        "base_stats": {
+          "hp": 75,
+          "atk": 110,
+          "def": 105,
+          "spa": 30,
+          "spd": 70,
+          "spe": 100
+        },
+        "abilities": [
+          "Intimidate",
+          "Anger Point",
+          "Cud Chew"
+        ]
+      }
+    }
+  },
+  "gyarados": {
+    "name": "Gyarados",
+    "types": [
+      "Acqua",
+      "Volante"
+    ],
+    "abilities": [
+      "Intimidate"
+    ],
+    "base_stats": {
+      "hp": 95,
+      "atk": 125,
+      "def": 79,
+      "spa": 60,
+      "spd": 100,
+      "spe": 81
+    },
+    "forms": {
+      "Mega Gyarados": {
+        "types": [
+          "Acqua",
+          "Buio"
+        ],
+        "base_stats": {
+          "hp": 170,
+          "atk": 175,
+          "def": 129,
+          "spa": 90,
+          "spd": 150,
+          "spe": 101
+        },
+        "abilities": [
+          "Mold Breaker"
+        ]
+      }
+    }
+  },
+  "ditto": {
+    "name": "Ditto",
+    "types": [
+      "Normale"
+    ],
+    "abilities": [
+      "Limber"
+    ],
+    "base_stats": {
+      "hp": 48,
+      "atk": 48,
+      "def": 48,
+      "spa": 48,
+      "spd": 48,
+      "spe": 48
+    }
+  },
+  "vaporeon": {
+    "name": "Vaporeon",
+    "types": [
+      "Acqua"
+    ],
+    "abilities": [
+      "Water Absorb"
+    ],
+    "base_stats": {
+      "hp": 130,
+      "atk": 65,
+      "def": 60,
+      "spa": 110,
+      "spd": 95,
+      "spe": 65
+    }
+  },
+  "jolteon": {
+    "name": "Jolteon",
+    "types": [
+      "Elettro"
+    ],
+    "abilities": [
+      "Volt Absorb"
+    ],
+    "base_stats": {
+      "hp": 65,
+      "atk": 65,
+      "def": 60,
+      "spa": 110,
+      "spd": 95,
+      "spe": 130
+    }
+  },
+  "flareon": {
+    "name": "Flareon",
+    "types": [
+      "Fuoco"
+    ],
+    "abilities": [
+      "Flash Fire"
+    ],
+    "base_stats": {
+      "hp": 65,
+      "atk": 130,
+      "def": 60,
+      "spa": 95,
+      "spd": 110,
+      "spe": 65
+    }
+  },
+  "espeon": {
+    "name": "Espeon",
+    "types": [
+      "Psico"
+    ],
+    "abilities": [
+      "Synchronize"
+    ],
+    "base_stats": {
+      "hp": 65,
+      "atk": 65,
+      "def": 60,
+      "spa": 130,
+      "spd": 95,
+      "spe": 110
+    }
+  },
+  "umbreon": {
+    "name": "Umbreon",
+    "types": [
+      "Buio"
+    ],
+    "abilities": [
+      "Synchronize"
+    ],
+    "base_stats": {
+      "hp": 95,
+      "atk": 65,
+      "def": 110,
+      "spa": 60,
+      "spd": 130,
+      "spe": 65
+    }
+  },
+  "leafeon": {
+    "name": "Leafeon",
+    "types": [
+      "Erba"
+    ],
+    "abilities": [
+      "Leaf Guard"
+    ],
+    "base_stats": {
+      "hp": 65,
+      "atk": 110,
+      "def": 130,
+      "spa": 60,
+      "spd": 65,
+      "spe": 95
+    }
+  },
+  "glaceon": {
+    "name": "Glaceon",
+    "types": [
+      "Ghiaccio"
+    ],
+    "abilities": [
+      "Snow Cloak"
+    ],
+    "base_stats": {
+      "hp": 65,
+      "atk": 60,
+      "def": 110,
+      "spa": 130,
+      "spd": 95,
+      "spe": 65
+    }
+  },
+  "aerodactyl": {
+    "name": "Aerodactyl",
+    "types": [
+      "Roccia",
+      "Volante"
+    ],
+    "abilities": [
+      "Rock Head",
+      "Pressure"
+    ],
+    "base_stats": {
+      "hp": 80,
+      "atk": 105,
+      "def": 65,
+      "spa": 60,
+      "spd": 75,
+      "spe": 130
+    },
+    "forms": {
+      "Mega Aerodactyl": {
+        "types": [
+          "Roccia",
+          "Volante"
+        ],
+        "base_stats": {
+          "hp": 155,
+          "atk": 155,
+          "def": 105,
+          "spa": 90,
+          "spd": 115,
+          "spe": 170
+        },
+        "abilities": [
+          "Tough Claws"
+        ]
+      }
+    }
+  },
+  "snorlax": {
+    "name": "Snorlax",
+    "types": [
+      "Normale"
+    ],
+    "abilities": [
+      "Immunity",
+      "Thick Fat"
+    ],
+    "base_stats": {
+      "hp": 160,
+      "atk": 110,
+      "def": 65,
+      "spa": 65,
+      "spd": 110,
+      "spe": 30
+    }
+  },
+  "dragonite": {
+    "name": "Dragonite",
+    "types": [
+      "Drago",
+      "Volante"
+    ],
+    "abilities": [
+      "Inner Focus"
+    ],
+    "base_stats": {
+      "hp": 91,
+      "atk": 134,
+      "def": 95,
+      "spa": 100,
+      "spd": 100,
+      "spe": 80
+    },
+    "forms": {
+      "Mega Dragonite": {
+        "types": [
+          "Drago",
+          "Volante"
+        ],
+        "base_stats": {
+          "hp": 166,
+          "atk": 144,
+          "def": 135,
+          "spa": 165,
+          "spd": 145,
+          "spe": 120
+        },
+        "abilities": [
+          "Multiscale"
+        ]
+      }
+    }
+  },
+  "meganium": {
+    "name": "Meganium",
+    "types": [
+      "Erba"
+    ],
+    "abilities": [
+      "Overgrow"
+    ],
+    "base_stats": {
+      "hp": 80,
+      "atk": 82,
+      "def": 100,
+      "spa": 83,
+      "spd": 100,
+      "spe": 80
+    },
+    "forms": {
+      "Mega Meganium": {
+        "types": [
+          "Erba"
+        ],
+        "base_stats": {
+          "hp": 155,
+          "atk": 112,
+          "def": 135,
+          "spa": 163,
+          "spd": 135,
+          "spe": 100
+        },
+        "abilities": [
+          "Thick Fat"
+        ]
+      }
+    }
+  },
+  "typhlosion": {
+    "name": "Typhlosion",
+    "types": [
+      "Fuoco"
+    ],
+    "abilities": [
+      "Blaze"
+    ],
+    "base_stats": {
+      "hp": 78,
+      "atk": 84,
+      "def": 78,
+      "spa": 109,
+      "spd": 85,
+      "spe": 100
+    },
+    "forms": {
+      "Hisuian Typhlosion": {
+        "types": [
+          "Fuoco",
+          "Spettro"
+        ],
+        "base_stats": {
+          "hp": 73,
+          "atk": 84,
+          "def": 78,
+          "spa": 119,
+          "spd": 85,
+          "spe": 95
+        },
+        "abilities": [
+          "Blaze",
+          "Frisk"
+        ]
+      }
+    }
+  },
+  "feraligatr": {
+    "name": "Feraligatr",
+    "types": [
+      "Acqua"
+    ],
+    "abilities": [
+      "Torrent"
+    ],
+    "base_stats": {
+      "hp": 85,
+      "atk": 105,
+      "def": 100,
+      "spa": 79,
+      "spd": 83,
+      "spe": 78
+    },
+    "forms": {
+      "Mega Feraligatr": {
+        "types": [
+          "Acqua"
+        ],
+        "base_stats": {
+          "hp": 160,
+          "atk": 180,
+          "def": 145,
+          "spa": 109,
+          "spd": 113,
+          "spe": 98
+        },
+        "abilities": [
+          "Sheer Force"
+        ]
+      }
+    }
+  },
+  "ampharos": {
+    "name": "Ampharos",
+    "types": [
+      "Elettro"
+    ],
+    "abilities": [
+      "Static"
+    ],
+    "base_stats": {
+      "hp": 90,
+      "atk": 75,
+      "def": 85,
+      "spa": 115,
+      "spd": 90,
+      "spe": 55
+    },
+    "forms": {
+      "Mega Ampharos": {
+        "types": [
+          "Elettro",
+          "Drago"
+        ],
+        "base_stats": {
+          "hp": 165,
+          "atk": 115,
+          "def": 125,
+          "spa": 185,
+          "spd": 130,
+          "spe": 65
+        },
+        "abilities": [
+          "Mold Breaker"
+        ]
+      }
+    }
+  },
+  "azumarill": {
+    "name": "Azumarill",
+    "types": [
+      "Acqua",
+      "Folletto"
+    ],
+    "abilities": [
+      "Thick Fat",
+      "Huge Power"
+    ],
+    "base_stats": {
+      "hp": 100,
+      "atk": 50,
+      "def": 80,
+      "spa": 60,
+      "spd": 80,
+      "spe": 50
+    }
+  },
+  "politoed": {
+    "name": "Politoed",
+    "types": [
+      "Acqua"
+    ],
+    "abilities": [
+      "Water Absorb",
+      "Damp"
+    ],
+    "base_stats": {
+      "hp": 90,
+      "atk": 75,
+      "def": 75,
+      "spa": 90,
+      "spd": 100,
+      "spe": 70
+    }
+  },
+  "slowking": {
+    "name": "Slowking",
+    "types": [
+      "Acqua",
+      "Psico"
+    ],
+    "abilities": [
+      "Oblivious",
+      "Own Tempo"
+    ],
+    "base_stats": {
+      "hp": 95,
+      "atk": 75,
+      "def": 80,
+      "spa": 100,
+      "spd": 110,
+      "spe": 30
+    },
+    "forms": {
+      "Galarian Slowking": {
+        "types": [
+          "Veleno",
+          "Psico"
+        ],
+        "base_stats": {
+          "hp": 95,
+          "atk": 65,
+          "def": 80,
+          "spa": 110,
+          "spd": 110,
+          "spe": 30
+        },
+        "abilities": [
+          "Curious Medicine",
+          "Own Tempo"
+        ]
+      }
+    }
+  },
+  "forretress": {
+    "name": "Forretress",
+    "types": [
+      "Coleottero",
+      "Acciaio"
+    ],
+    "abilities": [
+      "Sturdy"
+    ],
+    "base_stats": {
+      "hp": 75,
+      "atk": 90,
+      "def": 140,
+      "spa": 60,
+      "spd": 60,
+      "spe": 40
+    }
+  },
+  "steelix": {
+    "name": "Steelix",
+    "types": [
+      "Acciaio",
+      "Terra"
+    ],
+    "abilities": [
+      "Rock Head",
+      "Sturdy"
+    ],
+    "base_stats": {
+      "hp": 75,
+      "atk": 85,
+      "def": 200,
+      "spa": 55,
+      "spd": 65,
+      "spe": 30
+    },
+    "forms": {
+      "Mega Steelix": {
+        "types": [
+          "Acciaio",
+          "Terra"
+        ],
+        "base_stats": {
+          "hp": 150,
+          "atk": 145,
+          "def": 250,
+          "spa": 75,
+          "spd": 115,
+          "spe": 50
+        },
+        "abilities": [
+          "Sand Force"
+        ]
+      }
+    }
+  },
+  "scizor": {
+    "name": "Scizor",
+    "types": [
+      "Coleottero",
+      "Acciaio"
+    ],
+    "abilities": [
+      "Swarm",
+      "Technician"
+    ],
+    "base_stats": {
+      "hp": 70,
+      "atk": 130,
+      "def": 100,
+      "spa": 55,
+      "spd": 80,
+      "spe": 65
+    },
+    "forms": {
+      "Mega Scizor": {
+        "types": [
+          "Coleottero",
+          "Acciaio"
+        ],
+        "base_stats": {
+          "hp": 145,
+          "atk": 170,
+          "def": 160,
+          "spa": 85,
+          "spd": 120,
+          "spe": 95
+        },
+        "abilities": [
+          "Technician"
+        ]
+      }
+    }
+  },
+  "heracross": {
+    "name": "Heracross",
+    "types": [
+      "Coleottero",
+      "Lotta"
+    ],
+    "abilities": [
+      "Swarm",
+      "Guts"
+    ],
+    "base_stats": {
+      "hp": 80,
+      "atk": 125,
+      "def": 75,
+      "spa": 40,
+      "spd": 95,
+      "spe": 85
+    },
+    "forms": {
+      "Mega Heracross": {
+        "types": [
+          "Coleottero",
+          "Lotta"
+        ],
+        "base_stats": {
+          "hp": 155,
+          "atk": 205,
+          "def": 135,
+          "spa": 60,
+          "spd": 125,
+          "spe": 95
+        },
+        "abilities": [
+          "Skill Link"
+        ]
+      }
+    }
+  },
+  "skarmory": {
+    "name": "Skarmory",
+    "types": [
+      "Acciaio",
+      "Volante"
+    ],
+    "abilities": [
+      "Keen Eye",
+      "Sturdy"
+    ],
+    "base_stats": {
+      "hp": 65,
+      "atk": 80,
+      "def": 140,
+      "spa": 40,
+      "spd": 70,
+      "spe": 70
+    },
+    "forms": {
+      "Mega Skarmory": {
+        "types": [
+          "Acciaio",
+          "Volante"
+        ],
+        "base_stats": {
+          "hp": 140,
+          "atk": 160,
+          "def": 130,
+          "spa": 60,
+          "spd": 120,
+          "spe": 130
+        },
+        "abilities": [
+          "Sturdy"
+        ]
+      }
+    }
+  },
+  "houndoom": {
+    "name": "Houndoom",
+    "types": [
+      "Buio",
+      "Fuoco"
+    ],
+    "abilities": [
+      "Early Bird",
+      "Flash Fire"
+    ],
+    "base_stats": {
+      "hp": 75,
+      "atk": 90,
+      "def": 50,
+      "spa": 110,
+      "spd": 80,
+      "spe": 95
+    },
+    "forms": {
+      "Mega Houndoom": {
+        "types": [
+          "Buio",
+          "Fuoco"
+        ],
+        "base_stats": {
+          "hp": 150,
+          "atk": 110,
+          "def": 110,
+          "spa": 160,
+          "spd": 110,
+          "spe": 135
+        },
+        "abilities": [
+          "Solar Power"
+        ]
+      }
+    }
+  },
+  "tyranitar": {
+    "name": "Tyranitar",
+    "types": [
+      "Roccia",
+      "Buio"
+    ],
+    "abilities": [
+      "Sand Stream"
+    ],
+    "base_stats": {
+      "hp": 100,
+      "atk": 134,
+      "def": 110,
+      "spa": 95,
+      "spd": 100,
+      "spe": 61
+    },
+    "forms": {
+      "Mega Tyranitar": {
+        "types": [
+          "Roccia",
+          "Buio"
+        ],
+        "base_stats": {
+          "hp": 175,
+          "atk": 184,
+          "def": 170,
+          "spa": 115,
+          "spd": 140,
+          "spe": 91
+        },
+        "abilities": [
+          "Sand Stream"
+        ]
+      }
+    }
+  },
+  "pelipper": {
+    "name": "Pelipper",
+    "types": [
+      "Acqua",
+      "Volante"
+    ],
+    "abilities": [
+      "Keen Eye",
+      "Drizzle"
+    ],
+    "base_stats": {
+      "hp": 60,
+      "atk": 50,
+      "def": 100,
+      "spa": 95,
+      "spd": 70,
+      "spe": 65
+    }
+  },
+  "gardevoir": {
+    "name": "Gardevoir",
+    "types": [
+      "Psico",
+      "Folletto"
+    ],
+    "abilities": [
+      "Synchronize",
+      "Trace"
+    ],
+    "base_stats": {
+      "hp": 68,
+      "atk": 65,
+      "def": 65,
+      "spa": 125,
+      "spd": 115,
+      "spe": 80
+    },
+    "forms": {
+      "Mega Gardevoir": {
+        "types": [
+          "Psico",
+          "Folletto"
+        ],
+        "base_stats": {
+          "hp": 143,
+          "atk": 105,
+          "def": 85,
+          "spa": 185,
+          "spd": 155,
+          "spe": 120
+        },
+        "abilities": [
+          "Pixilate"
+        ]
+      }
+    }
+  },
+  "sableye": {
+    "name": "Sableye",
+    "types": [
+      "Buio",
+      "Spettro"
+    ],
+    "abilities": [
+      "Keen Eye",
+      "Stall"
+    ],
+    "base_stats": {
+      "hp": 50,
+      "atk": 75,
+      "def": 75,
+      "spa": 65,
+      "spd": 65,
+      "spe": 50
+    },
+    "forms": {
+      "Mega Sableye": {
+        "types": [
+          "Buio",
+          "Spettro"
+        ],
+        "base_stats": {
+          "hp": 125,
+          "atk": 105,
+          "def": 145,
+          "spa": 105,
+          "spd": 135,
+          "spe": 40
+        },
+        "abilities": [
+          "Magic Bounce"
+        ]
+      }
+    }
+  },
+  "aggron": {
+    "name": "Aggron",
+    "types": [
+      "Acciaio",
+      "Roccia"
+    ],
+    "abilities": [
+      "Sturdy",
+      "Rock Head"
+    ],
+    "base_stats": {
+      "hp": 70,
+      "atk": 110,
+      "def": 180,
+      "spa": 60,
+      "spd": 60,
+      "spe": 50
+    },
+    "forms": {
+      "Mega Aggron": {
+        "types": [
+          "Acciaio"
+        ],
+        "base_stats": {
+          "hp": 145,
+          "atk": 160,
+          "def": 250,
+          "spa": 80,
+          "spd": 100,
+          "spe": 70
+        },
+        "abilities": [
+          "Filter"
+        ]
+      }
+    }
+  },
+  "medicham": {
+    "name": "Medicham",
+    "types": [
+      "Lotta",
+      "Psico"
+    ],
+    "abilities": [
+      "Pure Power"
+    ],
+    "base_stats": {
+      "hp": 60,
+      "atk": 60,
+      "def": 75,
+      "spa": 60,
+      "spd": 75,
+      "spe": 80
+    },
+    "forms": {
+      "Mega Medicham": {
+        "types": [
+          "Lotta",
+          "Psico"
+        ],
+        "base_stats": {
+          "hp": 135,
+          "atk": 120,
+          "def": 105,
+          "spa": 100,
+          "spd": 105,
+          "spe": 120
+        },
+        "abilities": [
+          "Pure Power"
+        ]
+      }
+    }
+  },
+  "manectric": {
+    "name": "Manectric",
+    "types": [
+      "Elettro"
+    ],
+    "abilities": [
+      "Static",
+      "Lightning Rod"
+    ],
+    "base_stats": {
+      "hp": 70,
+      "atk": 75,
+      "def": 60,
+      "spa": 105,
+      "spd": 60,
+      "spe": 105
+    },
+    "forms": {
+      "Mega Manectric": {
+        "types": [
+          "Elettro"
+        ],
+        "base_stats": {
+          "hp": 145,
+          "atk": 95,
+          "def": 100,
+          "spa": 155,
+          "spd": 100,
+          "spe": 155
+        },
+        "abilities": [
+          "Intimidate"
+        ]
+      }
+    }
+  },
+  "sharpedo": {
+    "name": "Sharpedo",
+    "types": [
+      "Acqua",
+      "Buio"
+    ],
+    "abilities": [
+      "Rough Skin"
+    ],
+    "base_stats": {
+      "hp": 70,
+      "atk": 120,
+      "def": 40,
+      "spa": 95,
+      "spd": 40,
+      "spe": 95
+    },
+    "forms": {
+      "Mega Sharpedo": {
+        "types": [
+          "Acqua",
+          "Buio"
+        ],
+        "base_stats": {
+          "hp": 145,
+          "atk": 160,
+          "def": 90,
+          "spa": 130,
+          "spd": 85,
+          "spe": 125
+        },
+        "abilities": [
+          "Strong Jaw"
+        ]
+      }
+    }
+  },
+  "camerupt": {
+    "name": "Camerupt",
+    "types": [
+      "Fuoco",
+      "Terra"
+    ],
+    "abilities": [
+      "Magma Armor",
+      "Solid Rock"
+    ],
+    "base_stats": {
+      "hp": 70,
+      "atk": 100,
+      "def": 70,
+      "spa": 105,
+      "spd": 75,
+      "spe": 40
+    },
+    "forms": {
+      "Mega Camerupt": {
+        "types": [
+          "Fuoco",
+          "Terra"
+        ],
+        "base_stats": {
+          "hp": 145,
+          "atk": 140,
+          "def": 120,
+          "spa": 165,
+          "spd": 125,
+          "spe": 40
+        },
+        "abilities": [
+          "Sheer Force"
+        ]
+      }
+    }
+  },
+  "torkoal": {
+    "name": "Torkoal",
+    "types": [
+      "Fuoco"
+    ],
+    "abilities": [
+      "White Smoke",
+      "Drought"
+    ],
+    "base_stats": {
+      "hp": 70,
+      "atk": 85,
+      "def": 140,
+      "spa": 85,
+      "spd": 70,
+      "spe": 20
+    }
+  },
+  "altaria": {
+    "name": "Altaria",
+    "types": [
+      "Drago",
+      "Volante"
+    ],
+    "abilities": [
+      "Natural Cure"
+    ],
+    "base_stats": {
+      "hp": 75,
+      "atk": 70,
+      "def": 90,
+      "spa": 70,
+      "spd": 105,
+      "spe": 80
+    },
+    "forms": {
+      "Mega Altaria": {
+        "types": [
+          "Drago",
+          "Folletto"
+        ],
+        "base_stats": {
+          "hp": 150,
+          "atk": 130,
+          "def": 130,
+          "spa": 130,
+          "spd": 125,
+          "spe": 100
+        },
+        "abilities": [
+          "Pixilate"
+        ]
+      }
+    }
+  },
+  "milotic": {
+    "name": "Milotic",
+    "types": [
+      "Acqua"
+    ],
+    "abilities": [
+      "Marvel Scale",
+      "Competitive"
+    ],
+    "base_stats": {
+      "hp": 95,
+      "atk": 60,
+      "def": 79,
+      "spa": 100,
+      "spd": 125,
+      "spe": 81
+    }
+  },
+  "absol": {
+    "name": "Absol",
+    "types": [
+      "Buio"
+    ],
+    "abilities": [
+      "Pressure",
+      "Super Luck"
+    ],
+    "base_stats": {
+      "hp": 65,
+      "atk": 130,
+      "def": 60,
+      "spa": 75,
+      "spd": 60,
+      "spe": 75
+    },
+    "forms": {
+      "Mega Absol": {
+        "types": [
+          "Buio"
+        ],
+        "base_stats": {
+          "hp": 140,
+          "atk": 170,
+          "def": 80,
+          "spa": 135,
+          "spd": 80,
+          "spe": 135
+        },
+        "abilities": [
+          "Magic Bounce"
+        ]
+      }
+    }
+  },
+  "glalie": {
+    "name": "Glalie",
+    "types": [
+      "Ghiaccio"
+    ],
+    "abilities": [
+      "Inner Focus",
+      "Ice Body"
+    ],
+    "base_stats": {
+      "hp": 80,
+      "atk": 80,
+      "def": 80,
+      "spa": 80,
+      "spd": 80,
+      "spe": 80
+    },
+    "forms": {
+      "Mega Glalie": {
+        "types": [
+          "Ghiaccio"
+        ],
+        "base_stats": {
+          "hp": 155,
+          "atk": 140,
+          "def": 100,
+          "spa": 140,
+          "spd": 100,
+          "spe": 120
+        },
+        "abilities": [
+          "Refrigerate"
+        ]
+      }
+    }
+  },
+  "torterra": {
+    "name": "Torterra",
+    "types": [
+      "Erba",
+      "Terra"
+    ],
+    "abilities": [
+      "Overgrow"
+    ],
+    "base_stats": {
+      "hp": 95,
+      "atk": 109,
+      "def": 105,
+      "spa": 75,
+      "spd": 85,
+      "spe": 56
+    }
+  },
+  "infernape": {
+    "name": "Infernape",
+    "types": [
+      "Fuoco",
+      "Lotta"
+    ],
+    "abilities": [
+      "Blaze"
+    ],
+    "base_stats": {
+      "hp": 76,
+      "atk": 104,
+      "def": 71,
+      "spa": 104,
+      "spd": 71,
+      "spe": 108
+    }
+  },
+  "empoleon": {
+    "name": "Empoleon",
+    "types": [
+      "Acqua",
+      "Acciaio"
+    ],
+    "abilities": [
+      "Torrent"
+    ],
+    "base_stats": {
+      "hp": 84,
+      "atk": 86,
+      "def": 88,
+      "spa": 111,
+      "spd": 101,
+      "spe": 60
+    }
+  },
+  "luxray": {
+    "name": "Luxray",
+    "types": [
+      "Elettro"
+    ],
+    "abilities": [
+      "Rivalry",
+      "Intimidate"
+    ],
+    "base_stats": {
+      "hp": 80,
+      "atk": 120,
+      "def": 79,
+      "spa": 95,
+      "spd": 79,
+      "spe": 70
+    }
+  },
+  "roserade": {
+    "name": "Roserade",
+    "types": [
+      "Erba",
+      "Veleno"
+    ],
+    "abilities": [
+      "Natural Cure",
+      "Poison Point"
+    ],
+    "base_stats": {
+      "hp": 60,
+      "atk": 70,
+      "def": 65,
+      "spa": 125,
+      "spd": 105,
+      "spe": 90
+    }
+  },
+  "rampardos": {
+    "name": "Rampardos",
+    "types": [
+      "Roccia"
+    ],
+    "abilities": [
+      "Mold Breaker"
+    ],
+    "base_stats": {
+      "hp": 97,
+      "atk": 165,
+      "def": 60,
+      "spa": 65,
+      "spd": 50,
+      "spe": 58
+    }
+  },
+  "bastiodon": {
+    "name": "Bastiodon",
+    "types": [
+      "Roccia",
+      "Acciaio"
+    ],
+    "abilities": [
+      "Sturdy"
+    ],
+    "base_stats": {
+      "hp": 60,
+      "atk": 52,
+      "def": 168,
+      "spa": 47,
+      "spd": 138,
+      "spe": 30
+    }
+  },
+  "lopunny": {
+    "name": "Lopunny",
+    "types": [
+      "Normale"
+    ],
+    "abilities": [
+      "Cute Charm",
+      "Klutz"
+    ],
+    "base_stats": {
+      "hp": 65,
+      "atk": 76,
+      "def": 84,
+      "spa": 54,
+      "spd": 96,
+      "spe": 105
+    },
+    "forms": {
+      "Mega Lopunny": {
+        "types": [
+          "Normale",
+          "Lotta"
+        ],
+        "base_stats": {
+          "hp": 140,
+          "atk": 156,
+          "def": 114,
+          "spa": 74,
+          "spd": 116,
+          "spe": 155
+        },
+        "abilities": [
+          "Scrappy"
+        ]
+      }
+    }
+  },
+  "spiritomb": {
+    "name": "Spiritomb",
+    "types": [
+      "Spettro",
+      "Buio"
+    ],
+    "abilities": [
+      "Pressure"
+    ],
+    "base_stats": {
+      "hp": 50,
+      "atk": 92,
+      "def": 108,
+      "spa": 92,
+      "spd": 108,
+      "spe": 35
+    }
+  },
+  "garchomp": {
+    "name": "Garchomp",
+    "types": [
+      "Drago",
+      "Terra"
+    ],
+    "abilities": [
+      "Sand Veil"
+    ],
+    "base_stats": {
+      "hp": 108,
+      "atk": 130,
+      "def": 95,
+      "spa": 80,
+      "spd": 85,
+      "spe": 102
+    },
+    "forms": {
+      "Mega Garchomp": {
+        "types": [
+          "Drago",
+          "Terra"
+        ],
+        "base_stats": {
+          "hp": 183,
+          "atk": 190,
+          "def": 135,
+          "spa": 140,
+          "spd": 115,
+          "spe": 112
+        },
+        "abilities": [
+          "Sand Force"
+        ]
+      }
+    }
+  },
+  "lucario": {
+    "name": "Lucario",
+    "types": [
+      "Lotta",
+      "Acciaio"
+    ],
+    "abilities": [
+      "Steadfast",
+      "Inner Focus"
+    ],
+    "base_stats": {
+      "hp": 70,
+      "atk": 110,
+      "def": 70,
+      "spa": 115,
+      "spd": 70,
+      "spe": 90
+    },
+    "forms": {
+      "Mega Lucario": {
+        "types": [
+          "Lotta",
+          "Acciaio"
+        ],
+        "base_stats": {
+          "hp": 145,
+          "atk": 165,
+          "def": 108,
+          "spa": 160,
+          "spd": 90,
+          "spe": 132
+        },
+        "abilities": [
+          "Adaptability"
+        ]
+      }
+    }
+  },
+  "hippowdon": {
+    "name": "Hippowdon",
+    "types": [
+      "Terra"
+    ],
+    "abilities": [
+      "Sand Stream"
+    ],
+    "base_stats": {
+      "hp": 108,
+      "atk": 112,
+      "def": 118,
+      "spa": 68,
+      "spd": 72,
+      "spe": 47
+    }
+  },
+  "toxicroak": {
+    "name": "Toxicroak",
+    "types": [
+      "Veleno",
+      "Lotta"
+    ],
+    "abilities": [
+      "Anticipation",
+      "Dry Skin"
+    ],
+    "base_stats": {
+      "hp": 83,
+      "atk": 106,
+      "def": 65,
+      "spa": 86,
+      "spd": 65,
+      "spe": 85
+    }
+  },
+  "abomasnow": {
+    "name": "Abomasnow",
+    "types": [
+      "Erba",
+      "Ghiaccio"
+    ],
+    "abilities": [
+      "Snow Warning"
+    ],
+    "base_stats": {
+      "hp": 90,
+      "atk": 92,
+      "def": 75,
+      "spa": 92,
+      "spd": 85,
+      "spe": 60
+    },
+    "forms": {
+      "Mega Abomasnow": {
+        "types": [
+          "Erba",
+          "Ghiaccio"
+        ],
+        "base_stats": {
+          "hp": 165,
+          "atk": 152,
+          "def": 125,
+          "spa": 152,
+          "spd": 125,
+          "spe": 50
+        },
+        "abilities": [
+          "Snow Warning"
+        ]
+      }
+    }
+  },
+  "weavile": {
+    "name": "Weavile",
+    "types": [
+      "Buio",
+      "Ghiaccio"
+    ],
+    "abilities": [
+      "Pressure"
+    ],
+    "base_stats": {
+      "hp": 70,
+      "atk": 120,
+      "def": 65,
+      "spa": 45,
+      "spd": 85,
+      "spe": 125
+    }
+  },
+  "rhyperior": {
+    "name": "Rhyperior",
+    "types": [
+      "Terra",
+      "Roccia"
+    ],
+    "abilities": [
+      "Lightning Rod",
+      "Solid Rock"
+    ],
+    "base_stats": {
+      "hp": 115,
+      "atk": 140,
+      "def": 130,
+      "spa": 55,
+      "spd": 55,
+      "spe": 40
+    }
+  },
+  "gliscor": {
+    "name": "Gliscor",
+    "types": [
+      "Terra",
+      "Volante"
+    ],
+    "abilities": [
+      "Hyper Cutter",
+      "Sand Veil"
+    ],
+    "base_stats": {
+      "hp": 75,
+      "atk": 95,
+      "def": 125,
+      "spa": 45,
+      "spd": 75,
+      "spe": 95
+    }
+  },
+  "mamoswine": {
+    "name": "Mamoswine",
+    "types": [
+      "Ghiaccio",
+      "Terra"
+    ],
+    "abilities": [
+      "Oblivious",
+      "Snow Cloak"
+    ],
+    "base_stats": {
+      "hp": 110,
+      "atk": 130,
+      "def": 80,
+      "spa": 70,
+      "spd": 60,
+      "spe": 80
+    }
+  },
+  "gallade": {
+    "name": "Gallade",
+    "types": [
+      "Psico",
+      "Lotta"
+    ],
+    "abilities": [
+      "Steadfast",
+      "Sharpness"
+    ],
+    "base_stats": {
+      "hp": 68,
+      "atk": 125,
+      "def": 65,
+      "spa": 65,
+      "spd": 115,
+      "spe": 80
+    },
+    "forms": {
+      "Mega Gallade": {
+        "types": [
+          "Psico",
+          "Lotta"
+        ],
+        "base_stats": {
+          "hp": 143,
+          "atk": 185,
+          "def": 115,
+          "spa": 85,
+          "spd": 135,
+          "spe": 130
+        },
+        "abilities": [
+          "Inner Focus"
+        ]
+      }
+    }
+  },
+  "froslass": {
+    "name": "Froslass",
+    "types": [
+      "Ghiaccio",
+      "Spettro"
+    ],
+    "abilities": [
+      "Snow Cloak"
+    ],
+    "base_stats": {
+      "hp": 70,
+      "atk": 80,
+      "def": 70,
+      "spa": 80,
+      "spd": 70,
+      "spe": 110
+    },
+    "forms": {
+      "Mega Froslass": {
+        "types": [
+          "Ghiaccio",
+          "Spettro"
+        ],
+        "base_stats": {
+          "hp": 145,
+          "atk": 100,
+          "def": 90,
+          "spa": 160,
+          "spd": 120,
+          "spe": 120
+        },
+        "abilities": [
+          "Cursed Body"
+        ]
+      }
+    }
+  },
+  "rotom": {
+    "name": "Rotom",
+    "types": [
+      "Elettro",
+      "Spettro"
+    ],
+    "abilities": [
+      "Levitate"
+    ],
+    "base_stats": {
+      "hp": 50,
+      "atk": 50,
+      "def": 77,
+      "spa": 95,
+      "spd": 77,
+      "spe": 91
+    },
+    "forms": {
+      "Heat Rotom": {
+        "types": [
+          "Elettro",
+          "Fuoco"
+        ],
+        "base_stats": {
+          "hp": 50,
+          "atk": 65,
+          "def": 107,
+          "spa": 105,
+          "spd": 107,
+          "spe": 86
+        },
+        "abilities": [
+          "Levitate"
+        ]
+      },
+      "Wash Rotom": {
+        "types": [
+          "Elettro",
+          "Acqua"
+        ],
+        "base_stats": {
+          "hp": 50,
+          "atk": 65,
+          "def": 107,
+          "spa": 105,
+          "spd": 107,
+          "spe": 86
+        },
+        "abilities": [
+          "Levitate"
+        ]
+      },
+      "Frost Rotom": {
+        "types": [
+          "Elettro",
+          "Ghiaccio"
+        ],
+        "base_stats": {
+          "hp": 50,
+          "atk": 65,
+          "def": 107,
+          "spa": 105,
+          "spd": 107,
+          "spe": 86
+        },
+        "abilities": [
+          "Levitate"
+        ]
+      },
+      "Fan Rotom": {
+        "types": [
+          "Elettro",
+          "Volante"
+        ],
+        "base_stats": {
+          "hp": 50,
+          "atk": 65,
+          "def": 107,
+          "spa": 105,
+          "spd": 107,
+          "spe": 86
+        },
+        "abilities": [
+          "Levitate"
+        ]
+      },
+      "Mow Rotom": {
+        "types": [
+          "Elettro",
+          "Erba"
+        ],
+        "base_stats": {
+          "hp": 50,
+          "atk": 65,
+          "def": 107,
+          "spa": 105,
+          "spd": 107,
+          "spe": 86
+        },
+        "abilities": [
+          "Levitate"
+        ]
+      }
+    }
+  },
+  "serperior": {
+    "name": "Serperior",
+    "types": [
+      "Erba"
+    ],
+    "abilities": [
+      "Overgrow"
+    ],
+    "base_stats": {
+      "hp": 75,
+      "atk": 75,
+      "def": 95,
+      "spa": 75,
+      "spd": 95,
+      "spe": 113
+    }
+  },
+  "emboar": {
+    "name": "Emboar",
+    "types": [
+      "Fuoco",
+      "Lotta"
+    ],
+    "abilities": [
+      "Blaze"
+    ],
+    "base_stats": {
+      "hp": 110,
+      "atk": 123,
+      "def": 65,
+      "spa": 100,
+      "spd": 65,
+      "spe": 65
+    },
+    "forms": {
+      "Mega Emboar": {
+        "types": [
+          "Fuoco",
+          "Lotta"
+        ],
+        "base_stats": {
+          "hp": 185,
+          "atk": 168,
+          "def": 95,
+          "spa": 130,
+          "spd": 130,
+          "spe": 95
+        },
+        "abilities": [
+          "Reckless"
+        ]
+      }
+    }
+  },
+  "samurott": {
+    "name": "Samurott",
+    "types": [
+      "Acqua"
+    ],
+    "abilities": [
+      "Torrent"
+    ],
+    "base_stats": {
+      "hp": 95,
+      "atk": 100,
+      "def": 85,
+      "spa": 108,
+      "spd": 70,
+      "spe": 70
+    },
+    "forms": {
+      "Hisuian Samurott": {
+        "types": [
+          "Acqua",
+          "Buio"
+        ],
+        "base_stats": {
+          "hp": 90,
+          "atk": 108,
+          "def": 80,
+          "spa": 100,
+          "spd": 65,
+          "spe": 85
+        },
+        "abilities": [
+          "Torrent",
+          "Shell Armor"
+        ]
+      }
+    }
+  },
+  "excadrill": {
+    "name": "Excadrill",
+    "types": [
+      "Terra",
+      "Acciaio"
+    ],
+    "abilities": [
+      "Sand Rush",
+      "Sand Force"
+    ],
+    "base_stats": {
+      "hp": 110,
+      "atk": 135,
+      "def": 60,
+      "spa": 50,
+      "spd": 65,
+      "spe": 88
+    },
+    "forms": {
+      "Mega Excadrill": {
+        "types": [
+          "Terra",
+          "Acciaio"
+        ],
+        "base_stats": {
+          "hp": 185,
+          "atk": 185,
+          "def": 120,
+          "spa": 85,
+          "spd": 85,
+          "spe": 123
+        },
+        "abilities": [
+          "Sand Rush"
+        ]
+      }
+    }
+  },
+  "audino": {
+    "name": "Audino",
+    "types": [
+      "Normale"
+    ],
+    "abilities": [
+      "Healer",
+      "Regenerator"
+    ],
+    "base_stats": {
+      "hp": 103,
+      "atk": 60,
+      "def": 86,
+      "spa": 60,
+      "spd": 86,
+      "spe": 50
+    },
+    "forms": {
+      "Mega Audino": {
+        "types": [
+          "Normale",
+          "Folletto"
+        ],
+        "base_stats": {
+          "hp": 178,
+          "atk": 80,
+          "def": 146,
+          "spa": 100,
+          "spd": 146,
+          "spe": 70
+        },
+        "abilities": [
+          "Healer"
+        ]
+      }
+    }
+  },
+  "conkeldurr": {
+    "name": "Conkeldurr",
+    "types": [
+      "Lotta"
+    ],
+    "abilities": [
+      "Guts",
+      "Sheer Force"
+    ],
+    "base_stats": {
+      "hp": 105,
+      "atk": 140,
+      "def": 95,
+      "spa": 55,
+      "spd": 65,
+      "spe": 45
+    }
+  },
+  "whimsicott": {
+    "name": "Whimsicott",
+    "types": [
+      "Erba",
+      "Folletto"
+    ],
+    "abilities": [
+      "Prankster",
+      "Infiltrator"
+    ],
+    "base_stats": {
+      "hp": 60,
+      "atk": 67,
+      "def": 85,
+      "spa": 77,
+      "spd": 75,
+      "spe": 116
+    }
+  },
+  "krookodile": {
+    "name": "Krookodile",
+    "types": [
+      "Terra",
+      "Buio"
+    ],
+    "abilities": [
+      "Intimidate",
+      "Moxie"
+    ],
+    "base_stats": {
+      "hp": 95,
+      "atk": 117,
+      "def": 80,
+      "spa": 65,
+      "spd": 70,
+      "spe": 92
+    }
+  },
+  "cofagrigus": {
+    "name": "Cofagrigus",
+    "types": [
+      "Spettro"
+    ],
+    "abilities": [
+      "Mummy"
+    ],
+    "base_stats": {
+      "hp": 58,
+      "atk": 50,
+      "def": 145,
+      "spa": 95,
+      "spd": 105,
+      "spe": 30
+    }
+  },
+  "garbodor": {
+    "name": "Garbodor",
+    "types": [
+      "Veleno"
+    ],
+    "abilities": [
+      "Stench",
+      "Weak Armor"
+    ],
+    "base_stats": {
+      "hp": 80,
+      "atk": 95,
+      "def": 82,
+      "spa": 60,
+      "spd": 82,
+      "spe": 75
+    }
+  },
+  "zoroark": {
+    "name": "Zoroark",
+    "types": [
+      "Buio"
+    ],
+    "abilities": [
+      "Illusion"
+    ],
+    "base_stats": {
+      "hp": 60,
+      "atk": 105,
+      "def": 60,
+      "spa": 120,
+      "spd": 60,
+      "spe": 105
+    },
+    "forms": {
+      "Hisuian Zoroark": {
+        "types": [
+          "Normale",
+          "Spettro"
+        ],
+        "base_stats": {
+          "hp": 55,
+          "atk": 100,
+          "def": 60,
+          "spa": 125,
+          "spd": 60,
+          "spe": 110
+        },
+        "abilities": [
+          "Illusion"
+        ]
+      }
+    }
+  },
+  "reuniclus": {
+    "name": "Reuniclus",
+    "types": [
+      "Psico"
+    ],
+    "abilities": [
+      "Overcoat",
+      "Magic Guard"
+    ],
+    "base_stats": {
+      "hp": 110,
+      "atk": 65,
+      "def": 75,
+      "spa": 125,
+      "spd": 85,
+      "spe": 30
+    }
+  },
+  "vanilluxe": {
+    "name": "Vanilluxe",
+    "types": [
+      "Ghiaccio"
+    ],
+    "abilities": [
+      "Ice Body",
+      "Snow Warning"
+    ],
+    "base_stats": {
+      "hp": 71,
+      "atk": 95,
+      "def": 85,
+      "spa": 110,
+      "spd": 95,
+      "spe": 79
+    }
+  },
+  "chandelure": {
+    "name": "Chandelure",
+    "types": [
+      "Spettro",
+      "Fuoco"
+    ],
+    "abilities": [
+      "Flash Fire",
+      "Flame Body"
+    ],
+    "base_stats": {
+      "hp": 60,
+      "atk": 55,
+      "def": 90,
+      "spa": 145,
+      "spd": 90,
+      "spe": 80
+    },
+    "forms": {
+      "Mega Chandelure": {
+        "types": [
+          "Spettro",
+          "Fuoco"
+        ],
+        "base_stats": {
+          "hp": 135,
+          "atk": 95,
+          "def": 130,
+          "spa": 195,
+          "spd": 130,
+          "spe": 110
+        },
+        "abilities": [
+          "Infiltrator"
+        ]
+      }
+    }
+  },
+  "beartic": {
+    "name": "Beartic",
+    "types": [
+      "Ghiaccio"
+    ],
+    "abilities": [
+      "Snow Cloak",
+      "Slush Rush"
+    ],
+    "base_stats": {
+      "hp": 95,
+      "atk": 130,
+      "def": 80,
+      "spa": 70,
+      "spd": 80,
+      "spe": 50
+    }
+  },
+  "golurk": {
+    "name": "Golurk",
+    "types": [
+      "Terra",
+      "Spettro"
+    ],
+    "abilities": [
+      "Iron Fist",
+      "Klutz"
+    ],
+    "base_stats": {
+      "hp": 89,
+      "atk": 124,
+      "def": 80,
+      "spa": 55,
+      "spd": 80,
+      "spe": 55
+    },
+    "forms": {
+      "Mega Golurk": {
+        "types": [
+          "Terra",
+          "Spettro"
+        ],
+        "base_stats": {
+          "hp": 164,
+          "atk": 179,
+          "def": 125,
+          "spa": 90,
+          "spd": 125,
+          "spe": 75
+        },
+        "abilities": [
+          "No Guard"
+        ]
+      }
+    }
+  },
+  "hydreigon": {
+    "name": "Hydreigon",
+    "types": [
+      "Buio",
+      "Drago"
+    ],
+    "abilities": [
+      "Levitate"
+    ],
+    "base_stats": {
+      "hp": 92,
+      "atk": 105,
+      "def": 90,
+      "spa": 125,
+      "spd": 90,
+      "spe": 98
+    }
+  },
+  "volcarona": {
+    "name": "Volcarona",
+    "types": [
+      "Coleottero",
+      "Fuoco"
+    ],
+    "abilities": [
+      "Flame Body"
+    ],
+    "base_stats": {
+      "hp": 85,
+      "atk": 60,
+      "def": 65,
+      "spa": 135,
+      "spd": 105,
+      "spe": 100
+    }
+  },
+  "chesnaught": {
+    "name": "Chesnaught",
+    "types": [
+      "Erba",
+      "Lotta"
+    ],
+    "abilities": [
+      "Overgrow"
+    ],
+    "base_stats": {
+      "hp": 88,
+      "atk": 107,
+      "def": 122,
+      "spa": 74,
+      "spd": 75,
+      "spe": 64
+    },
+    "forms": {
+      "Mega Chesnaught": {
+        "types": [
+          "Erba",
+          "Lotta"
+        ],
+        "base_stats": {
+          "hp": 163,
+          "atk": 157,
+          "def": 192,
+          "spa": 94,
+          "spd": 135,
+          "spe": 64
+        },
+        "abilities": [
+          "Bulletproof"
+        ]
+      }
+    }
+  },
+  "delphox": {
+    "name": "Delphox",
+    "types": [
+      "Fuoco",
+      "Psico"
+    ],
+    "abilities": [
+      "Blaze"
+    ],
+    "base_stats": {
+      "hp": 75,
+      "atk": 69,
+      "def": 72,
+      "spa": 114,
+      "spd": 100,
+      "spe": 104
+    },
+    "forms": {
+      "Mega Delphox": {
+        "types": [
+          "Fuoco",
+          "Psico"
+        ],
+        "base_stats": {
+          "hp": 150,
+          "atk": 89,
+          "def": 92,
+          "spa": 179,
+          "spd": 145,
+          "spe": 154
+        },
+        "abilities": [
+          "Magician"
+        ]
+      }
+    }
+  },
+  "greninja": {
+    "name": "Greninja",
+    "types": [
+      "Acqua",
+      "Buio"
+    ],
+    "abilities": [
+      "Torrent"
+    ],
+    "base_stats": {
+      "hp": 72,
+      "atk": 95,
+      "def": 67,
+      "spa": 103,
+      "spd": 71,
+      "spe": 122
+    },
+    "forms": {
+      "Mega Greninja": {
+        "types": [
+          "Acqua",
+          "Buio"
+        ],
+        "base_stats": {
+          "hp": 147,
+          "atk": 145,
+          "def": 97,
+          "spa": 153,
+          "spd": 101,
+          "spe": 162
+        },
+        "abilities": [
+          "Protean"
+        ]
+      }
+    }
+  },
+  "talonflame": {
+    "name": "Talonflame",
+    "types": [
+      "Fuoco",
+      "Volante"
+    ],
+    "abilities": [
+      "Flame Body"
+    ],
+    "base_stats": {
+      "hp": 78,
+      "atk": 81,
+      "def": 71,
+      "spa": 74,
+      "spd": 69,
+      "spe": 126
+    }
+  },
+  "sylveon": {
+    "name": "Sylveon",
+    "types": [
+      "Folletto"
+    ],
+    "abilities": [
+      "Cute Charm"
+    ],
+    "base_stats": {
+      "hp": 95,
+      "atk": 65,
+      "def": 65,
+      "spa": 110,
+      "spd": 130,
+      "spe": 60
+    }
+  },
+  "goodra": {
+    "name": "Goodra",
+    "types": [
+      "Drago"
+    ],
+    "abilities": [
+      "Sap Sipper",
+      "Hydration"
+    ],
+    "base_stats": {
+      "hp": 90,
+      "atk": 100,
+      "def": 70,
+      "spa": 110,
+      "spd": 150,
+      "spe": 80
+    },
+    "forms": {
+      "Hisuian Goodra": {
+        "types": [
+          "Acciaio",
+          "Drago"
+        ],
+        "base_stats": {
+          "hp": 80,
+          "atk": 100,
+          "def": 100,
+          "spa": 110,
+          "spd": 150,
+          "spe": 60
+        },
+        "abilities": [
+          "Sap Sipper",
+          "Hydration",
+          "Gooey"
+        ]
+      }
+    }
+  },
+  "noivern": {
+    "name": "Noivern",
+    "types": [
+      "Volante",
+      "Drago"
+    ],
+    "abilities": [
+      "Frisk",
+      "Infiltrator"
+    ],
+    "base_stats": {
+      "hp": 85,
+      "atk": 70,
+      "def": 80,
+      "spa": 97,
+      "spd": 80,
+      "spe": 123
+    }
+  },
+  "decidueye": {
+    "name": "Decidueye",
+    "types": [
+      "Erba",
+      "Spettro"
+    ],
+    "abilities": [
+      "Overgrow"
+    ],
+    "base_stats": {
+      "hp": 78,
+      "atk": 107,
+      "def": 75,
+      "spa": 100,
+      "spd": 100,
+      "spe": 70
+    },
+    "forms": {
+      "Hisuian Decidueye": {
+        "types": [
+          "Erba",
+          "Lotta"
+        ],
+        "base_stats": {
+          "hp": 88,
+          "atk": 112,
+          "def": 80,
+          "spa": 95,
+          "spd": 95,
+          "spe": 60
+        },
+        "abilities": [
+          "Overgrow",
+          "Long Reach"
+        ]
+      }
+    }
+  },
+  "incineroar": {
+    "name": "Incineroar",
+    "types": [
+      "Fuoco",
+      "Buio"
+    ],
+    "abilities": [
+      "Blaze"
+    ],
+    "base_stats": {
+      "hp": 95,
+      "atk": 115,
+      "def": 90,
+      "spa": 80,
+      "spd": 90,
+      "spe": 60
+    }
+  },
+  "primarina": {
+    "name": "Primarina",
+    "types": [
+      "Acqua",
+      "Folletto"
+    ],
+    "abilities": [
+      "Torrent"
+    ],
+    "base_stats": {
+      "hp": 80,
+      "atk": 74,
+      "def": 74,
+      "spa": 126,
+      "spd": 116,
+      "spe": 60
+    }
+  },
+  "meowscarada": {
+    "name": "Meowscarada",
+    "types": [
+      "Erba",
+      "Buio"
+    ],
+    "abilities": [
+      "Overgrow"
+    ],
+    "base_stats": {
+      "hp": 76,
+      "atk": 110,
+      "def": 70,
+      "spa": 81,
+      "spd": 70,
+      "spe": 123
+    }
+  },
+  "skeledirge": {
+    "name": "Skeledirge",
+    "types": [
+      "Fuoco",
+      "Spettro"
+    ],
+    "abilities": [
+      "Blaze"
+    ],
+    "base_stats": {
+      "hp": 104,
+      "atk": 75,
+      "def": 100,
+      "spa": 110,
+      "spd": 75,
+      "spe": 66
+    }
+  },
+  "quaquaval": {
+    "name": "Quaquaval",
+    "types": [
+      "Acqua",
+      "Lotta"
+    ],
+    "abilities": [
+      "Torrent"
+    ],
+    "base_stats": {
+      "hp": 85,
+      "atk": 120,
+      "def": 80,
+      "spa": 85,
+      "spd": 75,
+      "spe": 85
+    }
+  },
+  "garganacl": {
+    "name": "Garganacl",
+    "types": [
+      "Roccia"
+    ],
+    "abilities": [
+      "Purifying Salt",
+      "Sturdy"
+    ],
+    "base_stats": {
+      "hp": 100,
+      "atk": 100,
+      "def": 130,
+      "spa": 45,
+      "spd": 90,
+      "spe": 35
+    }
+  },
+  "armarouge": {
+    "name": "Armarouge",
+    "types": [
+      "Fuoco",
+      "Psico"
+    ],
+    "abilities": [
+      "Flash Fire"
+    ],
+    "base_stats": {
+      "hp": 85,
+      "atk": 60,
+      "def": 100,
+      "spa": 125,
+      "spd": 80,
+      "spe": 75
+    }
+  },
+  "ceruledge": {
+    "name": "Ceruledge",
+    "types": [
+      "Fuoco",
+      "Spettro"
+    ],
+    "abilities": [
+      "Flash Fire"
+    ],
+    "base_stats": {
+      "hp": 75,
+      "atk": 125,
+      "def": 80,
+      "spa": 60,
+      "spd": 100,
+      "spe": 85
+    }
+  },
+  "bellibolt": {
+    "name": "Bellibolt",
+    "types": [
+      "Elettro"
+    ],
+    "abilities": [
+      "Electromorphosis",
+      "Static"
+    ],
+    "base_stats": {
+      "hp": 109,
+      "atk": 64,
+      "def": 91,
+      "spa": 103,
+      "spd": 83,
+      "spe": 45
+    }
+  },
+  "palafin-zero-form": {
+    "name": "Palafin (Zero Form)",
+    "types": [
+      "Acqua"
+    ],
+    "abilities": [
+      "Zero To Hero"
+    ],
+    "base_stats": {
+      "hp": 100,
+      "atk": 70,
+      "def": 72,
+      "spa": 53,
+      "spd": 62,
+      "spe": 100
+    },
+    "forms": {
+      "Palafin (Hero Form)": {
+        "types": [
+          "Acqua"
+        ],
+        "base_stats": {
+          "hp": 100,
+          "atk": 160,
+          "def": 97,
+          "spa": 106,
+          "spd": 87,
+          "spe": 100
+        },
+        "abilities": [
+          "Zero to Hero"
+        ]
+      }
+    }
+  },
+  "tinkaton": {
+    "name": "Tinkaton",
+    "types": [
+      "Folletto",
+      "Acciaio"
+    ],
+    "abilities": [
+      "Mold Breaker",
+      "Own Tempo"
+    ],
+    "base_stats": {
+      "hp": 85,
+      "atk": 75,
+      "def": 77,
+      "spa": 70,
+      "spd": 105,
+      "spe": 94
+    }
+  },
+  "kingambit": {
+    "name": "Kingambit",
+    "types": [
+      "Buio",
+      "Acciaio"
+    ],
+    "abilities": [
+      "Defiant",
+      "Supreme Overlord"
+    ],
+    "base_stats": {
+      "hp": 100,
+      "atk": 135,
+      "def": 120,
+      "spa": 60,
+      "spd": 85,
+      "spe": 50
+    }
+  },
+  "dragapult": {
+    "name": "Dragapult",
+    "types": [
+      "Drago",
+      "Spettro"
+    ],
+    "abilities": [
+      "Clear Body",
+      "Infiltrator"
+    ],
+    "base_stats": {
+      "hp": 88,
+      "atk": 120,
+      "def": 75,
+      "spa": 100,
+      "spd": 75,
+      "spe": 142
+    }
+  },
+  "hatterene": {
+    "name": "Hatterene",
+    "types": [
+      "Psico",
+      "Folletto"
+    ],
+    "abilities": [
+      "Healer",
+      "Anticipation"
+    ],
+    "base_stats": {
+      "hp": 57,
+      "atk": 90,
+      "def": 95,
+      "spa": 136,
+      "spd": 103,
+      "spe": 29
+    }
+  },
+  "grimmsnarl": {
+    "name": "Grimmsnarl",
+    "types": [
+      "Buio",
+      "Folletto"
+    ],
+    "abilities": [
+      "Prankster",
+      "Frisk"
+    ],
+    "base_stats": {
+      "hp": 95,
+      "atk": 120,
+      "def": 65,
+      "spa": 95,
+      "spd": 75,
+      "spe": 60
+    }
+  },
+  "amoonguss": {
+    "name": "Amoonguss",
+    "types": [
+      "Erba",
+      "Veleno"
+    ],
+    "abilities": [
+      "Effect Spore"
+    ],
+    "base_stats": {
+      "hp": 114,
+      "atk": 85,
+      "def": 70,
+      "spa": 85,
+      "spd": 80,
+      "spe": 30
+    }
+  },
+  "dondozo": {
+    "name": "Dondozo",
+    "types": [
+      "Acqua"
+    ],
+    "abilities": [
+      "Unaware",
+      "Oblivious"
+    ],
+    "base_stats": {
+      "hp": 150,
+      "atk": 100,
+      "def": 115,
+      "spa": 65,
+      "spd": 65,
+      "spe": 35
+    }
+  },
+  "corviknight": {
+    "name": "Corviknight",
+    "types": [
+      "Volante",
+      "Acciaio"
+    ],
+    "abilities": [
+      "Pressure",
+      "Unnerve"
+    ],
+    "base_stats": {
+      "hp": 98,
+      "atk": 87,
+      "def": 105,
+      "spa": 53,
+      "spd": 85,
+      "spe": 67
+    }
+  },
+  "flapple": {
+    "name": "Flapple",
+    "types": [
+      "Erba",
+      "Drago"
+    ],
+    "abilities": [
+      "Ripen",
+      "Gluttony"
+    ],
+    "base_stats": {
+      "hp": 70,
+      "atk": 110,
+      "def": 80,
+      "spa": 95,
+      "spd": 60,
+      "spe": 70
+    }
+  },
+  "appletun": {
+    "name": "Appletun",
+    "types": [
+      "Erba",
+      "Drago"
+    ],
+    "abilities": [
+      "Ripen",
+      "Gluttony"
+    ],
+    "base_stats": {
+      "hp": 110,
+      "atk": 85,
+      "def": 80,
+      "spa": 100,
+      "spd": 80,
+      "spe": 30
+    }
+  },
+  "sandaconda": {
+    "name": "Sandaconda",
+    "types": [
+      "Terra"
+    ],
+    "abilities": [
+      "Sand Spit",
+      "Shed Skin"
+    ],
+    "base_stats": {
+      "hp": 72,
+      "atk": 107,
+      "def": 125,
+      "spa": 65,
+      "spd": 70,
+      "spe": 71
+    }
+  },
+  "polteageist": {
+    "name": "Polteageist",
+    "types": [
+      "Spettro"
+    ],
+    "abilities": [
+      "Weak Armor"
+    ],
+    "base_stats": {
+      "hp": 60,
+      "atk": 65,
+      "def": 65,
+      "spa": 134,
+      "spd": 114,
+      "spe": 70
+    }
+  },
+  "mr-rime": {
+    "name": "Mr. Rime",
+    "types": [
+      "Ghiaccio",
+      "Psico"
+    ],
+    "abilities": [
+      "Tangled Feet",
+      "Screen Cleaner"
+    ],
+    "base_stats": {
+      "hp": 80,
+      "atk": 85,
+      "def": 75,
+      "spa": 110,
+      "spd": 100,
+      "spe": 70
+    }
+  },
+  "runerigus": {
+    "name": "Runerigus",
+    "types": [
+      "Terra",
+      "Spettro"
+    ],
+    "abilities": [
+      "Wandering Spirit"
+    ],
+    "base_stats": {
+      "hp": 58,
+      "atk": 95,
+      "def": 145,
+      "spa": 50,
+      "spd": 105,
+      "spe": 30
+    }
+  },
+  "alcremie": {
+    "name": "Alcremie",
+    "types": [
+      "Folletto"
+    ],
+    "abilities": [
+      "Sweet Veil"
+    ],
+    "base_stats": {
+      "hp": 65,
+      "atk": 60,
+      "def": 75,
+      "spa": 110,
+      "spd": 121,
+      "spe": 64
+    }
+  },
+  "morpeko-full-belly-mode": {
+    "name": "Morpeko (Full Belly Mode)",
+    "types": [
+      "Elettro",
+      "Buio"
+    ],
+    "abilities": [
+      "Hunger Switch"
+    ],
+    "base_stats": {
+      "hp": 58,
+      "atk": 95,
+      "def": 58,
+      "spa": 70,
+      "spd": 58,
+      "spe": 97
+    }
+  },
+  "farigiraf": {
+    "name": "Farigiraf",
+    "types": [
+      "Normale",
+      "Psico"
+    ],
+    "abilities": [
+      "Cud Chew",
+      "Armor Tail"
+    ],
+    "base_stats": {
+      "hp": 120,
+      "atk": 90,
+      "def": 70,
+      "spa": 110,
+      "spd": 70,
+      "spe": 60
+    }
+  },
+  "archaludon": {
+    "name": "Archaludon",
+    "types": [
+      "Acciaio",
+      "Drago"
+    ],
+    "abilities": [
+      "Stamina",
+      "Sturdy"
+    ],
+    "base_stats": {
+      "hp": 90,
+      "atk": 105,
+      "def": 130,
+      "spa": 125,
+      "spd": 65,
+      "spe": 85
+    }
+  },
+  "hydrapple": {
+    "name": "Hydrapple",
+    "types": [
+      "Erba",
+      "Drago"
+    ],
+    "abilities": [
+      "Supersweet Syrup",
+      "Regenerator"
+    ],
+    "base_stats": {
+      "hp": 106,
+      "atk": 80,
+      "def": 110,
+      "spa": 120,
+      "spd": 80,
+      "spe": 44
+    }
+  },
+  "glimmora": {
+    "name": "Glimmora",
+    "types": [
+      "Roccia",
+      "Veleno"
+    ],
+    "abilities": [
+      "Toxic Debris"
+    ],
+    "base_stats": {
+      "hp": 83,
+      "atk": 55,
+      "def": 90,
+      "spa": 130,
+      "spd": 81,
+      "spe": 86
+    },
+    "forms": {
+      "Mega Glimmora": {
+        "types": [
+          "Roccia",
+          "Veleno"
+        ],
+        "base_stats": {
+          "hp": 158,
+          "atk": 110,
+          "def": 125,
+          "spa": 170,
+          "spd": 116,
+          "spe": 121
+        },
+        "abilities": [
+          "Corrosion"
+        ]
+      }
+    }
+  },
+  "sinistcha": {
+    "name": "Sinistcha",
+    "types": [
+      "Erba",
+      "Spettro"
+    ],
+    "abilities": [
+      "Hospitality"
+    ],
+    "base_stats": {
+      "hp": 71,
+      "atk": 60,
+      "def": 106,
+      "spa": 121,
+      "spd": 80,
+      "spe": 70
+    }
+  },
+  "wyrdeer": {
+    "name": "Wyrdeer",
+    "types": [
+      "Normale",
+      "Psico"
+    ],
+    "abilities": [
+      "Intimidate",
+      "Frisk"
+    ],
+    "base_stats": {
+      "hp": 103,
+      "atk": 105,
+      "def": 72,
+      "spa": 105,
+      "spd": 75,
+      "spe": 65
+    }
+  },
+  "kleavor": {
+    "name": "Kleavor",
+    "types": [
+      "Coleottero",
+      "Roccia"
+    ],
+    "abilities": [
+      "Swarm",
+      "Sheer Force"
+    ],
+    "base_stats": {
+      "hp": 70,
+      "atk": 135,
+      "def": 95,
+      "spa": 45,
+      "spd": 70,
+      "spe": 85
+    }
+  },
+  "basculegion-male": {
+    "name": "Basculegion (Male)",
+    "types": [
+      "Acqua",
+      "Spettro"
+    ],
+    "abilities": [],
+    "base_stats": {
+      "hp": 120,
+      "atk": 112,
+      "def": 65,
+      "spa": 80,
+      "spd": 75,
+      "spe": 78
+    },
+    "forms": {
+      "Basculegion (Female)": {
+        "types": [
+          "Acqua",
+          "Spettro"
+        ],
+        "base_stats": {
+          "hp": 120,
+          "atk": 92,
+          "def": 65,
+          "spa": 100,
+          "spd": 75,
+          "spe": 78
+        },
+        "abilities": [
+          "Swift Swim",
+          "Adaptability"
+        ]
+      }
+    }
+  },
+  "sneasler": {
+    "name": "Sneasler",
+    "types": [
+      "Lotta",
+      "Veleno"
+    ],
+    "abilities": [
+      "Pressure",
+      "Unburden"
+    ],
+    "base_stats": {
+      "hp": 80,
+      "atk": 130,
+      "def": 60,
+      "spa": 40,
+      "spd": 80,
+      "spe": 120
+    }
+  },
+  "espathra": {
+    "name": "Espathra",
+    "types": [
+      "Psico"
+    ],
+    "abilities": [
+      "Opportunist",
+      "Frisk"
+    ],
+    "base_stats": {
+      "hp": 95,
+      "atk": 60,
+      "def": 60,
+      "spa": 101,
+      "spd": 60,
+      "spe": 105
+    }
+  },
+  "scovillain": {
+    "name": "Scovillain",
+    "types": [
+      "Erba",
+      "Fuoco"
+    ],
+    "abilities": [
+      "Chlorophyll",
+      "Insomnia"
+    ],
+    "base_stats": {
+      "hp": 65,
+      "atk": 108,
+      "def": 65,
+      "spa": 108,
+      "spd": 65,
+      "spe": 75
+    },
+    "forms": {
+      "Mega Scovillain": {
+        "types": [
+          "Erba",
+          "Fuoco"
+        ],
+        "base_stats": {
+          "hp": 140,
+          "atk": 158,
+          "def": 105,
+          "spa": 158,
+          "spd": 105,
+          "spe": 95
+        },
+        "abilities": [
+          "Drought"
+        ]
+      }
+    }
+  },
+  "orthworm": {
+    "name": "Orthworm",
+    "types": [
+      "Acciaio"
+    ],
+    "abilities": [
+      "Earth Eater"
+    ],
+    "base_stats": {
+      "hp": 70,
+      "atk": 85,
+      "def": 145,
+      "spa": 60,
+      "spd": 55,
+      "spe": 65
+    }
+  },
+  "klefki": {
+    "name": "Klefki",
+    "types": [
+      "Acciaio",
+      "Folletto"
+    ],
+    "abilities": [
+      "Prankster"
+    ],
+    "base_stats": {
+      "hp": 57,
+      "atk": 80,
+      "def": 91,
+      "spa": 80,
+      "spd": 87,
+      "spe": 75
+    }
+  },
+  "gourgeist-average": {
+    "name": "Gourgeist (Average)",
+    "types": [
+      "Spettro",
+      "Erba"
+    ],
+    "abilities": [
+      "Pickup",
+      "Frisk"
+    ],
+    "base_stats": {
+      "hp": 65,
+      "atk": 90,
+      "def": 122,
+      "spa": 58,
+      "spd": 75,
+      "spe": 84
+    },
+    "forms": {
+      "Gourgeist (Small)": {
+        "types": [
+          "Spettro",
+          "Erba"
+        ],
+        "base_stats": {
+          "hp": 55,
+          "atk": 85,
+          "def": 122,
+          "spa": 58,
+          "spd": 75,
+          "spe": 99
+        },
+        "abilities": [
+          "Pickup",
+          "Frisk",
+          "Insomnia"
+        ]
+      },
+      "Gourgeist (Large)": {
+        "types": [
+          "Spettro",
+          "Erba"
+        ],
+        "base_stats": {
+          "hp": 75,
+          "atk": 95,
+          "def": 122,
+          "spa": 58,
+          "spd": 75,
+          "spe": 69
+        },
+        "abilities": [
+          "Pickup",
+          "Frisk",
+          "Insomnia"
+        ]
+      },
+      "Gourgeist (Super)": {
+        "types": [
+          "Spettro",
+          "Erba"
+        ],
+        "base_stats": {
+          "hp": 85,
+          "atk": 100,
+          "def": 122,
+          "spa": 58,
+          "spd": 75,
+          "spe": 54
+        },
+        "abilities": [
+          "Pickup",
+          "Frisk",
+          "Insomnia"
+        ]
+      }
+    }
+  },
+  "avalugg": {
+    "name": "Avalugg",
+    "types": [
+      "Ghiaccio"
+    ],
+    "abilities": [
+      "Own Tempo",
+      "Ice Body"
+    ],
+    "base_stats": {
+      "hp": 95,
+      "atk": 117,
+      "def": 184,
+      "spa": 44,
+      "spd": 46,
+      "spe": 28
+    },
+    "forms": {
+      "Hisuian Avalugg": {
+        "types": [
+          "Ghiaccio",
+          "Roccia"
+        ],
+        "base_stats": {
+          "hp": 95,
+          "atk": 127,
+          "def": 184,
+          "spa": 34,
+          "spd": 36,
+          "spe": 38
+        },
+        "abilities": [
+          "Own Tempo",
+          "Ice Body",
+          "Sturdy"
+        ]
+      }
+    }
+  },
+  "hawlucha": {
+    "name": "Hawlucha",
+    "types": [
+      "Lotta",
+      "Volante"
+    ],
+    "abilities": [
+      "Limber",
+      "Unburden"
+    ],
+    "base_stats": {
+      "hp": 78,
+      "atk": 92,
+      "def": 75,
+      "spa": 74,
+      "spd": 63,
+      "spe": 118
+    },
+    "forms": {
+      "Mega Hawlucha": {
+        "types": [
+          "Lotta",
+          "Volante"
+        ],
+        "base_stats": {
+          "hp": 153,
+          "atk": 157,
+          "def": 120,
+          "spa": 94,
+          "spd": 113,
+          "spe": 138
+        },
+        "abilities": [
+          "Unburden"
+        ]
+      }
+    }
+  },
+  "mimikyu": {
+    "name": "Mimikyu",
+    "types": [
+      "Spettro",
+      "Folletto"
+    ],
+    "abilities": [
+      "Disguise"
+    ],
+    "base_stats": {
+      "hp": 55,
+      "atk": 90,
+      "def": 80,
+      "spa": 50,
+      "spd": 105,
+      "spe": 96
+    }
+  },
+  "toxapex": {
+    "name": "Toxapex",
+    "types": [
+      "Veleno",
+      "Acqua"
+    ],
+    "abilities": [
+      "Merciless",
+      "Limber"
+    ],
+    "base_stats": {
+      "hp": 50,
+      "atk": 63,
+      "def": 152,
+      "spa": 53,
+      "spd": 142,
+      "spe": 35
+    }
+  },
+  "mudsdale": {
+    "name": "Mudsdale",
+    "types": [
+      "Terra"
+    ],
+    "abilities": [
+      "Own Tempo",
+      "Stamina"
+    ],
+    "base_stats": {
+      "hp": 100,
+      "atk": 125,
+      "def": 100,
+      "spa": 55,
+      "spd": 85,
+      "spe": 35
+    }
+  },
+  "araquanid": {
+    "name": "Araquanid",
+    "types": [
+      "Acqua",
+      "Coleottero"
+    ],
+    "abilities": [
+      "Water Bubble"
+    ],
+    "base_stats": {
+      "hp": 68,
+      "atk": 70,
+      "def": 92,
+      "spa": 50,
+      "spd": 132,
+      "spe": 42
+    }
+  },
+  "salazzle": {
+    "name": "Salazzle",
+    "types": [
+      "Veleno",
+      "Fuoco"
+    ],
+    "abilities": [
+      "Corrosion"
+    ],
+    "base_stats": {
+      "hp": 68,
+      "atk": 64,
+      "def": 60,
+      "spa": 111,
+      "spd": 60,
+      "spe": 117
+    }
+  },
+  "tsareena": {
+    "name": "Tsareena",
+    "types": [
+      "Erba"
+    ],
+    "abilities": [
+      "Leaf Guard",
+      "Queenly Majesty"
+    ],
+    "base_stats": {
+      "hp": 72,
+      "atk": 120,
+      "def": 98,
+      "spa": 50,
+      "spd": 98,
+      "spe": 72
+    }
+  },
+  "oranguru": {
+    "name": "Oranguru",
+    "types": [
+      "Normale",
+      "Psico"
+    ],
+    "abilities": [
+      "Inner Focus",
+      "Telepathy"
+    ],
+    "base_stats": {
+      "hp": 90,
+      "atk": 60,
+      "def": 80,
+      "spa": 90,
+      "spd": 110,
+      "spe": 60
+    }
+  },
+  "passimian": {
+    "name": "Passimian",
+    "types": [
+      "Lotta"
+    ],
+    "abilities": [
+      "Receiver"
+    ],
+    "base_stats": {
+      "hp": 100,
+      "atk": 120,
+      "def": 90,
+      "spa": 40,
+      "spd": 60,
+      "spe": 80
+    }
+  },
+  "kommo-o": {
+    "name": "Kommo-o",
+    "types": [
+      "Drago",
+      "Lotta"
+    ],
+    "abilities": [
+      "Bulletproof",
+      "Soundproof"
+    ],
+    "base_stats": {
+      "hp": 75,
+      "atk": 110,
+      "def": 125,
+      "spa": 100,
+      "spd": 105,
+      "spe": 85
+    }
+  },
+  "pangoro": {
+    "name": "Pangoro",
+    "types": [
+      "Lotta",
+      "Buio"
+    ],
+    "abilities": [
+      "Iron Fist",
+      "Mold Breaker"
+    ],
+    "base_stats": {
+      "hp": 95,
+      "atk": 124,
+      "def": 78,
+      "spa": 69,
+      "spd": 71,
+      "spe": 58
+    }
+  },
+  "drampa": {
+    "name": "Drampa",
+    "types": [
+      "Normale",
+      "Drago"
+    ],
+    "abilities": [
+      "Berserk",
+      "Sap Sipper"
+    ],
+    "base_stats": {
+      "hp": 78,
+      "atk": 60,
+      "def": 85,
+      "spa": 135,
+      "spd": 91,
+      "spe": 36
+    },
+    "forms": {
+      "Mega Drampa": {
+        "types": [
+          "Normale",
+          "Drago"
+        ],
+        "base_stats": {
+          "hp": 153,
+          "atk": 105,
+          "def": 130,
+          "spa": 180,
+          "spd": 136,
+          "spe": 56
+        },
+        "abilities": [
+          "Cloud Nine"
+        ]
+      }
+    }
+  },
+  "aegislash-shield-forme": {
+    "name": "Aegislash (Shield Forme)",
+    "types": [
+      "Acciaio",
+      "Spettro"
+    ],
+    "abilities": [
+      "Stance Change"
+    ],
+    "base_stats": {
+      "hp": 60,
+      "atk": 50,
+      "def": 140,
+      "spa": 50,
+      "spd": 140,
+      "spe": 60
+    },
+    "forms": {
+      "Aegislash (Blade Forme)": {
+        "types": [
+          "Acciaio",
+          "Spettro"
+        ],
+        "base_stats": {
+          "hp": 60,
+          "atk": 140,
+          "def": 50,
+          "spa": 140,
+          "spd": 50,
+          "spe": 60
+        },
+        "abilities": [
+          "Stance Change"
+        ]
+      }
+    }
+  },
+  "aromatisse": {
+    "name": "Aromatisse",
+    "types": [
+      "Folletto"
+    ],
+    "abilities": [
+      "Healer"
+    ],
+    "base_stats": {
+      "hp": 101,
+      "atk": 72,
+      "def": 72,
+      "spa": 99,
+      "spd": 89,
+      "spe": 29
+    }
+  },
+  "slurpuff": {
+    "name": "Slurpuff",
+    "types": [
+      "Folletto"
+    ],
+    "abilities": [
+      "Sweet Veil"
+    ],
+    "base_stats": {
+      "hp": 82,
+      "atk": 80,
+      "def": 86,
+      "spa": 85,
+      "spd": 75,
+      "spe": 72
+    }
+  },
+  "clawitzer": {
+    "name": "Clawitzer",
+    "types": [
+      "Acqua"
+    ],
+    "abilities": [
+      "Mega Launcher"
+    ],
+    "base_stats": {
+      "hp": 71,
+      "atk": 73,
+      "def": 88,
+      "spa": 120,
+      "spd": 89,
+      "spe": 59
+    }
+  },
+  "heliolisk": {
+    "name": "Heliolisk",
+    "types": [
+      "Elettro",
+      "Normale"
+    ],
+    "abilities": [
+      "Dry Skin",
+      "Sand Veil"
+    ],
+    "base_stats": {
+      "hp": 62,
+      "atk": 55,
+      "def": 52,
+      "spa": 109,
+      "spd": 94,
+      "spe": 109
+    }
+  },
+  "tyrantrum": {
+    "name": "Tyrantrum",
+    "types": [
+      "Roccia",
+      "Drago"
+    ],
+    "abilities": [
+      "Strong Jaw"
+    ],
+    "base_stats": {
+      "hp": 82,
+      "atk": 121,
+      "def": 119,
+      "spa": 69,
+      "spd": 59,
+      "spe": 71
+    }
+  },
+  "aurorus": {
+    "name": "Aurorus",
+    "types": [
+      "Roccia",
+      "Ghiaccio"
+    ],
+    "abilities": [
+      "Refrigerate"
+    ],
+    "base_stats": {
+      "hp": 123,
+      "atk": 77,
+      "def": 72,
+      "spa": 99,
+      "spd": 92,
+      "spe": 58
+    }
+  },
+  "trevenant": {
+    "name": "Trevenant",
+    "types": [
+      "Spettro",
+      "Erba"
+    ],
+    "abilities": [
+      "Natural Cure",
+      "Frisk"
+    ],
+    "base_stats": {
+      "hp": 85,
+      "atk": 110,
+      "def": 76,
+      "spa": 65,
+      "spd": 82,
+      "spe": 56
+    }
+  },
+  "dedenne": {
+    "name": "Dedenne",
+    "types": [
+      "Elettro",
+      "Folletto"
+    ],
+    "abilities": [
+      "Cheek Pouch",
+      "Pickup"
+    ],
+    "base_stats": {
+      "hp": 67,
+      "atk": 58,
+      "def": 57,
+      "spa": 81,
+      "spd": 67,
+      "spe": 101
+    }
+  },
+  "furfrou": {
+    "name": "Furfrou",
+    "types": [
+      "Normale"
+    ],
+    "abilities": [
+      "Fur Coat"
+    ],
+    "base_stats": {
+      "hp": 75,
+      "atk": 80,
+      "def": 60,
+      "spa": 65,
+      "spd": 90,
+      "spe": 102
+    }
+  },
+  "meowstic-male": {
+    "name": "Meowstic (Male)",
+    "types": [
+      "Psico"
+    ],
+    "abilities": [],
+    "base_stats": {
+      "hp": 74,
+      "atk": 48,
+      "def": 76,
+      "spa": 83,
+      "spd": 81,
+      "spe": 104
+    },
+    "forms": {
+      "Meowstic (Female)": {
+        "types": [
+          "Psico"
+        ],
+        "base_stats": {
+          "hp": 74,
+          "atk": 48,
+          "def": 76,
+          "spa": 83,
+          "spd": 81,
+          "spe": 104
+        },
+        "abilities": [
+          "Keen Eye",
+          "Infiltrator",
+          "Competitive"
+        ]
+      },
+      "Mega Meowstic (Male)": {
+        "types": [
+          "Psico"
+        ],
+        "base_stats": {
+          "hp": 149,
+          "atk": 68,
+          "def": 96,
+          "spa": 163,
+          "spd": 121,
+          "spe": 144
+        },
+        "abilities": [
+          "Prankster"
+        ]
+      },
+      "Mega Meowstic (Female)": {
+        "types": [
+          "Psico"
+        ],
+        "base_stats": {
+          "hp": 149,
+          "atk": 68,
+          "def": 96,
+          "spa": 103,
+          "spd": 101,
+          "spe": 124
+        },
+        "abilities": [
+          "Competitive"
+        ]
+      }
+    }
+  },
+  "mega-banette": {
+    "name": "Mega Banette",
+    "types": [
+      "Spettro"
+    ],
+    "abilities": [
+      "Prankster"
+    ],
+    "base_stats": {
+      "hp": 64,
+      "atk": 165,
+      "def": 75,
+      "spa": 93,
+      "spd": 83,
+      "spe": 75
+    }
+  },
+  "mega-chimecho": {
+    "name": "Mega Chimecho",
+    "types": [
+      "Psico"
+    ],
+    "abilities": [
+      "Levitate"
+    ],
+    "base_stats": {
+      "hp": 75,
+      "atk": 50,
+      "def": 80,
+      "spa": 95,
+      "spd": 90,
+      "spe": 65
+    }
+  },
+  "mega-crabominable": {
+    "name": "Mega Crabominable",
+    "types": [
+      "Ghiaccio",
+      "Lotta"
+    ],
+    "abilities": [
+      "Iron Fist"
+    ],
+    "base_stats": {
+      "hp": 97,
+      "atk": 132,
+      "def": 85,
+      "spa": 55,
+      "spd": 85,
+      "spe": 43
+    }
+  },
+  "eternal-flower-floette": {
+    "name": "Eternal Flower Floette",
+    "types": [
+      "Folletto"
+    ],
+    "abilities": [],
+    "base_stats": {
+      "hp": 74,
+      "atk": 65,
+      "def": 67,
+      "spa": 125,
+      "spd": 128,
+      "spe": 92
+    },
+    "forms": {
+      "Mega Floette": {
+        "types": [
+          "Folletto"
+        ],
+        "base_stats": {
+          "hp": 74,
+          "atk": 85,
+          "def": 87,
+          "spa": 145,
+          "spd": 148,
+          "spe": 92
+        },
+        "abilities": [
+          "Flower Veil"
+        ]
+      }
+    }
+  }
+}

@@ -1,0 +1,3829 @@
+{
+  "_comment": "Source: PokeAPI + patch Champions Reg M-A (Serebii). Campi: type, category, bp, priority, effect_chance, flags, desc. Salva e riavvia Flask.",
+  "regulation": "Regulation MA",
+  "last_updated": "2026-05-04",
+  "moves": {
+    "Absorb": {
+      "bp": 20,
+      "category": "special",
+      "type": "grass",
+      "desc": "Mossa che assorbe PS. Chi la usa recupera una quantità di PS pari alla metà del danno inferto.",
+      "flags": [
+        "contact"
+      ],
+      "accuracy": 100
+    },
+    "Acid": {
+      "bp": 40,
+      "category": "special",
+      "type": "poison",
+      "effect_chance": 10,
+      "desc": "Colpisce i nemici intorno spruzzando un acido corrosivo. Può anche ridurne la Difesa Speciale.",
+      "accuracy": 100
+    },
+    "Acid Spray": {
+      "bp": 40,
+      "category": "special",
+      "type": "poison",
+      "effect_chance": 100,
+      "desc": "Chi la usa attacca il bersaglio con un acido altamente corrosivo. Il fluido riduce di molto la Difesa Speciale del bersaglio.",
+      "flags": [
+        "bullet"
+      ],
+      "accuracy": 100
+    },
+    "Acrobatics": {
+      "bp": 55,
+      "category": "physical",
+      "type": "flying",
+      "desc": "Attacca rapidamente il bersaglio. Se chi la usa non ha uno strumento, infligge al nemico grossi danni.",
+      "flags": [
+        "contact"
+      ],
+      "accuracy": 100
+    },
+    "Agility": {
+      "category": "status",
+      "type": "psychic",
+      "desc": "Chi la usa rilassa e alleggerisce il proprio corpo per far salire di molto la Velocità."
+    },
+    "Air Cutter": {
+      "bp": 60,
+      "category": "special",
+      "type": "flying",
+      "desc": "Chi la usa provoca un vento tagliente che sferza i nemici intorno. Probabile brutto colpo.",
+      "flags": [
+        "slicing"
+      ],
+      "accuracy": 95
+    },
+    "Air Slash": {
+      "bp": 75,
+      "category": "special",
+      "type": "flying",
+      "effect_chance": 30,
+      "desc": "Chi la usa attacca con un vento tagliente che squarcia il cielo. Può anche far tentennare il Pokémon colpito.",
+      "flags": [
+        "slicing"
+      ],
+      "accuracy": 95
+    },
+    "Ally Switch": {
+      "category": "status",
+      "type": "psychic",
+      "priority": 2,
+      "desc": "Chi la usa cambia di posto con un alleato in campo grazie a un misterioso potere."
+    },
+    "Amnesia": {
+      "category": "status",
+      "type": "psychic",
+      "desc": "Chi la usa svuota per un po’ la mente per dimenticare i problemi. La Difesa Speciale aumenta di molto."
+    },
+    "Ancient Power": {
+      "bp": 60,
+      "category": "special",
+      "type": "rock",
+      "effect_chance": 10,
+      "desc": "Colpisce il bersaglio con una forza primordiale. Può aumentare tutte le statistiche.",
+      "accuracy": 100
+    },
+    "Apple Acid": {
+      "bp": 90,
+      "category": "special",
+      "type": "grass",
+      "effect_chance": 100,
+      "desc": "Chi la usa attacca il bersaglio con un liquido acido ricavato da mele aspre riducendone la Difesa Speciale.",
+      "accuracy": 100
+    },
+    "Aqua Cutter": {
+      "bp": 70,
+      "category": "physical",
+      "type": "water",
+      "desc": "The user expels pressurized water to cut at the target like a blade. This move has a heightened chance of landing a critical hit.",
+      "flags": [
+        "contact",
+        "slicing"
+      ],
+      "accuracy": 100
+    },
+    "Aqua Jet": {
+      "bp": 40,
+      "category": "physical",
+      "type": "water",
+      "priority": 1,
+      "desc": "Chi la usa colpisce a una tale velocità da rendersi quasi invisibile. Questa mossa ha priorità alta.",
+      "accuracy": 100
+    },
+    "Aqua Ring": {
+      "category": "status",
+      "type": "water",
+      "desc": "Chi la usa si avvolge in un velo d’acqua. Recupera alcuni PS a ogni turno."
+    },
+    "Aqua Step": {
+      "bp": 80,
+      "category": "physical",
+      "type": "water",
+      "desc": "The user toys with the target and attacks it using light and fluid dance steps. This also boosts the user's Speed stat.",
+      "flags": [
+        "contact"
+      ],
+      "accuracy": 100
+    },
+    "Aqua Tail": {
+      "bp": 90,
+      "category": "physical",
+      "type": "water",
+      "desc": "Chi la usa attacca agitando la coda come se fosse una violenta ondata in una tempesta furiosa.",
+      "flags": [
+        "contact"
+      ],
+      "accuracy": 90
+    },
+    "Arm Thrust": {
+      "bp": 15,
+      "category": "physical",
+      "type": "fighting",
+      "desc": "Raffica di ceffoni che colpisce da due a cinque volte di fila.",
+      "flags": [
+        "contact"
+      ],
+      "accuracy": 100
+    },
+    "Aromatherapy": {
+      "category": "status",
+      "type": "grass",
+      "desc": "Chi la usa rilascia un dolce profumo che cura tutti i problemi di stato propri e degli alleati."
+    },
+    "Astonish": {
+      "bp": 30,
+      "category": "physical",
+      "type": "ghost",
+      "effect_chance": 30,
+      "desc": "Chi la usa attacca il bersaglio emettendo un verso terrificante. Può anche farlo tentennare.",
+      "flags": [
+        "contact"
+      ],
+      "accuracy": 100
+    },
+    "Attract": {
+      "category": "status",
+      "type": "normal",
+      "desc": "Se il bersaglio è del sesso opposto, s’infatua e diventa riluttante ad attaccare.",
+      "accuracy": 100
+    },
+    "Aura Sphere": {
+      "bp": 80,
+      "category": "special",
+      "type": "fighting",
+      "desc": "Chi la usa rilascia una forza eterea dal profondo del corpo. La mossa è infallibile.",
+      "flags": [
+        "bullet",
+        "pulse"
+      ]
+    },
+    "Aurora Beam": {
+      "bp": 65,
+      "category": "special",
+      "type": "ice",
+      "effect_chance": 10,
+      "desc": "Colpisce il bersaglio con un raggio dai colori dell’iride. Può anche ridurne l’Attacco.",
+      "accuracy": 100
+    },
+    "Aurora Veil": {
+      "category": "status",
+      "type": "ice",
+      "desc": "Riduce i danni subiti dalle mosse fisiche e dalle mosse speciali per cinque turni. Si può usare solo quando grandina."
+    },
+    "Autotomize": {
+      "category": "status",
+      "type": "steel",
+      "desc": "Chi la usa si libera di tutti i pesi in eccesso, alleggerendosi e aumentando di molto la propria Velocità."
+    },
+    "Avalanche": {
+      "bp": 60,
+      "category": "physical",
+      "type": "ice",
+      "priority": -4,
+      "desc": "Mossa d’attacco che infligge doppi danni se chi la usa è stato ferito dal Pokémon bersaglio nello stesso turno.",
+      "flags": [
+        "contact"
+      ],
+      "accuracy": 100
+    },
+    "Baby-Doll Eyes": {
+      "category": "status",
+      "type": "fairy",
+      "priority": 1,
+      "desc": "Chi la usa rivolge i propri occhioni languidi al bersaglio, riducendone l’Attacco. Questa mossa ha priorità alta.",
+      "accuracy": 100
+    },
+    "Barrage": {
+      "bp": 15,
+      "category": "physical",
+      "type": "normal",
+      "desc": "Questa mossa non può essere usata. È consigliabile farla dimenticare al Pokémon. Tuttavia, una volta dimenticata, non potrà più essere ricordata.",
+      "accuracy": 85
+    },
+    "Barrier": {
+      "category": "status",
+      "type": "psychic",
+      "desc": "Questa mossa non può essere usata. È consigliabile farla dimenticare al Pokémon. Tuttavia, una volta dimenticata, non potrà più essere ricordata."
+    },
+    "Baton Pass": {
+      "category": "status",
+      "type": "normal",
+      "desc": "Chi la usa è sostituito da un Pokémon della squadra, che eredita anche ogni modifica alle statistiche."
+    },
+    "Beak Blast": {
+      "bp": 120,
+      "category": "physical",
+      "type": "flying",
+      "priority": -3,
+      "desc": "Chi la usa arroventa il proprio becco e poi attacca. Se un Pokémon lo colpisce con un attacco diretto mentre sta accumulando calore, resta scottato.",
+      "flags": [
+        "contact"
+      ],
+      "accuracy": 100
+    },
+    "Beat Up": {
+      "category": "physical",
+      "type": "dark",
+      "desc": "Chi la usa chiama in aiuto i Pokémon della squadra: più ce ne sono, maggiore è il numero di attacchi.",
+      "flags": [
+        "contact"
+      ],
+      "accuracy": 100
+    },
+    "Behemoth Bash": {
+      "bp": 100,
+      "category": "physical",
+      "type": "steel",
+      "desc": "Chi la usa si trasforma in un enorme scudo e attacca. Se il bersaglio è dynamaxizzato, causa il doppio dei danni.",
+      "accuracy": 100
+    },
+    "Behemoth Blade": {
+      "bp": 100,
+      "category": "physical",
+      "type": "steel",
+      "desc": "Chi la usa si trasforma in un’enorme spada e attacca. Se il bersaglio è dynamaxizzato, causa il doppio dei danni.",
+      "accuracy": 100
+    },
+    "Belch": {
+      "bp": 120,
+      "category": "special",
+      "type": "poison",
+      "desc": "Chi la usa attacca il bersaglio con un rutto potente. Per utilizzare questa mossa, il Pokémon deve mangiare la bacca che possiede.",
+      "accuracy": 90
+    },
+    "Belly Drum": {
+      "category": "status",
+      "type": "normal",
+      "desc": "Chi la usa massimizza l’Attacco in cambio di metà dei PS massimi."
+    },
+    "Bite": {
+      "bp": 60,
+      "category": "physical",
+      "type": "dark",
+      "effect_chance": 30,
+      "desc": "Il bersaglio viene morso da denti affilatissimi che possono farlo tentennare.",
+      "flags": [
+        "contact",
+        "bite"
+      ],
+      "accuracy": 100
+    },
+    "Blaze Kick": {
+      "bp": 85,
+      "category": "physical",
+      "type": "fire",
+      "effect_chance": 10,
+      "desc": "Chi la usa tira un calcio. Probabile brutto colpo. Può anche scottare il bersaglio.",
+      "flags": [
+        "contact"
+      ],
+      "accuracy": 90
+    },
+    "Blizzard": {
+      "bp": 110,
+      "category": "special",
+      "type": "ice",
+      "effect_chance": 10,
+      "desc": "Colpisce i nemici intorno con una tremenda tempesta di ghiaccio che può anche congelarli.",
+      "accuracy": 70
+    },
+    "Body Press": {
+      "bp": 80,
+      "category": "physical",
+      "type": "fighting",
+      "desc": "Chi la usa schiaccia il bersaglio con il suo corpo. Più la sua Difesa è alta, maggiori sono i danni inflitti.",
+      "accuracy": 100
+    },
+    "Body Slam": {
+      "bp": 85,
+      "category": "physical",
+      "type": "normal",
+      "effect_chance": 30,
+      "desc": "Chi la usa carica il bersaglio con tutto il corpo. Può causarne anche la paralisi.",
+      "flags": [
+        "contact"
+      ],
+      "accuracy": 100
+    },
+    "Bolt Beak": {
+      "bp": 85,
+      "category": "physical",
+      "type": "electric",
+      "desc": "Chi la usa attacca il bersaglio con il becco appuntito carico d’elettricità. Se attacca per primo, la potenza della mossa raddoppia.",
+      "flags": [
+        "contact"
+      ],
+      "accuracy": 100
+    },
+    "Bolt Strike": {
+      "bp": 130,
+      "category": "physical",
+      "type": "electric",
+      "effect_chance": 20,
+      "desc": "Colpisce il bersaglio con una possente carica elettrica e può anche paralizzarlo.",
+      "accuracy": 85
+    },
+    "Bone Club": {
+      "bp": 65,
+      "category": "physical",
+      "type": "ground",
+      "effect_chance": 10,
+      "desc": "Questa mossa non può essere usata. È consigliabile farla dimenticare al Pokémon. Tuttavia, una volta dimenticata, non potrà più essere ricordata.",
+      "flags": [
+        "contact"
+      ],
+      "accuracy": 85
+    },
+    "Bone Rush": {
+      "bp": 30,
+      "category": "physical",
+      "type": "ground",
+      "desc": "Chi la usa colpisce il bersaglio con un osso da due a cinque volte di fila.",
+      "accuracy": 90
+    },
+    "Bonemerang": {
+      "bp": 50,
+      "category": "physical",
+      "type": "ground",
+      "desc": "Chi la usa lancia l’osso che ha con sé. L’osso colpisce due volte e ritorna come un vero e proprio boomerang.",
+      "accuracy": 90
+    },
+    "Boomburst": {
+      "bp": 140,
+      "category": "special",
+      "type": "normal",
+      "desc": "Colpisce i Pokémon che ha intorno con la forza di un boato distruttivo.",
+      "flags": [
+        "sound"
+      ],
+      "accuracy": 100
+    },
+    "Brave Bird": {
+      "bp": 120,
+      "category": "physical",
+      "type": "flying",
+      "desc": "Chi la usa ripiega le ali e carica da bassa quota. Tuttavia, subisce considerevoli danni.",
+      "flags": [
+        "contact"
+      ],
+      "accuracy": 100
+    },
+    "Brick Break": {
+      "bp": 75,
+      "category": "physical",
+      "type": "fighting",
+      "desc": "Colpisce il bersaglio con una mano e rompe barriere come Riflesso e Schermoluce.",
+      "flags": [
+        "contact"
+      ],
+      "accuracy": 100
+    },
+    "Brine": {
+      "bp": 65,
+      "category": "special",
+      "type": "water",
+      "desc": "Se i PS del bersaglio sono scesi a metà o meno, questa mossa colpirà con il doppio della potenza.",
+      "accuracy": 100
+    },
+    "Brutal Swing": {
+      "bp": 60,
+      "category": "physical",
+      "type": "dark",
+      "desc": "Chi la usa infligge danni intorno a sé facendo ruotare una parte del suo corpo.",
+      "flags": [
+        "contact"
+      ],
+      "accuracy": 100
+    },
+    "Bubble Beam": {
+      "bp": 65,
+      "category": "special",
+      "type": "water",
+      "effect_chance": 10,
+      "desc": "Colpisce il bersaglio con una forte scarica di bolle. Può anche ridurne la Velocità.",
+      "accuracy": 100
+    },
+    "Bug Bite": {
+      "bp": 60,
+      "category": "physical",
+      "type": "bug",
+      "desc": "Chi la usa morde il bersaglio. Inoltre, se questi ha una bacca, gliela ruba e ne sfrutta gli effetti.",
+      "flags": [
+        "contact"
+      ],
+      "accuracy": 100
+    },
+    "Bug Buzz": {
+      "bp": 90,
+      "category": "special",
+      "type": "bug",
+      "effect_chance": 10,
+      "desc": "Chi la usa crea un’onda sonora che infligge danni. Può anche ridurre la Difesa Speciale del bersaglio.",
+      "flags": [
+        "sound"
+      ],
+      "accuracy": 100
+    },
+    "Bulk Up": {
+      "category": "status",
+      "type": "fighting",
+      "desc": "Chi la usa tende i muscoli per gonfiare il corpo, aumentando Difesa e Attacco.",
+      "flags": [
+        "contact"
+      ]
+    },
+    "Bulldoze": {
+      "bp": 60,
+      "category": "physical",
+      "type": "ground",
+      "effect_chance": 100,
+      "desc": "Chi la usa calpesta il terreno e scatena un terremoto che danneggia i Pokémon nei paraggi, riducendone la Velocità.",
+      "accuracy": 100
+    },
+    "Bullet Punch": {
+      "bp": 40,
+      "category": "physical",
+      "type": "steel",
+      "priority": 1,
+      "desc": "Chi la usa attacca con una scarica di pugni veloci come proiettili. Questa mossa ha priorità alta.",
+      "flags": [
+        "contact",
+        "punch"
+      ],
+      "accuracy": 100
+    },
+    "Bullet Seed": {
+      "bp": 25,
+      "category": "physical",
+      "type": "grass",
+      "desc": "Chi la usa spara da due a cinque raffiche di semi contro il bersaglio in successione.",
+      "flags": [
+        "bullet"
+      ],
+      "accuracy": 100
+    },
+    "Burn Up": {
+      "bp": 130,
+      "category": "special",
+      "type": "fire",
+      "desc": "Chi la usa attacca sfruttando tutta la sua potenza incendiaria per infliggere gravi danni al bersaglio, ma come conseguenza perde il tipo Fuoco.",
+      "accuracy": 100
+    },
+    "Calm Mind": {
+      "category": "status",
+      "type": "psychic",
+      "desc": "Chi la usa placa il proprio spirito meditando per aumentare l’Attacco Speciale e la Difesa Speciale."
+    },
+    "Camouflage": {
+      "category": "status",
+      "type": "normal",
+      "desc": "Questa mossa non può essere usata. È consigliabile farla dimenticare al Pokémon. Tuttavia, una volta dimenticata, non potrà più essere ricordata."
+    },
+    "Charge Beam": {
+      "bp": 50,
+      "category": "special",
+      "type": "electric",
+      "effect_chance": 70,
+      "desc": "Chi la usa lancia un fascio di elettricità molto intensa. Può anche aumentare il suo Attacco Speciale.",
+      "accuracy": 90
+    },
+    "Charm": {
+      "category": "status",
+      "type": "fairy",
+      "desc": "Ammalia il bersaglio con lo sguardo per renderlo meno cauto. Ne riduce molto l’Attacco.",
+      "accuracy": 100
+    },
+    "Chilling Water": {
+      "bp": 50,
+      "category": "special",
+      "type": "water",
+      "desc": "The user attacks the target by showering it with water that's so cold it saps the target's power. This also lowers the target's Attack stat.",
+      "accuracy": 100
+    },
+    "Chilly Reception": {
+      "category": "status",
+      "type": "ice",
+      "desc": "The user tells a chillingly bad joke before switching places with a party Pokémon in waiting. This summons a snowstorm lasting five turns."
+    },
+    "Circle Throw": {
+      "bp": 60,
+      "category": "physical",
+      "type": "fighting",
+      "priority": -6,
+      "desc": "Il bersaglio è scaraventato via ed è costretto a lasciare il posto a un altro. Mette fine alle lotte contro singoli Pokémon selvatici.",
+      "flags": [
+        "contact"
+      ],
+      "accuracy": 90
+    },
+    "Clamp": {
+      "bp": 35,
+      "category": "physical",
+      "type": "water",
+      "effect_chance": 100,
+      "desc": "Questa mossa non può essere usata. È consigliabile farla dimenticare al Pokémon. Tuttavia, una volta dimenticata, non potrà più essere ricordata.",
+      "flags": [
+        "contact"
+      ],
+      "accuracy": 85
+    },
+    "Clanging Scales": {
+      "bp": 110,
+      "category": "special",
+      "type": "dragon",
+      "effect_chance": 100,
+      "desc": "Chi la usa attacca il bersaglio con un suono fortissimo che genera sfregando le scaglie del corpo. Dopo aver attaccato, la sua Difesa diminuisce.",
+      "flags": [
+        "sound"
+      ],
+      "accuracy": 100
+    },
+    "Clangorous Soul": {
+      "category": "status",
+      "type": "dragon",
+      "effect_chance": 100,
+      "desc": "Chi la usa sacrifica un po’ dei suoi PS per aumentare tutte le sue statistiche.",
+      "flags": [
+        "sound",
+        "dance"
+      ],
+      "accuracy": 100
+    },
+    "Clear Smog": {
+      "bp": 50,
+      "category": "special",
+      "type": "poison",
+      "desc": "Attacca il bersaglio lanciandogli contro una nuvola di fumo speciale, che annulla ogni modifica alle statistiche."
+    },
+    "Close Combat": {
+      "bp": 120,
+      "category": "physical",
+      "type": "fighting",
+      "effect_chance": 100,
+      "desc": "Chi la usa attacca abbassando la guardia. La propria Difesa e la Difesa Speciale si riducono.",
+      "flags": [
+        "contact"
+      ],
+      "accuracy": 100
+    },
+    "Coil": {
+      "category": "status",
+      "type": "poison",
+      "desc": "Chi la usa si concentra aumentando Attacco, Difesa e precisione."
+    },
+    "Confuse Ray": {
+      "category": "status",
+      "type": "ghost",
+      "desc": "Colpisce il bersaglio con un raggio funesto che lo confonde.",
+      "accuracy": 100
+    },
+    "Confusion": {
+      "bp": 50,
+      "category": "special",
+      "type": "psychic",
+      "effect_chance": 10,
+      "desc": "Colpisce il bersaglio con una leggera forza telecinetica e può anche confonderlo.",
+      "accuracy": 100
+    },
+    "Constrict": {
+      "bp": 10,
+      "category": "physical",
+      "type": "normal",
+      "effect_chance": 10,
+      "desc": "Questa mossa non può essere usata. È consigliabile farla dimenticare al Pokémon. Tuttavia, una volta dimenticata, non potrà più essere ricordata.",
+      "accuracy": 100
+    },
+    "Cosmic Power": {
+      "category": "status",
+      "type": "psychic",
+      "desc": "Chi la usa assorbe una forza mistica dallo spazio che aumenta la Difesa e la Difesa Speciale."
+    },
+    "Cotton Guard": {
+      "category": "status",
+      "type": "grass",
+      "desc": "Chi la usa avvolge il proprio corpo con del cotone molto morbido, proteggendosi e aumentando moltissimo la propria Difesa."
+    },
+    "Cotton Spore": {
+      "category": "status",
+      "type": "grass",
+      "desc": "Rilascia spore simili al cotone che si attaccano ai nemici nei paraggi e ne riducono di molto la Velocità.",
+      "flags": [
+        "powder"
+      ],
+      "accuracy": 100
+    },
+    "Counter": {
+      "category": "physical",
+      "type": "fighting",
+      "priority": -5,
+      "desc": "Mossa che contrasta ogni attacco fisico, arrecando il doppio del danno ricevuto.",
+      "accuracy": 100
+    },
+    "Covet": {
+      "bp": 60,
+      "category": "physical",
+      "type": "normal",
+      "desc": "Chi la usa attacca il bersaglio sorridendo e gli ruba lo strumento.",
+      "flags": [
+        "contact"
+      ],
+      "accuracy": 100
+    },
+    "Crabhammer": {
+      "bp": 100,
+      "category": "physical",
+      "type": "water",
+      "desc": "Danneggia il bersaglio servendosi di una grande tenaglia. Probabile brutto colpo.",
+      "flags": [
+        "contact"
+      ],
+      "accuracy": 90
+    },
+    "Cross Chop": {
+      "bp": 100,
+      "category": "physical",
+      "type": "fighting",
+      "desc": "Investe il bersaglio con un colpo sferrato con entrambe le braccia incrociate. Probabile brutto colpo.",
+      "flags": [
+        "contact"
+      ],
+      "accuracy": 80
+    },
+    "Cross Poison": {
+      "bp": 70,
+      "category": "physical",
+      "type": "poison",
+      "effect_chance": 10,
+      "desc": "Attacco con zanne avvelenate che può anche avvelenare il Pokémon colpito. Probabile brutto colpo.",
+      "flags": [
+        "contact",
+        "slicing"
+      ],
+      "accuracy": 100
+    },
+    "Crush Claw": {
+      "bp": 75,
+      "category": "physical",
+      "type": "normal",
+      "effect_chance": 50,
+      "desc": "Colpisce il bersaglio con artigli robusti e affilati che possono ridurne la Difesa.",
+      "flags": [
+        "slicing",
+        "contact"
+      ],
+      "accuracy": 95
+    },
+    "Curse": {
+      "category": "status",
+      "type": "ghost",
+      "desc": "Una mossa che agisce in modo diverso se chi la usa è di tipo Spettro."
+    },
+    "Cut": {
+      "bp": 50,
+      "category": "physical",
+      "type": "normal",
+      "desc": "Attacca il bersaglio con artigli o falci affilate.",
+      "flags": [
+        "contact",
+        "slicing"
+      ],
+      "accuracy": 95
+    },
+    "Dark Pulse": {
+      "bp": 80,
+      "category": "special",
+      "type": "dark",
+      "effect_chance": 20,
+      "desc": "Chi la usa emana un’aura impregnata di oscuri pensieri. Può anche far tentennare il Pokémon colpito.",
+      "flags": [
+        "pulse"
+      ],
+      "accuracy": 100
+    },
+    "Darkest Lariat": {
+      "bp": 85,
+      "category": "physical",
+      "type": "dark",
+      "desc": "Chi la usa attacca il bersaglio mulinando gli arti. Il danno inflitto ignora le modifiche alle statistiche del bersaglio.",
+      "flags": [
+        "contact"
+      ],
+      "accuracy": 100
+    },
+    "Dazzling Gleam": {
+      "bp": 80,
+      "category": "special",
+      "type": "fairy",
+      "desc": "Chi la usa emette una luce potentissima che infligge danni ai nemici intorno.",
+      "accuracy": 100
+    },
+    "Defend Order": {
+      "category": "status",
+      "type": "bug",
+      "desc": "Chi la usa raduna i suoi sgherri per creare uno scudo, aumentando Difesa e Difesa Speciale."
+    },
+    "Defense Curl": {
+      "category": "status",
+      "type": "normal",
+      "desc": "Chi la usa si raggomitola per nascondere i punti deboli e aumentare la propria Difesa."
+    },
+    "Destiny Bond": {
+      "category": "status",
+      "type": "ghost",
+      "desc": "Se chi la usa va KO a causa di un attacco, chi ha sferrato il colpo da KO fa la stessa fine. Se usata in successione fallisce."
+    },
+    "Dig": {
+      "bp": 80,
+      "category": "physical",
+      "type": "ground",
+      "desc": "Chi la usa scava al primo turno e attacca al successivo.",
+      "flags": [
+        "contact"
+      ],
+      "accuracy": 100
+    },
+    "Dire Claw": {
+      "bp": 80,
+      "category": "physical",
+      "type": "poison",
+      "desc": "The user lashes out at the target with ruinous claws. This may also leave the target poisoned, paralyzed, or asleep.",
+      "effect_chance": 30,
+      "flags": [
+        "contact"
+      ],
+      "accuracy": 100
+    },
+    "Disable": {
+      "category": "status",
+      "type": "normal",
+      "desc": "Per quattro turni impedisce al bersaglio di riutilizzare l’ultima mossa usata.",
+      "accuracy": 100
+    },
+    "Discharge": {
+      "bp": 80,
+      "category": "special",
+      "type": "electric",
+      "effect_chance": 30,
+      "desc": "Chi la usa colpisce i Pokémon che ha intorno con un bagliore elettrico. Può anche paralizzarli.",
+      "accuracy": 100
+    },
+    "Dive": {
+      "bp": 80,
+      "category": "physical",
+      "type": "water",
+      "desc": "Chi la usa si tuffa in acqua per emergere e attaccare al turno successivo.",
+      "flags": [
+        "contact"
+      ],
+      "accuracy": 100
+    },
+    "Dizzy Punch": {
+      "bp": 70,
+      "category": "physical",
+      "type": "normal",
+      "effect_chance": 20,
+      "desc": "Questa mossa non può essere usata. È consigliabile farla dimenticare al Pokémon. Tuttavia, una volta dimenticata, non potrà più essere ricordata.",
+      "flags": [
+        "contact",
+        "punch"
+      ],
+      "accuracy": 100
+    },
+    "Double Hit": {
+      "bp": 35,
+      "category": "physical",
+      "type": "normal",
+      "desc": "Chi la usa colpisce il bersaglio due volte di fila con la coda, una liana o simili.",
+      "flags": [
+        "contact"
+      ],
+      "accuracy": 90
+    },
+    "Double Kick": {
+      "bp": 30,
+      "category": "physical",
+      "type": "fighting",
+      "desc": "Colpisce il bersaglio due volte con una raffica di calci inferti con entrambi i piedi.",
+      "flags": [
+        "contact"
+      ],
+      "accuracy": 100
+    },
+    "Double Slap": {
+      "bp": 15,
+      "category": "physical",
+      "type": "normal",
+      "desc": "Questa mossa non può essere usata. È consigliabile farla dimenticare al Pokémon. Tuttavia, una volta dimenticata, non potrà più essere ricordata.",
+      "flags": [
+        "contact"
+      ],
+      "accuracy": 85
+    },
+    "Double Team": {
+      "category": "status",
+      "type": "normal",
+      "desc": "Chi la usa si muove in fretta e crea copie illusorie di se stesso che aumentano la capacità di elusione."
+    },
+    "Double-Edge": {
+      "bp": 120,
+      "category": "physical",
+      "type": "normal",
+      "desc": "Carica spietata e pericolosa che danneggia molto anche chi la usa.",
+      "flags": [
+        "contact"
+      ],
+      "accuracy": 100
+    },
+    "Dragon Breath": {
+      "bp": 60,
+      "category": "special",
+      "type": "dragon",
+      "effect_chance": 30,
+      "desc": "Investe il bersaglio con una raffica potentissima che arreca danni. Può anche paralizzarlo.",
+      "accuracy": 100
+    },
+    "Dragon Cheer": {
+      "category": "status",
+      "type": "dragon",
+      "desc": "The user raises its allies’ morale with a draconic cry so that their future attacks have a heightened chance of landing critical hits. This rouses Dragon types more.",
+      "flags": [
+        "sound"
+      ],
+      "accuracy": 0
+    },
+    "Dragon Claw": {
+      "bp": 80,
+      "category": "physical",
+      "type": "dragon",
+      "desc": "Chi la usa attacca con artigli affilati che graffiano il bersaglio rapidamente e con grande forza.",
+      "flags": [
+        "slicing",
+        "contact"
+      ],
+      "accuracy": 100
+    },
+    "Dragon Dance": {
+      "category": "status",
+      "type": "dragon",
+      "desc": "Danza mistica e vigorosa che aumenta l’Attacco e la Velocità di chi la usa.",
+      "flags": [
+        "dance"
+      ]
+    },
+    "Dragon Pulse": {
+      "bp": 85,
+      "category": "special",
+      "type": "dragon",
+      "desc": "Chi la usa spalanca la bocca e genera un’onda d’urto che colpisce il bersaglio.",
+      "flags": [
+        "pulse"
+      ],
+      "accuracy": 100
+    },
+    "Dragon Rage": {
+      "category": "special",
+      "type": "dragon",
+      "desc": "Questa mossa non può essere usata. È consigliabile farla dimenticare al Pokémon. Tuttavia, una volta dimenticata, non potrà più essere ricordata.",
+      "accuracy": 100
+    },
+    "Dragon Rush": {
+      "bp": 100,
+      "category": "physical",
+      "type": "dragon",
+      "effect_chance": 20,
+      "desc": "Chi la usa attacca con fare minaccioso e in questo modo può anche far tentennare il bersaglio.",
+      "flags": [
+        "contact"
+      ],
+      "accuracy": 75
+    },
+    "Dragon Tail": {
+      "bp": 60,
+      "category": "physical",
+      "type": "dragon",
+      "priority": -6,
+      "desc": "Chi la usa fa volar via il bersaglio in modo che venga sostituito. Se il bersaglio è un singolo Pokémon selvatico, la lotta finisce.",
+      "flags": [
+        "contact"
+      ],
+      "accuracy": 90
+    },
+    "Drain Punch": {
+      "bp": 75,
+      "category": "physical",
+      "type": "fighting",
+      "desc": "Pugno che assorbe energia. Fa recuperare una quantità di PS pari alla metà del danno inferto.",
+      "flags": [
+        "contact",
+        "punch"
+      ],
+      "accuracy": 100
+    },
+    "Dream Eater": {
+      "bp": 100,
+      "category": "special",
+      "type": "psychic",
+      "desc": "Attacco che funziona solo su un bersaglio che dorme. Chi lo usa riceve metà dei PS persi dal Pokémon colpito.",
+      "accuracy": 100
+    },
+    "Drill Peck": {
+      "bp": 80,
+      "category": "physical",
+      "type": "flying",
+      "desc": "Attacco a spirale con un becco aguzzo che fa da trapano.",
+      "flags": [
+        "contact"
+      ],
+      "accuracy": 100
+    },
+    "Drill Run": {
+      "bp": 80,
+      "category": "physical",
+      "type": "ground",
+      "desc": "Chi la usa si scaglia sul bersaglio ruotando su se stesso come un trapano perforante. Probabile brutto colpo.",
+      "flags": [
+        "contact"
+      ],
+      "accuracy": 95
+    },
+    "Dual Chop": {
+      "bp": 40,
+      "category": "physical",
+      "type": "dragon",
+      "desc": "Chi la usa attacca due volte il bersaglio con dei colpi estremamente forti.",
+      "flags": [
+        "contact"
+      ],
+      "accuracy": 90
+    },
+    "Dual Wingbeat": {
+      "bp": 40,
+      "category": "physical",
+      "type": "flying",
+      "desc": "Chi la usa colpisce il bersaglio due volte di fila urtandolo con le ali.",
+      "flags": [
+        "contact"
+      ],
+      "accuracy": 90
+    },
+    "Dynamic Punch": {
+      "bp": 100,
+      "category": "physical",
+      "type": "fighting",
+      "effect_chance": 100,
+      "desc": "Colpisce il bersaglio con un pugno davvero forte. Se va a segno, lo confonde.",
+      "flags": [
+        "contact",
+        "punch"
+      ],
+      "accuracy": 50
+    },
+    "Earth Power": {
+      "bp": 90,
+      "category": "special",
+      "type": "ground",
+      "effect_chance": 10,
+      "desc": "Dal terreno sotto il bersaglio si sprigiona una forza devastante. Può anche ridurne la Difesa Speciale.",
+      "accuracy": 100
+    },
+    "Earthquake": {
+      "bp": 100,
+      "category": "physical",
+      "type": "ground",
+      "desc": "Chi la usa provoca un potente sisma che colpisce i Pokémon che ha intorno.",
+      "accuracy": 100
+    },
+    "Echoed Voice": {
+      "bp": 40,
+      "category": "special",
+      "type": "normal",
+      "desc": "Attacca il bersaglio con la propria voce echeggiante. Se usata a ripetizione da uno o più Pokémon il danno aumenta.",
+      "flags": [
+        "sound"
+      ],
+      "accuracy": 100
+    },
+    "Eerie Impulse": {
+      "category": "status",
+      "type": "electric",
+      "desc": "Il corpo di chi la usa emette onde anomale che investono il bersaglio, riducendone di molto l’Attacco Speciale.",
+      "accuracy": 100
+    },
+    "Electro Ball": {
+      "category": "special",
+      "type": "electric",
+      "desc": "Chi la usa attacca con una sfera d’energia elettrica. Più è rapido rispetto al bersaglio, più danni arreca.",
+      "accuracy": 100
+    },
+    "Electro Drift": {
+      "bp": 100,
+      "category": "special",
+      "type": "electric",
+      "desc": "The user races forward at ultrafast speeds, piercing its target with futuristic electricity. This move's power is boosted more than usual if it's a supereffective hit.",
+      "accuracy": 100
+    },
+    "Electroweb": {
+      "bp": 55,
+      "category": "special",
+      "type": "electric",
+      "effect_chance": 100,
+      "desc": "Chi la usa attacca i nemici intorno a sé catturandoli con una ragnatela elettrica e riducendone la Velocità.",
+      "accuracy": 95
+    },
+    "Embargo": {
+      "category": "status",
+      "type": "dark",
+      "desc": "Questa mossa non può essere usata. È consigliabile farla dimenticare al Pokémon. Tuttavia, una volta dimenticata, non potrà più essere ricordata.",
+      "accuracy": 100
+    },
+    "Ember": {
+      "bp": 40,
+      "category": "special",
+      "type": "fire",
+      "effect_chance": 10,
+      "desc": "Il bersaglio viene colpito da fiammelle che possono anche scottarlo.",
+      "accuracy": 100
+    },
+    "Encore": {
+      "category": "status",
+      "type": "normal",
+      "desc": "Chi la usa obbliga il bersaglio a ripetere per tre turni l’ultima mossa eseguita.",
+      "accuracy": 100
+    },
+    "Energy Ball": {
+      "bp": 90,
+      "category": "special",
+      "type": "grass",
+      "effect_chance": 10,
+      "desc": "Chi la usa attinge energia dalla natura e la scaglia contro il bersaglio. Può anche ridurne la Difesa Speciale.",
+      "flags": [
+        "bullet"
+      ],
+      "accuracy": 100
+    },
+    "Entrainment": {
+      "category": "status",
+      "type": "normal",
+      "desc": "Chi la usa saltella con un buffo ritmo, inducendo il bersaglio a imitarlo e rendendo la sua abilità identica alla propria.",
+      "accuracy": 100
+    },
+    "Eruption": {
+      "bp": 150,
+      "category": "special",
+      "type": "fire",
+      "desc": "Attacco impetuoso ed esplosivo la cui potenza è proporzionale ai PS di chi lo usa.",
+      "accuracy": 100
+    },
+    "Expanding Force": {
+      "bp": 80,
+      "category": "special",
+      "type": "psychic",
+      "desc": "Chi la usa attacca il bersaglio con energia psichica. Se utilizzata quando è attivo un Campo Psichico, la mossa aumenta di potenza e danneggia tutti i nemici.",
+      "accuracy": 100
+    },
+    "Explosion": {
+      "bp": 250,
+      "category": "physical",
+      "type": "normal",
+      "desc": "Chi la usa esplode per infliggere danni agli altri Pokémon attorno, ma va KO.",
+      "accuracy": 100
+    },
+    "Extreme Speed": {
+      "bp": 80,
+      "category": "physical",
+      "type": "normal",
+      "priority": 2,
+      "desc": "Chi la usa carica il bersaglio a una velocità impressionante. Questa mossa ha priorità alta.",
+      "flags": [
+        "contact"
+      ],
+      "accuracy": 100
+    },
+    "Facade": {
+      "bp": 70,
+      "category": "physical",
+      "type": "normal",
+      "desc": "Mossa d’attacco che raddoppia la potenza se chi la usa è scottato, avvelenato o paralizzato.",
+      "flags": [
+        "contact"
+      ],
+      "accuracy": 100
+    },
+    "Fake Out": {
+      "bp": 40,
+      "category": "physical",
+      "type": "normal",
+      "priority": 3,
+      "effect_chance": 100,
+      "desc": "Mossa ad alta priorità che fa tentennare il bersaglio. Funziona solo appena scesi in campo.",
+      "flags": [
+        "contact"
+      ],
+      "accuracy": 100
+    },
+    "Fake Tears": {
+      "category": "status",
+      "type": "dark",
+      "desc": "Chi la usa inscena un pianto teatrale per commuovere il bersaglio. Ne riduce di molto la Difesa Speciale.",
+      "accuracy": 100
+    },
+    "False Swipe": {
+      "bp": 40,
+      "category": "physical",
+      "type": "normal",
+      "desc": "Chi la usa trattiene il colpo per impedire al bersaglio di andare KO, lasciandolo con almeno un PS.",
+      "accuracy": 100
+    },
+    "Feint": {
+      "bp": 30,
+      "category": "physical",
+      "type": "normal",
+      "priority": 2,
+      "desc": "Colpisce anche un bersaglio che ha usato mosse come Protezione e Individua, annullandone gli effetti.",
+      "accuracy": 100
+    },
+    "Feint Attack": {
+      "bp": 60,
+      "category": "physical",
+      "type": "dark",
+      "desc": "Questa mossa non può essere usata. È consigliabile farla dimenticare al Pokémon. Tuttavia, una volta dimenticata, non potrà più essere ricordata.",
+      "flags": [
+        "contact"
+      ]
+    },
+    "Fell Stinger": {
+      "bp": 50,
+      "category": "physical",
+      "type": "bug",
+      "desc": "L’Attacco di chi la usa aumenta moltissimo se grazie alla mossa il bersaglio va KO.",
+      "flags": [
+        "contact"
+      ],
+      "accuracy": 100
+    },
+    "Fire Blast": {
+      "bp": 110,
+      "category": "special",
+      "type": "fire",
+      "effect_chance": 10,
+      "desc": "Investe il bersaglio con un’intensa fiammata che fa terra bruciata. Può anche scottarlo.",
+      "accuracy": 85
+    },
+    "Fire Fang": {
+      "bp": 65,
+      "category": "physical",
+      "type": "fire",
+      "effect_chance": 10,
+      "desc": "Chi la usa morde con denti infuocati. Può anche scottare o far tentennare il bersaglio.",
+      "flags": [
+        "contact",
+        "bite"
+      ],
+      "accuracy": 95
+    },
+    "Fire Lash": {
+      "bp": 90,
+      "category": "physical",
+      "type": "fire",
+      "effect_chance": 100,
+      "desc": "Colpisce il bersaglio con una frusta infuocata e ne riduce la Difesa.",
+      "flags": [
+        "contact"
+      ],
+      "accuracy": 100
+    },
+    "Fire Punch": {
+      "bp": 75,
+      "category": "physical",
+      "type": "fire",
+      "effect_chance": 10,
+      "desc": "Colpisce il bersaglio con un pugno ardente che può scottarlo.",
+      "flags": [
+        "contact",
+        "punch"
+      ],
+      "accuracy": 100
+    },
+    "Fire Spin": {
+      "bp": 35,
+      "category": "special",
+      "type": "fire",
+      "effect_chance": 100,
+      "desc": "Intrappola il bersaglio in un turbine di fuoco che dura per quattro o cinque turni.",
+      "accuracy": 85
+    },
+    "First Impression": {
+      "bp": 100,
+      "category": "physical",
+      "type": "bug",
+      "priority": 2,
+      "desc": "È una mossa molto potente, ma funziona solo appena scesi in campo.",
+      "flags": [
+        "contact"
+      ],
+      "accuracy": 100
+    },
+    "Fissure": {
+      "category": "physical",
+      "type": "ground",
+      "desc": "Chi la usa crea una spaccatura nel terreno e cerca di gettarvici dentro il bersaglio. Se va a segno, il Pokémon colpito va KO.",
+      "accuracy": 30
+    },
+    "Flail": {
+      "category": "physical",
+      "type": "normal",
+      "desc": "Chi la usa si dimena per attaccare. È più efficace se i suoi PS sono bassi.",
+      "accuracy": 100
+    },
+    "Flame Burst": {
+      "bp": 70,
+      "category": "special",
+      "type": "fire",
+      "desc": "Questa mossa non può essere usata. È consigliabile farla dimenticare al Pokémon. Tuttavia, una volta dimenticata, non potrà più essere ricordata.",
+      "accuracy": 100
+    },
+    "Flame Charge": {
+      "bp": 50,
+      "category": "physical",
+      "type": "fire",
+      "effect_chance": 100,
+      "desc": "Chi la usa si copre di fuoco e attacca il bersaglio. Concentrandosi aumenta, inoltre, la propria Velocità.",
+      "flags": [
+        "contact"
+      ],
+      "accuracy": 100
+    },
+    "Flame Wheel": {
+      "bp": 60,
+      "category": "physical",
+      "type": "fire",
+      "effect_chance": 10,
+      "desc": "Chi la usa si copre di fuoco e carica il bersaglio. Può anche scottarlo.",
+      "flags": [
+        "contact"
+      ],
+      "accuracy": 100
+    },
+    "Flamethrower": {
+      "bp": 90,
+      "category": "special",
+      "type": "fire",
+      "effect_chance": 10,
+      "desc": "Il bersaglio viene colpito da intense fiammate che possono anche scottarlo.",
+      "accuracy": 100
+    },
+    "Flare Blitz": {
+      "bp": 120,
+      "category": "physical",
+      "type": "fire",
+      "effect_chance": 10,
+      "desc": "Chi la usa si ricopre di fuoco e carica il bersaglio, ma subisce il contraccolpo. Può anche scottare il Pokémon colpito.",
+      "flags": [
+        "contact"
+      ],
+      "accuracy": 100
+    },
+    "Flash": {
+      "category": "status",
+      "type": "normal",
+      "desc": "Questa mossa non può essere usata. È consigliabile farla dimenticare al Pokémon. Tuttavia, una volta dimenticata, non potrà più essere ricordata.",
+      "accuracy": 100
+    },
+    "Flash Cannon": {
+      "bp": 80,
+      "category": "special",
+      "type": "steel",
+      "effect_chance": 10,
+      "desc": "Chi la usa attacca raccogliendo e rilasciando energia luminosa. Può ridurre la Difesa Speciale del bersaglio.",
+      "accuracy": 100
+    },
+    "Flatter": {
+      "category": "status",
+      "type": "dark",
+      "desc": "Adula il bersaglio e lo confonde, ma ne aumenta l’Attacco Speciale.",
+      "accuracy": 100
+    },
+    "Fling": {
+      "category": "physical",
+      "type": "dark",
+      "desc": "Chi la usa lancia il suo strumento addosso al bersaglio. La forza e l’effetto dipendono dallo strumento.",
+      "accuracy": 100
+    },
+    "Flip Turn": {
+      "bp": 60,
+      "category": "physical",
+      "type": "water",
+      "desc": "Chi usa questa mossa fa marcia indietro per farsi sostituire dopo aver sferrato l’attacco.",
+      "flags": [
+        "contact"
+      ],
+      "accuracy": 100
+    },
+    "Flower Shield": {
+      "category": "status",
+      "type": "fairy",
+      "effect_chance": 100,
+      "desc": "Grazie a un misterioso potere, aumenta la Difesa di tutti i Pokémon di tipo Erba presenti in campo."
+    },
+    "Fly": {
+      "bp": 90,
+      "category": "physical",
+      "type": "flying",
+      "desc": "Chi la usa si alza in volo per attaccare al turno seguente.",
+      "flags": [
+        "contact"
+      ],
+      "accuracy": 95
+    },
+    "Focus Blast": {
+      "bp": 120,
+      "category": "special",
+      "type": "fighting",
+      "effect_chance": 10,
+      "desc": "Chi la usa si concentra e rilascia la sua forza. Può ridurre la Difesa Speciale del Pokémon colpito.",
+      "flags": [
+        "bullet"
+      ],
+      "accuracy": 70
+    },
+    "Focus Energy": {
+      "category": "status",
+      "type": "normal",
+      "desc": "Chi la usa fa un profondo respiro e si concentra per rendere più probabili i brutti colpi."
+    },
+    "Force Palm": {
+      "bp": 60,
+      "category": "physical",
+      "type": "fighting",
+      "effect_chance": 30,
+      "desc": "Chi la usa attacca con un’onda d’urto che può anche paralizzare il bersaglio.",
+      "flags": [
+        "contact"
+      ],
+      "accuracy": 100
+    },
+    "Foul Play": {
+      "bp": 95,
+      "category": "physical",
+      "type": "dark",
+      "desc": "Chi la usa sfrutta la forza del bersaglio. Il danno inflitto è proporzionale all’Attacco del nemico.",
+      "flags": [
+        "contact"
+      ],
+      "accuracy": 100
+    },
+    "Freeze Dry": {
+      "bp": 70,
+      "category": "special",
+      "type": "ice",
+      "effect_chance": 10,
+      "desc": "Chi la usa raffredda istantaneamente il bersaglio e può congelarlo. Risulta superefficace contro i Pokémon di tipo Acqua.",
+      "accuracy": 100
+    },
+    "Freeze-Dry": {
+      "bp": 70,
+      "category": "special",
+      "type": "ice",
+      "effect_chance": 10,
+      "desc": "Chi la usa raffredda istantaneamente il bersaglio e può congelarlo. Risulta superefficace contro i Pokémon di tipo Acqua.",
+      "accuracy": 100
+    },
+    "Frustration": {
+      "category": "physical",
+      "type": "normal",
+      "desc": "Questa mossa non può essere usata. È consigliabile farla dimenticare al Pokémon. Tuttavia, una volta dimenticata, non potrà più essere ricordata.",
+      "accuracy": 100
+    },
+    "Fury Attack": {
+      "bp": 15,
+      "category": "physical",
+      "type": "normal",
+      "desc": "Infilza il bersaglio con corna affilate o con il becco da due a cinque volte di fila.",
+      "flags": [
+        "contact"
+      ],
+      "accuracy": 85
+    },
+    "Fury Cutter": {
+      "bp": 40,
+      "category": "physical",
+      "type": "bug",
+      "desc": "Colpisce il bersaglio con falci o artigli. Se usata in successione aumenta di potenza ogni volta che va a segno.",
+      "flags": [
+        "contact",
+        "slicing"
+      ],
+      "accuracy": 95
+    },
+    "Fury Swipes": {
+      "bp": 18,
+      "category": "physical",
+      "type": "normal",
+      "desc": "Colpisce il bersaglio con artigli o falci affilate da due a cinque volte in rapida successione.",
+      "flags": [
+        "contact"
+      ],
+      "accuracy": 80
+    },
+    "Future Sight": {
+      "bp": 120,
+      "category": "special",
+      "type": "psychic",
+      "desc": "Due turni dopo l’utilizzo di questa mossa, il bersaglio viene attaccato con energia psichica.",
+      "accuracy": 100
+    },
+    "Gastro Acid": {
+      "category": "status",
+      "type": "poison",
+      "desc": "Chi la usa lancia acidi gastrici sul bersaglio. Il fluido annulla l’abilità del Pokémon colpito.",
+      "accuracy": 100
+    },
+    "Gear Up": {
+      "category": "status",
+      "type": "steel",
+      "desc": "Dà una marcia in più agli alleati con le abilità Meno o Più aumentandone l’Attacco e l’Attacco Speciale."
+    },
+    "Giga Drain": {
+      "bp": 75,
+      "category": "special",
+      "type": "grass",
+      "desc": "Mossa che assorbe PS. Chi la usa recupera una quantità di PS pari alla metà del danno inferto.",
+      "accuracy": 100
+    },
+    "Giga Impact": {
+      "bp": 150,
+      "category": "physical",
+      "type": "normal",
+      "desc": "Chi la usa carica il bersaglio usando tutta la sua forza, ma al turno successivo deve riposarsi.",
+      "flags": [
+        "contact",
+        "recharge"
+      ],
+      "accuracy": 90
+    },
+    "Gigaton Hammer": {
+      "bp": 160,
+      "category": "physical",
+      "type": "steel",
+      "desc": "The user swings its whole body around to attack with its huge hammer. This move can't be used twice in a row.",
+      "flags": [
+        "contact"
+      ],
+      "accuracy": 100
+    },
+    "Glacial Lance": {
+      "bp": 120,
+      "category": "physical",
+      "type": "ice",
+      "desc": "Il Pokémon attacca i nemici scagliando una lancia di ghiaccio accompagnata da una tormenta di neve.",
+      "flags": [
+        "contact"
+      ],
+      "accuracy": 100
+    },
+    "Glare": {
+      "category": "status",
+      "type": "normal",
+      "desc": "Chi la usa spaventa il bersaglio con uno sguardo terrificante e ne causa la paralisi.",
+      "accuracy": 100
+    },
+    "Grass Knot": {
+      "category": "special",
+      "type": "grass",
+      "desc": "Chi la usa intrappola il bersaglio con l’erba e lo fa cadere. Danneggia maggiormente i Pokémon più pesanti.",
+      "accuracy": 100
+    },
+    "Grass Pledge": {
+      "bp": 80,
+      "category": "special",
+      "type": "grass",
+      "desc": "Attacca il bersaglio con una colonna d’erba. Se usata con Acquapatto, gli effetti aumentano e il campo diventa una palude.",
+      "flags": [
+        "contact"
+      ],
+      "accuracy": 100
+    },
+    "Grassy Glide": {
+      "bp": 55,
+      "category": "physical",
+      "type": "grass",
+      "desc": "Chi la usa attacca il bersaglio scivolando sul terreno. Se utilizzata quando è attivo un Campo Erboso, ha priorità alta.",
+      "flags": [
+        "contact"
+      ],
+      "accuracy": 100
+    },
+    "Grassy Terrain": {
+      "category": "status",
+      "type": "grass",
+      "desc": "Per cinque turni il terreno entra nello stato di Campo Erboso: i Pokémon a terra recuperano PS a ogni turno e la potenza delle mosse di tipo Erba aumenta."
+    },
+    "Gravity": {
+      "category": "status",
+      "type": "psychic",
+      "desc": "Per cinque turni rende vulnerabili alle mosse di tipo Terra i Pokémon con Levitazione o di tipo Volante. Non è possibile usare mosse che fanno volare."
+    },
+    "Growl": {
+      "category": "status",
+      "type": "normal",
+      "desc": "Distrae i nemici intorno con un tenero ruggito e ne riduce l’Attacco.",
+      "flags": [
+        "sound"
+      ],
+      "accuracy": 100
+    },
+    "Growth": {
+      "category": "status",
+      "type": "normal",
+      "desc": "Provoca la crescita immediata del corpo e l’aumento dell’Attacco e dell’Attacco Speciale di chi la usa."
+    },
+    "Grudge": {
+      "category": "status",
+      "type": "ghost",
+      "desc": "Se chi la usa va KO, i PP della mossa nemica che lo ha messo fuori gioco si azzerano."
+    },
+    "Guard Swap": {
+      "category": "status",
+      "type": "psychic",
+      "desc": "Chi la usa sfrutta la sua forza psichica per scambiare le modifiche a Difesa e Difesa Speciale con il bersaglio."
+    },
+    "Guillotine": {
+      "category": "physical",
+      "type": "normal",
+      "desc": "Attacca il bersaglio con pericolose tenaglie. Se l’attacco va a segno, il Pokémon colpito va subito KO.",
+      "flags": [
+        "contact"
+      ],
+      "accuracy": 30
+    },
+    "Gunk Shot": {
+      "bp": 120,
+      "category": "physical",
+      "type": "poison",
+      "effect_chance": 30,
+      "desc": "Chi la usa attacca il bersaglio con rifiuti sudici che possono anche avvelenarlo.",
+      "accuracy": 80
+    },
+    "Gust": {
+      "bp": 40,
+      "category": "special",
+      "type": "flying",
+      "desc": "Infligge danni al bersaglio con una folata di vento sollevata dalle ali.",
+      "accuracy": 100
+    },
+    "Gyro Ball": {
+      "category": "physical",
+      "type": "steel",
+      "desc": "Chi la usa si scaglia sul bersaglio facendo ruotare vorticosamente il proprio corpo. Più lento è chi la usa, maggiore è il danno.",
+      "accuracy": 100
+    },
+    "Harden": {
+      "category": "status",
+      "type": "normal",
+      "desc": "Tutti i muscoli del corpo si tonificano per aumentare la Difesa."
+    },
+    "Haze": {
+      "category": "status",
+      "type": "ice",
+      "desc": "Chi la usa crea una nube nera che annulla ogni modifica alle statistiche di tutti i Pokémon in campo."
+    },
+    "Head Smash": {
+      "bp": 150,
+      "category": "physical",
+      "type": "rock",
+      "desc": "Chi la usa attacca con tutta la potenza di cui dispone, ma subisce danni considerevoli.",
+      "flags": [
+        "contact"
+      ],
+      "accuracy": 80
+    },
+    "Headbutt": {
+      "bp": 70,
+      "category": "physical",
+      "type": "normal",
+      "effect_chance": 30,
+      "desc": "Chi la usa si lancia diritto di testa contro il bersaglio. Può anche farlo tentennare.",
+      "flags": [
+        "contact"
+      ],
+      "accuracy": 100
+    },
+    "Heal Bell": {
+      "category": "status",
+      "type": "normal",
+      "desc": "Chi la usa produce uno scampanellio che cura i problemi di stato suoi e dei Pokémon alleati.",
+      "flags": [
+        "sound"
+      ]
+    },
+    "Heal Order": {
+      "category": "status",
+      "type": "bug",
+      "desc": "Questa mossa non può essere usata. È consigliabile farla dimenticare al Pokémon. Tuttavia, una volta dimenticata, non potrà più essere ricordata."
+    },
+    "Heal Pulse": {
+      "category": "status",
+      "type": "psychic",
+      "desc": "Chi la usa lancia un’onda rilassante che fa recuperare al bersaglio metà dei suoi PS massimi.",
+      "flags": [
+        "pulse"
+      ]
+    },
+    "Heart Stamp": {
+      "bp": 60,
+      "category": "physical",
+      "type": "psychic",
+      "effect_chance": 30,
+      "desc": "Questa mossa non può essere usata. È consigliabile farla dimenticare al Pokémon. Tuttavia, una volta dimenticata, non potrà più essere ricordata.",
+      "flags": [
+        "contact"
+      ],
+      "accuracy": 100
+    },
+    "Heat Crash": {
+      "category": "physical",
+      "type": "fire",
+      "desc": "Chi la usa carica con il suo corpo rovente. Più è pesante rispetto al bersaglio, più danni causa.",
+      "flags": [
+        "contact"
+      ],
+      "accuracy": 100
+    },
+    "Heat Wave": {
+      "bp": 95,
+      "category": "special",
+      "type": "fire",
+      "effect_chance": 10,
+      "desc": "Chi la usa investe i nemici che ha intorno con una folata di vento caldo. Può anche scottarli.",
+      "accuracy": 90
+    },
+    "Heavy Slam": {
+      "category": "physical",
+      "type": "steel",
+      "desc": "Chi la usa si lancia contro il bersaglio con tutto il proprio peso. Più è pesante rispetto ad esso, più danni causa.",
+      "flags": [
+        "contact"
+      ],
+      "accuracy": 100
+    },
+    "Helping Hand": {
+      "category": "status",
+      "type": "normal",
+      "priority": 5,
+      "desc": "Mossa che aumenta la potenza dell’attacco di un alleato."
+    },
+    "Hex": {
+      "bp": 65,
+      "category": "special",
+      "type": "ghost",
+      "desc": "Attacco che causa un danno enorme se il bersaglio ha problemi di stato.",
+      "accuracy": 100
+    },
+    "High Horsepower": {
+      "bp": 95,
+      "category": "physical",
+      "type": "ground",
+      "desc": "Chi la usa travolge il bersaglio con un attacco possente.",
+      "accuracy": 95
+    },
+    "High Jump Kick": {
+      "bp": 130,
+      "category": "physical",
+      "type": "fighting",
+      "desc": "Chi la usa colpisce il bersaglio con una ginocchiata in volo. Se fallisce, subisce danni.",
+      "flags": [
+        "contact"
+      ],
+      "accuracy": 90
+    },
+    "Hold Hands": {
+      "category": "status",
+      "type": "normal",
+      "desc": "Il Pokémon che la usa e un alleato si prendono per mano e fanno salti di gioia."
+    },
+    "Horn Attack": {
+      "bp": 65,
+      "category": "physical",
+      "type": "normal",
+      "desc": "Danneggia il bersaglio infilzandolo con un corno affilato.",
+      "flags": [
+        "contact"
+      ],
+      "accuracy": 100
+    },
+    "Horn Drill": {
+      "category": "physical",
+      "type": "normal",
+      "desc": "Colpisce il bersaglio con un corno perforante come un trapano. Se il colpo va a segno, il Pokémon colpito va KO.",
+      "flags": [
+        "contact"
+      ],
+      "accuracy": 30
+    },
+    "Hurricane": {
+      "bp": 110,
+      "category": "special",
+      "type": "flying",
+      "effect_chance": 30,
+      "desc": "Chi la usa attacca il bersaglio avvolgendolo con un vento fortissimo. Può anche confonderlo.",
+      "accuracy": 70
+    },
+    "Hydro Pump": {
+      "bp": 110,
+      "category": "special",
+      "type": "water",
+      "desc": "Il bersaglio è travolto da un potente getto d’acqua spruzzato ad altissima pressione.",
+      "flags": [
+        "recharge"
+      ],
+      "accuracy": 80
+    },
+    "Hyper Beam": {
+      "bp": 150,
+      "category": "special",
+      "type": "normal",
+      "desc": "Colpisce il bersaglio con un potente raggio. Chi la usa salta il turno successivo per recuperare energia.",
+      "flags": [
+        "recharge"
+      ],
+      "accuracy": 90
+    },
+    "Hyper Fang": {
+      "bp": 80,
+      "category": "physical",
+      "type": "normal",
+      "effect_chance": 10,
+      "desc": "Chi la usa morde il bersaglio con i suoi incisivi affilati. Può anche farlo tentennare.",
+      "flags": [
+        "contact",
+        "bite"
+      ],
+      "accuracy": 90
+    },
+    "Hyper Voice": {
+      "bp": 90,
+      "category": "special",
+      "type": "normal",
+      "desc": "Chi la usa lancia un urlo straziante che danneggia i nemici intorno a sé.",
+      "flags": [
+        "sound"
+      ],
+      "accuracy": 100
+    },
+    "Hypnosis": {
+      "category": "status",
+      "type": "psychic",
+      "desc": "Chi la usa si avvale della suggestione ipnotica per far addormentare il bersaglio.",
+      "accuracy": 60
+    },
+    "Ice Beam": {
+      "bp": 90,
+      "category": "special",
+      "type": "ice",
+      "effect_chance": 10,
+      "desc": "Il bersaglio è colpito da un raggio di energia gelida che può anche congelarlo.",
+      "accuracy": 100
+    },
+    "Ice Fang": {
+      "bp": 65,
+      "category": "physical",
+      "type": "ice",
+      "effect_chance": 10,
+      "desc": "Chi la usa morde con denti ghiacciati. Può anche congelare o far tentennare il bersaglio.",
+      "flags": [
+        "contact",
+        "bite"
+      ],
+      "accuracy": 95
+    },
+    "Ice Hammer": {
+      "bp": 100,
+      "category": "physical",
+      "type": "ice",
+      "effect_chance": 100,
+      "desc": "Infligge danni al bersaglio colpendolo con un pugno molto potente. Riduce la Velocità di chi la usa.",
+      "flags": [
+        "contact",
+        "punch"
+      ],
+      "accuracy": 90
+    },
+    "Ice Punch": {
+      "bp": 75,
+      "category": "physical",
+      "type": "ice",
+      "effect_chance": 10,
+      "desc": "Colpisce il bersaglio con un pugno di ghiaccio che può congelarlo.",
+      "flags": [
+        "contact",
+        "punch"
+      ],
+      "accuracy": 100
+    },
+    "Ice Shard": {
+      "bp": 40,
+      "category": "physical",
+      "type": "ice",
+      "priority": 1,
+      "desc": "Chi la usa crea dei pezzi di ghiaccio e li lancia. Questa mossa ha priorità alta.",
+      "accuracy": 100
+    },
+    "Ice Spinner": {
+      "bp": 80,
+      "category": "physical",
+      "type": "ice",
+      "desc": "The user covers its feet in thin ice and twirls around, slamming into the target. This move's spinning motion also destroys the terrain.",
+      "accuracy": 100
+    },
+    "Icicle Crash": {
+      "bp": 85,
+      "category": "physical",
+      "type": "ice",
+      "effect_chance": 30,
+      "desc": "Chi la usa attacca violentemente il bersaglio con grosse stalattiti di ghiaccio che possono anche farlo tentennare.",
+      "flags": [
+        "contact"
+      ],
+      "accuracy": 90
+    },
+    "Icicle Spear": {
+      "bp": 25,
+      "category": "physical",
+      "type": "ice",
+      "desc": "Chi la usa spara ghiaccioli affilati contro il bersaglio da due a cinque volte di fila.",
+      "accuracy": 100
+    },
+    "Icy Wind": {
+      "bp": 55,
+      "category": "special",
+      "type": "ice",
+      "effect_chance": 100,
+      "desc": "Chi la usa attacca i nemici intorno con una folata di aria gelida e ne riduce anche la Velocità.",
+      "accuracy": 95
+    },
+    "Infernal Parade": {
+      "bp": 65,
+      "category": "special",
+      "type": "ghost",
+      "desc": "The user attacks with myriad fireballs. This may also leave the target with a burn. This move's power is doubled if the target has a status condition.",
+      "effect_chance": 30,
+      "accuracy": 100
+    },
+    "Iron Defense": {
+      "category": "status",
+      "type": "steel",
+      "desc": "Il corpo di chi la usa si indurisce come il ferro, facendone salire di molto la Difesa."
+    },
+    "Iron Head": {
+      "bp": 80,
+      "category": "physical",
+      "type": "steel",
+      "effect_chance": 20,
+      "desc": "Chi la usa colpisce il bersaglio con la sua testa dura come l’acciaio. Può anche farlo tentennare.",
+      "flags": [
+        "contact"
+      ],
+      "accuracy": 100
+    },
+    "Iron Tail": {
+      "bp": 100,
+      "category": "physical",
+      "type": "steel",
+      "effect_chance": 30,
+      "desc": "Il bersaglio viene colpito da una robusta coda d’acciaio. Può anche ridurne la Difesa.",
+      "flags": [
+        "contact"
+      ],
+      "accuracy": 75
+    },
+    "Jaw Lock": {
+      "bp": 80,
+      "category": "physical",
+      "type": "dark",
+      "desc": "Impedisce a chi la usa e al bersaglio di essere sostituiti finché non vanno KO. L’effetto svanisce se uno dei due lascia il campo.",
+      "flags": [
+        "contact",
+        "bite"
+      ],
+      "accuracy": 100
+    },
+    "Judgment": {
+      "bp": 100,
+      "category": "special",
+      "type": "normal",
+      "desc": "Chi la usa rilascia numerosi colpi di luce. Il tipo varia a seconda della lastra che ha.",
+      "accuracy": 100
+    },
+    "Jump Kick": {
+      "bp": 100,
+      "category": "physical",
+      "type": "fighting",
+      "desc": "Questa mossa non può essere usata. È consigliabile farla dimenticare al Pokémon. Tuttavia, una volta dimenticata, non potrà più essere ricordata.",
+      "flags": [
+        "contact"
+      ],
+      "accuracy": 95
+    },
+    "Karate Chop": {
+      "bp": 50,
+      "category": "physical",
+      "type": "fighting",
+      "desc": "Questa mossa non può essere usata. È consigliabile farla dimenticare al Pokémon. Tuttavia, una volta dimenticata, non potrà più essere ricordata.",
+      "flags": [
+        "contact"
+      ],
+      "accuracy": 100
+    },
+    "Knock Off": {
+      "bp": 65,
+      "category": "physical",
+      "type": "dark",
+      "desc": "Attacco che fa cadere lo strumento del bersaglio, impedendone l’uso nella lotta. La sua potenza aumenta se il Pokémon colpito ha uno strumento.",
+      "flags": [
+        "contact"
+      ],
+      "accuracy": 100
+    },
+    "Last Resort": {
+      "bp": 140,
+      "category": "physical",
+      "type": "normal",
+      "desc": "Per usare questa mossa, bisogna prima avvalersi in lotta di tutte le altre mosse conosciute.",
+      "accuracy": 100
+    },
+    "Lava Plume": {
+      "bp": 80,
+      "category": "special",
+      "type": "fire",
+      "effect_chance": 30,
+      "desc": "Chi la usa lancia fiamme scarlatte su tutti i Pokémon nelle vicinanze, danneggiandoli. Può anche scottarli.",
+      "accuracy": 100
+    },
+    "Leaf Blade": {
+      "bp": 90,
+      "category": "physical",
+      "type": "grass",
+      "desc": "Colpisce il bersaglio usando una foglia affilata come una spada. Probabile brutto colpo.",
+      "flags": [
+        "slicing"
+      ],
+      "accuracy": 100
+    },
+    "Leaf Storm": {
+      "bp": 130,
+      "category": "special",
+      "type": "grass",
+      "effect_chance": 100,
+      "desc": "Si forma una tempesta di foglie affilate. Il contraccolpo riduce di molto l’Attacco Speciale di chi la usa.",
+      "accuracy": 90
+    },
+    "Leaf Tornado": {
+      "bp": 65,
+      "category": "special",
+      "type": "grass",
+      "effect_chance": 50,
+      "desc": "Chi la usa avvolge e attacca il bersaglio con foglie affilate che possono anche ridurne la precisione.",
+      "accuracy": 90
+    },
+    "Leech Life": {
+      "bp": 80,
+      "category": "physical",
+      "type": "bug",
+      "desc": "Mossa succhiasangue. Chi la usa recupera una quantità di PS pari alla metà del danno inferto.",
+      "accuracy": 100
+    },
+    "Leech Seed": {
+      "category": "status",
+      "type": "grass",
+      "desc": "Vengono piantati semi sul bersaglio. Questi sottraggono PS a ogni turno permettendo a chi la usa di curarsi.",
+      "accuracy": 90
+    },
+    "Leer": {
+      "category": "status",
+      "type": "normal",
+      "effect_chance": 100,
+      "desc": "Terrorizza i nemici intorno con uno sguardo fulminante e intimidatorio, riducendone la Difesa.",
+      "accuracy": 100
+    },
+    "Light Screen": {
+      "category": "status",
+      "type": "psychic",
+      "desc": "Innalza una barriera misteriosa che riduce i danni degli attacchi speciali per sé e gli alleati per cinque turni."
+    },
+    "Liquidation": {
+      "bp": 85,
+      "category": "physical",
+      "type": "water",
+      "effect_chance": 20,
+      "desc": "Chi la usa colpisce il bersaglio con la forza dell’acqua. Può anche ridurne la Difesa.",
+      "accuracy": 100
+    },
+    "Lock-On": {
+      "category": "status",
+      "type": "normal",
+      "desc": "Chi la usa punta il bersaglio con precisione. La mossa successiva andrà a segno."
+    },
+    "Low Kick": {
+      "category": "physical",
+      "type": "fighting",
+      "desc": "Un calcio basso e potente che fa cadere il bersaglio. Danneggia maggiormente i Pokémon più pesanti.",
+      "accuracy": 100
+    },
+    "Low Sweep": {
+      "bp": 65,
+      "category": "physical",
+      "type": "fighting",
+      "effect_chance": 100,
+      "desc": "Chi la usa colpisce con un attacco fulmineo la parte inferiore del corpo del bersaglio, riducendone la Velocità.",
+      "accuracy": 100
+    },
+    "Lucky Chant": {
+      "category": "status",
+      "type": "normal",
+      "desc": "Questa mossa non può essere usata. È consigliabile farla dimenticare al Pokémon. Tuttavia, una volta dimenticata, non potrà più essere ricordata."
+    },
+    "Lunge": {
+      "bp": 80,
+      "category": "physical",
+      "type": "bug",
+      "effect_chance": 100,
+      "desc": "Chi la usa si lancia con tutte le sue forze sul bersaglio e ne riduce l’Attacco.",
+      "flags": [
+        "contact"
+      ],
+      "accuracy": 100
+    },
+    "Mach Punch": {
+      "bp": 40,
+      "category": "physical",
+      "type": "fighting",
+      "priority": 1,
+      "desc": "Chi la usa tira un pugno a una velocità impressionante. Questa mossa ha priorità alta.",
+      "flags": [
+        "contact",
+        "punch"
+      ],
+      "accuracy": 100
+    },
+    "Magic Coat": {
+      "category": "status",
+      "type": "psychic",
+      "priority": 4,
+      "desc": "Una barriera rimanda al mittente l’effetto di mosse come Parassiseme e di mosse che influenzano lo stato."
+    },
+    "Magic Room": {
+      "category": "status",
+      "type": "psychic",
+      "desc": "Chi la usa crea una dimensione in cui l’effetto degli strumenti di tutti i Pokémon è annullato per cinque turni."
+    },
+    "Magical Leaf": {
+      "bp": 60,
+      "category": "special",
+      "type": "grass",
+      "desc": "Chi la usa sparpaglia strane foglie che inseguono il bersaglio. Questa mossa è infallibile."
+    },
+    "Magnitude": {
+      "category": "physical",
+      "type": "ground",
+      "desc": "Questa mossa non può essere usata. È consigliabile farla dimenticare al Pokémon. Tuttavia, una volta dimenticata, non potrà più essere ricordata.",
+      "accuracy": 100
+    },
+    "Mega Drain": {
+      "bp": 40,
+      "category": "special",
+      "type": "grass",
+      "desc": "Mossa che assorbe PS. Chi la usa recupera una quantità di PS pari alla metà del danno inferto.",
+      "accuracy": 100
+    },
+    "Mega Kick": {
+      "bp": 120,
+      "category": "physical",
+      "type": "normal",
+      "desc": "Colpisce il bersaglio con un calcio sferrato con la forza di muscoli poderosi.",
+      "flags": [
+        "contact"
+      ],
+      "accuracy": 75
+    },
+    "Mega Punch": {
+      "bp": 80,
+      "category": "physical",
+      "type": "normal",
+      "desc": "Colpisce il bersaglio con un pugno poderoso.",
+      "flags": [
+        "contact",
+        "punch"
+      ],
+      "accuracy": 85
+    },
+    "Metal Burst": {
+      "category": "physical",
+      "type": "steel",
+      "desc": "Chi la usa si vendica sul nemico che l’ha appena ferito con una mossa anche più potente.",
+      "flags": [
+        "contact"
+      ],
+      "accuracy": 100
+    },
+    "Metal Claw": {
+      "bp": 50,
+      "category": "physical",
+      "type": "steel",
+      "effect_chance": 10,
+      "desc": "Colpisce il bersaglio con artigli d’acciaio. Può anche aumentare l’Attacco di chi la usa.",
+      "flags": [
+        "contact"
+      ],
+      "accuracy": 95
+    },
+    "Metal Sound": {
+      "category": "status",
+      "type": "steel",
+      "desc": "Orribile stridio, simile a quello prodotto dal metallo, che riduce di molto la Difesa Speciale del bersaglio.",
+      "flags": [
+        "sound"
+      ],
+      "accuracy": 85
+    },
+    "Meteor Beam": {
+      "bp": 120,
+      "category": "special",
+      "type": "rock",
+      "effect_chance": 100,
+      "desc": "Chi la usa accumula l’energia dello spazio nel primo turno per aumentare l’Attacco Speciale, quindi attacca nel turno successivo.",
+      "accuracy": 90
+    },
+    "Meteor Mash": {
+      "bp": 90,
+      "category": "physical",
+      "type": "steel",
+      "effect_chance": 20,
+      "desc": "Colpisce il bersaglio con un pugno veloce come una meteora. Può far salire l’Attacco di chi la usa.",
+      "flags": [
+        "contact",
+        "punch"
+      ],
+      "accuracy": 90
+    },
+    "Misty Explosion": {
+      "bp": 100,
+      "category": "special",
+      "type": "fairy",
+      "desc": "Chi la usa attacca tutti i Pokémon che ha intorno, ma poi va KO. La potenza della mossa aumenta quando è attivo un Campo Nebbioso.",
+      "accuracy": 100
+    },
+    "Misty Terrain": {
+      "category": "status",
+      "type": "fairy",
+      "desc": "Per cinque turni il terreno entra nello stato di Campo Nebbioso: i Pokémon a terra sono immuni ai problemi di stato e la potenza delle mosse Drago è dimezzata."
+    },
+    "Moonblast": {
+      "bp": 95,
+      "category": "special",
+      "type": "fairy",
+      "effect_chance": 10,
+      "desc": "Chi la usa sfrutta il potere della luna per attaccare il bersaglio. Può anche ridurne l’Attacco Speciale.",
+      "accuracy": 100
+    },
+    "Moonlight": {
+      "category": "status",
+      "type": "fairy",
+      "desc": "Chi la usa recupera PS. Il numero di PS recuperati dipende dalle condizioni atmosferiche."
+    },
+    "Morning Sun": {
+      "category": "status",
+      "type": "normal",
+      "desc": "Chi la usa recupera PS. Il numero di PS recuperati dipende dalle condizioni atmosferiche."
+    },
+    "Mountain Gale": {
+      "bp": 120,
+      "category": "physical",
+      "type": "ice",
+      "desc": "The user hurls giant chunks of ice at the target to inflict damage. This may also make the target flinch.",
+      "effect_chance": 30,
+      "flags": [
+        "contact"
+      ],
+      "accuracy": 85
+    },
+    "Mud Bomb": {
+      "bp": 65,
+      "category": "special",
+      "type": "ground",
+      "effect_chance": 30,
+      "desc": "Questa mossa non può essere usata. È consigliabile farla dimenticare al Pokémon. Tuttavia, una volta dimenticata, non potrà più essere ricordata.",
+      "flags": [
+        "bullet"
+      ],
+      "accuracy": 85
+    },
+    "Mud Shot": {
+      "bp": 55,
+      "category": "special",
+      "type": "ground",
+      "effect_chance": 100,
+      "desc": "Chi la usa attacca lanciando fango sul bersaglio, riducendone anche la Velocità.",
+      "accuracy": 95
+    },
+    "Mud Slap": {
+      "bp": 20,
+      "category": "special",
+      "type": "ground",
+      "effect_chance": 100,
+      "desc": "Chi la usa butta fango in faccia al bersaglio per arrecargli danni e ridurne la precisione.",
+      "flags": [
+        "contact"
+      ],
+      "accuracy": 100
+    },
+    "Muddy Water": {
+      "bp": 90,
+      "category": "special",
+      "type": "water",
+      "effect_chance": 30,
+      "desc": "Chi la usa attacca i nemici che ha intorno con un getto di fango che può anche ridurne la precisione.",
+      "flags": [
+        "pulse"
+      ],
+      "accuracy": 85
+    },
+    "Nasty Plot": {
+      "category": "status",
+      "type": "dark",
+      "desc": "Chi la usa stimola il cervello pensando a cose cattive. Aumenta di molto l’Attacco Speciale."
+    },
+    "Night Daze": {
+      "bp": 90,
+      "category": "special",
+      "type": "dark",
+      "effect_chance": 40,
+      "desc": "Chi la usa attacca il bersaglio con un’onda d’urto oscura che può anche ridurne la precisione.",
+      "accuracy": 95
+    },
+    "Night Shade": {
+      "category": "special",
+      "type": "ghost",
+      "desc": "Fa apparire un orribile miraggio al bersaglio e infligge un danno pari al livello di chi la usa.",
+      "accuracy": 100
+    },
+    "Night Slash": {
+      "bp": 70,
+      "category": "physical",
+      "type": "dark",
+      "desc": "Chi la usa colpisce il bersaglio appena si presenta l’occasione. Probabile brutto colpo.",
+      "flags": [
+        "contact",
+        "slicing"
+      ],
+      "accuracy": 100
+    },
+    "Noble Roar": {
+      "category": "status",
+      "type": "normal",
+      "effect_chance": 100,
+      "desc": "Chi la usa emette un urlo potente che intimidisce il bersaglio, riducendone l’Attacco e l’Attacco Speciale.",
+      "flags": [
+        "sound"
+      ],
+      "accuracy": 100
+    },
+    "Nuzzle": {
+      "bp": 20,
+      "category": "physical",
+      "type": "electric",
+      "effect_chance": 100,
+      "desc": "Chi la usa strofina le guance elettrizzate contro il bersaglio, paralizzandolo.",
+      "accuracy": 100
+    },
+    "Obstruct": {
+      "category": "status",
+      "type": "dark",
+      "priority": 4,
+      "desc": "Permette di eludere tutti gli attacchi. Se usata in successione può fallire. Se un Pokémon tocca chi la usa, la sua Difesa diminuisce di molto.",
+      "accuracy": 100
+    },
+    "Ominous Wind": {
+      "bp": 60,
+      "category": "special",
+      "type": "ghost",
+      "effect_chance": 10,
+      "desc": "Questa mossa non può essere usata. È consigliabile farla dimenticare al Pokémon. Tuttavia, una volta dimenticata, non potrà più essere ricordata.",
+      "accuracy": 100
+    },
+    "Outrage": {
+      "bp": 120,
+      "category": "physical",
+      "type": "dragon",
+      "desc": "Chi la usa sfoga la sua ira e attacca il nemico per due o tre turni prima di essere lasciato in preda alla confusione.",
+      "flags": [
+        "contact"
+      ],
+      "accuracy": 100
+    },
+    "Overheat": {
+      "bp": 130,
+      "category": "special",
+      "type": "fire",
+      "effect_chance": 100,
+      "desc": "Chi la usa sferra un potente attacco, ma il contraccolpo riduce di molto il suo Attacco Speciale.",
+      "accuracy": 90
+    },
+    "Pain Split": {
+      "category": "status",
+      "type": "normal",
+      "desc": "Chi la usa somma i propri PS a quelli di un altro Pokémon per poi dividerli in parti uguali."
+    },
+    "Parting Shot": {
+      "category": "status",
+      "type": "dark",
+      "effect_chance": 100,
+      "desc": "Chi la usa lancia un monito intimidatorio al bersaglio, riducendone l’Attacco e l’Attacco Speciale, e si fa sostituire da un altro Pokémon della squadra.",
+      "flags": [
+        "sound"
+      ],
+      "accuracy": 100
+    },
+    "Peck": {
+      "bp": 35,
+      "category": "physical",
+      "type": "flying",
+      "desc": "Colpisce il bersaglio con il becco appuntito o con un corno.",
+      "flags": [
+        "contact"
+      ],
+      "accuracy": 100
+    },
+    "Perish Song": {
+      "category": "status",
+      "type": "normal",
+      "desc": "Qualunque Pokémon che senta questo canto va KO in tre turni, se non lo si sostituisce.",
+      "flags": [
+        "sound"
+      ]
+    },
+    "Phantom Force": {
+      "bp": 90,
+      "category": "physical",
+      "type": "ghost",
+      "desc": "Chi la usa scompare improvvisamente per attaccare poi nel turno seguente. Questa mossa neutralizza le protezioni del bersaglio.",
+      "flags": [
+        "contact"
+      ],
+      "accuracy": 100
+    },
+    "Pin Missile": {
+      "bp": 25,
+      "category": "physical",
+      "type": "bug",
+      "desc": "Il bersaglio viene colpito da due a cinque volte in rapida successione con delle spine.",
+      "flags": [
+        "contact"
+      ],
+      "accuracy": 95
+    },
+    "Play Rough": {
+      "bp": 90,
+      "category": "physical",
+      "type": "fairy",
+      "effect_chance": 10,
+      "desc": "Chi la usa attacca il bersaglio con delle carinerie. Può anche ridurne l’Attacco.",
+      "accuracy": 90
+    },
+    "Pluck": {
+      "bp": 60,
+      "category": "physical",
+      "type": "flying",
+      "desc": "Chi la usa becca il bersaglio. Inoltre, se questi ha una bacca, gliela ruba e ne sfrutta gli effetti.",
+      "flags": [
+        "contact"
+      ],
+      "accuracy": 100
+    },
+    "Poison Fang": {
+      "bp": 50,
+      "category": "physical",
+      "type": "poison",
+      "effect_chance": 50,
+      "desc": "Chi la usa morde il bersaglio con denti avvelenati che possono anche iperavvelenarlo.",
+      "flags": [
+        "contact",
+        "bite"
+      ],
+      "accuracy": 100
+    },
+    "Poison Gas": {
+      "category": "status",
+      "type": "poison",
+      "desc": "Spruzza in faccia ai nemici che ha intorno una nuvola di gas tossico che avvelena.",
+      "accuracy": 90
+    },
+    "Poison Jab": {
+      "bp": 80,
+      "category": "physical",
+      "type": "poison",
+      "effect_chance": 30,
+      "desc": "Il bersaglio è colpito da un tentacolo o da un arto intriso di una sostanza tossica che può anche avvelenarlo.",
+      "flags": [
+        "contact"
+      ],
+      "accuracy": 100
+    },
+    "Poison Powder": {
+      "category": "status",
+      "type": "poison",
+      "desc": "Investe il bersaglio con una nuvola di polvere tossica che avvelena.",
+      "flags": [
+        "powder"
+      ],
+      "accuracy": 75
+    },
+    "Poison Tail": {
+      "bp": 50,
+      "category": "physical",
+      "type": "poison",
+      "effect_chance": 10,
+      "desc": "Chi la usa colpisce con la coda e può avvelenare il bersaglio. Probabile brutto colpo.",
+      "flags": [
+        "contact"
+      ],
+      "accuracy": 100
+    },
+    "Power Gem": {
+      "bp": 80,
+      "category": "special",
+      "type": "rock",
+      "desc": "Chi la usa attacca con un raggio di luce che brilla come se fosse fatto di pietre preziose.",
+      "accuracy": 100
+    },
+    "Power Trip": {
+      "bp": 20,
+      "category": "physical",
+      "type": "dark",
+      "desc": "Chi la usa attacca il bersaglio sfoggiando la propria forza. Più le sue statistiche sono state aumentate, più la mossa è potente.",
+      "flags": [
+        "contact"
+      ],
+      "accuracy": 100
+    },
+    "Power Whip": {
+      "bp": 120,
+      "category": "physical",
+      "type": "grass",
+      "desc": "Chi la usa agita violentemente liane o tentacoli per sferzare il bersaglio.",
+      "flags": [
+        "contact"
+      ],
+      "accuracy": 85
+    },
+    "Protect": {
+      "category": "status",
+      "type": "normal",
+      "priority": 4,
+      "desc": "Permette di eludere tutti gli attacchi. Se usata in successione può fallire."
+    },
+    "Psybeam": {
+      "bp": 65,
+      "category": "special",
+      "type": "psychic",
+      "effect_chance": 10,
+      "desc": "Colpisce il bersaglio con un raggio speciale. Può anche confonderlo.",
+      "accuracy": 100
+    },
+    "Psych Up": {
+      "category": "status",
+      "type": "normal",
+      "desc": "Chi la usa s’ipnotizza per copiare ogni modifica alle statistiche del bersaglio."
+    },
+    "Psychic": {
+      "bp": 90,
+      "category": "special",
+      "type": "psychic",
+      "effect_chance": 10,
+      "desc": "Il bersaglio viene colpito da una potente forza telecinetica che può anche ridurne la Difesa Speciale.",
+      "accuracy": 100
+    },
+    "Psychic Fangs": {
+      "bp": 85,
+      "category": "physical",
+      "type": "psychic",
+      "desc": "Morde il bersaglio con delle zanne generate con l’energia psichica e rompe barriere come Riflesso e Schermoluce.",
+      "flags": [
+        "contact",
+        "bite"
+      ],
+      "accuracy": 100
+    },
+    "Psychic Terrain": {
+      "category": "status",
+      "type": "psychic",
+      "desc": "Per cinque turni il terreno entra nello stato di Campo Psichico: i Pokémon a terra non subiscono mosse ad alta priorità e le mosse di tipo Psico sono potenziate."
+    },
+    "Psycho Cut": {
+      "bp": 70,
+      "category": "physical",
+      "type": "psychic",
+      "desc": "Chi la usa colpisce il bersaglio con lame fatte di forza psichica. Probabile brutto colpo.",
+      "flags": [
+        "slicing"
+      ],
+      "accuracy": 100
+    },
+    "Psycho Shift": {
+      "category": "status",
+      "type": "psychic",
+      "desc": "Con la forza psichica e la suggestione, chi la usa può trasferire i suoi problemi di stato al Pokémon colpito.",
+      "accuracy": 100
+    },
+    "Psyshield Bash": {
+      "bp": 90,
+      "category": "physical",
+      "type": "psychic",
+      "desc": "Cloaking itself in psychic energy, the user slams into the target. This also boosts the user’s Defense stat.",
+      "flags": [
+        "contact"
+      ],
+      "accuracy": 90
+    },
+    "Psyshock": {
+      "bp": 80,
+      "category": "special",
+      "type": "psychic",
+      "desc": "Chi la usa attacca il bersaglio facendo materializzare misteriose onde psichiche che provocano danni fisici.",
+      "accuracy": 100
+    },
+    "Psystrike": {
+      "bp": 100,
+      "category": "special",
+      "type": "psychic",
+      "desc": "Chi la usa attacca il bersaglio facendo materializzare misteriose onde psichiche che provocano danni fisici.",
+      "accuracy": 100
+    },
+    "Quick Attack": {
+      "bp": 40,
+      "category": "physical",
+      "type": "normal",
+      "priority": 1,
+      "desc": "Chi la usa colpisce a una tale velocità da rendersi quasi invisibile. Questa mossa ha priorità alta.",
+      "flags": [
+        "contact"
+      ],
+      "accuracy": 100
+    },
+    "Quiver Dance": {
+      "category": "status",
+      "type": "bug",
+      "desc": "Danza leggiadra ed elegante che aumenta l’Attacco Speciale, la Difesa Speciale e la Velocità di chi la usa.",
+      "flags": [
+        "dance"
+      ]
+    },
+    "Rage Powder": {
+      "category": "status",
+      "type": "bug",
+      "priority": 2,
+      "desc": "Chi la usa attira l’attenzione dei nemici cospargendosi di una polvere irritante e diventando bersaglio di tutti gli attacchi.",
+      "flags": [
+        "powder"
+      ]
+    },
+    "Rain Dance": {
+      "category": "status",
+      "type": "water",
+      "desc": "Chi la usa provoca una forte pioggia per cinque turni, potenziando le mosse di tipo Acqua e riducendo la potenza di quelle di tipo Fuoco.",
+      "flags": [
+        "dance"
+      ]
+    },
+    "Rapid Spin": {
+      "bp": 50,
+      "category": "physical",
+      "type": "normal",
+      "effect_chance": 100,
+      "desc": "Attacco rotante che elimina gli effetti di mosse come Legatutto, Avvolgibotta e Parassiseme. Aumenta anche la Velocità di chi la usa.",
+      "accuracy": 100
+    },
+    "Razor Leaf": {
+      "bp": 55,
+      "category": "physical",
+      "type": "grass",
+      "desc": "Foglie taglienti sferzano i nemici intorno. Probabile brutto colpo.",
+      "accuracy": 95
+    },
+    "Razor Shell": {
+      "bp": 75,
+      "category": "physical",
+      "type": "water",
+      "effect_chance": 50,
+      "desc": "Chi la usa colpisce il bersaglio con il suo guscio affilato. Il colpo può anche ridurre la Difesa del bersaglio.",
+      "flags": [
+        "contact",
+        "slicing"
+      ],
+      "accuracy": 95
+    },
+    "Razor Wind": {
+      "bp": 80,
+      "category": "special",
+      "type": "normal",
+      "desc": "Questa mossa non può essere usata. È consigliabile farla dimenticare al Pokémon. Tuttavia, una volta dimenticata, non potrà più essere ricordata.",
+      "accuracy": 100
+    },
+    "Recover": {
+      "category": "status",
+      "type": "normal",
+      "desc": "Mossa autocurativa. Chi la usa recupera metà dei PS massimi."
+    },
+    "Recycle": {
+      "category": "status",
+      "type": "normal",
+      "desc": "Chi la usa ricicla uno strumento che ha usato nella lotta e può riutilizzarlo."
+    },
+    "Reflect": {
+      "category": "status",
+      "type": "psychic",
+      "desc": "Innalza una barriera misteriosa che riduce i danni degli attacchi fisici per sé e gli alleati per cinque turni."
+    },
+    "Rest": {
+      "category": "status",
+      "type": "psychic",
+      "desc": "Chi la usa recupera tutti i PS e guarisce da tutti i suoi problemi di stato, ma dorme per due turni."
+    },
+    "Retaliate": {
+      "bp": 70,
+      "category": "physical",
+      "type": "normal",
+      "desc": "Vendica un alleato messo KO. Se ciò è accaduto al turno precedente, il danno è maggiore.",
+      "flags": [
+        "contact"
+      ],
+      "accuracy": 100
+    },
+    "Return": {
+      "category": "physical",
+      "type": "normal",
+      "desc": "Questa mossa non può essere usata. È consigliabile farla dimenticare al Pokémon. Tuttavia, una volta dimenticata, non potrà più essere ricordata.",
+      "flags": [
+        "contact"
+      ],
+      "accuracy": 100
+    },
+    "Revenge": {
+      "bp": 60,
+      "category": "physical",
+      "type": "fighting",
+      "priority": -4,
+      "desc": "Mossa d’attacco che infligge un danno doppio se si è stati colpiti dal Pokémon bersaglio nello stesso turno.",
+      "flags": [
+        "contact"
+      ],
+      "accuracy": 100
+    },
+    "Reversal": {
+      "category": "physical",
+      "type": "fighting",
+      "desc": "Chi la usa attacca con tutte le sue forze. Più i PS sono bassi, maggiore è la potenza di questa mossa.",
+      "flags": [
+        "contact"
+      ],
+      "accuracy": 100
+    },
+    "Roar": {
+      "category": "status",
+      "type": "normal",
+      "priority": -6,
+      "desc": "Il bersaglio lascia il campo e viene sostituito. Mette fine alle lotte contro singoli Pokémon selvatici.",
+      "flags": [
+        "sound"
+      ]
+    },
+    "Rock Blast": {
+      "bp": 25,
+      "category": "physical",
+      "type": "rock",
+      "desc": "Colpisce il bersaglio con dei massi pesanti lanciati in rapida successione. Il numero di massi varia da due a cinque.",
+      "flags": [
+        "bullet"
+      ],
+      "accuracy": 90
+    },
+    "Rock Polish": {
+      "category": "status",
+      "type": "rock",
+      "desc": "Chi la usa leviga il proprio corpo per ridurne l’attrito. Aumenta di molto la Velocità."
+    },
+    "Rock Slide": {
+      "bp": 75,
+      "category": "physical",
+      "type": "rock",
+      "effect_chance": 30,
+      "desc": "I nemici vengono colpiti con violenza da grandi massi che possono anche farli tentennare.",
+      "accuracy": 90
+    },
+    "Rock Smash": {
+      "bp": 40,
+      "category": "physical",
+      "type": "fighting",
+      "effect_chance": 50,
+      "desc": "Chi la usa colpisce il bersaglio con un pugno che può anche ridurne la Difesa.",
+      "flags": [
+        "contact"
+      ],
+      "accuracy": 100
+    },
+    "Rock Throw": {
+      "bp": 50,
+      "category": "physical",
+      "type": "rock",
+      "desc": "Chi la usa raccoglie una pietra e la lancia contro il bersaglio.",
+      "accuracy": 90
+    },
+    "Rock Tomb": {
+      "bp": 60,
+      "category": "physical",
+      "type": "rock",
+      "effect_chance": 100,
+      "desc": "Colpisce il bersaglio con rocce. Inoltre, lo rallenta riducendone la Velocità.",
+      "flags": [
+        "contact"
+      ],
+      "accuracy": 95
+    },
+    "Rock Wrecker": {
+      "bp": 150,
+      "category": "physical",
+      "type": "rock",
+      "desc": "Chi la usa attacca il bersaglio con un enorme masso, ma si deve riposare al turno successivo.",
+      "flags": [
+        "bullet",
+        "recharge"
+      ],
+      "accuracy": 90
+    },
+    "Role Play": {
+      "category": "status",
+      "type": "psychic",
+      "desc": "Chi la usa mima in tutto il bersaglio, copiandone l’abilità."
+    },
+    "Rolling Kick": {
+      "bp": 60,
+      "category": "physical",
+      "type": "fighting",
+      "effect_chance": 30,
+      "desc": "Questa mossa non può essere usata. È consigliabile farla dimenticare al Pokémon. Tuttavia, una volta dimenticata, non potrà più essere ricordata.",
+      "flags": [
+        "contact"
+      ],
+      "accuracy": 85
+    },
+    "Rollout": {
+      "bp": 30,
+      "category": "physical",
+      "type": "rock",
+      "desc": "Chi la usa colpisce il bersaglio rotolando per cinque turni, con aumento progressivo della potenza ogni volta che va a segno.",
+      "flags": [
+        "contact"
+      ],
+      "accuracy": 90
+    },
+    "Roost": {
+      "category": "status",
+      "type": "flying",
+      "desc": "Chi la usa sta fermo e riposa, recuperando metà dei propri PS massimi."
+    },
+    "Round": {
+      "bp": 60,
+      "category": "special",
+      "type": "normal",
+      "desc": "Attacca il bersaglio con una melodia. Se usata durante lo stesso turno da più Pokémon, i danni inflitti aumentano.",
+      "flags": [
+        "sound"
+      ],
+      "accuracy": 100
+    },
+    "Sacred Fire": {
+      "bp": 100,
+      "category": "physical",
+      "type": "fire",
+      "effect_chance": 50,
+      "desc": "Colpisce il bersaglio con un fuoco mistico di enorme intensità che può anche causargli una scottatura.",
+      "flags": [
+        "contact"
+      ],
+      "accuracy": 95
+    },
+    "Salt Cure": {
+      "bp": 40,
+      "category": "physical",
+      "type": "rock",
+      "desc": "The user salt cures the target, inflicting damage every turn. Steel and Water types are more strongly affected by this move.",
+      "accuracy": 100
+    },
+    "Sand Attack": {
+      "category": "status",
+      "type": "ground",
+      "desc": "Getta sabbia in faccia al bersaglio e ne riduce la precisione.",
+      "accuracy": 100
+    },
+    "Sand Tomb": {
+      "bp": 35,
+      "category": "physical",
+      "type": "ground",
+      "effect_chance": 100,
+      "desc": "Chi la usa intrappola il bersaglio in una tempesta di sabbia per quattro o cinque turni.",
+      "accuracy": 85
+    },
+    "Sandstorm": {
+      "category": "status",
+      "type": "rock",
+      "desc": "Causa una tempesta di sabbia per cinque turni che danneggia tutti i tipi esclusi Terra, Roccia e Acciaio. Aumenta la Dif. Speciale dei Pokémon di tipo Roccia."
+    },
+    "Scald": {
+      "bp": 80,
+      "category": "special",
+      "type": "water",
+      "effect_chance": 30,
+      "desc": "Chi la usa attacca il bersaglio con un getto d’acqua bollente che può anche scottarlo.",
+      "accuracy": 100
+    },
+    "Scary Face": {
+      "category": "status",
+      "type": "normal",
+      "desc": "Chi la usa spaventa il bersaglio con una faccia terribile e ne riduce di molto la Velocità.",
+      "accuracy": 100
+    },
+    "Scratch": {
+      "bp": 40,
+      "category": "physical",
+      "type": "normal",
+      "desc": "Infligge danni al bersaglio con artigli acuminati, duri e affilati.",
+      "flags": [
+        "contact"
+      ],
+      "accuracy": 100
+    },
+    "Screech": {
+      "category": "status",
+      "type": "normal",
+      "desc": "Stridio assordante che riduce di molto la Difesa del bersaglio.",
+      "flags": [
+        "sound"
+      ],
+      "accuracy": 85
+    },
+    "Seed Bomb": {
+      "bp": 80,
+      "category": "physical",
+      "type": "grass",
+      "desc": "Chi la usa emette una raffica di semi dal guscio duro che colpiscono il bersaglio dall’alto.",
+      "flags": [
+        "contact",
+        "bullet"
+      ],
+      "accuracy": 100
+    },
+    "Shadow Ball": {
+      "bp": 80,
+      "category": "special",
+      "type": "ghost",
+      "effect_chance": 20,
+      "desc": "Lancia sul bersaglio una sfera nera. Può anche ridurne la Difesa Speciale.",
+      "accuracy": 100
+    },
+    "Shadow Claw": {
+      "bp": 70,
+      "category": "physical",
+      "type": "ghost",
+      "desc": "Chi la usa attacca con artigli d’ombra che colpiscono con gran forza. Probabile brutto colpo.",
+      "flags": [
+        "slicing",
+        "contact"
+      ],
+      "accuracy": 100
+    },
+    "Shadow Sneak": {
+      "bp": 40,
+      "category": "physical",
+      "type": "ghost",
+      "priority": 1,
+      "desc": "Chi la usa estende la sua ombra e attacca il nemico alle spalle. Questa mossa ha priorità alta.",
+      "flags": [
+        "contact"
+      ],
+      "accuracy": 100
+    },
+    "Sharpen": {
+      "category": "status",
+      "type": "normal",
+      "desc": "Questa mossa non può essere usata. È consigliabile farla dimenticare al Pokémon. Tuttavia, una volta dimenticata, non potrà più essere ricordata."
+    },
+    "Shell Smash": {
+      "category": "status",
+      "type": "normal",
+      "desc": "Chi la usa si disfa del guscio. Difesa e Difesa Speciale calano, ma aumentano di molto Attacco, Attacco Speciale e Velocità."
+    },
+    "Shift Gear": {
+      "category": "status",
+      "type": "steel",
+      "desc": "Facendo ruotare gli ingranaggi, chi la usa aumenta non solo il proprio Attacco, ma anche di molto la propria Velocità."
+    },
+    "Signal Beam": {
+      "bp": 75,
+      "category": "special",
+      "type": "bug",
+      "effect_chance": 10,
+      "desc": "Questa mossa non può essere usata. È consigliabile farla dimenticare al Pokémon. Tuttavia, una volta dimenticata, non potrà più essere ricordata.",
+      "accuracy": 100
+    },
+    "Silver Wind": {
+      "bp": 60,
+      "category": "special",
+      "type": "bug",
+      "effect_chance": 10,
+      "desc": "Questa mossa non può essere usata. È consigliabile farla dimenticare al Pokémon. Tuttavia, una volta dimenticata, non potrà più essere ricordata.",
+      "accuracy": 100
+    },
+    "Simple Beam": {
+      "category": "status",
+      "type": "normal",
+      "desc": "Chi la usa emette un misterioso raggio psichico che trasforma l’abilità del Pokémon colpito in Disinvoltura.",
+      "accuracy": 100
+    },
+    "Sing": {
+      "category": "status",
+      "type": "normal",
+      "desc": "Dolce ninnananna, cantata da una voce suadente, che fa addormentare il bersaglio.",
+      "flags": [
+        "sound"
+      ],
+      "accuracy": 55
+    },
+    "Sketch": {
+      "category": "status",
+      "type": "normal",
+      "desc": "Permette a chi la usa di imparare l’ultima mossa usata dal bersaglio. La nuova mossa appresa sostituisce Schizzo."
+    },
+    "Skill Swap": {
+      "category": "status",
+      "type": "psychic",
+      "desc": "Chi la usa sfrutta i suoi poteri psichici per scambiare l’abilità con il bersaglio."
+    },
+    "Skull Bash": {
+      "bp": 130,
+      "category": "physical",
+      "type": "normal",
+      "effect_chance": 100,
+      "desc": "Chi la usa ritira la testa per aumentare la Difesa e poi attacca al turno successivo.",
+      "flags": [
+        "contact"
+      ],
+      "accuracy": 100
+    },
+    "Sky Attack": {
+      "bp": 140,
+      "category": "physical",
+      "type": "flying",
+      "effect_chance": 30,
+      "desc": "Attacco in due turni e probabile brutto colpo. Può anche far tentennare il bersaglio.",
+      "flags": [
+        "contact"
+      ],
+      "accuracy": 90
+    },
+    "Sky Drop": {
+      "bp": 60,
+      "category": "physical",
+      "type": "flying",
+      "desc": "Questa mossa non può essere usata. È consigliabile farla dimenticare al Pokémon. Tuttavia, una volta dimenticata, non potrà più essere ricordata.",
+      "flags": [
+        "contact"
+      ],
+      "accuracy": 100
+    },
+    "Slam": {
+      "bp": 80,
+      "category": "physical",
+      "type": "normal",
+      "desc": "Infligge danni al bersaglio con la coda, con una liana o con qualcosa di simile.",
+      "flags": [
+        "contact"
+      ],
+      "accuracy": 75
+    },
+    "Slash": {
+      "bp": 70,
+      "category": "physical",
+      "type": "normal",
+      "desc": "Attacca il bersaglio con artigli, falci o altro. Probabile brutto colpo.",
+      "flags": [
+        "contact",
+        "slicing"
+      ],
+      "accuracy": 100
+    },
+    "Sleep Powder": {
+      "category": "status",
+      "type": "grass",
+      "desc": "Investe il bersaglio con una grande nuvola di polvere soporifera che lo fa addormentare.",
+      "flags": [
+        "powder"
+      ],
+      "accuracy": 75
+    },
+    "Sleep Talk": {
+      "category": "status",
+      "type": "normal",
+      "desc": "Chi la usa sferra a caso una delle proprie mosse mentre sta dormendo."
+    },
+    "Sludge": {
+      "bp": 65,
+      "category": "special",
+      "type": "poison",
+      "effect_chance": 30,
+      "desc": "Chi la usa lancia fango malsano sul bersaglio. Può anche avvelenarlo.",
+      "accuracy": 100
+    },
+    "Sludge Bomb": {
+      "bp": 90,
+      "category": "special",
+      "type": "poison",
+      "effect_chance": 30,
+      "desc": "Chi la usa lancia fango malsano sul bersaglio. Può anche avvelenarlo.",
+      "flags": [
+        "bullet"
+      ],
+      "accuracy": 100
+    },
+    "Sludge Wave": {
+      "bp": 95,
+      "category": "special",
+      "type": "poison",
+      "effect_chance": 10,
+      "desc": "Lancia un’onda di fango che attacca tutti i Pokémon nelle vicinanze. Può anche avvelenarli.",
+      "accuracy": 100
+    },
+    "Smack Down": {
+      "bp": 50,
+      "category": "physical",
+      "type": "rock",
+      "effect_chance": 100,
+      "desc": "Chi la usa lancia una pietra o un proiettile. Può colpire anche un bersaglio in volo e farlo cadere.",
+      "accuracy": 100
+    },
+    "Smart Strike": {
+      "bp": 70,
+      "category": "physical",
+      "type": "steel",
+      "desc": "Chi la usa colpisce il bersaglio con un corno appuntito. Questa mossa va sempre a segno."
+    },
+    "Smokescreen": {
+      "category": "status",
+      "type": "normal",
+      "desc": "Nuvola di fumo o inchiostro che riduce la precisione del bersaglio.",
+      "accuracy": 100
+    },
+    "Snap Trap": {
+      "bp": 35,
+      "category": "physical",
+      "type": "grass",
+      "effect_chance": 100,
+      "desc": "Chi la usa intrappola il bersaglio in una tagliola e lo attacca per quattro o cinque turni.",
+      "flags": [
+        "contact"
+      ],
+      "accuracy": 100
+    },
+    "Snarl": {
+      "bp": 55,
+      "category": "special",
+      "type": "dark",
+      "effect_chance": 100,
+      "desc": "Chi la usa si mette a urlare per un po’, riducendo l’Attacco Speciale dei nemici intorno.",
+      "flags": [
+        "contact",
+        "sound"
+      ],
+      "accuracy": 95
+    },
+    "Snatch": {
+      "category": "status",
+      "type": "dark",
+      "priority": 4,
+      "desc": "Questa mossa non può essere usata. È consigliabile farla dimenticare al Pokémon. Tuttavia, una volta dimenticata, non potrà più essere ricordata."
+    },
+    "Soak": {
+      "category": "status",
+      "type": "water",
+      "desc": "Chi la usa proietta un lungo getto d’acqua contro il bersaglio e lo rende un Pokémon di tipo Acqua.",
+      "accuracy": 100
+    },
+    "Soft-Boiled": {
+      "category": "status",
+      "type": "normal",
+      "desc": "Chi la usa recupera metà dei propri PS massimi."
+    },
+    "Solar Beam": {
+      "bp": 120,
+      "category": "special",
+      "type": "grass",
+      "desc": "Chi la usa assorbe luce al primo turno per proiettare un raggio intenso al turno successivo.",
+      "accuracy": 100
+    },
+    "Solar Blade": {
+      "bp": 125,
+      "category": "physical",
+      "type": "grass",
+      "desc": "Chi la usa assorbe la luce condensandola in una lama al primo turno per poi attaccare al turno successivo.",
+      "flags": [
+        "slicing"
+      ],
+      "accuracy": 100
+    },
+    "Sonic Boom": {
+      "category": "special",
+      "type": "normal",
+      "desc": "Questa mossa non può essere usata. È consigliabile farla dimenticare al Pokémon. Tuttavia, una volta dimenticata, non potrà più essere ricordata.",
+      "accuracy": 90
+    },
+    "Spark": {
+      "bp": 65,
+      "category": "physical",
+      "type": "electric",
+      "effect_chance": 30,
+      "desc": "Colpisce il bersaglio con una scarica elettrica e può anche paralizzarlo.",
+      "accuracy": 100
+    },
+    "Speed Swap": {
+      "category": "status",
+      "type": "psychic",
+      "desc": "Chi la usa scambia la propria Velocità con quella del bersaglio."
+    },
+    "Spikes": {
+      "category": "status",
+      "type": "ground",
+      "desc": "Chi la usa piazza sul terreno una trappola di punte che danneggia i nemici quando scendono in campo."
+    },
+    "Spirit Break": {
+      "bp": 75,
+      "category": "physical",
+      "type": "fairy",
+      "effect_chance": 100,
+      "desc": "Chi la usa attacca il bersaglio con un tale impeto da fargli perdere la voglia di lottare e ne riduce l’Attacco Speciale.",
+      "accuracy": 100
+    },
+    "Spirit Shackle": {
+      "bp": 90,
+      "category": "physical",
+      "type": "ghost",
+      "desc": "Chi la usa attacca il bersaglio e fissa la sua ombra a terra impedendogli di fuggire.",
+      "flags": [
+        "contact"
+      ],
+      "accuracy": 100
+    },
+    "Spite": {
+      "category": "status",
+      "type": "ghost",
+      "desc": "Chi la usa sfoga la propria rabbia sull’ultima mossa usata dal bersaglio e le sottrae quattro PP.",
+      "accuracy": 100
+    },
+    "Splash": {
+      "category": "status",
+      "type": "normal",
+      "desc": "Chi la usa sguazza nell’acqua, senza ottenere alcun effetto."
+    },
+    "Spore": {
+      "category": "status",
+      "type": "grass",
+      "desc": "Nube di spore che fa sempre addormentare il bersaglio.",
+      "flags": [
+        "powder"
+      ],
+      "accuracy": 100
+    },
+    "Stealth Rock": {
+      "category": "status",
+      "type": "rock",
+      "desc": "Chi la usa piazza una trappola di rocce sospese che danneggia i nemici che entrano in campo."
+    },
+    "Steel Beam": {
+      "bp": 140,
+      "category": "special",
+      "type": "steel",
+      "desc": "Chi la usa utilizza l’acciaio del proprio corpo per sparare un violento raggio, ma subisce danni.",
+      "accuracy": 95
+    },
+    "Steel Roller": {
+      "bp": 130,
+      "category": "physical",
+      "type": "steel",
+      "desc": "Chi la usa attacca eliminando lo stato del terreno di lotta. La mossa fallisce se nel terreno non è attivo alcuno stato.",
+      "accuracy": 100
+    },
+    "Sticky Web": {
+      "category": "status",
+      "type": "bug",
+      "desc": "Chi la usa intreccia una rete appiccicosa attorno alla squadra avversaria, diminuendo la Velocità dei Pokémon nemici che entreranno in campo."
+    },
+    "Stomping Tantrum": {
+      "bp": 75,
+      "category": "physical",
+      "type": "ground",
+      "desc": "Chi la usa attacca battendo i piedi per la rabbia. Se la mossa usata al turno precedente non è andata a segno, la potenza raddoppia.",
+      "accuracy": 100
+    },
+    "Stone Edge": {
+      "bp": 100,
+      "category": "physical",
+      "type": "rock",
+      "desc": "Chi la usa colpisce il bersaglio dal basso con pietre affilate. Probabile brutto colpo.",
+      "flags": [
+        "contact"
+      ],
+      "accuracy": 80
+    },
+    "Stored Power": {
+      "bp": 20,
+      "category": "special",
+      "type": "psychic",
+      "desc": "Attacca il bersaglio con l’energia accumulata. Più sono state aumentate le statistiche, maggiore è il danno inflitto.",
+      "accuracy": 100
+    },
+    "Storm Throw": {
+      "bp": 60,
+      "category": "physical",
+      "type": "fighting",
+      "desc": "Chi la usa sferra un colpo micidiale al bersaglio. Brutto colpo assicurato.",
+      "flags": [
+        "contact",
+        "punch"
+      ],
+      "accuracy": 100
+    },
+    "Strength": {
+      "bp": 80,
+      "category": "physical",
+      "type": "normal",
+      "desc": "Colpisce il bersaglio con un’enorme energia.",
+      "flags": [
+        "contact"
+      ],
+      "accuracy": 100
+    },
+    "String Shot": {
+      "category": "status",
+      "type": "bug",
+      "desc": "Chi la usa produce della seta che avvolge i nemici intorno e ne riduce di molto la Velocità.",
+      "accuracy": 95
+    },
+    "Struggle Bug": {
+      "bp": 50,
+      "category": "special",
+      "type": "bug",
+      "effect_chance": 100,
+      "desc": "Colpisce i nemici intorno opponendo resistenza e riducendo il loro Attacco Speciale.",
+      "accuracy": 100
+    },
+    "Stun Spore": {
+      "category": "status",
+      "type": "grass",
+      "desc": "Investe il bersaglio con una nuvola di polvere che paralizza.",
+      "flags": [
+        "powder"
+      ],
+      "accuracy": 75
+    },
+    "Submission": {
+      "bp": 80,
+      "category": "physical",
+      "type": "fighting",
+      "desc": "Chi la usa carica il bersaglio in modo spericolato, ma danneggia anche se stesso.",
+      "flags": [
+        "contact"
+      ],
+      "accuracy": 80
+    },
+    "Sucker Punch": {
+      "bp": 70,
+      "category": "physical",
+      "type": "dark",
+      "priority": 1,
+      "desc": "Chi la usa attacca con alta priorità, ma fallisce se il bersaglio non sta preparando un attacco.",
+      "flags": [
+        "contact"
+      ],
+      "accuracy": 100
+    },
+    "Sunny Day": {
+      "category": "status",
+      "type": "fire",
+      "desc": "Chi la usa intensifica i raggi solari per cinque turni, potenziando le mosse di tipo Fuoco e riducendo la potenza di quelle di tipo Acqua."
+    },
+    "Super Fang": {
+      "category": "physical",
+      "type": "normal",
+      "desc": "Chi la usa salta sul bersaglio azzannandolo con i suoi incisivi affilati e facendogli perdere metà dei PS.",
+      "accuracy": 90
+    },
+    "Superpower": {
+      "bp": 120,
+      "category": "physical",
+      "type": "fighting",
+      "effect_chance": 100,
+      "desc": "Chi la usa attacca il bersaglio con grande forza, ma il suo Attacco e la sua Difesa diminuiscono.",
+      "flags": [
+        "contact"
+      ],
+      "accuracy": 100
+    },
+    "Surf": {
+      "bp": 90,
+      "category": "special",
+      "type": "water",
+      "desc": "Un’onda enorme sommerge il campo di lotta, colpendo tutti i Pokémon intorno a chi la scatena.",
+      "accuracy": 100
+    },
+    "Swagger": {
+      "category": "status",
+      "type": "normal",
+      "desc": "Chi la usa provoca il bersaglio e lo confonde, facendo aumentare però di molto il suo Attacco.",
+      "accuracy": 85
+    },
+    "Syrup Bomb": {
+      "bp": 60,
+      "category": "special",
+      "type": "grass",
+      "desc": "The user sets off an explosion of sticky candy syrup, which coats the target and causes the target's Speed stat to drop each turn for three turns.",
+      "effect_chance": 100,
+      "accuracy": 85
+    },
+    "Tackle": {
+      "bp": 40,
+      "category": "physical",
+      "type": "normal",
+      "desc": "Attacco fisico che colpisce il bersaglio investendolo con tutto il corpo.",
+      "flags": [
+        "contact"
+      ],
+      "accuracy": 100
+    },
+    "Tailwind": {
+      "category": "status",
+      "type": "flying",
+      "desc": "Chi la usa scatena un turbine che aumenta la Velocità di tutti i Pokémon della squadra per quattro turni."
+    },
+    "Take Down": {
+      "bp": 90,
+      "category": "physical",
+      "type": "normal",
+      "desc": "Carica spericolata con tutto il corpo contro il bersaglio. Danneggia un po’ anche chi la usa.",
+      "flags": [
+        "contact"
+      ],
+      "accuracy": 85
+    },
+    "Taunt": {
+      "category": "status",
+      "type": "dark",
+      "desc": "Provoca il bersaglio inducendolo a usare solo mosse d’attacco per tre turni.",
+      "accuracy": 100
+    },
+    "Tearful Look": {
+      "category": "status",
+      "type": "normal",
+      "effect_chance": 100,
+      "desc": "Chi la usa guarda il bersaglio con gli occhi pieni di lacrime e gli fa perdere lo spirito combattivo, riducendone l’Attacco e l’Attacco Speciale."
+    },
+    "Terrain Pulse": {
+      "bp": 50,
+      "category": "special",
+      "type": "normal",
+      "desc": "Chi la usa attacca sfruttando l’energia del terreno di lotta. Il tipo e la potenza della mossa variano a seconda dello stato del terreno stesso.",
+      "flags": [
+        "pulse"
+      ],
+      "accuracy": 100
+    },
+    "Throat Chop": {
+      "bp": 80,
+      "category": "physical",
+      "type": "dark",
+      "effect_chance": 100,
+      "desc": "Chi viene colpito da questa mossa prova un dolore lancinante e non può più usare mosse basate sul suono per due turni.",
+      "flags": [
+        "contact"
+      ],
+      "accuracy": 100
+    },
+    "Thunder": {
+      "bp": 110,
+      "category": "special",
+      "type": "electric",
+      "effect_chance": 30,
+      "desc": "Il bersaglio è colpito da un fulmine molto violento che può anche paralizzarlo.",
+      "accuracy": 70
+    },
+    "Thunder Fang": {
+      "bp": 65,
+      "category": "physical",
+      "type": "electric",
+      "effect_chance": 10,
+      "desc": "Chi la usa morde con denti elettrificati che possono anche paralizzare o far tentennare il bersaglio.",
+      "flags": [
+        "contact",
+        "bite"
+      ],
+      "accuracy": 95
+    },
+    "Thunder Punch": {
+      "bp": 75,
+      "category": "physical",
+      "type": "electric",
+      "effect_chance": 10,
+      "desc": "Colpisce il bersaglio con un pugno elettrico che può paralizzarlo.",
+      "flags": [
+        "contact",
+        "punch"
+      ],
+      "accuracy": 100
+    },
+    "Thunder Shock": {
+      "bp": 40,
+      "category": "special",
+      "type": "electric",
+      "effect_chance": 10,
+      "desc": "Danneggia il bersaglio con una scarica elettrica che può anche paralizzarlo.",
+      "accuracy": 100
+    },
+    "Thunder Wave": {
+      "category": "status",
+      "type": "electric",
+      "desc": "Colpisce il bersaglio con una debole scarica elettrica che lo paralizza.",
+      "accuracy": 90
+    },
+    "Thunderbolt": {
+      "bp": 90,
+      "category": "special",
+      "type": "electric",
+      "effect_chance": 10,
+      "desc": "Il bersaglio viene colpito da una potente scarica elettrica che può anche paralizzarlo.",
+      "accuracy": 100
+    },
+    "Tickle": {
+      "category": "status",
+      "type": "normal",
+      "desc": "Chi la usa solletica il bersaglio e lo fa ridere, riducendo il suo Attacco e la sua Difesa.",
+      "accuracy": 100
+    },
+    "Toxic": {
+      "category": "status",
+      "type": "poison",
+      "desc": "Iperavvelena il bersaglio con una potente tossina. Il danno peggiora a ogni turno.",
+      "accuracy": 90
+    },
+    "Toxic Spikes": {
+      "category": "status",
+      "type": "poison",
+      "desc": "Chi la usa piazza una trappola di punte che avvelenano i nemici che scendono in campo."
+    },
+    "Toxic Thread": {
+      "category": "status",
+      "type": "poison",
+      "effect_chance": 100,
+      "desc": "Avvelena il bersaglio avvolgendolo con filamenti tossici e ne riduce la Velocità.",
+      "accuracy": 100
+    },
+    "Trailblaze": {
+      "bp": 50,
+      "category": "physical",
+      "type": "grass",
+      "desc": "The user attacks suddenly as if leaping out from tall grass. The user's nimble footwork boosts its Speed stat.",
+      "accuracy": 100
+    },
+    "Tri Attack": {
+      "bp": 80,
+      "category": "special",
+      "type": "normal",
+      "effect_chance": 20,
+      "desc": "Colpisce il bersaglio con tre raggi di luce che possono paralizzarlo, scottarlo o congelarlo.",
+      "accuracy": 100
+    },
+    "Trick": {
+      "category": "status",
+      "type": "psychic",
+      "desc": "Chi la usa coglie il bersaglio in contropiede e lo obbliga a cambiare il suo strumento con il proprio.",
+      "accuracy": 100
+    },
+    "Trick Room": {
+      "category": "status",
+      "type": "psychic",
+      "priority": -7,
+      "desc": "Chi la usa crea una dimensione in cui i Pokémon più lenti agiscono per primi per cinque turni."
+    },
+    "Triple Axel": {
+      "bp": 20,
+      "category": "physical",
+      "type": "ice",
+      "desc": "Chi la usa sferra fino a tre calci consecutivi la cui potenza aumenta a ogni colpo.",
+      "flags": [
+        "contact"
+      ],
+      "accuracy": 90
+    },
+    "Trop Kick": {
+      "bp": 85,
+      "category": "physical",
+      "type": "grass",
+      "effect_chance": 100,
+      "desc": "Chi la usa colpisce il bersaglio con un potente calcio sfruttando una tecnica originaria dei paesi tropicali e ne riduce l’Attacco.",
+      "flags": [
+        "contact"
+      ],
+      "accuracy": 100
+    },
+    "Twineedle": {
+      "bp": 25,
+      "category": "physical",
+      "type": "bug",
+      "effect_chance": 20,
+      "desc": "Questa mossa non può essere usata. È consigliabile farla dimenticare al Pokémon. Tuttavia, una volta dimenticata, non potrà più essere ricordata.",
+      "flags": [
+        "contact"
+      ],
+      "accuracy": 100
+    },
+    "U-turn": {
+      "bp": 70,
+      "category": "physical",
+      "type": "bug",
+      "desc": "Chi usa questa mossa fa marcia indietro per farsi sostituire dopo aver sferrato l’attacco.",
+      "flags": [
+        "contact"
+      ],
+      "accuracy": 100
+    },
+    "Uproar": {
+      "bp": 90,
+      "category": "special",
+      "type": "normal",
+      "desc": "Chi la usa attacca per tre turni con un frastuono che non fa dormire nessuno.",
+      "flags": [
+        "sound"
+      ],
+      "accuracy": 100
+    },
+    "Vine Whip": {
+      "bp": 45,
+      "category": "physical",
+      "type": "grass",
+      "desc": "Infligge danni al bersaglio con liane sottili simili a fruste.",
+      "flags": [
+        "contact"
+      ],
+      "accuracy": 100
+    },
+    "Vital Throw": {
+      "bp": 70,
+      "category": "physical",
+      "type": "fighting",
+      "priority": -1,
+      "desc": "Chi la usa attacca per ultimo, ma il colpo è sempre infallibile.",
+      "flags": [
+        "contact"
+      ]
+    },
+    "Volt Switch": {
+      "bp": 70,
+      "category": "special",
+      "type": "electric",
+      "desc": "Chi usa questa mossa si tira indietro per farsi sostituire dopo aver sferrato l’attacco.",
+      "accuracy": 100
+    },
+    "Volt Tackle": {
+      "bp": 120,
+      "category": "physical",
+      "type": "electric",
+      "effect_chance": 10,
+      "desc": "Chi la usa si carica di elettricità e poi attacca. Può paralizzare il bersaglio. Il contraccolpo causa seri danni.",
+      "flags": [
+        "contact"
+      ],
+      "accuracy": 100
+    },
+    "Wake-Up Slap": {
+      "bp": 70,
+      "category": "physical",
+      "type": "fighting",
+      "desc": "Questa mossa non può essere usata. È consigliabile farla dimenticare al Pokémon. Tuttavia, una volta dimenticata, non potrà più essere ricordata.",
+      "flags": [
+        "contact"
+      ],
+      "accuracy": 100
+    },
+    "Water Gun": {
+      "bp": 40,
+      "category": "special",
+      "type": "water",
+      "desc": "Il bersaglio è colpito da un potente getto d’acqua.",
+      "accuracy": 100
+    },
+    "Water Pledge": {
+      "bp": 80,
+      "category": "special",
+      "type": "water",
+      "desc": "Attacca il bersaglio con una colonna d’acqua. Se usata con Fiammapatto, gli effetti aumentano e appare un arcobaleno.",
+      "accuracy": 100
+    },
+    "Water Pulse": {
+      "bp": 60,
+      "category": "special",
+      "type": "water",
+      "effect_chance": 20,
+      "desc": "Il bersaglio viene colpito da un getto d’acqua potentissimo che può anche confonderlo.",
+      "flags": [
+        "bullet",
+        "pulse"
+      ],
+      "accuracy": 100
+    },
+    "Water Shuriken": {
+      "bp": 15,
+      "category": "special",
+      "type": "water",
+      "priority": 1,
+      "desc": "Chi la usa attacca il bersaglio con degli shuriken di muco da due a cinque volte di fila. Questa mossa ha priorità alta.",
+      "accuracy": 100
+    },
+    "Water Spout": {
+      "bp": 150,
+      "category": "special",
+      "type": "water",
+      "desc": "Lancia un getto d’acqua contro il nemico che ha davanti e quelli adiacenti. La potenza è proporzionale al numero di PS di chi la usa.",
+      "accuracy": 100
+    },
+    "Waterfall": {
+      "bp": 80,
+      "category": "physical",
+      "type": "water",
+      "effect_chance": 20,
+      "desc": "Carica il bersaglio a grande velocità e può farlo tentennare.",
+      "flags": [
+        "contact"
+      ],
+      "accuracy": 100
+    },
+    "Weather Ball": {
+      "bp": 50,
+      "category": "special",
+      "type": "normal",
+      "desc": "Mossa d’attacco il cui tipo e la cui potenza variano in base alle condizioni atmosferiche.",
+      "flags": [
+        "bullet"
+      ],
+      "accuracy": 100
+    },
+    "Whirlpool": {
+      "bp": 35,
+      "category": "special",
+      "type": "water",
+      "effect_chance": 100,
+      "desc": "Intrappola il bersaglio in un turbine d’acqua per quattro o cinque turni infliggendo danni a ogni turno.",
+      "accuracy": 85
+    },
+    "Whirlwind": {
+      "category": "status",
+      "type": "normal",
+      "priority": -6,
+      "desc": "Il bersaglio lascia il campo e viene sostituito. Mette fine alle lotte contro singoli Pokémon selvatici."
+    },
+    "Wicked Blow": {
+      "bp": 75,
+      "category": "physical",
+      "type": "dark",
+      "desc": "Il Pokémon sferra un singolo colpo potentissimo, massima espressione dello stile di tipo Buio. Brutto colpo assicurato.",
+      "flags": [
+        "contact",
+        "punch"
+      ],
+      "accuracy": 100
+    },
+    "Wild Charge": {
+      "bp": 90,
+      "category": "physical",
+      "type": "electric",
+      "desc": "Chi la usa si carica di elettricità per poi scagliarsi sul bersaglio, ma subisce dei danni per il contraccolpo.",
+      "flags": [
+        "contact"
+      ],
+      "accuracy": 100
+    },
+    "Will-O-Wisp": {
+      "category": "status",
+      "type": "fire",
+      "desc": "Fiamme sinistre e misteriose causano una scottatura al bersaglio.",
+      "accuracy": 85
+    },
+    "Wing Attack": {
+      "bp": 60,
+      "category": "physical",
+      "type": "flying",
+      "desc": "Infligge danni al bersaglio spiegando delle grandi ali possenti.",
+      "flags": [
+        "contact"
+      ],
+      "accuracy": 100
+    },
+    "Wish": {
+      "category": "status",
+      "type": "normal",
+      "desc": "Quando un Pokémon la usa, al turno successivo la metà dei suoi PS massimi viene recuperata da lui stesso o dal Pokémon che lo sostituisce."
+    },
+    "Wonder Room": {
+      "category": "status",
+      "type": "psychic",
+      "desc": "Chi la usa crea una dimensione in cui Difesa e Difesa Speciale di tutti i Pokémon vengono scambiate per cinque turni."
+    },
+    "Wood Hammer": {
+      "bp": 120,
+      "category": "physical",
+      "type": "grass",
+      "desc": "Chi la usa si lancia con tutto il corpo contro il bersaglio, ma subisce anche considerevoli danni.",
+      "flags": [
+        "contact"
+      ],
+      "accuracy": 100
+    },
+    "Work Up": {
+      "category": "status",
+      "type": "normal",
+      "desc": "Chi la usa si tira su di morale, aumentando il proprio Attacco e l’Attacco Speciale."
+    },
+    "Wring Out": {
+      "category": "special",
+      "type": "normal",
+      "desc": "Questa mossa non può essere usata. È consigliabile farla dimenticare al Pokémon. Tuttavia, una volta dimenticata, non potrà più essere ricordata.",
+      "accuracy": 100
+    },
+    "X-Scissor": {
+      "bp": 80,
+      "category": "physical",
+      "type": "bug",
+      "desc": "Chi la usa colpisce il bersaglio con un attacco che ricorda un colpo di forbici.",
+      "flags": [
+        "contact",
+        "slicing"
+      ],
+      "accuracy": 100
+    },
+    "Yawn": {
+      "category": "status",
+      "type": "normal",
+      "desc": "Chi la usa fa un grande sbadiglio che addormenta il bersaglio al turno seguente."
+    },
+    "Zen Headbutt": {
+      "bp": 80,
+      "category": "physical",
+      "type": "psychic",
+      "effect_chance": 20,
+      "desc": "Chi la usa concentra le energie psichiche nella testa e si lancia contro il bersaglio. Può anche farlo tentennare.",
+      "flags": [
+        "contact"
+      ],
+      "accuracy": 90
+    },
+    "Zing Zap": {
+      "bp": 80,
+      "category": "physical",
+      "type": "electric",
+      "effect_chance": 30,
+      "desc": "Chi la usa colpisce il bersaglio investendolo con una potente scarica elettrica che può anche farlo tentennare.",
+      "flags": [
+        "contact"
+      ],
+      "accuracy": 100
+    }
+  }
+}
