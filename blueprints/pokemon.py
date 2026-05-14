@@ -1,7 +1,7 @@
 import json
 import os
 from datetime import datetime
-from flask import Blueprint, render_template, request, redirect, url_for, flash
+from flask import Blueprint, render_template, request, redirect, url_for, flash, jsonify
 from extensions import get_db, login_required, _i
 from data import (
     DATA_DIR,
@@ -158,6 +158,56 @@ def _team_upsert(tid=None):
     db.commit()
     db.close()
     return tid
+
+
+# ---------------------------------------------------------------------------
+# API: crea una nuova regulation
+# ---------------------------------------------------------------------------
+@bp.route("/api/regulations/create", methods=["POST"])
+@login_required
+def api_regulations_create():
+    data = request.get_json(silent=True)
+    if not data:
+        return jsonify({"ok": False, "error": "Dati JSON mancanti"}), 400
+
+    reg_id    = (data.get("id") or "").strip().lower().replace(" ", "_")
+    reg_label = (data.get("label") or "").strip()
+
+    if not reg_id or not reg_label:
+        return jsonify({"ok": False, "error": "id e label sono obbligatori"}), 400
+
+    regs = _list_regulation_files()
+    if any(r["id"] == reg_id for r in regs):
+        return jsonify({"ok": False, "error": f"Regulation '{reg_id}' già esistente"}), 409
+
+    # Nomi file derivati dall'id
+    roster_file = data.get("roster_file") or f"roster_{reg_id}.json"
+    moves_file  = data.get("moves_file")  or f"moves_{reg_id}.json"
+    items_file  = data.get("items_file")  or f"items_{reg_id}.json"
+
+    # Crea i file JSON vuoti se non esistono
+    for fname, default in [
+        (roster_file, {"regulation": reg_label, "pokemon": [], "mega_map": {}, "last_updated": datetime.now().strftime("%Y-%m-%d")}),
+        (moves_file,  {"regulation": reg_label, "moves": {}, "last_updated": datetime.now().strftime("%Y-%m-%d")}),
+        (items_file,  {"regulation": reg_label, "items": {}}),
+    ]:
+        fpath = os.path.join(DATA_DIR, fname)
+        if not os.path.exists(fpath):
+            os.makedirs(DATA_DIR, exist_ok=True)
+            with open(fpath, "w", encoding="utf-8") as fh:
+                json.dump(default, fh, ensure_ascii=False, indent=2)
+
+    new_reg = {
+        "id":           reg_id,
+        "label":        reg_label,
+        "roster_file":  roster_file,
+        "moves_file":   moves_file,
+        "items_file":   items_file,
+    }
+    regs.append(new_reg)
+    _save_regulations(regs)
+
+    return jsonify({"ok": True, "regulation": new_reg}), 201
 
 
 @bp.route("/")
