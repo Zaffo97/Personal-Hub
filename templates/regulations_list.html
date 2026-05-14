@@ -131,7 +131,7 @@ function confirmDelete(id, label) {
 
 async function deleteRegulation() {
   const errEl = document.getElementById('del_error');
-  const res = await fetch(`/api/regulations/${_deleteId}/delete`, { method: 'POST' });
+  const res = await fetch(`/pokemon/api/regulations/${_deleteId}/delete`, { method: 'POST' });
   const data = await res.json();
   if (data.ok) {
     window.location.reload();
@@ -152,7 +152,7 @@ async function createRegulation() {
     errEl.style.display = 'block'; return;
   }
 
-  const res = await fetch('/api/regulations/create', {
+  const res = await fetch('/pokemon/api/regulations/create', {
     method: 'POST',
     headers: {'Content-Type':'application/json'},
     body: JSON.stringify({ id, label, mechanics })

@@ -237,7 +237,7 @@ async function saveMeta() {
 
   // Carica la lista completa di regulations, aggiorna solo questa
   try {
-    const r1 = await fetch('/api/regulations');
+    const r1 = await fetch('/pokemon/api/regulations');
     const d1 = await r1.json();
     if (!d1.ok) { showToast('Errore caricamento regulations', false); return; }
 
@@ -247,7 +247,7 @@ async function saveMeta() {
         : reg
     );
 
-    const r2 = await fetch('/api/regulations/save', {
+    const r2 = await fetch('/pokemon/api/regulations/save', {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({ regulations: regs })
