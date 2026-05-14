@@ -210,6 +210,46 @@ def api_regulations_create():
     return jsonify({"ok": True, "regulation": new_reg}), 201
 
 
+# ---------------------------------------------------------------------------
+# API: elimina una regulation (solo se senza team attivi)
+# ---------------------------------------------------------------------------
+@bp.route("/api/regulations/<reg_id>/delete", methods=["POST"])
+@login_required
+def api_regulations_delete(reg_id):
+    regs = _list_regulation_files()
+    reg = next((r for r in regs if r["id"] == reg_id), None)
+
+    if not reg:
+        return jsonify({"ok": False, "error": f"Regulation '{reg_id}' non trovata"}), 404
+
+    # Sicurezza extra lato server: verifica che non ci siano team associati
+    db = get_db()
+    count = db.execute(
+        "SELECT COUNT(*) FROM teams WHERE regulation_id=?", (reg_id,)
+    ).fetchone()[0]
+    db.close()
+
+    if count > 0:
+        return jsonify({"ok": False, "error": f"Impossibile eliminare: {count} team attivi"}), 409
+
+    # Elimina i file JSON associati (roster, mosse, oggetti)
+    deleted_files = []
+    for key in ("roster_file", "moves_file", "items_file"):
+        fpath = os.path.join(DATA_DIR, reg.get(key, ""))
+        if os.path.isfile(fpath):
+            try:
+                os.remove(fpath)
+                deleted_files.append(reg[key])
+            except Exception as e:
+                return jsonify({"ok": False, "error": f"Errore eliminazione file '{reg[key]}': {e}"}), 500
+
+    # Rimuovi dal registro e salva
+    regs = [r for r in regs if r["id"] != reg_id]
+    _save_regulations(regs)
+
+    return jsonify({"ok": True, "deleted_files": deleted_files}), 200
+
+
 @bp.route("/")
 @login_required
 def pokemon():
