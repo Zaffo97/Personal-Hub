@@ -12,6 +12,21 @@ from data import (
     CHAMPIONS_BST
 )
 
+ABILITIES_FILE = os.path.join(os.path.dirname(__file__), "..", "data", "abilities.json")
+
+def load_abilities():
+    try:
+        with open(ABILITIES_FILE, encoding="utf-8") as f:
+            return json.load(f)
+    except Exception:
+        return {"abilities": {}}
+
+def _save_abilities(data):
+    path = os.path.normpath(ABILITIES_FILE)
+    os.makedirs(os.path.dirname(path), exist_ok=True)
+    with open(path, "w", encoding="utf-8") as f:
+        json.dump(data, f, ensure_ascii=False, indent=2)
+
 def load_items():
     return {}
 
@@ -158,6 +173,72 @@ def _team_upsert(tid=None):
     db.commit()
     db.close()
     return tid
+
+
+# ---------------------------------------------------------------------------
+# ABILITIES: editor + API
+# ---------------------------------------------------------------------------
+@bp.route("/abilita", methods=["GET", "POST"])
+@login_required
+def abilities_editor():
+    if request.method == "POST":
+        try:
+            raw = request.form.get("abilities_json", "")
+            data = json.loads(raw)
+            if "abilities" not in data:
+                flash("JSON non valido: manca la chiave 'abilities'", "error")
+                return redirect(url_for("pokemon.abilities_editor"))
+            _save_abilities(data)
+            flash(f"✅ Abilità aggiornate: {len(data['abilities'])} voci", "success")
+        except json.JSONDecodeError as e:
+            flash(f"❌ Errore JSON: {e}", "error")
+        return redirect(url_for("pokemon.abilities_editor"))
+
+    ab_data = load_abilities()
+    return render_template(
+        "abilities_editor.html",
+        abilities=ab_data.get("abilities", {}),
+        abilities_json=json.dumps(ab_data, ensure_ascii=False, indent=2)
+    )
+
+
+@bp.route("/api/abilities/update", methods=["POST"])
+@login_required
+def api_abilities_update():
+    payload = request.get_json(silent=True) or {}
+    name = (payload.get("name") or "").strip()
+    if not name:
+        return jsonify({"ok": False, "error": "nome obbligatorio"}), 400
+    ab_data = load_abilities()
+    ab_data["abilities"][name] = {
+        "desc": payload.get("desc", ""),
+        "category": payload.get("category", "other"),
+        "effect": payload.get("effect", {"type": "none"})
+    }
+    _save_abilities(ab_data)
+    return jsonify({"ok": True, "name": name})
+
+
+@bp.route("/api/abilities/delete", methods=["POST"])
+@login_required
+def api_abilities_delete():
+    payload = request.get_json(silent=True) or {}
+    name = (payload.get("name") or "").strip()
+    if not name:
+        return jsonify({"ok": False, "error": "nome obbligatorio"}), 400
+    ab_data = load_abilities()
+    if name not in ab_data["abilities"]:
+        return jsonify({"ok": False, "error": "abilità non trovata"}), 404
+    del ab_data["abilities"][name]
+    _save_abilities(ab_data)
+    return jsonify({"ok": True})
+
+
+@bp.route("/api/abilities", methods=["GET"])
+@login_required
+def api_abilities_list():
+    """Restituisce il JSON delle abilità — usato dal calcolatore."""
+    return jsonify(load_abilities())
 
 
 # ---------------------------------------------------------------------------
@@ -379,6 +460,8 @@ def calcolatori():
     # Lista completa per la combobox: roster + mega + tutte le forme del catalogo
     roster_calc = _build_full_roster(roster, mega_map)
 
+    ab_data = load_abilities()
+
     return render_template(
         "calcolatori.html",
         pkmn_db=CHAMPIONS_BST,
@@ -394,7 +477,9 @@ def calcolatori():
         items_data=load_items(reg_id),
         moves_data=load_moves(reg_id),
         current_reg=reg,
-        regulations=regs
+        regulations=regs,
+        abilities_data=json.dumps(ab_data.get("abilities", {}), ensure_ascii=False),
+        abilities_list=sorted(ab_data.get("abilities", {}).keys())
     )
 
 @bp.route("/roster", methods=["GET", "POST"])
