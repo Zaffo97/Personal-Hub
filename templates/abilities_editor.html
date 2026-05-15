@@ -3,131 +3,57 @@
 {% block topbar_title %}🧬 Editor Abilità{% endblock %}
 {% block extra_head %}
 <style>
-.ab-table { width:100%; border-collapse:collapse; font-size:.82rem; }
-.ab-table th { background:var(--surface-off); padding:.45rem .65rem; text-align:left; font-size:.72rem; font-weight:700; text-transform:uppercase; color:var(--text-muted); border-bottom:2px solid var(--border); position:sticky; top:0; z-index:2; }
-.ab-table td { padding:.42rem .65rem; border-bottom:1px solid var(--border); vertical-align:middle; }
-.ab-table tr:hover td { background:var(--surface-off); }
-.ab-row-selected td { background:color-mix(in oklch,var(--primary) 8%,transparent) !important; }
-.cat-badge { display:inline-block; padding:.1rem .45rem; border-radius:20px; font-size:.65rem; font-weight:700; }
-.cat-none          { background:#88888822; color:var(--text-muted); }
-.cat-weather_override { background:#ff971422; color:#cc6600; }
-.cat-weather_setter   { background:#fbd10022; color:#997700; }
-.cat-type_immunity    { background:#3692dc22; color:#006099; }
-.cat-damage_reduction { background:#38bf4b22; color:#1a7a28; }
-.cat-stab_boost       { background:#b567ce22; color:#7a2299; }
-.cat-stat_modifier    { background:#e0306a22; color:#aa0040; }
-.cat-power_boost      { background:#e8723622; color:#b04400; }
-.cat-speed_boost      { background:#fbec5d22; color:#886600; }
-.cat-weather_boost    { background:#70cbd422; color:#007788; }
-.cat-status_boost     { background:#c8b68622; color:#7a6600; }
-.cat-stat_boost_low_hp{ background:#83c30022; color:#447700; }
-.cat-other            { background:#9099a122; color:var(--text-muted); }
-#ab_detail { display:none; }
-.detail-card { background:var(--surface); border:1px solid var(--border); border-radius:var(--radius-lg); padding:1.1rem 1.3rem; }
-.json-editor-wrap { display:none; }
-.json-editor-wrap.open { display:block; }
+.ab-table{width:100%;border-collapse:collapse;font-size:.78rem}
+.ab-table th{background:var(--surface-off);padding:.4rem .6rem;text-align:left;font-size:.7rem;
+  font-weight:700;color:var(--text-muted);text-transform:uppercase;
+  position:sticky;top:0;z-index:1;border-bottom:1px solid var(--border)}
+.ab-table td{padding:.3rem .6rem;border-bottom:1px solid color-mix(in oklch,var(--border) 40%,transparent);vertical-align:middle}
+.ab-table tr:hover td{background:var(--surface-off)}
+.ab-row-selected td{background:color-mix(in oklch,var(--primary) 8%,transparent)!important}
+.cat-badge{display:inline-block;padding:.08rem .42rem;border-radius:20px;font-size:.65rem;font-weight:700}
+.cat-none              {background:color-mix(in oklch,var(--text-muted) 15%,transparent);color:var(--text-muted)}
+.cat-weather_override  {background:color-mix(in oklch,#F7D02C 20%,transparent);color:#887200}
+.cat-weather_setter    {background:color-mix(in oklch,#96D9D6 25%,transparent);color:#1a6060}
+.cat-weather_boost     {background:color-mix(in oklch,#6390F0 20%,transparent);color:#1040a0}
+.cat-type_immunity     {background:color-mix(in oklch,#A98FF3 20%,transparent);color:#4020a0}
+.cat-damage_reduction  {background:color-mix(in oklch,#7AC74C 20%,transparent);color:#2a6010}
+.cat-stab_boost        {background:color-mix(in oklch,#F95587 20%,transparent);color:#a00040}
+.cat-stat_modifier     {background:color-mix(in oklch,#E8622C 20%,transparent);color:#a03010}
+.cat-power_boost       {background:color-mix(in oklch,#C22E28 20%,transparent);color:#800000}
+.cat-speed_boost       {background:color-mix(in oklch,#A6B91A 20%,transparent);color:#404000}
+.cat-status_boost      {background:color-mix(in oklch,#D685AD 20%,transparent);color:#802060}
+.cat-stat_boost_low_hp {background:color-mix(in oklch,#B6A136 20%,transparent);color:#705500}
+.cat-other             {background:color-mix(in oklch,var(--border) 80%,transparent);color:var(--text-muted)}
+.code-area{font-family:"JetBrains Mono","Courier New",monospace;font-size:.7rem;resize:vertical;min-height:380px}
 </style>
 {% endblock %}
 {% block content %}
 <div class="page-header">
   <div class="flex items-center justify-between flex-wrap gap-2">
-    <div>
-      <h1>🧬 Editor Abilità</h1>
-      <p class="text-muted text-sm">{{ abilities|length }} abilità — globale, indipendente dalla regulation</p>
-    </div>
-    <div class="flex gap-2 flex-wrap">
+    <div class="flex items-center gap-2">
       <a href="/pokemon" class="btn btn-secondary btn-sm">← Pokémon</a>
-      <button class="btn btn-secondary btn-sm" onclick="toggleJsonEditor()">📝 Editor JSON</button>
-      <button class="btn btn-primary btn-sm" onclick="openAddModal()">+ Nuova abilità</button>
-    </div>
-  </div>
-</div>
-
-<!-- Flash messages -->
-{% with messages = get_flashed_messages(with_categories=true) %}
-{% if messages %}
-  {% for cat, msg in messages %}
-  <div class="alert alert-{{ cat }} mb-2">{{ msg }}</div>
-  {% endfor %}
-{% endif %}
-{% endwith %}
-
-<!-- Barra ricerca/filtro -->
-<div class="card mb-2" style="padding:.6rem 1rem">
-  <div class="flex gap-2 flex-wrap align-items-center">
-    <input id="ab_search" class="form-control" style="max-width:220px;font-size:.82rem" placeholder="🔍 Cerca abilità..." oninput="filterTable()">
-    <select id="ab_cat_filter" class="form-control" style="max-width:200px;font-size:.82rem" onchange="filterTable()">
-      <option value="">Tutte le categorie</option>
-      <option value="none">none</option>
-      <option value="weather_override">weather_override</option>
-      <option value="weather_setter">weather_setter</option>
-      <option value="weather_boost">weather_boost</option>
-      <option value="type_immunity">type_immunity</option>
-      <option value="damage_reduction">damage_reduction</option>
-      <option value="stab_boost">stab_boost</option>
-      <option value="stat_modifier">stat_modifier</option>
-      <option value="power_boost">power_boost</option>
-      <option value="speed_boost">speed_boost</option>
-      <option value="status_boost">status_boost</option>
-      <option value="stat_boost_low_hp">stat_boost_low_hp</option>
-      <option value="other">other</option>
-    </select>
-    <span id="ab_count_lbl" class="text-xs text-muted"></span>
-  </div>
-</div>
-
-<!-- Layout: tabella + pannello dettaglio -->
-<div style="display:grid;grid-template-columns:1fr 360px;gap:1rem;align-items:start">
-
-  <!-- Tabella abilità -->
-  <div class="card mb-0" style="padding:0;overflow:hidden">
-    <div style="max-height:70vh;overflow-y:auto">
-      <table class="ab-table" id="ab_table">
-        <thead>
-          <tr>
-            <th style="min-width:160px">Nome</th>
-            <th>Categoria</th>
-            <th>Descrizione</th>
-            <th style="width:80px">Azioni</th>
-          </tr>
-        </thead>
-        <tbody id="ab_tbody">
-          {% for name, ab in abilities|dictsort %}
-          <tr class="ab-row" data-name="{{ name }}" data-cat="{{ ab.category or 'other' }}"
-              onclick="selectRow(this,'{{ name|e }}')" style="cursor:pointer">
-            <td><strong>{{ name }}</strong></td>
-            <td><span class="cat-badge cat-{{ ab.category or 'other' }}">{{ ab.category or 'other' }}</span></td>
-            <td class="text-muted" style="font-size:.75rem;max-width:280px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis">{{ ab.desc }}</td>
-            <td>
-              <button class="btn btn-sm" style="padding:.15rem .4rem;font-size:.68rem;background:color-mix(in oklch,var(--error,#c33) 12%,transparent);color:var(--error,#c33)"
-                onclick="event.stopPropagation();deleteAbility('{{ name|e }}')">🗑</button>
-            </td>
-          </tr>
-          {% endfor %}
-        </tbody>
-      </table>
-    </div>
-  </div>
-
-  <!-- Pannello dettaglio/modifica -->
-  <div id="ab_detail">
-    <div class="detail-card">
-      <div class="flex items-center justify-between mb-2">
-        <span id="ab_detail_title" style="font-weight:700;font-size:1rem"></span>
-        <button onclick="closeDetail()" class="btn btn-secondary btn-sm" style="padding:.15rem .5rem">✕</button>
+      <div>
+        <h1>🧬 Abilità — Editor</h1>
+        <p class="text-muted text-sm">{{ abilities|length }} abilità • globale, indipendente dalla regulation</p>
       </div>
-      <form id="ab_edit_form">
-        <div class="form-group">
-          <label style="font-size:.72rem">Nome</label>
-          <input id="ab_edit_name" class="form-control" style="font-size:.82rem" readonly>
-        </div>
-        <div class="form-group">
-          <label style="font-size:.72rem">Descrizione</label>
-          <textarea id="ab_edit_desc" class="form-control" rows="2" style="font-size:.82rem;resize:vertical"></textarea>
-        </div>
-        <div class="form-group">
-          <label style="font-size:.72rem">Categoria</label>
-          <select id="ab_edit_cat" class="form-control" style="font-size:.82rem">
+    </div>
+  </div>
+</div>
+
+<div style="display:grid;grid-template-columns:1fr 420px;gap:1rem;align-items:start">
+
+  <!-- Colonna sinistra: tabella -->
+  <div>
+    <div class="card">
+      <div class="card-header">
+        <span class="card-title">📋 Lista abilità</span>
+        <button class="btn btn-primary btn-sm" onclick="showAddModal()">+ Aggiungi</button>
+      </div>
+      <div class="card-body" style="padding-top:.5rem">
+        <div style="display:flex;flex-wrap:wrap;gap:.5rem;margin-bottom:.65rem;align-items:center">
+          <input id="ab_search" class="form-control" style="max-width:180px;font-size:.78rem" placeholder="🔍 Cerca..." oninput="renderTable()">
+          <select id="ab_cat_f" class="form-control" style="max-width:180px;font-size:.78rem" onchange="renderTable()">
+            <option value="">Tutte le categorie</option>
             <option value="none">none</option>
             <option value="weather_override">weather_override</option>
             <option value="weather_setter">weather_setter</option>
@@ -142,55 +68,66 @@
             <option value="stat_boost_low_hp">stat_boost_low_hp</option>
             <option value="other">other</option>
           </select>
+          <span id="ab_count" class="text-xs text-muted"></span>
         </div>
-        <div class="form-group mb-0">
-          <label style="font-size:.72rem">Effect JSON <span style="font-weight:400;opacity:.55">(campo "effect" interno)</span></label>
-          <textarea id="ab_edit_effect" class="form-control" rows="4" style="font-size:.72rem;font-family:monospace;resize:vertical"></textarea>
+        <div style="max-height:520px;overflow-y:auto">
+          <table class="ab-table">
+            <thead><tr>
+              <th>Nome</th>
+              <th>Categoria</th>
+              <th>Descrizione</th>
+              <th></th>
+            </tr></thead>
+            <tbody id="ab_tbody"></tbody>
+          </table>
         </div>
-        <div class="flex gap-2 mt-2">
-          <button type="button" class="btn btn-primary btn-sm" style="flex:1" onclick="saveAbility()">💾 Salva</button>
-        </div>
-      </form>
+      </div>
     </div>
   </div>
 
-</div><!-- fine grid -->
-
-<!-- Editor JSON grezzo (collassabile) -->
-<div class="json-editor-wrap mt-2" id="json_editor_wrap">
-  <div class="card">
-    <div class="card-header"><span class="card-title">📝 Editor JSON grezzo — abilities.json</span></div>
-    <div class="card-body">
-      <form method="POST" action="/pokemon/abilita">
-        <textarea name="abilities_json" class="form-control" rows="28"
-          style="font-family:monospace;font-size:.75rem;resize:vertical">{{ abilities_json }}</textarea>
-        <div class="flex gap-2 mt-2">
-          <button type="submit" class="btn btn-primary">💾 Salva JSON</button>
-          <button type="button" class="btn btn-secondary" onclick="toggleJsonEditor()">✕ Chiudi</button>
-        </div>
-      </form>
+  <!-- Colonna destra: JSON raw + info -->
+  <div>
+    <div class="card">
+      <div class="card-header">
+        <span class="card-title">📤 JSON raw</span>
+        <button class="btn btn-secondary btn-sm" onclick="formatJson()">✶ Formatta</button>
+      </div>
+      <div class="card-body">
+        <form method="POST" id="abForm" action="/pokemon/abilita">
+          <textarea name="abilities_json" id="abJson" class="form-control code-area">{{ abilities_json }}</textarea>
+          <div class="flex gap-2 mt-2">
+            <button type="submit" class="btn btn-primary">💾 Salva</button>
+            <button type="button" class="btn btn-secondary" onclick="location.reload()">↩ Reset</button>
+          </div>
+        </form>
+      </div>
+    </div>
+    <div class="card mt-0">
+      <div class="card-body text-sm">
+        <strong>File:</strong> <code style="font-size:.72rem">data/abilities.json</code><br>
+        <p class="text-xs text-muted mt-2" style="line-height:1.6">
+          💡 Le abilità vengono usate dal <strong>Calcolatore Danno</strong> per applicare
+          moltiplicatori (immunità tipi, meteo, boost ecc.).
+        </p>
+      </div>
     </div>
   </div>
+
 </div>
 
-<!-- Modale aggiungi abilità -->
-<div id="add_modal" style="display:none;position:fixed;inset:0;background:rgba(0,0,0,.45);z-index:1000;align-items:center;justify-content:center">
-  <div class="card" style="width:420px;max-width:96vw;padding:1.25rem">
-    <div class="flex items-center justify-between mb-2">
-      <span style="font-weight:700">➕ Nuova Abilità</span>
-      <button onclick="closeAddModal()" class="btn btn-secondary btn-sm">✕</button>
+<!-- Modal aggiungi abilità -->
+<div id="add_modal" style="display:none;position:fixed;inset:0;background:oklch(0 0 0/.45);
+     z-index:200;align-items:center;justify-content:center" onclick="if(event.target===this)closeModal()">
+  <div style="background:var(--surface);border-radius:var(--radius-xl);padding:1.5rem;
+       width:min(95vw,440px);box-shadow:var(--shadow-lg,0 12px 40px rgba(0,0,0,.5))">
+    <h3 style="margin-bottom:1rem">+ Aggiungi abilità</h3>
+    <div class="form-group">
+      <label>Nome *</label>
+      <input id="new_name" class="form-control" placeholder="Es. Velocista">
     </div>
     <div class="form-group">
-      <label>Nome abilità</label>
-      <input id="new_ab_name" class="form-control" placeholder="Es. Velocista" autofocus>
-    </div>
-    <div class="form-group">
-      <label>Descrizione</label>
-      <textarea id="new_ab_desc" class="form-control" rows="2" placeholder="Descrizione effetto..."></textarea>
-    </div>
-    <div class="form-group">
-      <label>Categoria</label>
-      <select id="new_ab_cat" class="form-control">
+      <label>Categoria *</label>
+      <select id="new_cat" class="form-control">
         <option value="other">other</option>
         <option value="none">none</option>
         <option value="weather_override">weather_override</option>
@@ -206,162 +143,135 @@
         <option value="stat_boost_low_hp">stat_boost_low_hp</option>
       </select>
     </div>
-    <div class="form-group mb-0">
-      <label>Effect JSON <span style="font-weight:400;opacity:.55;font-size:.72rem">(opzionale)</span></label>
-      <textarea id="new_ab_effect" class="form-control" rows="3" style="font-family:monospace;font-size:.75rem">{"type": "none"}</textarea>
+    <div class="form-group">
+      <label>Descrizione <span style="font-weight:400;font-size:.72rem;color:var(--text-muted)">(opzionale)</span></label>
+      <textarea id="new_desc" class="form-control" rows="3" style="font-size:.75rem;resize:vertical" placeholder="Descrizione effetto..."></textarea>
     </div>
-    <div class="flex gap-2 mt-2">
-      <button class="btn btn-primary" style="flex:1" onclick="confirmAdd()">✅ Aggiungi</button>
-      <button class="btn btn-secondary" onclick="closeAddModal()">Annulla</button>
+    <div class="form-group mb-0">
+      <label>Effect JSON <span style="font-weight:400;font-size:.72rem;color:var(--text-muted)">(campo interno per il calcolatore)</span></label>
+      <textarea id="new_effect" class="form-control" rows="3" style="font-family:'JetBrains Mono',monospace;font-size:.72rem;resize:vertical">{"type": "none"}</textarea>
+    </div>
+    <div class="flex gap-2 mt-3">
+      <button class="btn btn-primary" style="flex:1" onclick="addAbility()">+ Aggiungi</button>
+      <button class="btn btn-secondary" onclick="closeModal()">Annulla</button>
     </div>
   </div>
 </div>
 
+<!-- Modal modifica inline descrizione -->
 <script>
-const ABILITIES = {{ abilities | tojson }};
-let selectedName = null;
+let abData = JSON.parse(document.getElementById('abJson').value);
+let editingDesc = null;
 
-// ── Filtro tabella ──────────────────────────────────────
-function filterTable(){
+// ── Render tabella ──────────────────────────────────────────
+function renderTable(){
   const q = document.getElementById('ab_search').value.toLowerCase();
-  const cat = document.getElementById('ab_cat_filter').value;
-  let visible = 0;
-  document.querySelectorAll('.ab-row').forEach(row => {
-    const name = row.dataset.name.toLowerCase();
-    const rowCat = row.dataset.cat;
-    const matchQ = !q || name.includes(q);
-    const matchC = !cat || rowCat === cat;
-    row.style.display = (matchQ && matchC) ? '' : 'none';
-    if(matchQ && matchC) visible++;
-  });
-  document.getElementById('ab_count_lbl').textContent = visible + ' abilità';
+  const catF = document.getElementById('ab_cat_f').value;
+  const rows = Object.entries(abData.abilities || {})
+    .filter(([name, ab]) => {
+      if(q && !name.toLowerCase().includes(q)) return false;
+      if(catF && (ab.category||'other') !== catF) return false;
+      return true;
+    })
+    .sort((a, b) => a[0].localeCompare(b[0]));
+
+  document.getElementById('ab_count').textContent = rows.length + ' abilità';
+
+  document.getElementById('ab_tbody').innerHTML = rows.map(([name, ab]) => {
+    const cat = ab.category || 'other';
+    const desc = ab.desc || '';
+    const isEditing = editingDesc === name;
+
+    let descCell;
+    if(isEditing){
+      descCell = '<div style="display:flex;gap:.3rem;align-items:flex-start">'+
+        '<textarea id="desc_edit_area" class="form-control" style="font-size:.72rem;min-height:54px;resize:vertical">'+
+        desc.replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;')+
+        '</textarea>'+
+        '<div style="display:flex;flex-direction:column;gap:.2rem;flex-shrink:0">'+
+        '<button onclick="saveDesc(\''+name.replace(/'/g,"\\'")+'\')" '+
+        'style="background:var(--primary);color:#fff;border:none;border-radius:4px;padding:.25rem .45rem;cursor:pointer;font-size:.75rem">✓</button>'+
+        '<button onclick="cancelDesc()" '+
+        'style="background:var(--surface-off);border:1px solid var(--border);border-radius:4px;padding:.25rem .45rem;cursor:pointer;font-size:.75rem">×</button>'+
+        '</div></div>';
+    } else {
+      const safe = desc.replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;');
+      descCell = '<span onclick="startEditDesc(\''+name.replace(/'/g,"\\'")+'\')" title="Clicca per modificare" '+
+        'style="cursor:pointer;display:block;font-size:.72rem;color:var(--text-muted);max-width:300px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis">'+(safe||'<em style="color:var(--text-faint);font-size:.68rem">—</em>')+'</span>';
+    }
+
+    const delBtn = '<button onclick="deleteAbility(\''+name.replace(/'/g,"\\'")+'\')" '+
+      'style="background:color-mix(in oklch,var(--error,#e05555) 15%,transparent);color:var(--error,#e05555);border:none;border-radius:4px;padding:.2rem .4rem;cursor:pointer;font-size:.72rem">🗑</button>';
+
+    return '<tr>'+
+      '<td><strong style="font-size:.78rem">'+name+'</strong></td>'+
+      '<td><span class="cat-badge cat-'+cat+'">'+cat+'</span></td>'+
+      '<td>'+descCell+'</td>'+
+      '<td>'+delBtn+'</td>'+
+      '</tr>';
+  }).join('');
+
+  if(editingDesc) setTimeout(()=>{ const el=document.getElementById('desc_edit_area'); if(el) el.focus(); }, 30);
 }
-filterTable();
 
-// ── Selezione riga ──────────────────────────────────────
-function selectRow(row, name){
-  document.querySelectorAll('.ab-row').forEach(r => r.classList.remove('ab-row-selected'));
-  row.classList.add('ab-row-selected');
-  selectedName = name;
-  const ab = ABILITIES[name] || {};
-  document.getElementById('ab_detail_title').textContent = name;
-  document.getElementById('ab_edit_name').value = name;
-  document.getElementById('ab_edit_desc').value = ab.desc || '';
-  document.getElementById('ab_edit_cat').value = ab.category || 'other';
-  // Mostra l'oggetto effect (tutto tranne name, desc, category)
-  const effectOnly = {};
-  for(const [k,v] of Object.entries(ab)){
-    if(!['desc','category'].includes(k)) effectOnly[k] = v;
-  }
-  document.getElementById('ab_edit_effect').value = JSON.stringify(effectOnly, null, 2);
-  document.getElementById('ab_detail').style.display = 'block';
-}
-
-function closeDetail(){
-  document.getElementById('ab_detail').style.display = 'none';
-  document.querySelectorAll('.ab-row').forEach(r => r.classList.remove('ab-row-selected'));
-  selectedName = null;
-}
-
-// ── Salva modifica ──────────────────────────────────────
-async function saveAbility(){
-  const name = document.getElementById('ab_edit_name').value.trim();
-  const desc = document.getElementById('ab_edit_desc').value.trim();
-  const category = document.getElementById('ab_edit_cat').value;
-  let extra = {};
-  try { extra = JSON.parse(document.getElementById('ab_edit_effect').value || '{}'); }
-  catch(e){ alert('Effect JSON non valido: ' + e.message); return; }
-
-  const payload = { name, desc, category, ...extra };
-  // Assicura che "effect" sia presente
-  if(!payload.effect) payload.effect = { type: 'none' };
-
-  const r = await fetch('/pokemon/api/abilities/update', {
-    method:'POST', headers:{'Content-Type':'application/json'}, body: JSON.stringify(payload)
-  });
-  const j = await r.json();
-  if(j.ok){
-    showToast('✅ Abilità salvata!');
-    setTimeout(()=>location.reload(), 700);
-  } else {
-    alert('Errore: ' + (j.error || '?'));
-  }
+function startEditDesc(name){ editingDesc=name; renderTable(); }
+function cancelDesc(){ editingDesc=null; renderTable(); }
+function saveDesc(name){
+  const area = document.getElementById('desc_edit_area');
+  if(abData.abilities[name]) abData.abilities[name].desc = (area?area.value:'').trim();
+  editingDesc = null; syncJson(); renderTable();
 }
 
 // ── Elimina ─────────────────────────────────────────────
-async function deleteAbility(name){
-  if(!confirm('Eliminare l\'abilità "' + name + '"?')) return;
-  const r = await fetch('/pokemon/api/abilities/delete', {
-    method:'POST', headers:{'Content-Type':'application/json'}, body: JSON.stringify({name})
-  });
-  const j = await r.json();
-  if(j.ok){
-    showToast('🗑 Abilità eliminata');
-    setTimeout(()=>location.reload(), 600);
-  } else {
-    alert('Errore: ' + (j.error || '?'));
-  }
+function deleteAbility(name){
+  if(!confirm('Eliminare l\'abilità "'+name+'"?')) return;
+  delete abData.abilities[name];
+  syncJson(); renderTable();
 }
 
 // ── Modale aggiungi ─────────────────────────────────────
-function openAddModal(){
-  document.getElementById('new_ab_name').value = '';
-  document.getElementById('new_ab_desc').value = '';
-  document.getElementById('new_ab_cat').value = 'other';
-  document.getElementById('new_ab_effect').value = '{"type": "none"}';
-  const m = document.getElementById('add_modal');
-  m.style.display = 'flex';
-  setTimeout(()=>document.getElementById('new_ab_name').focus(), 50);
+function showAddModal(){
+  document.getElementById('new_name').value = '';
+  document.getElementById('new_desc').value = '';
+  document.getElementById('new_cat').value = 'other';
+  document.getElementById('new_effect').value = '{"type": "none"}';
+  document.getElementById('add_modal').style.display = 'flex';
+  setTimeout(()=>document.getElementById('new_name').focus(), 50);
 }
-function closeAddModal(){
-  document.getElementById('add_modal').style.display = 'none';
-}
-async function confirmAdd(){
-  const name = document.getElementById('new_ab_name').value.trim();
+function closeModal(){ document.getElementById('add_modal').style.display='none'; }
+
+function addAbility(){
+  const name = document.getElementById('new_name').value.trim();
   if(!name){ alert('Il nome è obbligatorio'); return; }
-  if(ABILITIES[name]){ alert('Abilità "' + name + '" già esistente'); return; }
-  const desc = document.getElementById('new_ab_desc').value.trim();
-  const category = document.getElementById('new_ab_cat').value;
-  let extra = {};
-  try { extra = JSON.parse(document.getElementById('new_ab_effect').value || '{}'); }
-  catch(e){ alert('Effect JSON non valido: ' + e.message); return; }
-  const payload = { name, desc, category, ...extra };
-  if(!payload.effect) payload.effect = { type: 'none' };
-  const r = await fetch('/pokemon/api/abilities/update', {
-    method:'POST', headers:{'Content-Type':'application/json'}, body: JSON.stringify(payload)
-  });
-  const j = await r.json();
-  if(j.ok){
-    showToast('✅ Abilità aggiunta!');
-    closeAddModal();
-    setTimeout(()=>location.reload(), 700);
-  } else {
-    alert('Errore: ' + (j.error || '?'));
-  }
+  if(abData.abilities[name]){ alert('Abilità "'+name+'" già esistente'); return; }
+
+  let effect = {type:'none'};
+  try { effect = JSON.parse(document.getElementById('new_effect').value || '{}'); }
+  catch(e){ alert('Effect JSON non valido: '+e.message); return; }
+
+  abData.abilities[name] = {
+    desc: document.getElementById('new_desc').value.trim(),
+    category: document.getElementById('new_cat').value,
+    effect
+  };
+  syncJson(); renderTable(); closeModal();
 }
 
-// ── JSON editor toggle ───────────────────────────────────
-function toggleJsonEditor(){
-  document.getElementById('json_editor_wrap').classList.toggle('open');
+// ── JSON sync ────────────────────────────────────────────────
+function syncJson(){
+  document.getElementById('abJson').value = JSON.stringify(abData, null, 2);
 }
-
-// ── Toast ────────────────────────────────────────────────
-function showToast(msg){
-  let t = document.getElementById('ab_toast');
-  if(!t){
-    t = document.createElement('div');
-    t.id = 'ab_toast';
-    t.style.cssText = 'position:fixed;bottom:1.5rem;right:1.5rem;background:var(--primary);color:#fff;padding:.55rem 1.1rem;border-radius:var(--radius-md);font-size:.82rem;font-weight:600;box-shadow:var(--shadow-lg);z-index:9999;transition:opacity .3s';
-    document.body.appendChild(t);
-  }
-  t.textContent = msg;
-  t.style.opacity = '1';
-  setTimeout(()=>{ t.style.opacity = '0'; }, 2200);
+function formatJson(){
+  try{ abData=JSON.parse(document.getElementById('abJson').value); syncJson(); renderTable(); }
+  catch(e){ alert('JSON non valido: '+e.message); }
 }
-
-// ── Chiudi modale clic fuori ─────────────────────────────
-document.getElementById('add_modal').addEventListener('click', e=>{
-  if(e.target === e.currentTarget) closeAddModal();
+document.getElementById('abJson').addEventListener('input', function(){
+  try{ abData=JSON.parse(document.getElementById('abJson').value); renderTable(); }catch(e){}
 });
+
+// Init
+document.getElementById('ab_search').value = '';
+document.getElementById('ab_cat_f').value = '';
+renderTable();
 </script>
 {% endblock %}
