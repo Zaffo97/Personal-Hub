@@ -3,451 +3,365 @@
 {% block topbar_title %}🧬 Editor Abilità{% endblock %}
 {% block extra_head %}
 <style>
-.ab-table td,.ab-table th{padding:.35rem .6rem;font-size:.78rem;vertical-align:middle}
-.ab-table th{background:var(--surface-off);font-weight:700;position:sticky;top:0;z-index:2}
-.ab-table tbody tr:hover{background:var(--surface-off)}
-.ab-table{width:100%;border-collapse:collapse}
-.badge-cat{display:inline-block;padding:.1rem .45rem;border-radius:20px;font-size:.65rem;font-weight:700;text-transform:uppercase;letter-spacing:.04em}
-.badge-none{background:#55555522;color:var(--text-muted)}
-.badge-weather_override{background:#ff971422;color:#c76b00}
-.badge-weather_setter{background:#3692dc22;color:#1a6aaa}
-.badge-weather_boost{background:#38bf4b22;color:#1e7a2b}
-.badge-speed_boost{background:#fbd10022;color:#8a6e00}
-.badge-type_immunity{background:#b567ce22;color:#7a2da0}
-.badge-damage_reduction{background:#e0306a22;color:#a01040}
-.badge-stab_boost{background:#ff667522;color:#b02030}
-.badge-status_boost{background:#83c30022;color:#4a7000}
-.badge-stat_modifier{background:#006fc922;color:#004e8a}
-.badge-power_boost{background:#e8723622;color:#a04010}
-.badge-stat_boost_low_hp{background:#70cbd422;color:#1a7a88}
-.badge-other{background:#c8b68622;color:#6a5a20}
-.ab-search{max-width:280px}
-.cat-filter{font-size:.75rem}
-.json-editor-wrap{display:none}
-.json-editor-wrap.active{display:block}
-.ab-row-actions{display:flex;gap:.3rem;align-items:center}
-.modal-overlay{position:fixed;inset:0;background:oklch(0 0 0/0.45);z-index:1000;display:none;align-items:center;justify-content:center}
-.modal-overlay.active{display:flex}
-.modal-box{background:var(--surface);border-radius:var(--radius-lg);padding:1.5rem;width:min(520px,95vw);max-height:90vh;overflow-y:auto;box-shadow:0 8px 32px oklch(0 0 0/0.25)}
-.modal-box h3{margin-bottom:1rem;font-size:1rem}
+.ab-table { width:100%; border-collapse:collapse; font-size:.82rem; }
+.ab-table th { background:var(--surface-off); padding:.45rem .65rem; text-align:left; font-size:.72rem; font-weight:700; text-transform:uppercase; color:var(--text-muted); border-bottom:2px solid var(--border); position:sticky; top:0; z-index:2; }
+.ab-table td { padding:.42rem .65rem; border-bottom:1px solid var(--border); vertical-align:middle; }
+.ab-table tr:hover td { background:var(--surface-off); }
+.ab-row-selected td { background:color-mix(in oklch,var(--primary) 8%,transparent) !important; }
+.cat-badge { display:inline-block; padding:.1rem .45rem; border-radius:20px; font-size:.65rem; font-weight:700; }
+.cat-none          { background:#88888822; color:var(--text-muted); }
+.cat-weather_override { background:#ff971422; color:#cc6600; }
+.cat-weather_setter   { background:#fbd10022; color:#997700; }
+.cat-type_immunity    { background:#3692dc22; color:#006099; }
+.cat-damage_reduction { background:#38bf4b22; color:#1a7a28; }
+.cat-stab_boost       { background:#b567ce22; color:#7a2299; }
+.cat-stat_modifier    { background:#e0306a22; color:#aa0040; }
+.cat-power_boost      { background:#e8723622; color:#b04400; }
+.cat-speed_boost      { background:#fbec5d22; color:#886600; }
+.cat-weather_boost    { background:#70cbd422; color:#007788; }
+.cat-status_boost     { background:#c8b68622; color:#7a6600; }
+.cat-stat_boost_low_hp{ background:#83c30022; color:#447700; }
+.cat-other            { background:#9099a122; color:var(--text-muted); }
+#ab_detail { display:none; }
+.detail-card { background:var(--surface); border:1px solid var(--border); border-radius:var(--radius-lg); padding:1.1rem 1.3rem; }
+.json-editor-wrap { display:none; }
+.json-editor-wrap.open { display:block; }
 </style>
 {% endblock %}
 {% block content %}
 <div class="page-header">
   <div class="flex items-center justify-between flex-wrap gap-2">
-    <div class="flex items-center gap-2">
+    <div>
+      <h1>🧬 Editor Abilità</h1>
+      <p class="text-muted text-sm">{{ abilities|length }} abilità — globale, indipendente dalla regulation</p>
+    </div>
+    <div class="flex gap-2 flex-wrap">
       <a href="/pokemon" class="btn btn-secondary btn-sm">← Pokémon</a>
-      <div>
-        <h1>🧬 Editor Abilità</h1>
-        <p class="text-muted text-sm">Gestisci le abilità usate nel calcolatore danno · <strong>{{ abilities|length }}</strong> abilità totali</p>
-      </div>
-    </div>
-    <div class="flex gap-2">
-      <button onclick="openAddModal()" class="btn btn-primary btn-sm">+ Nuova Abilità</button>
-      <button onclick="toggleJsonEditor()" class="btn btn-secondary btn-sm" id="json_toggle_btn">{ } JSON</button>
+      <button class="btn btn-secondary btn-sm" onclick="toggleJsonEditor()">📝 Editor JSON</button>
+      <button class="btn btn-primary btn-sm" onclick="openAddModal()">+ Nuova abilità</button>
     </div>
   </div>
 </div>
 
-<!-- Filtri -->
-<div class="card mb-3">
-  <div class="card-body" style="padding:.6rem 1rem">
-    <div class="flex gap-2 flex-wrap items-center">
-      <input id="ab_search" class="form-control ab-search" placeholder="🔍 Cerca abilità..." oninput="filterAbilities()">
-      <select id="ab_cat_filter" class="form-control cat-filter" style="max-width:180px" onchange="filterAbilities()">
-        <option value="">Tutte le categorie</option>
-        <option value="none">— Nessuna</option>
-        <option value="weather_override">☀️ Weather Override</option>
-        <option value="weather_setter">🌦️ Weather Setter</option>
-        <option value="weather_boost">🌤️ Weather Boost</option>
-        <option value="speed_boost">⚡ Speed Boost</option>
-        <option value="type_immunity">🛡️ Immunità tipo</option>
-        <option value="damage_reduction">💪 Riduz. danno</option>
-        <option value="stab_boost">⭐ STAB Boost</option>
-        <option value="status_boost">🔥 Status Boost</option>
-        <option value="stat_modifier">📈 Stat Modifier</option>
-        <option value="power_boost">💥 Power Boost</option>
-        <option value="stat_boost_low_hp">❤️ Low HP Boost</option>
-        <option value="other">🔧 Altro</option>
+<!-- Flash messages -->
+{% with messages = get_flashed_messages(with_categories=true) %}
+{% if messages %}
+  {% for cat, msg in messages %}
+  <div class="alert alert-{{ cat }} mb-2">{{ msg }}</div>
+  {% endfor %}
+{% endif %}
+{% endwith %}
+
+<!-- Barra ricerca/filtro -->
+<div class="card mb-2" style="padding:.6rem 1rem">
+  <div class="flex gap-2 flex-wrap align-items-center">
+    <input id="ab_search" class="form-control" style="max-width:220px;font-size:.82rem" placeholder="🔍 Cerca abilità..." oninput="filterTable()">
+    <select id="ab_cat_filter" class="form-control" style="max-width:200px;font-size:.82rem" onchange="filterTable()">
+      <option value="">Tutte le categorie</option>
+      <option value="none">none</option>
+      <option value="weather_override">weather_override</option>
+      <option value="weather_setter">weather_setter</option>
+      <option value="weather_boost">weather_boost</option>
+      <option value="type_immunity">type_immunity</option>
+      <option value="damage_reduction">damage_reduction</option>
+      <option value="stab_boost">stab_boost</option>
+      <option value="stat_modifier">stat_modifier</option>
+      <option value="power_boost">power_boost</option>
+      <option value="speed_boost">speed_boost</option>
+      <option value="status_boost">status_boost</option>
+      <option value="stat_boost_low_hp">stat_boost_low_hp</option>
+      <option value="other">other</option>
+    </select>
+    <span id="ab_count_lbl" class="text-xs text-muted"></span>
+  </div>
+</div>
+
+<!-- Layout: tabella + pannello dettaglio -->
+<div style="display:grid;grid-template-columns:1fr 360px;gap:1rem;align-items:start">
+
+  <!-- Tabella abilità -->
+  <div class="card mb-0" style="padding:0;overflow:hidden">
+    <div style="max-height:70vh;overflow-y:auto">
+      <table class="ab-table" id="ab_table">
+        <thead>
+          <tr>
+            <th style="min-width:160px">Nome</th>
+            <th>Categoria</th>
+            <th>Descrizione</th>
+            <th style="width:80px">Azioni</th>
+          </tr>
+        </thead>
+        <tbody id="ab_tbody">
+          {% for name, ab in abilities|dictsort %}
+          <tr class="ab-row" data-name="{{ name }}" data-cat="{{ ab.category or 'other' }}"
+              onclick="selectRow(this,'{{ name|e }}')" style="cursor:pointer">
+            <td><strong>{{ name }}</strong></td>
+            <td><span class="cat-badge cat-{{ ab.category or 'other' }}">{{ ab.category or 'other' }}</span></td>
+            <td class="text-muted" style="font-size:.75rem;max-width:280px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis">{{ ab.desc }}</td>
+            <td>
+              <button class="btn btn-sm" style="padding:.15rem .4rem;font-size:.68rem;background:color-mix(in oklch,var(--error,#c33) 12%,transparent);color:var(--error,#c33)"
+                onclick="event.stopPropagation();deleteAbility('{{ name|e }}')">🗑</button>
+            </td>
+          </tr>
+          {% endfor %}
+        </tbody>
+      </table>
+    </div>
+  </div>
+
+  <!-- Pannello dettaglio/modifica -->
+  <div id="ab_detail">
+    <div class="detail-card">
+      <div class="flex items-center justify-between mb-2">
+        <span id="ab_detail_title" style="font-weight:700;font-size:1rem"></span>
+        <button onclick="closeDetail()" class="btn btn-secondary btn-sm" style="padding:.15rem .5rem">✕</button>
+      </div>
+      <form id="ab_edit_form">
+        <div class="form-group">
+          <label style="font-size:.72rem">Nome</label>
+          <input id="ab_edit_name" class="form-control" style="font-size:.82rem" readonly>
+        </div>
+        <div class="form-group">
+          <label style="font-size:.72rem">Descrizione</label>
+          <textarea id="ab_edit_desc" class="form-control" rows="2" style="font-size:.82rem;resize:vertical"></textarea>
+        </div>
+        <div class="form-group">
+          <label style="font-size:.72rem">Categoria</label>
+          <select id="ab_edit_cat" class="form-control" style="font-size:.82rem">
+            <option value="none">none</option>
+            <option value="weather_override">weather_override</option>
+            <option value="weather_setter">weather_setter</option>
+            <option value="weather_boost">weather_boost</option>
+            <option value="type_immunity">type_immunity</option>
+            <option value="damage_reduction">damage_reduction</option>
+            <option value="stab_boost">stab_boost</option>
+            <option value="stat_modifier">stat_modifier</option>
+            <option value="power_boost">power_boost</option>
+            <option value="speed_boost">speed_boost</option>
+            <option value="status_boost">status_boost</option>
+            <option value="stat_boost_low_hp">stat_boost_low_hp</option>
+            <option value="other">other</option>
+          </select>
+        </div>
+        <div class="form-group mb-0">
+          <label style="font-size:.72rem">Effect JSON <span style="font-weight:400;opacity:.55">(campo "effect" interno)</span></label>
+          <textarea id="ab_edit_effect" class="form-control" rows="4" style="font-size:.72rem;font-family:monospace;resize:vertical"></textarea>
+        </div>
+        <div class="flex gap-2 mt-2">
+          <button type="button" class="btn btn-primary btn-sm" style="flex:1" onclick="saveAbility()">💾 Salva</button>
+        </div>
+      </form>
+    </div>
+  </div>
+
+</div><!-- fine grid -->
+
+<!-- Editor JSON grezzo (collassabile) -->
+<div class="json-editor-wrap mt-2" id="json_editor_wrap">
+  <div class="card">
+    <div class="card-header"><span class="card-title">📝 Editor JSON grezzo — abilities.json</span></div>
+    <div class="card-body">
+      <form method="POST" action="/pokemon/abilita">
+        <textarea name="abilities_json" class="form-control" rows="28"
+          style="font-family:monospace;font-size:.75rem;resize:vertical">{{ abilities_json }}</textarea>
+        <div class="flex gap-2 mt-2">
+          <button type="submit" class="btn btn-primary">💾 Salva JSON</button>
+          <button type="button" class="btn btn-secondary" onclick="toggleJsonEditor()">✕ Chiudi</button>
+        </div>
+      </form>
+    </div>
+  </div>
+</div>
+
+<!-- Modale aggiungi abilità -->
+<div id="add_modal" style="display:none;position:fixed;inset:0;background:rgba(0,0,0,.45);z-index:1000;align-items:center;justify-content:center">
+  <div class="card" style="width:420px;max-width:96vw;padding:1.25rem">
+    <div class="flex items-center justify-between mb-2">
+      <span style="font-weight:700">➕ Nuova Abilità</span>
+      <button onclick="closeAddModal()" class="btn btn-secondary btn-sm">✕</button>
+    </div>
+    <div class="form-group">
+      <label>Nome abilità</label>
+      <input id="new_ab_name" class="form-control" placeholder="Es. Velocista" autofocus>
+    </div>
+    <div class="form-group">
+      <label>Descrizione</label>
+      <textarea id="new_ab_desc" class="form-control" rows="2" placeholder="Descrizione effetto..."></textarea>
+    </div>
+    <div class="form-group">
+      <label>Categoria</label>
+      <select id="new_ab_cat" class="form-control">
+        <option value="other">other</option>
+        <option value="none">none</option>
+        <option value="weather_override">weather_override</option>
+        <option value="weather_setter">weather_setter</option>
+        <option value="weather_boost">weather_boost</option>
+        <option value="type_immunity">type_immunity</option>
+        <option value="damage_reduction">damage_reduction</option>
+        <option value="stab_boost">stab_boost</option>
+        <option value="stat_modifier">stat_modifier</option>
+        <option value="power_boost">power_boost</option>
+        <option value="speed_boost">speed_boost</option>
+        <option value="status_boost">status_boost</option>
+        <option value="stat_boost_low_hp">stat_boost_low_hp</option>
       </select>
-      <span id="ab_count" class="text-sm text-muted"></span>
     </div>
-  </div>
-</div>
-
-<!-- Tabella abilità -->
-<div class="card">
-  <div style="overflow-x:auto">
-    <table class="ab-table" id="ab_table">
-      <thead>
-        <tr>
-          <th>Nome</th>
-          <th>Categoria</th>
-          <th>Descrizione</th>
-          <th>Effetti nel calc</th>
-          <th style="width:90px">Azioni</th>
-        </tr>
-      </thead>
-      <tbody id="ab_tbody">
-        {% for name, ab in abilities|dictsort %}
-        <tr data-name="{{ name }}" data-cat="{{ ab.category or 'other' }}">
-          <td><strong style="font-size:.82rem">{{ name }}</strong></td>
-          <td><span class="badge-cat badge-{{ ab.category or 'other' }}">{{ ab.category or 'other' }}</span></td>
-          <td style="max-width:260px;color:var(--text-muted)">{{ ab.desc or '—' }}</td>
-          <td style="font-size:.7rem;color:var(--text-muted);max-width:200px">
-            {% if ab.weather_override %}<div>🌤️ override → <strong>{{ ab.weather_override }}</strong></div>{% endif %}
-            {% if ab.immunity %}<div>🛡️ immune → {{ ab.immunity|join(', ') }}</div>{% endif %}
-            {% if ab.fire_blocked %}<div>🔥 Fuoco bloccato</div>{% endif %}
-            {% if ab.atk_boost %}<div>⬆️ ATK {{ ab.atk_boost.type }} ×{{ ab.atk_boost.multiplier }}</div>{% endif %}
-            {% if ab.atk_penalty %}<div>⬇️ ATK {{ ab.atk_penalty.type }} ×{{ ab.atk_penalty.multiplier }}</div>{% endif %}
-            {% if ab.def_multiplier %}<div>🛡️ DEF {% if ab.def_multiplier.types %}{{ ab.def_multiplier.types|join('/') }}{% elif ab.def_multiplier.category %}{{ ab.def_multiplier.category }}{% endif %} ×{{ ab.def_multiplier.multiplier }}</div>{% endif %}
-            {% if ab.super_effective_reduction %}<div>📉 SE → ×{{ ab.super_effective_reduction }}</div>{% endif %}
-            {% if ab.stab_multiplier %}<div>⭐ STAB ×{{ ab.stab_multiplier }}</div>{% endif %}
-            {% if ab.speed_multiplier %}<div>⚡ Speed ×{{ ab.speed_multiplier.value if ab.speed_multiplier.value else '?' }}</div>{% endif %}
-            {% if ab.spread_boost %}<div>💥 Spread ×{{ ab.spread_boost }}</div>{% endif %}
-            {% if ab.weather_ball_type %}<div>🎾 WBall → {{ ab.weather_ball_type }}</div>{% endif %}
-            {% if not ab.weather_override and not ab.immunity and not ab.fire_blocked and not ab.atk_boost and not ab.def_multiplier and not ab.super_effective_reduction and not ab.stab_multiplier and not ab.spread_boost and not ab.weather_ball_type %}<span style="opacity:.4">—</span>{% endif %}
-          </td>
-          <td>
-            <div class="ab-row-actions">
-              <button class="btn btn-secondary btn-sm" style="font-size:.65rem;padding:.15rem .4rem"
-                onclick="openEditModal('{{ name }}')" title="Modifica">✏️</button>
-              {% if name != 'Nessuna' %}
-              <button class="btn btn-sm" style="font-size:.65rem;padding:.15rem .4rem;background:var(--error,#c33);color:#fff;border:none"
-                onclick="deleteAbility('{{ name }}')" title="Elimina">🗑️</button>
-              {% endif %}
-            </div>
-          </td>
-        </tr>
-        {% endfor %}
-      </tbody>
-    </table>
-  </div>
-</div>
-
-<!-- JSON editor grezzo -->
-<div class="json-editor-wrap card mt-3" id="json_editor_wrap">
-  <div class="card-header">
-    <span class="card-title">{ } Editor JSON raw</span>
-    <span class="text-xs text-muted">Modifica diretta del file abilities.json</span>
-  </div>
-  <div class="card-body">
-    <form method="POST" action="/pokemon/abilita">
-      <textarea name="abilities_json" id="ab_json_ta" class="form-control"
-        style="font-family:monospace;font-size:.75rem;min-height:380px;resize:vertical">{{ abilities_json }}</textarea>
-      <div class="flex gap-2 mt-2">
-        <button type="submit" class="btn btn-primary">💾 Salva JSON</button>
-        <button type="button" onclick="validateJson()" class="btn btn-secondary">✅ Valida</button>
-      </div>
-      <div id="json_validate_msg" class="text-sm mt-1" style="display:none"></div>
-    </form>
-  </div>
-</div>
-
-<!-- MODAL aggiungi/modifica abilità -->
-<div class="modal-overlay" id="ab_modal" onclick="closeModalIf(event)">
-  <div class="modal-box">
-    <h3 id="modal_title">➕ Nuova Abilità</h3>
-    <form id="ab_form">
-      <div class="form-group">
-        <label>Nome abilità <span style="color:var(--error,#c33)">*</span></label>
-        <input id="mf_name" class="form-control" placeholder="Es. Levitazione" required>
-      </div>
-      <div class="form-group">
-        <label>Descrizione</label>
-        <input id="mf_desc" class="form-control" placeholder="Breve descrizione dell'effetto">
-      </div>
-      <div class="form-group">
-        <label>Categoria</label>
-        <select id="mf_cat" class="form-control" onchange="updateModalFields()">
-          <option value="none">— Nessuna</option>
-          <option value="weather_override">☀️ Weather Override</option>
-          <option value="weather_setter">🌦️ Weather Setter</option>
-          <option value="weather_boost">🌤️ Weather Boost</option>
-          <option value="speed_boost">⚡ Speed Boost</option>
-          <option value="type_immunity">🛡️ Immunità tipo</option>
-          <option value="damage_reduction">💪 Riduz. danno</option>
-          <option value="stab_boost">⭐ STAB Boost</option>
-          <option value="status_boost">🔥 Status Boost</option>
-          <option value="stat_modifier">📈 Stat Modifier</option>
-          <option value="power_boost">💥 Power Boost</option>
-          <option value="stat_boost_low_hp">❤️ Low HP Boost</option>
-          <option value="other">🔧 Altro</option>
-        </select>
-      </div>
-
-      <!-- Campi dinamici per effetti -->
-      <div id="mf_extras" style="border-top:1px solid var(--border);margin-top:.75rem;padding-top:.75rem">
-        <!-- Iniettati da JS in base alla categoria -->
-      </div>
-
-      <div id="mf_effect_json_wrap" class="form-group mt-2">
-        <label style="font-size:.72rem">Effect JSON (avanzato)</label>
-        <textarea id="mf_effect_json" class="form-control" rows="3"
-          style="font-family:monospace;font-size:.72rem" placeholder='{"type":"none"}'></textarea>
-      </div>
-
-      <div class="flex gap-2 mt-3">
-        <button type="button" onclick="saveAbility()" class="btn btn-primary">💾 Salva</button>
-        <button type="button" onclick="closeModal()" class="btn btn-secondary">Annulla</button>
-      </div>
-      <div id="mf_error" class="text-sm mt-1" style="color:var(--error,#c33);display:none"></div>
-    </form>
+    <div class="form-group mb-0">
+      <label>Effect JSON <span style="font-weight:400;opacity:.55;font-size:.72rem">(opzionale)</span></label>
+      <textarea id="new_ab_effect" class="form-control" rows="3" style="font-family:monospace;font-size:.75rem">{"type": "none"}</textarea>
+    </div>
+    <div class="flex gap-2 mt-2">
+      <button class="btn btn-primary" style="flex:1" onclick="confirmAdd()">✅ Aggiungi</button>
+      <button class="btn btn-secondary" onclick="closeAddModal()">Annulla</button>
+    </div>
   </div>
 </div>
 
 <script>
-const ABILITIES_DATA = {{ abilities_json | safe }};
-let editingName = null;
+const ABILITIES = {{ abilities | tojson }};
+let selectedName = null;
 
-// --- Filtro tabella ---
-function filterAbilities(){
+// ── Filtro tabella ──────────────────────────────────────
+function filterTable(){
   const q = document.getElementById('ab_search').value.toLowerCase();
   const cat = document.getElementById('ab_cat_filter').value;
-  let shown = 0;
-  document.querySelectorAll('#ab_tbody tr').forEach(tr=>{
-    const name = tr.dataset.name.toLowerCase();
-    const trCat = tr.dataset.cat;
-    const match = (!q || name.includes(q)) && (!cat || trCat === cat);
-    tr.style.display = match ? '' : 'none';
-    if(match) shown++;
+  let visible = 0;
+  document.querySelectorAll('.ab-row').forEach(row => {
+    const name = row.dataset.name.toLowerCase();
+    const rowCat = row.dataset.cat;
+    const matchQ = !q || name.includes(q);
+    const matchC = !cat || rowCat === cat;
+    row.style.display = (matchQ && matchC) ? '' : 'none';
+    if(matchQ && matchC) visible++;
   });
-  document.getElementById('ab_count').textContent = `${shown} abilità`;
+  document.getElementById('ab_count_lbl').textContent = visible + ' abilità';
 }
-filterAbilities();
+filterTable();
 
-// --- Toggle JSON editor ---
-function toggleJsonEditor(){
-  const wrap = document.getElementById('json_editor_wrap');
-  const btn = document.getElementById('json_toggle_btn');
-  wrap.classList.toggle('active');
-  btn.textContent = wrap.classList.contains('active') ? '✕ Chiudi JSON' : '{ } JSON';
-  if(wrap.classList.contains('active')) wrap.scrollIntoView({behavior:'smooth'});
-}
-
-// --- Valida JSON ---
-function validateJson(){
-  const el = document.getElementById('ab_json_ta');
-  const msg = document.getElementById('json_validate_msg');
-  msg.style.display = 'block';
-  try{
-    const d = JSON.parse(el.value);
-    if(!d.abilities) throw new Error("Manca la chiave 'abilities'");
-    msg.style.color = 'var(--success,#2a8a3a)';
-    msg.textContent = `✅ JSON valido — ${Object.keys(d.abilities).length} abilità`;
-  }catch(e){
-    msg.style.color = 'var(--error,#c33)';
-    msg.textContent = `❌ ${e.message}`;
+// ── Selezione riga ──────────────────────────────────────
+function selectRow(row, name){
+  document.querySelectorAll('.ab-row').forEach(r => r.classList.remove('ab-row-selected'));
+  row.classList.add('ab-row-selected');
+  selectedName = name;
+  const ab = ABILITIES[name] || {};
+  document.getElementById('ab_detail_title').textContent = name;
+  document.getElementById('ab_edit_name').value = name;
+  document.getElementById('ab_edit_desc').value = ab.desc || '';
+  document.getElementById('ab_edit_cat').value = ab.category || 'other';
+  // Mostra l'oggetto effect (tutto tranne name, desc, category)
+  const effectOnly = {};
+  for(const [k,v] of Object.entries(ab)){
+    if(!['desc','category'].includes(k)) effectOnly[k] = v;
   }
+  document.getElementById('ab_edit_effect').value = JSON.stringify(effectOnly, null, 2);
+  document.getElementById('ab_detail').style.display = 'block';
 }
 
-// --- Modal ---
-function openAddModal(){
-  editingName = null;
-  document.getElementById('modal_title').textContent = '➕ Nuova Abilità';
-  document.getElementById('mf_name').value = '';
-  document.getElementById('mf_name').disabled = false;
-  document.getElementById('mf_desc').value = '';
-  document.getElementById('mf_cat').value = 'other';
-  document.getElementById('mf_effect_json').value = JSON.stringify({type:'none'},null,2);
-  document.getElementById('mf_error').style.display = 'none';
-  updateModalFields();
-  document.getElementById('ab_modal').classList.add('active');
+function closeDetail(){
+  document.getElementById('ab_detail').style.display = 'none';
+  document.querySelectorAll('.ab-row').forEach(r => r.classList.remove('ab-row-selected'));
+  selectedName = null;
 }
 
-function openEditModal(name){
-  editingName = name;
-  const ab = ABILITIES_DATA.abilities[name];
-  if(!ab) return;
-  document.getElementById('modal_title').textContent = `✏️ Modifica: ${name}`;
-  document.getElementById('mf_name').value = name;
-  document.getElementById('mf_name').disabled = true;
-  document.getElementById('mf_desc').value = ab.desc || '';
-  document.getElementById('mf_cat').value = ab.category || 'other';
-  document.getElementById('mf_effect_json').value = JSON.stringify(ab.effect || {type:'none'},null,2);
-  document.getElementById('mf_error').style.display = 'none';
-  updateModalFields(ab);
-  document.getElementById('ab_modal').classList.add('active');
-}
-
-function closeModal(){
-  document.getElementById('ab_modal').classList.remove('active');
-}
-function closeModalIf(e){
-  if(e.target===document.getElementById('ab_modal')) closeModal();
-}
-
-// Campi extra dinamici per categoria
-function updateModalFields(ab){
-  const cat = document.getElementById('mf_cat').value;
-  const wrap = document.getElementById('mf_extras');
-  let html = '';
-
-  const val = (key, fallback='') => ab && ab[key] != null ? ab[key] : fallback;
-
-  if(['weather_override','weather_setter'].includes(cat)){
-    const ov = ab && ab.weather_override ? ab.weather_override : (ab && ab.effect && ab.effect.weather ? ab.effect.weather : '');
-    const wbt = val('weather_ball_type','');
-    html += `<div class="form-group"><label style="font-size:.72rem">Weather</label>
-      <select id="mf_weather" class="form-control">
-        <option value="">—</option>
-        <option value="sun" ${ov==='sun'?'selected':''}>☀️ Sole</option>
-        <option value="rain" ${ov==='rain'?'selected':''}>🌧️ Pioggia</option>
-        <option value="sand" ${ov==='sand'?'selected':''}>🌪️ Sabbia</option>
-        <option value="snow" ${ov==='snow'?'selected':''}>❄️ Neve</option>
-        <option value="harshsun" ${ov==='harshsun'?'selected':''}>☀️☀️ Sole forte</option>
-        <option value="heavyrain" ${ov==='heavyrain'?'selected':''}>🌧️🌧️ Pioggia forte</option>
-        <option value="fog" ${ov==='fog'?'selected':''}>🌫️ Nebbia</option>
-      </select></div>`;
-    const wbOpts = ['','Normale','Fuoco','Acqua','Elettro','Erba','Ghiaccio','Lotta','Veleno','Terra','Volante','Psico','Coleottero','Roccia','Spettro','Drago','Buio','Acciaio','Folletto'];
-    html += `<div class="form-group"><label style="font-size:.72rem">Tipo Weather Ball</label>
-      <select id="mf_wb_type" class="form-control">${wbOpts.map(t=>`<option value="${t}" ${wbt===t?'selected':''}>${t||'—'}</option>`).join('')}</select></div>`;
-    if(cat==='weather_override'){
-      const fb = val('fire_blocked', false);
-      html += `<label style="display:flex;align-items:center;gap:.4rem;font-size:.75rem;cursor:pointer;margin-top:.25rem">
-        <input type="checkbox" id="mf_fire_blocked" ${fb?'checked':''} style="accent-color:var(--primary)"> Fuoco bloccato (come Pioggia forte)</label>`;
-    }
-  }
-  if(cat==='type_immunity'){
-    const imm = ab && ab.immunity ? ab.immunity.join(',') : '';
-    html += `<div class="form-group"><label style="font-size:.72rem">Tipi immunità (virgola separati)</label>
-      <input id="mf_immunity" class="form-control" placeholder="Es. Terra,Acqua" value="${imm}"></div>`;
-  }
-  if(cat==='damage_reduction'){
-    const se = val('super_effective_reduction','');
-    const fh = ab && ab.def_multiplier && ab.def_multiplier.category==='physical' ? ab.def_multiplier.multiplier : '';
-    html += `<div class="form-row">
-      <div class="form-group"><label style="font-size:.72rem">Riduz. SE (es. 0.75)</label>
-        <input id="mf_se_red" class="form-control" type="number" step="0.05" placeholder="0.75" value="${se}"></div>
-      <div class="form-group"><label style="font-size:.72rem">Riduz. fisico (fur coat, es. 0.5)</label>
-        <input id="mf_fur_coat" class="form-control" type="number" step="0.05" placeholder="" value="${fh}"></div></div>`;
-    const ms = val('multiscale', false);
-    html += `<label style="display:flex;align-items:center;gap:.4rem;font-size:.75rem;cursor:pointer">
-      <input type="checkbox" id="mf_multiscale" ${ms?'checked':''} style="accent-color:var(--primary)"> Multiscaglia (dimezza a PS pieni)</label>`;
-    const thickFuoco = ab && ab.def_multiplier && ab.def_multiplier.types && ab.def_multiplier.types.includes('Fuoco');
-    html += `<label style="display:flex;align-items:center;gap:.4rem;font-size:.75rem;cursor:pointer;margin-top:.25rem">
-      <input type="checkbox" id="mf_thick_fat" ${thickFuoco?'checked':''} style="accent-color:var(--primary)"> Spessore (Fuoco+Ghiaccio ×0.5)</label>`;
-  }
-  if(cat==='stab_boost'){
-    const sv = val('stab_multiplier', 2.0);
-    html += `<div class="form-group"><label style="font-size:.72rem">STAB multiplier</label>
-      <input id="mf_stab_mult" class="form-control" type="number" step="0.1" value="${sv}"></div>`;
-  }
-  if(cat==='stat_modifier'){
-    const stat = ab && ab.atk_stat_mult ? ab.atk_stat_mult.stat : 'atk';
-    const sval = ab && ab.atk_stat_mult ? ab.atk_stat_mult.value : 1.5;
-    html += `<div class="form-row">
-      <div class="form-group"><label style="font-size:.72rem">Stat</label>
-        <select id="mf_stat_name" class="form-control">
-          ${['atk','def','spa','spd','spe'].map(s=>`<option value="${s}" ${stat===s?'selected':''}>${s.toUpperCase()}</option>`).join('')}
-        </select></div>
-      <div class="form-group"><label style="font-size:.72rem">Moltiplicatore</label>
-        <input id="mf_stat_val" class="form-control" type="number" step="0.1" value="${sval}"></div></div>`;
-  }
-  if(cat==='power_boost'){
-    const bpm = val('bp_multiplier','');
-    const sb = val('spread_boost','');
-    html += `<div class="form-row">
-      <div class="form-group"><label style="font-size:.72rem">BP multiplier globale</label>
-        <input id="mf_bp_mult" class="form-control" type="number" step="0.05" placeholder="Es. 1.3" value="${bpm}"></div>
-      <div class="form-group"><label style="font-size:.72rem">Spread boost</label>
-        <input id="mf_spread" class="form-control" type="number" step="0.05" placeholder="Es. 1.3" value="${sb}"></div></div>`;
-  }
-  if(cat==='speed_boost'){
-    const spv = ab && ab.speed_multiplier && ab.speed_multiplier.value ? ab.speed_multiplier.value : '';
-    const spw = ab && ab.speed_multiplier && ab.speed_multiplier.weather ? ab.speed_multiplier.weather.join(',') : '';
-    html += `<div class="form-row">
-      <div class="form-group"><label style="font-size:.72rem">Moltiplicatore speed</label>
-        <input id="mf_speed_val" class="form-control" type="number" step="0.1" value="${spv}"></div>
-      <div class="form-group"><label style="font-size:.72rem">Solo se meteo (opz., virgola sep.)</label>
-        <input id="mf_speed_weather" class="form-control" placeholder="Es. sun,harshsun" value="${spw}"></div></div>`;
-  }
-  wrap.innerHTML = html || '<p class="text-xs text-muted">Nessun campo extra per questa categoria. Usa Effect JSON se necessario.</p>';
-}
-
-// --- Salva abilità via API ---
+// ── Salva modifica ──────────────────────────────────────
 async function saveAbility(){
-  const name = (document.getElementById('mf_name').value||'').trim();
-  const desc = document.getElementById('mf_desc').value.trim();
-  const cat  = document.getElementById('mf_cat').value;
-  const errEl = document.getElementById('mf_error');
-  errEl.style.display = 'none';
-  if(!name){ errEl.textContent='Nome obbligatorio'; errEl.style.display='block'; return; }
+  const name = document.getElementById('ab_edit_name').value.trim();
+  const desc = document.getElementById('ab_edit_desc').value.trim();
+  const category = document.getElementById('ab_edit_cat').value;
+  let extra = {};
+  try { extra = JSON.parse(document.getElementById('ab_edit_effect').value || '{}'); }
+  catch(e){ alert('Effect JSON non valido: ' + e.message); return; }
 
-  let effect = {type:'none'};
-  try{ effect = JSON.parse(document.getElementById('mf_effect_json').value||'{"type":"none"}'); }
-  catch(e){ errEl.textContent='Effect JSON non valido'; errEl.style.display='block'; return; }
+  const payload = { name, desc, category, ...extra };
+  // Assicura che "effect" sia presente
+  if(!payload.effect) payload.effect = { type: 'none' };
 
-  // Costruisci payload in base alla categoria
-  const payload = {name, desc, category: cat, effect};
-
-  if(['weather_override','weather_setter'].includes(cat)){
-    const wEl = document.getElementById('mf_weather');
-    const wbt = document.getElementById('mf_wb_type');
-    if(wEl) payload.weather_override = wEl.value || null;
-    if(wbt) payload.weather_ball_type = wbt.value || null;
-    const fb = document.getElementById('mf_fire_blocked');
-    if(fb) payload.fire_blocked = fb.checked || null;
-    // Aggiorna effect automaticamente
-    if(wEl && wEl.value) payload.effect = {type: cat==='weather_override'?'weather_override':'weather_setter', weather: wEl.value};
-  }
-  if(cat==='type_immunity'){
-    const imEl = document.getElementById('mf_immunity');
-    payload.immunity = imEl ? imEl.value.split(',').map(s=>s.trim()).filter(Boolean) : [];
-  }
-  if(cat==='damage_reduction'){
-    const se = document.getElementById('mf_se_red');
-    const fc = document.getElementById('mf_fur_coat');
-    const ms = document.getElementById('mf_multiscale');
-    const tf = document.getElementById('mf_thick_fat');
-    if(se && se.value) payload.super_effective_reduction = parseFloat(se.value);
-    if(fc && fc.value) payload.def_multiplier = {category:'physical', multiplier: parseFloat(fc.value)};
-    if(tf && tf.checked) payload.def_multiplier = {types:['Fuoco','Ghiaccio'], multiplier:0.5};
-    if(ms && ms.checked) payload.multiscale = true;
-  }
-  if(cat==='stab_boost'){
-    const sm = document.getElementById('mf_stab_mult');
-    if(sm) payload.stab_multiplier = parseFloat(sm.value)||2.0;
-  }
-  if(cat==='stat_modifier'){
-    const sn = document.getElementById('mf_stat_name');
-    const sv = document.getElementById('mf_stat_val');
-    if(sn && sv) payload.atk_stat_mult = {stat: sn.value, value: parseFloat(sv.value)||1.5};
-  }
-  if(cat==='power_boost'){
-    const bpm = document.getElementById('mf_bp_mult');
-    const sb  = document.getElementById('mf_spread');
-    if(bpm && bpm.value) payload.bp_multiplier = parseFloat(bpm.value);
-    if(sb  && sb.value)  payload.spread_boost   = parseFloat(sb.value);
-  }
-  if(cat==='speed_boost'){
-    const sv = document.getElementById('mf_speed_val');
-    const sw = document.getElementById('mf_speed_weather');
-    if(sv && sv.value){
-      payload.speed_multiplier = {value: parseFloat(sv.value)};
-      if(sw && sw.value) payload.speed_multiplier.weather = sw.value.split(',').map(s=>s.trim()).filter(Boolean);
-    }
-  }
-
-  const res = await fetch('/pokemon/api/abilities/update', {
-    method:'POST', headers:{'Content-Type':'application/json'},
-    body: JSON.stringify(payload)
+  const r = await fetch('/pokemon/api/abilities/update', {
+    method:'POST', headers:{'Content-Type':'application/json'}, body: JSON.stringify(payload)
   });
-  const j = await res.json();
-  if(j.ok){ closeModal(); location.reload(); }
-  else { errEl.textContent = j.error||'Errore'; errEl.style.display='block'; }
+  const j = await r.json();
+  if(j.ok){
+    showToast('✅ Abilità salvata!');
+    setTimeout(()=>location.reload(), 700);
+  } else {
+    alert('Errore: ' + (j.error || '?'));
+  }
 }
 
-// --- Elimina abilità ---
+// ── Elimina ─────────────────────────────────────────────
 async function deleteAbility(name){
-  if(!confirm(`Eliminare l'abilità "${name}"?`)) return;
-  const res = await fetch('/pokemon/api/abilities/delete', {
-    method:'POST', headers:{'Content-Type':'application/json'},
-    body: JSON.stringify({name})
+  if(!confirm('Eliminare l\'abilità "' + name + '"?')) return;
+  const r = await fetch('/pokemon/api/abilities/delete', {
+    method:'POST', headers:{'Content-Type':'application/json'}, body: JSON.stringify({name})
   });
-  const j = await res.json();
-  if(j.ok) location.reload();
-  else alert(j.error||'Errore eliminazione');
+  const j = await r.json();
+  if(j.ok){
+    showToast('🗑 Abilità eliminata');
+    setTimeout(()=>location.reload(), 600);
+  } else {
+    alert('Errore: ' + (j.error || '?'));
+  }
 }
+
+// ── Modale aggiungi ─────────────────────────────────────
+function openAddModal(){
+  document.getElementById('new_ab_name').value = '';
+  document.getElementById('new_ab_desc').value = '';
+  document.getElementById('new_ab_cat').value = 'other';
+  document.getElementById('new_ab_effect').value = '{"type": "none"}';
+  const m = document.getElementById('add_modal');
+  m.style.display = 'flex';
+  setTimeout(()=>document.getElementById('new_ab_name').focus(), 50);
+}
+function closeAddModal(){
+  document.getElementById('add_modal').style.display = 'none';
+}
+async function confirmAdd(){
+  const name = document.getElementById('new_ab_name').value.trim();
+  if(!name){ alert('Il nome è obbligatorio'); return; }
+  if(ABILITIES[name]){ alert('Abilità "' + name + '" già esistente'); return; }
+  const desc = document.getElementById('new_ab_desc').value.trim();
+  const category = document.getElementById('new_ab_cat').value;
+  let extra = {};
+  try { extra = JSON.parse(document.getElementById('new_ab_effect').value || '{}'); }
+  catch(e){ alert('Effect JSON non valido: ' + e.message); return; }
+  const payload = { name, desc, category, ...extra };
+  if(!payload.effect) payload.effect = { type: 'none' };
+  const r = await fetch('/pokemon/api/abilities/update', {
+    method:'POST', headers:{'Content-Type':'application/json'}, body: JSON.stringify(payload)
+  });
+  const j = await r.json();
+  if(j.ok){
+    showToast('✅ Abilità aggiunta!');
+    closeAddModal();
+    setTimeout(()=>location.reload(), 700);
+  } else {
+    alert('Errore: ' + (j.error || '?'));
+  }
+}
+
+// ── JSON editor toggle ───────────────────────────────────
+function toggleJsonEditor(){
+  document.getElementById('json_editor_wrap').classList.toggle('open');
+}
+
+// ── Toast ────────────────────────────────────────────────
+function showToast(msg){
+  let t = document.getElementById('ab_toast');
+  if(!t){
+    t = document.createElement('div');
+    t.id = 'ab_toast';
+    t.style.cssText = 'position:fixed;bottom:1.5rem;right:1.5rem;background:var(--primary);color:#fff;padding:.55rem 1.1rem;border-radius:var(--radius-md);font-size:.82rem;font-weight:600;box-shadow:var(--shadow-lg);z-index:9999;transition:opacity .3s';
+    document.body.appendChild(t);
+  }
+  t.textContent = msg;
+  t.style.opacity = '1';
+  setTimeout(()=>{ t.style.opacity = '0'; }, 2200);
+}
+
+// ── Chiudi modale clic fuori ─────────────────────────────
+document.getElementById('add_modal').addEventListener('click', e=>{
+  if(e.target === e.currentTarget) closeAddModal();
+});
 </script>
 {% endblock %}

@@ -36,6 +36,7 @@
   <a href="/pokemon/mosse" class="btn btn-secondary btn-sm">⚔️ Editor Mosse</a>
   <a href="/pokemon/oggetti" class="btn btn-secondary btn-sm">🎒 Editor Oggetti</a>
   <a href="/pokemon/roster" class="btn btn-secondary btn-sm">📋 Editor Roster</a>
+  <a href="/pokemon/abilita" class="btn btn-secondary btn-sm">🧬 Editor Abilità</a>
 </div>
 
 {% if not teams %}
@@ -87,7 +88,6 @@
       {% if team.data.notes %}
       <p class="text-xs text-muted" style="max-width:280px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap">📝 {{ team.data.notes }}</p>
       {% else %}<span></span>{% endif %}
-      <!-- Bottone "Analizza nel calcolatore" con i Pokémon del team precaricati -->
       <a href="/pokemon/calcolatori?team={{ team.data.id }}"
          class="btn btn-secondary btn-sm" style="font-size:.65rem">📊 Analizza</a>
     </div>
