@@ -1,73 +1,159 @@
 {
   "abilities": {
+    "Nessuna": {
+      "desc": "Nessuna abilità selezionata.",
+      "category": "none",
+      "effect": { "type": "none" }
+    },
     "Mega Sol": {
       "desc": "Agisce come se ci fosse il Sole forte indipendentemente dal meteo reale.",
       "category": "weather_override",
+      "weather_override": "harshsun",
+      "atk_boost": { "type": "Fuoco", "multiplier": 1.5 },
+      "atk_penalty": { "type": "Acqua", "multiplier": 0.5 },
+      "weather_ball_type": "Fuoco",
       "effect": { "type": "weather_override", "weather": "harshsun" }
     },
-    "Tempesta di Sabbia": {
-      "desc": "Evoca una Tempesta di Sabbia all'ingresso in campo.",
-      "category": "weather_setter",
-      "effect": { "type": "weather_setter", "weather": "sand" }
-    },
-    "Pioggerella": {
-      "desc": "Evoca la Pioggia all'ingresso in campo.",
-      "category": "weather_setter",
-      "effect": { "type": "weather_setter", "weather": "rain" }
-    },
-    "Siccità": {
-      "desc": "Evoca il Sole all'ingresso in campo.",
-      "category": "weather_setter",
-      "effect": { "type": "weather_setter", "weather": "sun" }
-    },
-    "Nevischio": {
-      "desc": "Evoca la Neve all'ingresso in campo.",
-      "category": "weather_setter",
-      "effect": { "type": "weather_setter", "weather": "snow" }
-    },
     "Pioggia Perpetua": {
-      "desc": "Agisce come se ci fosse Pioggia forte indipendentemente dal meteo reale.",
+      "desc": "Agisce come se ci fosse Pioggia forte indipendentemente dal meteo reale. Le mosse Fuoco falliscono.",
       "category": "weather_override",
+      "weather_override": "heavyrain",
+      "atk_boost": { "type": "Acqua", "multiplier": 1.5 },
+      "fire_blocked": true,
+      "weather_ball_type": "Acqua",
       "effect": { "type": "weather_override", "weather": "heavyrain" }
     },
     "Vento Misterioso": {
       "desc": "Agisce come se ci fosse Nebbia perpetua indipendentemente dal meteo reale.",
       "category": "weather_override",
+      "weather_override": "fog",
+      "weather_ball_type": "Normale",
       "effect": { "type": "weather_override", "weather": "fog" }
+    },
+    "Siccità": {
+      "desc": "Evoca il Sole all'ingresso in campo.",
+      "category": "weather_setter",
+      "weather_ball_type": "Fuoco",
+      "effect": { "type": "weather_setter", "weather": "sun" }
+    },
+    "Pioggerella": {
+      "desc": "Evoca la Pioggia all'ingresso in campo.",
+      "category": "weather_setter",
+      "weather_ball_type": "Acqua",
+      "effect": { "type": "weather_setter", "weather": "rain" }
+    },
+    "Tempesta di Sabbia": {
+      "desc": "Evoca una Tempesta di Sabbia all'ingresso in campo.",
+      "category": "weather_setter",
+      "weather_ball_type": "Roccia",
+      "effect": { "type": "weather_setter", "weather": "sand" }
+    },
+    "Nevischio": {
+      "desc": "Evoca la Neve all'ingresso in campo.",
+      "category": "weather_setter",
+      "weather_ball_type": "Ghiaccio",
+      "effect": { "type": "weather_setter", "weather": "snow" }
+    },
+    "Levitazione": {
+      "desc": "Immunità alle mosse Terra.",
+      "category": "type_immunity",
+      "immunity": ["Terra"],
+      "effect": { "type": "immunity", "move_type": "Terra" }
+    },
+    "Assorbiacqua": {
+      "desc": "Immunità alle mosse Acqua; se colpito ripristina i PS.",
+      "category": "type_immunity",
+      "immunity": ["Acqua"],
+      "effect": { "type": "absorb", "move_type": "Acqua" }
+    },
+    "Voltassorbi": {
+      "desc": "Immunità alle mosse Elettro; se colpito ripristina i PS.",
+      "category": "type_immunity",
+      "immunity": ["Elettro"],
+      "effect": { "type": "absorb", "move_type": "Elettro" }
+    },
+    "Assorbifuoco": {
+      "desc": "Immunità alle mosse Fuoco; se colpito ripristina i PS.",
+      "category": "type_immunity",
+      "immunity": ["Fuoco"],
+      "effect": { "type": "absorb", "move_type": "Fuoco" }
+    },
+    "Filtraggio": {
+      "desc": "Danni super efficaci ridotti del 25%.",
+      "category": "damage_reduction",
+      "super_effective_reduction": 0.75,
+      "effect": { "type": "filter", "value": 0.75 }
+    },
+    "Schermosaldo": {
+      "desc": "Danni super efficaci ridotti del 25%.",
+      "category": "damage_reduction",
+      "super_effective_reduction": 0.75,
+      "effect": { "type": "filter", "value": 0.75 }
+    },
+    "Prisma Armatura": {
+      "desc": "Danni super efficaci ridotti del 25%.",
+      "category": "damage_reduction",
+      "super_effective_reduction": 0.75,
+      "effect": { "type": "filter", "value": 0.75 }
+    },
+    "Scudo Peluria": {
+      "desc": "Danni fisici ricevuti ridotti del 50%.",
+      "category": "damage_reduction",
+      "def_multiplier": { "category": "physical", "multiplier": 0.5 },
+      "effect": { "type": "fur_coat" }
+    },
+    "Multiscaglia": {
+      "desc": "Danni ricevuti dimezzati se a PS pieni.",
+      "category": "damage_reduction",
+      "multiscale": true,
+      "effect": { "type": "multiscale" }
+    },
+    "Ombra Fantasma": {
+      "desc": "Danni ricevuti dimezzati se a PS pieni.",
+      "category": "damage_reduction",
+      "multiscale": true,
+      "effect": { "type": "multiscale" }
+    },
+    "Spessore": {
+      "desc": "Dimezza il danno subito da mosse Fuoco e Ghiaccio.",
+      "category": "damage_reduction",
+      "def_multiplier": { "types": ["Fuoco", "Ghiaccio"], "multiplier": 0.5 },
+      "effect": { "type": "thick_fat" }
     },
     "Adattabilità": {
       "desc": "STAB aumentato da 1.5x a 2x.",
       "category": "stab_boost",
+      "stab_multiplier": 2.0,
       "effect": { "type": "stab_multiplier", "value": 2.0 }
     },
     "Combattività": {
       "desc": "Se scottato, l'Attacco fisico non viene dimezzato e aumenta del 50%.",
       "category": "status_boost",
+      "guts": true,
       "effect": { "type": "guts" }
     },
     "Sforzo": {
-      "desc": "L'Attacco fisico è aumentato del 50% ma la precisione delle mosse fisiche è ridotta.",
+      "desc": "L'Attacco fisico è aumentato del 50%.",
       "category": "stat_modifier",
+      "atk_stat_mult": { "stat": "atk", "value": 1.5 },
       "effect": { "type": "stat_mult", "stat": "atk", "value": 1.5 }
     },
-    "Squame Miracolo": {
-      "desc": "Se scottato, avvelenato o paralizzato, la Difesa è aumentata del 50%.",
-      "category": "status_boost",
-      "effect": { "type": "marvel_scale" }
-    },
     "Polifagia": {
-      "desc": "L'Attacco Speciale è aumentato del 50% ma i PS calano ogni turno.",
+      "desc": "L'Attacco Speciale è aumentato del 50%.",
       "category": "stat_modifier",
+      "atk_stat_mult": { "stat": "spa", "value": 1.5 },
       "effect": { "type": "stat_mult", "stat": "spa", "value": 1.5 }
     },
     "Nervosismo": {
-      "desc": "L'Attacco Speciale è aumentato del 50% ma la precisione delle mosse speciali è ridotta.",
+      "desc": "L'Attacco Speciale è aumentato del 50%.",
       "category": "stat_modifier",
+      "atk_stat_mult": { "stat": "spa", "value": 1.5 },
       "effect": { "type": "stat_mult", "stat": "spa", "value": 1.5 }
     },
     "Tempra": {
       "desc": "La Difesa Speciale è aumentata del 50% durante la Tempesta di Sabbia.",
       "category": "weather_boost",
+      "speed_multiplier": null,
       "effect": { "type": "weather_spdef_boost", "weather": "sand", "value": 1.5 }
     },
     "Manto Neve": {
@@ -78,97 +164,71 @@
     "Clorofilla": {
       "desc": "La Speed è raddoppiata sotto il Sole.",
       "category": "speed_boost",
+      "speed_multiplier": { "weather": ["sun", "harshsun"], "value": 2.0 },
       "effect": { "type": "speed_weather", "weather": "sun", "value": 2.0 }
     },
     "Nuoto Veloce": {
       "desc": "La Speed è raddoppiata sotto la Pioggia.",
       "category": "speed_boost",
+      "speed_multiplier": { "weather": ["rain", "heavyrain"], "value": 2.0 },
       "effect": { "type": "speed_weather", "weather": "rain", "value": 2.0 }
     },
     "Fuga": {
       "desc": "La Speed è raddoppiata durante la Tempesta di Sabbia.",
       "category": "speed_boost",
+      "speed_multiplier": { "weather": ["sand"], "value": 2.0 },
       "effect": { "type": "speed_weather", "weather": "sand", "value": 2.0 }
     },
     "Manto Slaccio": {
       "desc": "La Speed è raddoppiata durante la Neve.",
       "category": "speed_boost",
+      "speed_multiplier": { "weather": ["snow"], "value": 2.0 },
       "effect": { "type": "speed_weather", "weather": "snow", "value": 2.0 }
+    },
+    "Passo Veloce": {
+      "desc": "La Speed è aumentata del 50% se il Pokémon ha un problema di stato.",
+      "category": "speed_boost",
+      "speed_multiplier": { "condition": "status", "value": 1.5 },
+      "effect": { "type": "speed_status", "value": 1.5 }
+    },
+    "Agilità Motoria": {
+      "desc": "La Speed non può essere ridotta.",
+      "category": "speed_boost",
+      "effect": { "type": "none" }
     },
     "Colpo Secco": {
       "desc": "Le mosse Fuoco hanno potenza aumentata del 50% sotto il Sole.",
       "category": "weather_boost",
       "effect": { "type": "type_boost_weather", "move_type": "Fuoco", "weather": "sun", "value": 1.5 }
     },
-    "Assorbiacqua": {
-      "desc": "Immunità alle mosse Acqua; se colpito da un'Acqua ripristina i PS.",
-      "category": "type_immunity",
-      "effect": { "type": "absorb", "move_type": "Acqua" }
-    },
-    "Voltassorbi": {
-      "desc": "Immunità alle mosse Elettro; se colpito da un'Elettro ripristina i PS.",
-      "category": "type_immunity",
-      "effect": { "type": "absorb", "move_type": "Elettro" }
-    },
-    "Assorbifuoco": {
-      "desc": "Immunità alle mosse Fuoco; se colpito da un Fuoco ripristina i PS.",
-      "category": "type_immunity",
-      "effect": { "type": "absorb", "move_type": "Fuoco" }
-    },
-    "Levitazione": {
-      "desc": "Immunità alle mosse Terra.",
-      "category": "type_immunity",
-      "effect": { "type": "immunity", "move_type": "Terra" }
-    },
-    "Filtraggio": {
-      "desc": "Danni super efficaci ridotti del 25%.",
-      "category": "damage_reduction",
-      "effect": { "type": "filter", "value": 0.75 }
-    },
-    "Schermosaldo": {
-      "desc": "Danni super efficaci ridotti del 25%.",
-      "category": "damage_reduction",
-      "effect": { "type": "filter", "value": 0.75 }
-    },
-    "Prisma Armatura": {
-      "desc": "Danni super efficaci ridotti del 25%.",
-      "category": "damage_reduction",
-      "effect": { "type": "filter", "value": 0.75 }
-    },
-    "Scudo Peluria": {
-      "desc": "Danni fisici ricevuti ridotti del 50%.",
-      "category": "damage_reduction",
-      "effect": { "type": "fur_coat" }
-    },
-    "Multiscaglia": {
-      "desc": "Danni ricevuti dimezzati se a PS pieni.",
-      "category": "damage_reduction",
-      "effect": { "type": "multiscale" }
-    },
-    "Ombra Fantasma": {
-      "desc": "Danni ricevuti dimezzati se a PS pieni.",
-      "category": "damage_reduction",
-      "effect": { "type": "multiscale" }
-    },
     "Forza Bruta": {
       "desc": "Mosse con effetto secondario hanno potenza aumentata del 30%.",
       "category": "power_boost",
+      "sheer_force": true,
       "effect": { "type": "sheer_force" }
     },
     "Tecnico": {
       "desc": "Mosse con potenza base ≤60 hanno potenza aumentata del 50%.",
       "category": "power_boost",
+      "technician": true,
       "effect": { "type": "technician" }
     },
     "Compressione": {
       "desc": "Tutte le mosse hanno potenza aumentata del 30%.",
       "category": "power_boost",
+      "bp_multiplier": 1.3,
       "effect": { "type": "tinted_lens" }
     },
-    "Lentocres": {
-      "desc": "Trasparente, placeholder.",
-      "category": "other",
-      "effect": { "type": "none" }
+    "Tiratore": {
+      "desc": "Boost ×1.3 per mosse che colpiscono più bersagli.",
+      "category": "power_boost",
+      "spread_boost": 1.3,
+      "effect": { "type": "spread_boost", "value": 1.3 }
+    },
+    "Squame Miracolo": {
+      "desc": "Se scottato, avvelenato o paralizzato, la Difesa è aumentata del 50%.",
+      "category": "status_boost",
+      "effect": { "type": "marvel_scale" }
     },
     "Torrentismo": {
       "desc": "Potenzia le mosse Acqua quando i PS sono bassi (<1/3).",
@@ -195,9 +255,9 @@
       "category": "other",
       "effect": { "type": "none" }
     },
-    "Nessuna": {
-      "desc": "Nessuna abilità selezionata.",
-      "category": "none",
+    "Lentocres": {
+      "desc": "Placeholder — nessun effetto sul danno.",
+      "category": "other",
       "effect": { "type": "none" }
     }
   }
