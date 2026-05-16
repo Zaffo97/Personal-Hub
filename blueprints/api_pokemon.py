@@ -250,24 +250,42 @@ def _normalize_key(name: str) -> str:
 def _find_in_catalog(key: str):
     """
     Cerca dati nel catalogo con fallback progressivi.
+    Ordine:
+      1. Chiave diretta (es. "pikachu")
+      2. Case-insensitive sulla chiave (es. "Pikachu")
+      3. Campo 'name' case-insensitive (es. entry con name="Pikachu")
+      4. Alt-keys generate (es. "basculegion (male)" → "basculegion-male")
+      5. Loop forme nested
     """
+    # 1. Chiave diretta
     data = POKEMON_CATALOG.get(key)
     if data:
         return data
 
+    # 2. Case-insensitive sulla chiave del dict
     data = next((v for k, v in POKEMON_CATALOG.items() if k.lower() == key), None)
     if data:
         return data
 
+    # 3. Match sul campo 'name'
     data = next((v for v in POKEMON_CATALOG.values() if v.get('name', '').lower() == key), None)
     if data:
         return data
 
+    # 4. Alt-keys generate → lookup diretto nel catalogo (es. "basculegion-male")
+    alt_keys = _generate_alt_keys(key)
+    for alt in alt_keys:
+        data = POKEMON_CATALOG.get(alt)
+        if data:
+            return data
+        data = next((v for k, v in POKEMON_CATALOG.items() if k.lower() == alt), None)
+        if data:
+            return data
+
+    # 5. Loop forme nested (key diretta)
     for poke_data in POKEMON_CATALOG.values():
         for form_name, form_data in poke_data.get('forms', {}).items():
             if form_name.lower() == key:
-                # FIX: usa 'or' invece di get(..., fallback) per evitare
-                # che una lista vuota [] nella forma blocchi il fallback al Pokémon base
                 abilities = (
                     form_data.get('abilities') or
                     poke_data.get('abilities') or
@@ -280,12 +298,11 @@ def _find_in_catalog(key: str):
                     'abilities': abilities,
                 }
 
-    alt_keys = _generate_alt_keys(key)
+    # 6. Loop forme nested (alt_keys)
     for alt in alt_keys:
         for poke_data in POKEMON_CATALOG.values():
             for form_name, form_data in poke_data.get('forms', {}).items():
                 if form_name.lower() == alt:
-                    # FIX: stesso fallback robusto per il lookup via alt_keys
                     abilities = (
                         form_data.get('abilities') or
                         poke_data.get('abilities') or
@@ -303,6 +320,25 @@ def _find_in_catalog(key: str):
 
 def _generate_alt_keys(key: str) -> list:
     alts = []
+
+    # "basculegion (male)" → "basculegion-male" / "basculegion-m"
+    paren_gender_match = re.match(r'^(.+) \((male|female)\)$', key)
+    if paren_gender_match:
+        base   = paren_gender_match.group(1)
+        gender = paren_gender_match.group(2)          # 'male' o 'female'
+        short  = 'm' if gender == 'male' else 'f'
+        alts.append(f"{base}-{gender}")               # es. basculegion-male
+        alts.append(f"{base}-{short}")                # es. basculegion-m
+
+    # "basculegion-male" / "basculegion-m" → "basculegion (male)"
+    dash_gender_match = re.match(r'^(.+)-(male|female|m|f)$', key)
+    if dash_gender_match:
+        base   = dash_gender_match.group(1)
+        suffix = dash_gender_match.group(2)
+        if suffix in ('male', 'm'):
+            alts.append(f"{base} (male)")
+        else:
+            alts.append(f"{base} (female)")
 
     rotom_match = re.match(r'^rotom-(.+)$', key)
     if rotom_match:
@@ -332,12 +368,6 @@ def _generate_alt_keys(key: str) -> list:
 
     if key == 'palafin (zero form)':
         alts.append('palafin')
-
-    gender_match = re.match(r'^(.+)-(f|m)$', key)
-    if gender_match:
-        base = gender_match.group(1)
-        gender = 'female' if gender_match.group(2) == 'f' else 'male'
-        alts.append(f"{base} ({gender})")
 
     lycanroc_match = re.match(r'^lycanroc-(dusk|midday|midnight)$', key)
     if lycanroc_match:
