@@ -266,11 +266,18 @@ def _find_in_catalog(key: str):
     for poke_data in POKEMON_CATALOG.values():
         for form_name, form_data in poke_data.get('forms', {}).items():
             if form_name.lower() == key:
+                # FIX: usa 'or' invece di get(..., fallback) per evitare
+                # che una lista vuota [] nella forma blocchi il fallback al Pokémon base
+                abilities = (
+                    form_data.get('abilities') or
+                    poke_data.get('abilities') or
+                    []
+                )
                 return {
                     'name': form_name,
                     'base_stats': form_data.get('base_stats', {}),
-                    'types': form_data.get('types', poke_data.get('types', [])),
-                    'abilities': form_data.get('abilities', poke_data.get('abilities', [])),
+                    'types': form_data.get('types') or poke_data.get('types', []),
+                    'abilities': abilities,
                 }
 
     alt_keys = _generate_alt_keys(key)
@@ -278,11 +285,17 @@ def _find_in_catalog(key: str):
         for poke_data in POKEMON_CATALOG.values():
             for form_name, form_data in poke_data.get('forms', {}).items():
                 if form_name.lower() == alt:
+                    # FIX: stesso fallback robusto per il lookup via alt_keys
+                    abilities = (
+                        form_data.get('abilities') or
+                        poke_data.get('abilities') or
+                        []
+                    )
                     return {
                         'name': form_name,
                         'base_stats': form_data.get('base_stats', {}),
-                        'types': form_data.get('types', poke_data.get('types', [])),
-                        'abilities': form_data.get('abilities', poke_data.get('abilities', [])),
+                        'types': form_data.get('types') or poke_data.get('types', []),
+                        'abilities': abilities,
                     }
 
     return None
