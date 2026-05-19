@@ -451,15 +451,42 @@
           <option value="1.0">Neutrale ×1.0</option>
           <option value="1.1">+Speed ×1.1</option>
           <option value="0.9">-Speed ×0.9</option>
-        </select></div>
-      <div class="form-group mb-0"><label>Modificatore</label>
-        <select id="spe_mod" class="form-control" onchange="updateSpeed()">
-          <option value="1.0">Nessuno</option>
-          <option value="1.5">Choice Scarf ×1.5</option>
-          <option value="2.0">Tailwind ×2.0</option>
-          <option value="0.5">Paralisi / Icy Wind ×0.5</option>
-          <option value="0.25">Paralisi + Icy Wind ×0.25</option>
-        </select></div>
+        </select>
+      </div>
+        <div class="form-group">
+          <label style="font-size:.78rem">Abilità</label>
+          <select id="spe_abil" class="form-control" style="font-size:.78rem" onchange="updateSpeed()">
+          <option value="">— Nessuna —</option>
+        </select>
+        </div>
+    <div class="form-group mb-0">
+      <label style="font-size:.78rem">Condizioni</label>
+      <div class="flex flex-wrap gap-1" style="font-size:.75rem;margin-top:.25rem">
+      <label style="display:flex;align-items:center;gap:.3rem;cursor:pointer">
+        <input type="checkbox" id="spe_tailwind" styleaccent-color:var(--primary)" onchange="updateSpeed()"> 🌬️ Tailwind ×2
+      </label>
+      <label style="display:flex;align-items:center;gap:.3rem;cursor:pointer">
+        <input type="checkbox" id="spe_scarf" style="accent-color:var(--primary)" onchange="updateSpeed()"> 🧣 Choice Scarf ×1.5
+      </label>
+      <label style="display:flex;align-items:center;gap:.3rem;cursor:pointer">
+        <input type="checkbox" id="spe_para" style="accent-color:var(--primary)" onchange="updateSpeed()"> ⚡ Paralisi ×0.5
+      </label>
+      <label style="display:flex;align-items:center;gap:.3rem;cursor:pointer">
+        <input type="checkbox" id="spe_icywind" style="accent-color:var(--primary)" onchange="updateSpeed()"> 🌀 Icy Wind ×0.5
+      </label>
+      <label style="display:flex;align-items:center;gap:.3rem;cursor:pointer">
+        <input type="checkbox" id="spe_trickroom" style="accent-color:var(--primary)" onchange="updateSpeed()"> 🔄 Trick Room
+      </label>
+    </div>
+    <label style="font-size:.78rem;margin-top:.5rem;display:block">Meteo</label>
+    <select id="spe_weather" class="form-control" style="font-size:.78rem" onchange="updateSpeed()">
+      <option value="">Nessuno</option>
+      <option value="sun">☀️ Sole</option>
+      <option value="rain">🌧️ Pioggia</option>
+      <option value="sand">🌪️ Sabbia</option>
+      <option value="snow">❄️ Neve</option>
+    </select>
+  </div>
       <div class="text-center mt-2">
         <div class="text-xs text-muted">Speed calcolata (Lv.50)</div>
         <div id="spe_val" style="font-size:2rem;font-weight:800;color:var(--primary)">—</div>
@@ -1274,27 +1301,66 @@ async function loadSpePkmn(){
       else sp.innerHTML='<span style="font-size:1.8rem;opacity:.3">🧬</span>';
     }
     document.getElementById('spe_base').value=d.stats?.spe||0;
-    currentSpeAbility = getPrimaryAbility(d.abilities);
-    console.log('abilities raw:', d.abilities, '| parsed:', currentSpeAbility);
-    updateSpeed();
+    // Popola select abilità Speed
+    const speAbilSel = document.getElementById('spe_abil');
+    if (speAbilSel && d.abilities && d.abilities.length) {
+      speAbilSel.innerHTML = '<option value="">— Nessuna —</option>';
+    d.abilities.forEach(ab => {
+      const opt = document.createElement('option');
+      opt.value = ab;
+      opt.textContent = ab;
+      speAbilSel.appendChild(opt);
+    });
+}
   },500);
 }
 
 function updateSpeed() {
-  const base = parseInt(document.getElementById('spe_base').value || 0);
-  const ev = parseInt(document.getElementById('spe_ev').value || 0);
-  const iv = parseInt(document.getElementById('spe_iv')?.value || 31);
-  const nm = parseFloat(document.getElementById('spe_nat').value || 1.0);
-  const mod = parseFloat(document.getElementById('spe_mod').value || 1.0);
+  const base = parseInt(document.getElementById('spe_base').value) || 0;
+  const ev   = parseInt(document.getElementById('spe_ev').value) || 0;
+  const nat  = parseFloat(document.getElementById('spe_nat').value) || 1.0;
+  const abil = document.getElementById('spe_abil')?.value || '';
+  const weather = document.getElementById('spe_weather')?.value || '';
 
-  const weather = document.getElementById('f_weather')?.value || 'Nessuno';
-  console.log('weather:', weather, '| ability:', currentSpeAbility, '| speFx:', getAbilityEffects(currentSpeAbility, { weather }));
-  const speFx = getAbilityEffects(currentSpeAbility, { weather });
+  const tailwind  = document.getElementById('spe_tailwind')?.checked;
+  const scarf     = document.getElementById('spe_scarf')?.checked;
+  const para      = document.getElementById('spe_para')?.checked;
+  const icywind   = document.getElementById('spe_icywind')?.checked;
+  const trickroom = document.getElementById('spe_trickroom')?.checked;
 
-  const rawSpeed = calcSt(base, ev, iv, 50, nm, false);
-  mySpeed = Math.floor(rawSpeed * speFx.spe * mod);
+  // Stat base Lv.50
+  let spd = Math.floor((2 * base + 31 + Math.floor(ev / 4)) * 50 / 100 + 5);
+  spd = Math.floor(spd * nat);
 
-  document.getElementById('spe_val').textContent = mySpeed;
+  // Moltiplicatori abilità + meteo
+  let abilMult = 1.0;
+  if (abil === 'Swift Swim'   && weather === 'rain') abilMult = 2.0;
+  if (abil === 'Chlorophyll'  && weather === 'sun')  abilMult = 2.0;
+  if (abil === 'Sand Rush'    && weather === 'sand') abilMult = 2.0;
+  if (abil === 'Slush Rush'   && weather === 'snow') abilMult = 2.0;
+  if (abil === 'Surge Surfer' && weather === 'electric') abilMult = 2.0;
+  if (abil === 'Quick Feet'   && para)  abilMult = 1.5;
+  if (abil === 'Unburden')              abilMult = 2.0;
+  if (abil === 'Slow Start')            abilMult = 0.5;
+  if (abil === 'Protosynthesis' && weather === 'sun')  abilMult = 1.5;
+  if (abil === 'Quark Drive'    && weather === 'electric') abilMult = 1.5;
+  spd = Math.floor(spd * abilMult);
+
+  // Item
+  if (scarf) spd = Math.floor(spd * 1.5);
+
+  // Condizioni campo
+  if (tailwind) spd = Math.floor(spd * 2.0);
+  if (para && abil !== 'Quick Feet') spd = Math.floor(spd * 0.5);
+  if (icywind) spd = Math.floor(spd * 0.5);
+
+  mySpeed = trickroom ? -spd : spd; // negativo = Trick Room per ordinamento invertito
+
+  const el = document.getElementById('spe_val');
+  if (el) {
+    el.textContent = spd;
+    el.style.color = trickroom ? 'var(--error)' : 'var(--primary)';
+  }
   renderSpeed();
 }
 
