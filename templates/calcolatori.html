@@ -969,6 +969,23 @@ if (side === 'atk' && d.types && d.types.length) {
   BS.atk.types = d.types.map(t => typeIT[t.toLowerCase()] || t);
 }
 
+// Popola select abilità con le abilità reali del Pokémon
+const abilSel = document.getElementById(side + '_ability');
+if (abilSel && d.abilities && d.abilities.length) {
+  const current = abilSel.value; // mantieni selezione se già impostata
+  abilSel.innerHTML = '<option value="">— Nessuna —</option>';
+  d.abilities.forEach(ab => {
+    const opt = document.createElement('option');
+    opt.value = ab;
+    opt.textContent = ab;
+    abilSel.appendChild(opt);
+  });
+  // Riseleziona se il valore era già presente
+  if (current && [...abilSel.options].some(o => o.value === current)) {
+    abilSel.value = current;
+  }
+}
+
   },500);
 }
 
