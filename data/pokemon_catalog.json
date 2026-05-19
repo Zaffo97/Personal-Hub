@@ -3853,7 +3853,10 @@
       "Acqua",
       "Spettro"
     ],
-    "abilities": [],
+    "abilities": [
+      "Swift Swim",
+      "Adaptability"
+    ],
     "base_stats": {
       "hp": 120,
       "atk": 112,

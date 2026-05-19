@@ -9,7 +9,8 @@ from data import (
     MEGA_EVOLUTIONS_MA,
     NATURES,
     NATURE_EFFECTS,
-    CHAMPIONS_BST
+    CHAMPIONS_BST,
+    ABILITIES_CALC
 )
 
 ABILITIES_FILE = os.path.join(os.path.dirname(__file__), "..", "data", "abilities.json")
@@ -475,6 +476,8 @@ def calcolatori():
         type_table=TYPE_TABLE_HTML or "",
         nature_table=NATURE_TABLE_HTML or "",
         items_data=load_items(reg_id),
+        abilities_list=ABILITIES_CALC,
+        abilities_data={}     
         moves_data=load_moves(reg_id),
         current_reg=reg,
         regulations=regs,

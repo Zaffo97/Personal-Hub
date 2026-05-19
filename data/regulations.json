@@ -8,12 +8,5 @@
     ],
     "moves_file": "moves_ma.json",
     "roster_file": "roster_ma.json"
-  },
-  {
-    "id": "prova",
-    "label": "prova",
-    "roster_file": "roster_prova.json",
-    "moves_file": "moves_prova.json",
-    "items_file": "items_prova.json"
   }
 ]

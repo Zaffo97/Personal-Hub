@@ -159,6 +159,14 @@ SLUG_OVERRIDES = {
     "gourgeist-(super)": "gourgeist-super",
 }
 
+ABILITIES_CALC = [
+    "Adaptability", "Filter", "Fluffy", "Fur Coat", "Guts",
+    "Hustle", "Ice Scales", "Multiscale", "Neuroforce",
+    "Prism Armor", "Shadow Shield", "Sheer Force", "Technician",
+    "Thick Fat", "Tough Claws", "Transistor", "Dragons Maw",
+    "Steely Spirit", "Heatproof", "Water Bubble"
+]
+
 # Carica base stats da pokemon_catalog.json
 def _load_champions_bst():
     path = os.path.join(DATA_DIR, "pokemon_catalog.json")
