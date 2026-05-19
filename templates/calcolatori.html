@@ -1028,6 +1028,7 @@ function recalcSide(side){
     const el=document.getElementById(side+'_cs_'+s);if(el)el.textContent=val;
   });
 }
+
 function calcDamage(){
   // ── Leggi inputs ────────────────────────────────────────────────────────────
   const cat      = document.getElementById('mv_cat').value;
@@ -1138,151 +1139,143 @@ function calcDamage(){
   A = Math.floor(A * stageMult(atkStage));
   D = Math.floor(D * stageMult(defStage));
 
-  // Ability ATK
   const atkAbilityName = document.getElementById('atk_ability')?.value || '';
   const defAbilityName = document.getElementById('def_ability')?.value || '';
 
-  // --- Burn: Guts annulla il penalty e applica ×1.5, altrimenti ×0.5 ---
+  // ── Modificatori su A (stat attacco) ────────────────────────────────────────
   if (cat === 'physical' && atkStatus === 'burn') {
-    if (atkAbilityName === 'Guts') {
-        A = Math.floor(A * 1.5);   // Guts: annulla penalty + boost
-      } else {
-        A = Math.floor(A * 0.5);
-    }
+    A = atkAbilityName === 'Guts' ? Math.floor(A * 1.5) : Math.floor(A * 0.5);
   }
+  if ((atkAbilityName === 'Huge Power' || atkAbilityName === 'Pure Power') && cat === 'physical')
+    A = Math.floor(A * 2.0);
+  if (atkAbilityName === 'Gorilla Tactics' && cat === 'physical')
+    A = Math.floor(A * 1.5);
+  if (atkAbilityName === 'Hustle' && cat === 'physical')
+    A = Math.floor(A * 1.5);
 
-  // --- Ability ATK: moltiplicatori diretti su A ---
-  if (atkAbilityName === 'Huge Power' || atkAbilityName === 'Pure Power') {
-    if (cat === 'physical') A = Math.floor(A * 2.0);
-    }
-  if (atkAbilityName === 'Gorilla Tactics') {
-    if (cat === 'physical') A = Math.floor(A * 1.5);
-  }
-  if (atkAbilityName === 'Hustle') {
-    if (cat === 'physical') A = Math.floor(A * 1.5);
-  }
-  if (atkAbilityName === 'Plus' || atkAbilityName === 'Minus') {
-    mod *= 1.5; // solo se partner attivo — lasciamo a discrezione utente
-  }
+  // ── Modificatori su D (stat difesa) ─────────────────────────────────────────
+  if (defAbilityName === 'Ice Scales' && cat === 'special')
+    D = Math.floor(D * 2.0);
+  if (defAbilityName === 'Fur Coat' && cat === 'physical')
+    D = Math.floor(D * 2.0);
+  if (defAbilityName === 'Marvel Scale' && cat === 'physical')
+    D = Math.floor(D * 1.5);
+  if (defAbilityName === 'Fluffy' && cat === 'physical')
+    D = Math.floor(D * 2.0);
 
-  // --- Adaptability: STAB ×2 invece di ×1.5 ---
-  // (già presente come isAdaptability = false, lo gestiamo qui sovrascrivendo stab)
-  if (atkAbilityName === 'Adaptability') {
-    const hasStabAdapt = effectiveAtkTypes.includes(mvType);
-    if (hasStabAdapt) stab = 2.0;  // sovrascrive il valore calcolato sopra
-  }
+  // ── STAB (con Adaptability) ──────────────────────────────────────────────────
+  if (mvType && effectiveAtkTypes.includes(mvType))
+    stab = atkAbilityName === 'Adaptability' ? 2.0 : 1.5;
 
-  // --- Ability modificatori su danno finale (mod) ---
-  if (atkAbilityName === 'Sheer Force' && mvType) {
-    mod *= 1.3; // approssimazione: attiva se la mossa ha side effects
-  }
-  if (atkAbilityName === 'Tough Claws') {
-    // mossa a contatto — non abbiamo il flag, mostriamo come nota
-    mod *= 1.3;
-  }
-  if (atkAbilityName === 'Technician' && bp <= 60) {
-    mod *= 1.5;
-  }
-  if (atkAbilityName === 'Neuroforce') {
-    if (typeEff > 1.0) mod *= 1.25;
-  }
-  if (atkAbilityName === 'Sniper' && crit) {
-    mod *= (4.0 / 3.0); // critico ×2.25 invece di ×1.5
-  }
-
-  // --- Ability DEF: moltiplicatori su D o danno finale ---
-  if (defAbilityName === 'Multiscale' || defAbilityName === 'Shadow Shield') {
-    // attivo solo a HP pieni — l'utente sceglie quando applicarlo
-    mod *= 0.5;
-  }
-  if (defAbilityName === 'Filter' || defAbilityName === 'Solid Rock' || defAbilityName === 'Prism Armor') {
-    if (typeEff > 1.0) mod *= 0.75;
-  }
-  if (defAbilityName === 'Ice Scales') {
-    if (cat === 'special') D = Math.floor(D * 2.0);
-  }
-  if (defAbilityName === 'Fur Coat') {
-    if (cat === 'physical') D = Math.floor(D * 2.0);
-  }
-  if (defAbilityName === 'Marvel Scale') {
-    if (cat === 'physical') D = Math.floor(D * 1.5);
-  }
-  if (defAbilityName === 'Fluffy') {
-    if (cat === 'physical') D = Math.floor(D * 2.0);  // ×0.5 su contatto, ×2 su fuoco — approssimazione generica
-  }
-
-  // Item ATK
+  // ── Item ATK ─────────────────────────────────────────────────────────────────
   A = Math.floor(A * atkItem);
 
-  // Item DEF — Assault Vest solo SpD
+  // ── Item DEF ─────────────────────────────────────────────────────────────────
   if (defItem === 'av' && cat === 'special') D = Math.floor(D * 1.5);
 
-  //Boost abilità attacco fisico
-  if (cat === 'physical' && atkAbilityFx.atk !== 1.0) {
-  A = Math.floor(A * atkAbilityFx.atk);
-  }
+  // ── Formula danno base Gen 9 ──────────────────────────────────────────────────
+  const base = Math.floor(Math.floor(Math.floor(2 * parseInt(aLvl) / 5 + 2) * bp * A / D) / 50) + 2;
 
-// ── Formula danno base Gen 9 ──────────────────────────────────────────────────
-const base = Math.floor(Math.floor(Math.floor(2 * parseInt(aLvl) / 5 + 2) * bp * A / D) / 50) + 2;
+  const rolls = Array.from({length: 16}, (_, i) => {
+    let dmg = base;
 
-const rolls = Array.from({length: 16}, (_, i) => {
-  let dmg = base;
-  if(crit)                                dmg = Math.floor(dmg * 1.5);
-  if(weather==='sun'||weather==='harshsun'){
-    if(mvType==='Fuoco')                  dmg = Math.floor(dmg * 1.5);
-    if(mvType==='Acqua')                  dmg = Math.floor(dmg * 0.5);
-  }
-  if(weather==='rain'){
-    if(mvType==='Acqua')                  dmg = Math.floor(dmg * 1.5);
-    if(mvType==='Fuoco')                  dmg = Math.floor(dmg * 0.5);
-  }
-  if(terrain==='electric' && cat==='special'  && mvType==='Elettro') dmg = Math.floor(dmg * 1.3);
-  if(terrain==='grassy'   && cat==='physical' && mvType==='Erba')    dmg = Math.floor(dmg * 1.3);
-  if(terrain==='psychic'  && cat==='special'  && mvType==='Psico')   dmg = Math.floor(dmg * 1.3);
-  if(terrain==='misty'    && mvType==='Drago')                        dmg = Math.floor(dmg * 0.5);
-  if(reflect && cat==='physical')         dmg = Math.floor(dmg * 0.5);
-  if(lscreen && cat==='special')          dmg = Math.floor(dmg * 0.5);
-  if(hh)                                  dmg = Math.floor(dmg * 1.5);
-  dmg = Math.floor(dmg * spread);
-  if(hh) dmg = Math.floor(dmg * 1.5);
-  // ... tutti gli altri mod ...
-  dmg = Math.floor(dmg * (85 + i) / 100);  // roll prima di stab
-  dmg = Math.floor(dmg * stab * typeEff);   // stab e typeEff dopo il roll
-  return dmg;
-});
+    // Meteo
+    if (weather === 'sun' || weather === 'harshsun') {
+      if (mvType === 'Fuoco') dmg = Math.floor(dmg * 1.5);
+      if (mvType === 'Acqua') dmg = Math.floor(dmg * 0.5);
+    }
+    if (weather === 'rain') {
+      if (mvType === 'Acqua') dmg = Math.floor(dmg * 1.5);
+      if (mvType === 'Fuoco') dmg = Math.floor(dmg * 0.5);
+    }
 
-const minD = rolls[0], maxD = rolls[15];
-const minP = (minD / HP * 100).toFixed(1);
-const maxP = (maxD / HP * 100).toFixed(1);
-const ohko   = rolls.filter(r => r >= HP).length;
-const twohko = rolls.filter(r => r * 2 >= HP).length;
-const avgP   = (parseFloat(minP) + parseFloat(maxP)) / 2;
+    // Terrain
+    if (terrain === 'electric' && cat === 'special'  && mvType === 'Elettro') dmg = Math.floor(dmg * 1.3);
+    if (terrain === 'grassy'   && cat === 'physical' && mvType === 'Erba')    dmg = Math.floor(dmg * 1.3);
+    if (terrain === 'psychic'  && cat === 'special'  && mvType === 'Psico')   dmg = Math.floor(dmg * 1.3);
+    if (terrain === 'misty'    && mvType === 'Drago')                          dmg = Math.floor(dmg * 0.5);
 
-  // ── Etichette ──────────────────────────────────────────────────────────────────
-  const aN2 = document.getElementById('atk_name').value||'Atk';
-  const dN2 = document.getElementById('def_name').value||'Def';
-  const mv  = document.getElementById('mv_name').value||'Mossa';
+    // Critico
+    if (crit) dmg = Math.floor(dmg * 1.5);
+
+    // Schermi (ignorati da critico nella realtà, semplifichiamo)
+    if (reflect && cat === 'physical' && !crit) dmg = Math.floor(dmg * 0.5);
+    if (lscreen && cat === 'special'  && !crit) dmg = Math.floor(dmg * 0.5);
+
+    // Abilità ATK moltiplicatori sul danno
+    if (atkAbilityName === 'Technician' && bp <= 60)       dmg = Math.floor(dmg * 1.5);
+    if (atkAbilityName === 'Sheer Force')                  dmg = Math.floor(dmg * 1.3);
+    if (atkAbilityName === 'Tough Claws')                  dmg = Math.floor(dmg * 1.3);
+    if (atkAbilityName === 'Neuroforce' && typeEff > 1.0)  dmg = Math.floor(dmg * 1.25);
+    if (atkAbilityName === 'Sniper' && crit)               dmg = Math.floor(dmg * (4/3)); // ×2.25 totale
+    if (atkAbilityName === 'Transistor'  && mvType === 'Elettro') dmg = Math.floor(dmg * 1.5);
+    if (atkAbilityName === "Dragon's Maw" && mvType === 'Drago')  dmg = Math.floor(dmg * 1.5);
+    if (atkAbilityName === 'Steely Spirit' && mvType === 'Acciaio') dmg = Math.floor(dmg * 1.5);
+    if (atkAbilityName === 'Overgrow'  && mvType === 'Erba')    dmg = Math.floor(dmg * 1.5);
+    if (atkAbilityName === 'Blaze'     && mvType === 'Fuoco')   dmg = Math.floor(dmg * 1.5);
+    if (atkAbilityName === 'Torrent'   && mvType === 'Acqua')   dmg = Math.floor(dmg * 1.5);
+    if (atkAbilityName === 'Swarm'     && mvType === 'Coleottero') dmg = Math.floor(dmg * 1.5);
+
+    // Abilità DEF moltiplicatori sul danno
+    if (defAbilityName === 'Multiscale' || defAbilityName === 'Shadow Shield')
+      dmg = Math.floor(dmg * 0.5);
+    if ((defAbilityName === 'Filter' || defAbilityName === 'Solid Rock' || defAbilityName === 'Prism Armor') && typeEff > 1.0)
+      dmg = Math.floor(dmg * 0.75);
+    if (defAbilityName === 'Thick Fat' && (mvType === 'Fuoco' || mvType === 'Ghiaccio'))
+      dmg = Math.floor(dmg * 0.5);
+    if (defAbilityName === 'Heatproof' && mvType === 'Fuoco')
+      dmg = Math.floor(dmg * 0.5);
+    if (defAbilityName === 'Water Bubble' && mvType === 'Fuoco')
+      dmg = Math.floor(dmg * 0.5);
+    if (defAbilityName === 'Purifying Salt' && mvType === 'Spettro')
+      dmg = Math.floor(dmg * 0.5);
+
+    // Helping Hand
+    if (hh) dmg = Math.floor(dmg * 1.5);
+
+    // Spread
+    dmg = Math.floor(dmg * spread);
+
+    // Roll + STAB + TypeEff
+    dmg = Math.floor(dmg * (85 + i) / 100);
+    dmg = Math.floor(dmg * stab * typeEff);
+
+    return dmg;
+  });
+
+  // ── Output ───────────────────────────────────────────────────────────────────
+  const minD = rolls[0], maxD = rolls[15];
+  const minP = (minD / HP * 100).toFixed(1);
+  const maxP = (maxD / HP * 100).toFixed(1);
+  const ohko   = rolls.filter(r => r >= HP).length;
+  const twohko = rolls.filter(r => r * 2 >= HP).length;
+  const avgP   = (parseFloat(minP) + parseFloat(maxP)) / 2;
+
+  const aN2 = document.getElementById('atk_name').value || 'Atk';
+  const dN2 = document.getElementById('def_name').value || 'Def';
+  const mv  = document.getElementById('mv_name').value  || 'Mossa';
   const teraTag  = atkTera ? ` [Tera ${atkTera}]` : '';
-  const abilTag = atkAbilityName ? ` (${atkAbilityName})` : '';
-  const stabTag  = stab > 1 ? ' STAB' : '';
-  // Mostra moltiplicatore efficacia + eventuale STAB in modo più leggibile
+  const abilTag  = atkAbilityName ? ` (${atkAbilityName})` : '';
+  const stabLabel = stab > 1 ? ` +STAB(${stab}×)` : '';
   let effLabel = '';
-    if      (typeEff >= 4)    effLabel = ' ✕4 (super)';
-    else if (typeEff >= 2)    effLabel = ' ✕2 (super)';
-    else if (typeEff <= 0.25) effLabel = ' ✕0.25 (poco)';
-    else if (typeEff <= 0.5)  effLabel = ' ✕0.5 (poco)';
-    const stabLabel = stab > 1 ? ` +STAB(${stab}×)` : '';
-    document.getElementById('dmg_line').textContent = `${aN2}${teraTag}${abilTag} → ${mv}${stabTag} → ${dN2} HP ${HP}`;
-    document.getElementById('dmg_pct').textContent  = `${minP} ~ ${maxP}${effLabel}${stabLabel}`;
-  document.getElementById('dmg_bar').style.width=Math.min(avgP,100)+'%';
-  document.getElementById('dmg_min').textContent=`${minD} (${minP}%)`;
-  document.getElementById('dmg_max').textContent=`${maxD} (${maxP}%)`;
-  document.getElementById('dmg_ohko').innerHTML=ohko>0?`<span style="color:var(--error,#c33)">${(ohko/16*100).toFixed(0)}%</span>`:'0%';
-  document.getElementById('dmg_2hko').innerHTML=twohko>0?`<span style="color:var(--warning,#b96)">${(twohko/16*100).toFixed(0)}%</span>`:'0%';
-  document.getElementById('dmg_rolls').textContent='Rolls: '+rolls.join(', ');
-  document.getElementById('dmg_result').style.display='block';
-  const _trNote=document.getElementById('trick_room_note');
-  if(_trNote) _trNote.style.display=trickroom?'block':'none';
+  if      (typeEff >= 4)    effLabel = ' ✕4 (super)';
+  else if (typeEff >= 2)    effLabel = ' ✕2 (super)';
+  else if (typeEff <= 0.25) effLabel = ' ✕0.25 (poco)';
+  else if (typeEff <= 0.5)  effLabel = ' ✕0.5 (poco)';
+
+  document.getElementById('dmg_line').textContent = `${aN2}${teraTag}${abilTag} → ${mv} → ${dN2} HP ${HP}`;
+  document.getElementById('dmg_pct').textContent  = `${minP} ~ ${maxP}${effLabel}${stabLabel}`;
+  document.getElementById('dmg_bar').style.width  = Math.min(avgP, 100) + '%';
+  document.getElementById('dmg_min').textContent  = `${minD} (${minP}%)`;
+  document.getElementById('dmg_max').textContent  = `${maxD} (${maxP}%)`;
+  document.getElementById('dmg_ohko').innerHTML   = ohko > 0
+    ? `<span style="color:var(--error,#c33)">${(ohko/16*100).toFixed(0)}%</span>` : '0%';
+  document.getElementById('dmg_2hko').innerHTML   = twohko > 0
+    ? `<span style="color:var(--warning,#b96)">${(twohko/16*100).toFixed(0)}%</span>` : '0%';
+  document.getElementById('dmg_rolls').textContent = 'Rolls: ' + rolls.join(', ');
+  document.getElementById('dmg_result').style.display = 'block';
+  const _trNote = document.getElementById('trick_room_note');
+  if (_trNote) _trNote.style.display = trickroom ? 'block' : 'none';
 }
 
 // ── TAB SPEED ─────────────────────────────────────────────────────────────────
