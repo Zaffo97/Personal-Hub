@@ -810,8 +810,8 @@ function calcSt(base, ev, iv, lvl, nm, isHP) {
   const i = parseInt(iv, 10) ?? 31;
   const l = parseInt(lvl, 10) || 50;
 
-  if (isHP) return Math.floor((2 * b + i + Math.floor(e / 4)) * l / 100) + l + 10;
-  return Math.floor(Math.floor((2 * b + i + Math.floor(e / 4)) * l / 100 + 5) * (nm || 1.0));
+  if (isHP) return Math.floor((2 * b + i + e * 2) * l / 100) + l + 10;
+  return Math.floor(Math.floor((2 * b + i + e * 2) * l / 100 + 5) * (nm || 1.0));
 }
 
 function getNM(nat,stat){return NM[nat]?.[stat]||1.0;}
@@ -1322,7 +1322,7 @@ function updateSpeed() {
   const trickroom = document.getElementById('spe_trickroom')?.checked;
 
   // Stat base Lv.50
-  let spd = Math.floor((2 * base + 31 + Math.floor(ev / 4)) * 50 / 100 + 5);
+  let spd = Math.floor((2 * base + 31 + e * 2) * 50 / 100 + 5);
   spd = Math.floor(spd * nat);
 
   // Moltiplicatori abilità + meteo
