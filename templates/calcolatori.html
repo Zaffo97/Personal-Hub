@@ -183,20 +183,22 @@
         <select id="atk_status" class="form-control" style="font-size:.78rem">
           <option value="">Nessuno</option>
           <option value="burn">🔥 Scottato (ATK fis. ×0.5)</option>
-        </select></div>
+        </select>
+      </div>
+      <!-- ABILITY ATK -->
+      <div class="form-group" style="margin-top:.35rem">
+        <label style="font-size:.72rem">Ability ATK</label>
+        <select id="atk_ability" class="form-control" style="font-size:.78rem" onchange="calcDamage()">
+      <option value="">— Nessuna —</option>
+      {% for aname in abilities_list | sort %}
+      <option value="{{ aname }}">{{ aname }}</option>
+      {% endfor %}
+      </select>
+      </div>
     </div>
   </div>
 
-  <!-- ABILITY ATK -->
-<div class="form-group" style="margin-top:.35rem">
-  <label style="font-size:.72rem">Ability ATK</label>
-  <select id="atk_ability" class="form-control" style="font-size:.78rem" onchange="calcDamage()">
-    <option value="">— Nessuna —</option>
-    {% for aname in abilities_list | sort %}
-    <option value="{{ aname }}">{{ aname }}</option>
-    {% endfor %}
-  </select>
-</div>
+
 
   <!-- Centro: mossa + condizioni -->
   <div style="display:flex;flex-direction:column;gap:.55rem;min-width:185px">
@@ -403,22 +405,24 @@
           <select id="def_item" class="form-control" style="font-size:.78rem" onchange="calcDmg()">
             <option value="1">— Nessun oggetto —</option>
             {% for iname, idata in items_data["items"]|dictsort %}{% if idata.category in ["defensive","healing","berry","survival","support","weather","terrain"] and idata.modifier %}<option value="{{ idata.modifier }}">{{ iname }} ×{{ idata.modifier }}</option>{% endif %}{% endfor %}
-          </select></div>
+          </select>
+        </div>
+        <!-- ABILITY DEF -->
+        <div class="form-group" style="margin-top:.35rem">
+          <label style="font-size:.72rem">Ability DEF</label>
+          <select id="def_ability" class="form-control" style="font-size:.78rem" onchange="calcDamage()">
+          <option value="">— Nessuna —</option>
+          {% for aname in abilities_list | sort %}
+          <option value="{{ aname }}">{{ aname }}</option>
+          {% endfor %}
+        </select>
+        </div>
       </div>
     </div>
   </div>
 </div>
 
-<!-- ABILITY DEF -->
-<div class="form-group" style="margin-top:.35rem">
-  <label style="font-size:.72rem">Ability DEF</label>
-  <select id="def_ability" class="form-control" style="font-size:.78rem" onchange="calcDamage()">
-    <option value="">— Nessuna —</option>
-    {% for aname in abilities_list | sort %}
-    <option value="{{ aname }}">{{ aname }}</option>
-    {% endfor %}
-  </select>
-</div>
+
 
 </div>
 
