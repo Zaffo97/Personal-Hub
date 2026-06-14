@@ -1,0 +1,23 @@
+Da cmd -> C:\Progetti_Python\personal-hub
+apri python app.py
+apri browser e cerca http://127.0.0.1:5000
+Login: admin
+Pwd: admin123
+
+Info:
+Pokemon - struttura simile a togelitycs.com
+Arduino - Arduino IDE
+Python - w3school
+Gaming
+Pc builder
+
+Implementazioni future:
+accesso al di fuori del pc
+accesso senza avere il pc acceso
+
+
+Per implementare su PERPLEXITY:
+
+Stiamo lavorando al progetto Flask Pokémon.
+Contesto: [incolla tutto il contenuto di PROJECT_CONTEXT.md]
+Oggi voglio fare: [obiettivo specifico]

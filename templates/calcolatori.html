@@ -463,7 +463,7 @@
       <label style="font-size:.78rem">Condizioni</label>
       <div class="flex flex-wrap gap-1" style="font-size:.75rem;margin-top:.25rem">
       <label style="display:flex;align-items:center;gap:.3rem;cursor:pointer">
-        <input type="checkbox" id="spe_tailwind" styleaccent-color:var(--primary)" onchange="updateSpeed()"> 🌬️ Tailwind ×2
+        <input type="checkbox" id="spe_tailwind" style="accent-color:var(--primary)" onchange="updateSpeed()"> 🌬️ Tailwind ×2
       </label>
       <label style="display:flex;align-items:center;gap:.3rem;cursor:pointer">
         <input type="checkbox" id="spe_scarf" style="accent-color:var(--primary)" onchange="updateSpeed()"> 🧣 Choice Scarf ×1.5
@@ -495,7 +495,7 @@
   </div>
   <div class="card mb-0">
     <div class="card-header">
-      <span class="card-title">📊 Speed Tier — 158 Pokémon</span>
+      <span class="card-title" id="speed_tier_header">📊 Speed Tier — caricamento regulation</span>
       <div class="flex gap-1">
         <input id="spe_search" class="form-control" style="max-width:130px;font-size:.75rem" placeholder="Filtra..." oninput="renderSpeed()">
         <select id="spe_filter" class="form-control" style="max-width:130px;font-size:.75rem" onchange="renderSpeed()">
@@ -705,6 +705,13 @@ const STAT_KEYS=['hp','atk','def','spa','spd','spe'];
 const STAT_LBLS=['HP','ATK','DEF','SpA','SpD','SPE'];
 const pkCache={};
 const ABILITIES_DATA = {{ abilities_data | tojson | safe }};
+const REG_ID = {{ current_reg.id | tojson }};
+let BS={atk:{},def:{},stat:{}};
+let mySpeed=0;
+let currentSpeAbility = '';
+let TEAM_DATA=[];
+let SPEED_META=[];
+const SPEED_META_STATIC=[
 let BS={atk:{},def:{},stat:{}};
 let mySpeed=0;
 let currentSpeAbility = '';
@@ -713,6 +720,21 @@ let TEAM_DATA=[];
 const SPEED_META=[{"name": "Regieleki", "base": 200}, {"name": "Deoxys-Speed", "base": 180}, {"name": "Ninjask", "base": 160}, {"name": "Pheromosa", "base": 151}, {"name": "Electrode", "base": 150}, {"name": "Calyrex-Shadow", "base": 150}, {"name": "Zacian", "base": 148}, {"name": "Accelgor", "base": 145}, {"name": "Dragapult", "base": 142}, {"name": "Barraskewda", "base": 136}, {"name": "Iron Bundle", "base": 136}, {"name": "Miraidon", "base": 135}, {"name": "Flutter Mane", "base": 135}, {"name": "Chien-Pao", "base": 135}, {"name": "Koraidon", "base": 135}, {"name": "Jolteon", "base": 130}, {"name": "Crobat", "base": 130}, {"name": "Spectrier", "base": 130}, {"name": "Mewtwo", "base": 130}, {"name": "Shaymin-Sky", "base": 127}, {"name": "Talonflame", "base": 126}, {"name": "Weavile", "base": 125}, {"name": "Darkrai", "base": 125}, {"name": "Ribombee", "base": 124}, {"name": "Meowscarada", "base": 123}, {"name": "Noivern", "base": 123}, {"name": "Greninja", "base": 122}, {"name": "Tornadus-Therian", "base": 121}, {"name": "Inteleon", "base": 120}, {"name": "Arceus", "base": 120}, {"name": "Roaring Moon", "base": 119}, {"name": "Cinderace", "base": 119}, {"name": "Hawlucha", "base": 118}, {"name": "Iron Valiant", "base": 116}, {"name": "Sandy Shocks", "base": 116}, {"name": "Iron Treads", "base": 116}, {"name": "Whimsicott", "base": 116}, {"name": "Raikou", "base": 115}, {"name": "Tornadus", "base": 111}, {"name": "Thundurus", "base": 111}, {"name": "Scream Tail", "base": 111}, {"name": "Fezandipiti", "base": 111}, {"name": "Enamorus", "base": 110}, {"name": "Latios", "base": 110}, {"name": "Latias", "base": 110}, {"name": "Iron Moth", "base": 110}, {"name": "Lycanroc", "base": 110}, {"name": "Zoroark-Hisui", "base": 110}, {"name": "Espeon", "base": 110}, {"name": "Ogerpon", "base": 110}, {"name": "Ogerpon-Hearthflame", "base": 110}, {"name": "Ogerpon-Cornerstone", "base": 110}, {"name": "Ogerpon-Wellspring", "base": 110}, {"name": "Lugia", "base": 110}, {"name": "Enamorus-Therian", "base": 110}, {"name": "Walking Wake", "base": 109}, {"name": "Iron Jugulis", "base": 108}, {"name": "Keldeo", "base": 108}, {"name": "Zoroark", "base": 105}, {"name": "Gouging Fire", "base": 105}, {"name": "Garchomp", "base": 102}, {"name": "Landorus", "base": 101}, {"name": "Thundurus-Therian", "base": 101}, {"name": "Chi-Yu", "base": 100}, {"name": "Palafin", "base": 100}, {"name": "Charizard", "base": 100}, {"name": "Ninetales", "base": 100}, {"name": "Salamence", "base": 100}, {"name": "Volcarona", "base": 100}, {"name": "Flygon", "base": 100}, {"name": "Mew", "base": 100}, {"name": "Entei", "base": 100}, {"name": "Zapdos", "base": 100}, {"name": "Palkia", "base": 100}, {"name": "Shaymin", "base": 100}, {"name": "Terapagos", "base": 99}, {"name": "Genesect", "base": 99}, {"name": "Iron Crown", "base": 98}, {"name": "Urshifu", "base": 97}, {"name": "Urshifu-Rapid", "base": 97}, {"name": "Mimikyu", "base": 96}, {"name": "Arcanine", "base": 95}, {"name": "Leafeon", "base": 95}, {"name": "Gliscor", "base": 95}, {"name": "Rayquaza", "base": 95}, {"name": "Kyurem", "base": 95}, {"name": "Landorus-Therian", "base": 91}, {"name": "Archaludon", "base": 90}, {"name": "Moltres", "base": 90}, {"name": "Giratina", "base": 90}, {"name": "Giratina-Origin", "base": 90}, {"name": "Kyogre", "base": 90}, {"name": "Groudon", "base": 90}, {"name": "Ho-Oh", "base": 90}, {"name": "Dialga", "base": 90}, {"name": "Reshiram", "base": 90}, {"name": "Zekrom", "base": 90}, {"name": "Meloetta", "base": 90}, {"name": "Excadrill", "base": 88}, {"name": "Pecharunt", "base": 88}, {"name": "Baxcalibur", "base": 87}, {"name": "Great Tusk", "base": 87}, {"name": "Rotom-Wash", "base": 86}, {"name": "Rotom-Heat", "base": 86}, {"name": "Rotom-Frost", "base": 86}, {"name": "Rotom-Fan", "base": 86}, {"name": "Rotom-Mow", "base": 86}, {"name": "Glimmora", "base": 86}, {"name": "Rillaboom", "base": 85}, {"name": "Kommo-o", "base": 85}, {"name": "Suicune", "base": 85}, {"name": "Articuno", "base": 85}, {"name": "Iron Boulder", "base": 84}, {"name": "Goodra-Hisui", "base": 81}, {"name": "Dragonite", "base": 80}, {"name": "Goodra", "base": 80}, {"name": "Gardevoir", "base": 80}, {"name": "Gallade", "base": 80}, {"name": "Skeledirge", "base": 75}, {"name": "Raging Bolt", "base": 75}, {"name": "Butterfree", "base": 70}, {"name": "Decidueye", "base": 70}, {"name": "Decidueye-Hisui", "base": 70}, {"name": "Umbreon", "base": 65}, {"name": "Flareon", "base": 65}, {"name": "Vaporeon", "base": 65}, {"name": "Glaceon", "base": 65}, {"name": "Sinistcha", "base": 61}, {"name": "Grimmsnarl", "base": 60}, {"name": "Sylveon", "base": 60}, {"name": "Primarina", "base": 60}, {"name": "Incineroar", "base": 60}, {"name": "Abomasnow", "base": 60}, {"name": "Brute Bonnet", "base": 60}, {"name": "Farigiraf", "base": 52}, {"name": "Beartic", "base": 50}, {"name": "Calyrex-Ice", "base": 50}, {"name": "Iron Hands", "base": 50}, {"name": "Kingambit", "base": 50}, {"name": "Okidogi", "base": 50}, {"name": "Munkidori", "base": 50}, {"name": "Hippowdon", "base": 47}, {"name": "Conkeldurr", "base": 45}, {"name": "Ting-Lu", "base": 45}, {"name": "Wo-Chien", "base": 45}, {"name": "Hydrapple", "base": 43}, {"name": "Orthworm", "base": 40}, {"name": "Cetitan", "base": 36}, {"name": "Toxapex", "base": 35}, {"name": "Garganacl", "base": 35}, {"name": "Mudsdale", "base": 35}, {"name": "Dondozo", "base": 35}, {"name": "Bronzong", "base": 33}, {"name": "Glastrier", "base": 30}, {"name": "Amoonguss", "base": 30}, {"name": "Hatterene", "base": 29}, {"name": "Torkoal", "base": 20}, {"name": "Clodsire", "base": 20}];
 
 // ── Mosse DB ──────────────────────────────────────────────────────────────────
+async function loadRegSpeed() {
+  const header = document.getElementById('speed_tier_header');
+  if (header) header.textContent = '⏳ Caricamento…';
+  try {
+    const r = await fetch('/api/regulation/' + REG_ID + '/data');
+    const d = await r.json();
+    if (d.ok && d.roster) {
+      SPEED_META = d.roster
+        .map(name => { const bst = CHAMPIONS_BST[name]; const base = bst?.spe ?? bst?.speed ?? null; if (base==null) return null; return {name,base}; })
+        .filter(Boolean).sort((a,b) => b.base - a.base);
+      if (header) header.textContent = '📊 Speed Tier — ' + SPEED_META.length + ' Pokémon (' + REG_ID.toUpperCase() + ')';
+    } else { SPEED_META = SPEED_META_STATIC; if (header) header.textContent = '📊 Speed Tier — ' + SPEED_META.length + ' Pokémon'; }
+  } catch(e) { SPEED_META = SPEED_META_STATIC; if (header) header.textContent = '📊 Speed Tier — ' + SPEED_META.length + ' Pokémon'; }
+  renderSpeed();
+}
 async function loadMovesDB(){
   try{
     const r=await fetch('/api/moves');const d=await r.json();
@@ -810,8 +832,8 @@ function calcSt(base, ev, iv, lvl, nm, isHP) {
   const i = parseInt(iv, 10) ?? 31;
   const l = parseInt(lvl, 10) || 50;
 
-  if (isHP) return Math.floor((2 * b + i + e * 2) * l / 100) + l + 10;
-  return Math.floor(Math.floor((2 * b + i + e * 2) * l / 100 + 5) * (nm || 1.0));
+  if (isHP) return Math.floor((2 * b + i + Math.floor(e / 4)) * l / 100) + l + 10;
+  return Math.floor(Math.floor((2 * b + i + Math.floor(e / 4)) * l / 100 + 5) * (nm || 1.0));
 }
 
 function getNM(nat,stat){return NM[nat]?.[stat]||1.0;}
@@ -944,6 +966,7 @@ window.switchTab = function(id, btn){
   document.querySelectorAll('.calc-panel').forEach(p=>p.classList.remove('active'));
   document.querySelectorAll('.calc-tab').forEach(b=>b.classList.remove('active'));
   document.getElementById('tab_'+id).classList.add('active');btn.classList.add('active');
+  if (id === 'speed' && SPEED_META.length === 0) loadRegSpeed();
 }
 
 // ── TAB DANNO ─────────────────────────────────────────────────────────────────
@@ -1322,7 +1345,7 @@ function updateSpeed() {
   const trickroom = document.getElementById('spe_trickroom')?.checked;
 
   // Stat base Lv.50
-  let spd = Math.floor((2 * base + 31 + e * 2) * 50 / 100 + 5);
+  let spd = Math.floor((2 * base + 31 + ev * 2) * 50 / 100 + 5);
   spd = Math.floor(spd * nat);
 
   // Moltiplicatori abilità + meteo
@@ -1604,6 +1627,7 @@ document.addEventListener('DOMContentLoaded', function(){
   if (ov && ov.parentNode !== document.body) {
     document.body.appendChild(ov);
   }
+  loadRegSpeed();
 
   const weatherEl = document.getElementById('f_weather');
   if (weatherEl) {
