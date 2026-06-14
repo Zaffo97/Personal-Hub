@@ -48,354 +48,242 @@ SPRITE_FIXES = {
 # Base URL pokesprite (non più usato per hisui/mega, mantenuto per eventuali usi futuri)
 POKESPRITE_BASE = "https://raw.githubusercontent.com/msikma/pokesprite/master/pokemon/regular"
 
-# POKESPRITE_SLUGS: attualmente vuoto, mantenuto per compatibilità futura
-# Le mega canoniche usano pokemondb, le mega custom usano SPRITE_FIXES
-POKESPRITE_SLUGS: set = set()
-
-# Mappa nome.lower() → slug pokemondb/pokesprite
+# ── Slug overrides per pokesprite ─────────────────────────────────────────────
 # Supporta sia il formato "Heat Rotom" che "Rotom-Heat" (da roster)
-FORM_SPRITE_SLUGS = {
-    # ── Mega canoniche (presenti su pokemondb) ──────────────────────────────────────
-    'mega venusaur':        'venusaur-mega',
-    'mega charizard x':     'charizard-mega-x',
-    'mega charizard y':     'charizard-mega-y',
-    'mega blastoise':       'blastoise-mega',
-    'mega beedrill':        'beedrill-mega',
-    'mega pidgeot':         'pidgeot-mega',
-    'mega alakazam':        'alakazam-mega',
-    'mega slowbro':         'slowbro-mega',
-    'mega gengar':          'gengar-mega',
-    'mega kangaskhan':      'kangaskhan-mega',
-    'mega pinsir':          'pinsir-mega',
-    'mega gyarados':        'gyarados-mega',
-    'mega aerodactyl':      'aerodactyl-mega',
-    'mega ampharos':        'ampharos-mega',
-    'mega scizor':          'scizor-mega',
-    'mega heracross':       'heracross-mega',
-    'mega houndoom':        'houndoom-mega',
-    'mega tyranitar':       'tyranitar-mega',
-    'mega gardevoir':       'gardevoir-mega',
-    'mega sableye':         'sableye-mega',
-    'mega aggron':          'aggron-mega',
-    'mega medicham':        'medicham-mega',
-    'mega manectric':       'manectric-mega',
-    'mega sharpedo':        'sharpedo-mega',
-    'mega camerupt':        'camerupt-mega',
-    'mega altaria':         'altaria-mega',
-    'mega absol':           'absol-mega',
-    'mega glalie':          'glalie-mega',
-    'mega salamence':       'salamence-mega',
-    'mega metagross':       'metagross-mega',
-    'mega latias':          'latias-mega',
-    'mega latios':          'latios-mega',
-    'mega lucario':         'lucario-mega',
-    'mega abomasnow':       'abomasnow-mega',
-    'mega lopunny':         'lopunny-mega',
-    'mega garchomp':        'garchomp-mega',
-    'mega gallade':         'gallade-mega',
-    'mega audino':          'audino-mega',
-    'mega steelix':         'steelix-mega',
-    'mega sceptile':        'sceptile-mega',
-    'mega blaziken':        'blaziken-mega',
-    'mega swampert':        'swampert-mega',
-    'mega mawile':          'mawile-mega',
-    'mega banette':         'banette-mega',
-    'mega diancie':         'diancie-mega',
-    'mega rayquaza':        'rayquaza-mega',
-    'mega mewtwo x':        'mewtwo-mega-x',
-    'mega mewtwo y':        'mewtwo-mega-y',
-    # ── Mega custom fan-made (slug → SPRITE_FIXES usa sprite base) ─────────────────
-    'mega skarmory':        'skarmory-mega',
-    'mega dragonite':       'dragonite-mega',
-    'mega emboar':          'emboar-mega',
-    'mega excadrill':       'excadrill-mega',
-    'mega golurk':          'golurk-mega',
-    'mega chandelure':      'chandelure-mega',
-    'mega froslass':        'froslass-mega',
-    'mega chesnaught':      'chesnaught-mega',
-    'mega delphox':         'delphox-mega',
-    'mega greninja':        'greninja-mega',
-    'mega hawlucha':        'hawlucha-mega',
-    'mega drampa':          'drampa-mega',
-    'mega glimmora':        'glimmora-mega',
-    'mega scovillain':      'scovillain-mega',
-    'mega starmie':         'starmie-mega',
-    'mega victreebel':      'victreebel-mega',
-    'mega clefable':        'clefable-mega',
-    'mega machamp':         'machamp-mega',
-    'mega crabominable':    'crabominable-mega',
-    'mega meganium':        'meganium-mega',
-    'mega feraligatr':      'feraligatr-mega',
-    'mega chimecho':        'chimecho-mega',
-    'mega floette':         'floette-mega',
-    # ── Rotom ───────────────────────────────────────────────────────────────────
-    'heat rotom':           'rotom-heat',
-    'wash rotom':           'rotom-wash',
-    'frost rotom':          'rotom-frost',
-    'fan rotom':            'rotom-fan',
-    'mow rotom':            'rotom-mow',
-    'rotom-heat':           'rotom-heat',
-    'rotom-wash':           'rotom-wash',
-    'rotom-frost':          'rotom-frost',
-    'rotom-fan':            'rotom-fan',
-    'rotom-mow':            'rotom-mow',
-    # ── Alolan ────────────────────────────────────────────────────────────────
-    'alolan raichu':        'raichu-alola',
-    'alolan ninetales':     'ninetales-alola',
-    'alolan sandslash':     'sandslash-alola',
-    'alolan sandshrew':     'sandshrew-alola',
-    'alolan vulpix':        'vulpix-alola',
-    'alolan exeggutor':     'exeggutor-alola',
-    'alolan marowak':       'marowak-alola',
-    'alolan muk':           'muk-alola',
-    'alolan grimer':        'grimer-alola',
-    'alolan geodude':       'geodude-alola',
-    'alolan graveler':      'graveler-alola',
-    'alolan golem':         'golem-alola',
-    'alolan persian':       'persian-alola',
-    'alolan meowth':        'meowth-alola',
-    # varianti con trattino dal roster
-    'raichu-alola':         'raichu-alola',
-    'ninetales-alola':      'ninetales-alola',
-    'exeggutor-alola':      'exeggutor-alola',
-    'marowak-alola':        'marowak-alola',
-    'muk-alola':            'muk-alola',
-    'persian-alola':        'persian-alola',
-    # ── Galarian ──────────────────────────────────────────────────────────────
-    'galarian slowbro':     'slowbro-galar',
-    'galarian slowking':    'slowking-galar',
-    'galarian weezing':     'weezing-galar',
-    'galarian mr. mime':    'mr-mime-galar',
-    'galarian ponyta':      'ponyta-galar',
-    'galarian rapidash':    'rapidash-galar',
-    'galarian corsola':     'corsola-galar',
-    'galarian linoone':     'linoone-galar',
-    'galarian meowth':      'meowth-galar',
-    "galarian farfetch'd": 'farfetchd-galar',
-    'galarian zigzagoon':   'zigzagoon-galar',
-    'galarian articuno':    'articuno-galar',
-    'galarian zapdos':      'zapdos-galar',
-    'galarian moltres':     'moltres-galar',
-    # varianti con trattino dal roster
-    'slowbro-galar':        'slowbro-galar',
-    'slowking-galar':       'slowking-galar',
-    'weezing-galar':        'weezing-galar',
-    'stunfisk-galar':       'stunfisk-galar',
-    'articuno-galar':       'articuno-galar',
-    'zapdos-galar':         'zapdos-galar',
-    'moltres-galar':        'moltres-galar',
-    # ── Hisuian (pokemondb usa slug -hisuian, non -hisui) ───────────────────────
-    'hisuian arcanine':     'arcanine-hisuian',
-    'hisuian typhlosion':   'typhlosion-hisuian',
-    'hisuian samurott':     'samurott-hisuian',
-    'hisuian decidueye':    'decidueye-hisuian',
-    'hisuian zorua':        'zorua-hisuian',
-    'hisuian zoroark':      'zoroark-hisuian',
-    'hisuian goodra':       'goodra-hisuian',
-    'hisuian avalugg':      'avalugg-hisuian',
-    'hisuian lilligant':    'lilligant-hisuian',
-    'hisuian braviary':     'braviary-hisuian',
-    'hisuian electrode':    'electrode-hisuian',
-    'hisuian sliggoo':      'sliggoo-hisuian',
-    # varianti con trattino dal roster (es. "Arcanine-Hisui" → slug hisuian)
-    'arcanine-hisui':       'arcanine-hisuian',
-    'typhlosion-hisui':     'typhlosion-hisuian',
-    'samurott-hisui':       'samurott-hisuian',
-    'decidueye-hisui':      'decidueye-hisuian',
-    'zoroark-hisui':        'zoroark-hisuian',
-    'goodra-hisui':         'goodra-hisuian',
-    # ── Aegislash ─────────────────────────────────────────────────────────────
-    'aegislash (shield forme)': 'aegislash-shield',
-    'aegislash (blade forme)':  'aegislash-blade',
-    'aegislash-shield':         'aegislash-shield',
-    'aegislash-blade':          'aegislash-blade',
-    # ── Tauros Paldea ─────────────────────────────────────────────────────────
-    'tauros (combat breed)':        'tauros-paldea-combat-breed',
-    'tauros (blaze breed)':         'tauros-paldea-blaze-breed',
-    'tauros (aqua breed)':          'tauros-paldea-aqua-breed',
-    'tauros-paldea-combat':         'tauros-paldea-combat-breed',
-    'tauros-paldea-blaze':          'tauros-paldea-blaze-breed',
-    'tauros-paldea-aqua':           'tauros-paldea-aqua-breed',
-    # ── Palafin ───────────────────────────────────────────────────────────────
-    'palafin (hero form)':  'palafin-hero',
-    'palafin (zero form)':  'palafin',
-    'palafin-hero':         'palafin-hero',
-    # ── Altre forme ───────────────────────────────────────────────────────────
-    'basculegion (female)': 'basculegion-f',
-    'basculegion (male)':   'basculegion-m',
-    'basculegion-f':        'basculegion-f',
-    'basculegion-m':        'basculegion-m',
-    'meowstic (female)':    'meowstic-f',
-    'meowstic (male)':      'meowstic-m',
-    'meowstic-f':           'meowstic-f',
-    'meowstic-m':           'meowstic-m',
-    'indeedee (female)':    'indeedee-f',
-    'indeedee-f':           'indeedee-f',
-    'gourgeist (small)':    'gourgeist-small',
-    'gourgeist (large)':    'gourgeist-large',
-    'gourgeist (super)':    'gourgeist-super',
-    'lycanroc-dusk':        'lycanroc-dusk',
-    'lycanroc-midday':      'lycanroc-midday',
-    'lycanroc-midnight':    'lycanroc-midnight',
-    'eternal flower floette': 'floette-eternal',
-    'morpeko':              'morpeko',
-    'mr. rime':             'mr-rime',
+POKESPRITE_SLUGS = {
+    # Rotom forms
+    'rotom-heat':   'rotom-heat',
+    'rotom-wash':   'rotom-wash',
+    'rotom-frost':  'rotom-frost',
+    'rotom-fan':    'rotom-fan',
+    'rotom-mow':    'rotom-mow',
+    # Lycanroc
+    'lycanroc':         'lycanroc-midday',
+    'lycanroc-midday':  'lycanroc-midday',
+    'lycanroc-midnight':'lycanroc-midnight',
+    'lycanroc-dusk':    'lycanroc-dusk',
+    # Ogerpon forms
+    'ogerpon':              'ogerpon-teal-mask',
+    'ogerpon-hearthflame':  'ogerpon-hearthflame-mask',
+    'ogerpon-cornerstone':  'ogerpon-cornerstone-mask',
+    'ogerpon-wellspring':   'ogerpon-wellspring-mask',
+    # Urshifu
+    'urshifu':          'urshifu-single-strike',
+    'urshifu-rapid':    'urshifu-rapid-strike',
+    # Indeedee
+    'indeedee':     'indeedee-male',
+    'indeedee-f':   'indeedee-female',
+    # Basculegion
+    'basculegion':  'basculegion-male',
+    # Oinkologne
+    'oinkologne':   'oinkologne-male',
+    'oinkologne-f': 'oinkologne-female',
+    # Maushold
+    'maushold':         'maushold-family-of-three',
+    'maushold-four':    'maushold-family-of-four',
+    # Tatsugiri
+    'tatsugiri':        'tatsugiri-curly',
+    'tatsugiri-droopy': 'tatsugiri-droopy',
+    'tatsugiri-stretchy':'tatsugiri-stretchy',
+    # Squawkabilly
+    'squawkabilly':         'squawkabilly-green-plumage',
+    'squawkabilly-yellow':  'squawkabilly-yellow-plumage',
+    'squawkabilly-blue':    'squawkabilly-blue-plumage',
+    'squawkabilly-white':   'squawkabilly-white-plumage',
+    # Palafin
+    'palafin':      'palafin-zero',
+    'palafin-hero': 'palafin-hero',
+    # Dudunsparce
+    'dudunsparce':       'dudunsparce-two-segment',
+    'dudunsparce-three': 'dudunsparce-three-segment',
+    # Gimmighoul
+    'gimmighoul':       'gimmighoul-roaming',
+    'gimmighoul-chest': 'gimmighoul',
+    # Giratina
+    'giratina':         'giratina-altered',
+    'giratina-origin':  'giratina-origin',
+    # Shaymin
+    'shaymin':          'shaymin-land',
+    'shaymin-sky':      'shaymin-sky',
+    # Deoxys
+    'deoxys':           'deoxys-normal',
+    'deoxys-attack':    'deoxys-attack',
+    'deoxys-defense':   'deoxys-defense',
+    'deoxys-speed':     'deoxys-speed',
+    # Tornadus / Thundurus / Landorus / Enamorus
+    'tornadus':             'tornadus-incarnate',
+    'tornadus-therian':     'tornadus-therian',
+    'thundurus':            'thundurus-incarnate',
+    'thundurus-therian':    'thundurus-therian',
+    'landorus':             'landorus-incarnate',
+    'landorus-therian':     'landorus-therian',
+    'enamorus':             'enamorus-incarnate',
+    'enamorus-therian':     'enamorus-therian',
+    # Calyrex riders
+    'calyrex-shadow':   'calyrex-shadow',
+    'calyrex-ice':      'calyrex-ice',
+    # Zacian / Zamazenta
+    'zacian':           'zacian-hero',
+    'zacian-crowned':   'zacian-crowned',
+    'zamazenta':        'zamazenta-hero',
+    'zamazenta-crowned':'zamazenta-crowned',
+    # Necrozma
+    'necrozma':             'necrozma',
+    'necrozma-dawn':        'necrozma-dawn-wings',
+    'necrozma-dusk':        'necrozma-dusk-mane',
+    'necrozma-ultra':       'necrozma-ultra',
+    # Kyurem
+    'kyurem':           'kyurem',
+    'kyurem-black':     'kyurem-black',
+    'kyurem-white':     'kyurem-white',
+    # Palkia / Dialga
+    'palkia':           'palkia',
+    'palkia-origin':    'palkia-origin',
+    'dialga':           'dialga',
+    'dialga-origin':    'dialga-origin',
+    # Wormadam
+    'wormadam':         'wormadam-plant',
+    'wormadam-sandy':   'wormadam-sandy',
+    'wormadam-trash':   'wormadam-trash',
+    # Iron/Paradox mons (già in catalogo con questo formato)
+    'iron-bundle':      'iron-bundle',
+    'iron-valiant':     'iron-valiant',
+    'iron-treads':      'iron-treads',
+    'iron-moth':        'iron-moth',
+    'iron-jugulis':     'iron-jugulis',
+    'iron-hands':       'iron-hands',
+    'iron-thorns':      'iron-thorns',
+    'iron-crown':       'iron-crown',
+    'iron-boulder':     'iron-boulder',
+    'iron-leaves':      'iron-leaves',
+    'roaring-moon':     'roaring-moon',
+    'walking-wake':     'walking-wake',
+    'sandy-shocks':     'sandy-shocks',
+    'scream-tail':      'scream-tail',
+    'brute-bonnet':     'brute-bonnet',
+    'flutter-mane':     'flutter-mane',
+    'slither-wing':     'slither-wing',
+    'great-tusk':       'great-tusk',
+    'gouging-fire':     'gouging-fire',
+    'raging-bolt':      'raging-bolt',
+    'chi-yu':           'chi-yu',
+    'chien-pao':        'chien-pao',
+    'wo-chien':         'wo-chien',
+    'ting-lu':          'ting-lu',
+    # Terapagos
+    'terapagos':        'terapagos-normal',
+    'terapagos-terastal':'terapagos-terastal',
+    'terapagos-stellar':'terapagos-stellar',
+    # Hisui forms
+    'arcanine-hisui':       'arcanine-hisui',
+    'voltorb-hisui':        'voltorb-hisui',
+    'electrode-hisui':      'electrode-hisui',
+    'typhlosion-hisui':     'typhlosion-hisui',
+    'qwilfish-hisui':       'qwilfish-hisui',
+    'sneasel-hisui':        'sneasel-hisui',
+    'samurott-hisui':       'samurott-hisui',
+    'lilligant-hisui':      'lilligant-hisui',
+    'zorua-hisui':          'zorua-hisui',
+    'zoroark-hisui':        'zoroark-hisui',
+    'braviary-hisui':       'braviary-hisui',
+    'sliggoo-hisui':        'sliggoo-hisui',
+    'goodra-hisui':         'goodra-hisui',
+    'avalugg-hisui':        'avalugg-hisui',
+    'decidueye-hisui':      'decidueye-hisui',
+    # Paldea forms
+    'wooper-paldea':    'wooper-paldea',
+    'tauros-paldea':    'tauros-paldea-combat',
+    'tauros-aqua':      'tauros-paldea-aqua',
+    'tauros-blaze':     'tauros-paldea-blaze',
+    'oinkologne':       'oinkologne-male',
+    # Koraidon / Miraidon
+    'koraidon':         'koraidon',
+    'miraidon':         'miraidon',
+    # Fezandipiti
+    'fezandipiti':      'fezandipiti',
+    # Okidogi
+    'okidogi':          'okidogi',
+    # Munkidori
+    'munkidori':        'munkidori',
+    # Archaludon
+    'archaludon':       'archaludon',
+    # Hydrapple
+    'hydrapple':        'hydrapple',
+    # Pecharunt
+    'pecharunt':        'pecharunt',
 }
 
 
 def _normalize_key(name: str) -> str:
-    return name.lower().strip()
+    return name.strip().lower().replace(' ', '-').replace('_', '-')
 
 
 def _find_in_catalog(key: str):
-    """
-    Cerca dati nel catalogo con fallback progressivi.
-    Ordine:
-      1. Chiave diretta (es. "pikachu")
-      2. Case-insensitive sulla chiave (es. "Pikachu")
-      3. Campo 'name' case-insensitive (es. entry con name="Pikachu")
-      4. Alt-keys generate (es. "basculegion (male)" → "basculegion-male")
-      5. Loop forme nested
-    """
-    # 1. Chiave diretta
-    data = POKEMON_CATALOG.get(key)
-    if data:
-        return data
-
-    # 2. Case-insensitive sulla chiave del dict
-    data = next((v for k, v in POKEMON_CATALOG.items() if k.lower() == key), None)
-    if data:
-        return data
-
-    # 3. Match sul campo 'name'
-    data = next((v for v in POKEMON_CATALOG.values() if v.get('name', '').lower() == key), None)
-    if data:
-        return data
-
-    # 4. Alt-keys generate → lookup diretto nel catalogo (es. "basculegion-male")
-    alt_keys = _generate_alt_keys(key)
-    for alt in alt_keys:
-        data = POKEMON_CATALOG.get(alt)
-        if data:
-            return data
-        data = next((v for k, v in POKEMON_CATALOG.items() if k.lower() == alt), None)
-        if data:
-            return data
-
-    # 5. Loop forme nested (key diretta)
-    for poke_data in POKEMON_CATALOG.values():
-        for form_name, form_data in poke_data.get('forms', {}).items():
-            if form_name.lower() == key:
-                abilities = (
-                    form_data.get('abilities') or
-                    poke_data.get('abilities') or
-                    []
-                )
-                return {
-                    'name': form_name,
-                    'base_stats': form_data.get('base_stats', {}),
-                    'types': form_data.get('types') or poke_data.get('types', []),
-                    'abilities': abilities,
-                }
-
-    # 6. Loop forme nested (alt_keys)
-    for alt in alt_keys:
-        for poke_data in POKEMON_CATALOG.values():
-            for form_name, form_data in poke_data.get('forms', {}).items():
-                if form_name.lower() == alt:
-                    abilities = (
-                        form_data.get('abilities') or
-                        poke_data.get('abilities') or
-                        []
-                    )
-                    return {
-                        'name': form_name,
-                        'base_stats': form_data.get('base_stats', {}),
-                        'types': form_data.get('types') or poke_data.get('types', []),
-                        'abilities': abilities,
-                    }
-
+    if key in POKEMON_CATALOG:
+        return POKEMON_CATALOG[key]
+    # Try without trailing form suffix
+    parts = key.rsplit('-', 1)
+    if len(parts) == 2 and parts[0] in POKEMON_CATALOG:
+        return POKEMON_CATALOG[parts[0]]
     return None
 
 
+def _build_slug(key: str) -> str:
+    """Converte la chiave normalizzata nello slug corretto per pokesprite/pokemondb."""
+    if key in POKESPRITE_SLUGS:
+        return POKESPRITE_SLUGS[key]
+    # varianti con trattino dal roster (es. "Rotom-Heat" → "rotom-heat")
+    key_lower = key.lower()
+    if key_lower in POKESPRITE_SLUGS:
+        return POKESPRITE_SLUGS[key_lower]
+    return key
+
+
+def _pokemondb_slug(key: str) -> str:
+    """Slug per pokemondb (home sprites & artwork)."""
+    if key in POKESPRITE_SLUGS:
+        return POKESPRITE_SLUGS[key]
+    key_lower = key.lower()
+    if key_lower in POKESPRITE_SLUGS:
+        return POKESPRITE_SLUGS[key_lower]
+    # varianti con trattino dal roster (es. "Arcanine-Hisui" → slug hisuian)
+    return key_lower
+
+
 def _generate_alt_keys(key: str) -> list:
+    """Genera chiavi alternative da provare nel catalogo."""
     alts = []
-
-    # "basculegion (male)" → "basculegion-male" / "basculegion-m"
-    paren_gender_match = re.match(r'^(.+) \((male|female)\)$', key)
-    if paren_gender_match:
-        base   = paren_gender_match.group(1)
-        gender = paren_gender_match.group(2)          # 'male' o 'female'
-        short  = 'm' if gender == 'male' else 'f'
-        alts.append(f"{base}-{gender}")               # es. basculegion-male
-        alts.append(f"{base}-{short}")                # es. basculegion-m
-
-    # "basculegion-male" / "basculegion-m" → "basculegion (male)"
-    dash_gender_match = re.match(r'^(.+)-(male|female|m|f)$', key)
-    if dash_gender_match:
-        base   = dash_gender_match.group(1)
-        suffix = dash_gender_match.group(2)
-        if suffix in ('male', 'm'):
-            alts.append(f"{base} (male)")
-        else:
-            alts.append(f"{base} (female)")
-
-    rotom_match = re.match(r'^rotom-(.+)$', key)
-    if rotom_match:
-        alts.append(f"{rotom_match.group(1)} rotom")
-
-    alola_match = re.match(r'^(.+)-alola$', key)
-    if alola_match:
-        alts.append(f"alolan {alola_match.group(1)}")
-
-    # Hisuian: supporta sia 'NAME-hisui' che 'NAME-hisuian'
-    hisui_match = re.match(r'^(.+)-hisu(?:i|ian)$', key)
-    if hisui_match:
-        alts.append(f"hisuian {hisui_match.group(1)}")
-
-    galar_match = re.match(r'^(.+)-galar$', key)
-    if galar_match:
-        alts.append(f"galarian {galar_match.group(1)}")
-
-    tauros_match = re.match(r'^tauros-paldea-(combat|blaze|aqua)(?:-breed)?$', key)
-    if tauros_match:
-        breed = tauros_match.group(1)
-        alts.append(f"tauros ({breed} breed)")
-
-    aegislash_match = re.match(r'^aegislash-(blade|shield)$', key)
-    if aegislash_match:
-        alts.append(f"aegislash ({aegislash_match.group(1)} forme)")
-
-    if key == 'palafin (zero form)':
-        alts.append('palafin')
-
-    lycanroc_match = re.match(r'^lycanroc-(dusk|midday|midnight)$', key)
-    if lycanroc_match:
-        alts.append(f"lycanroc ({lycanroc_match.group(1)})")
-
+    # Rotom forms: "rotom-heat" → "heat-rotom"
+    rotom_forms = ['heat', 'wash', 'frost', 'fan', 'mow']
+    parts = key.split('-')
+    if len(parts) == 2:
+        if parts[0] == 'rotom' and parts[1] in rotom_forms:
+            alts.append(f"{parts[1]}-rotom")
+        elif parts[1] == 'rotom' and parts[0] in rotom_forms:
+            alts.append(f"rotom-{parts[0]}")
+    # Prova senza suffisso
+    if len(parts) > 1:
+        alts.append(parts[0])
     return alts
 
 
 @bp.route('/pokemon/<path:name>')
 def api_pokemon(name):
     key = _normalize_key(name)
-
     data = _find_in_catalog(key)
+
+    if not data:
+        for alt in _generate_alt_keys(key):
+            data = _find_in_catalog(alt)
+            if data:
+                key = alt
+                break
 
     if not data:
         return jsonify({'ok': False, 'error': f'not found: {name}'}), 404
 
-    # Risolvi lo slug per lo sprite
-    slug = FORM_SPRITE_SLUGS.get(key)
-    if not slug:
-        for alt in _generate_alt_keys(key):
-            slug = FORM_SPRITE_SLUGS.get(alt)
-            if slug:
-                break
-    if not slug:
-        slug = re.sub(r'[^a-z0-9]+', '-', key).strip('-')
+    slug = _build_slug(key)
 
-    # Scegli la fonte dello sprite
     if slug in SPRITE_FIXES:
         sprite    = SPRITE_FIXES[slug]
         sprite_hd = SPRITE_FIXES[slug]
@@ -415,6 +303,34 @@ def api_pokemon(name):
         'sprite':   sprite,
         'sprite_hd': sprite_hd,
     })
+
+
+@bp.route('/regulation/<string:reg_id>/data')
+def api_regulation_data(reg_id):
+    """Restituisce il roster Pokémon della regulation richiesta con i base stat Speed.
+    Usato dallo Speed Tier di calcolatori.html per mostrare solo i Pokémon della regulation attiva.
+    Response: { ok: true, reg_id, roster: [name, ...], count: N }
+    """
+    reg_path = os.path.join(DATA_DIR, "regulations.json")
+    try:
+        with open(reg_path, encoding='utf-8') as f:
+            regs = json.load(f)
+    except Exception:
+        regs = [{"id": "ma", "roster_file": "roster_ma.json"}]
+
+    reg = next((r for r in regs if r['id'] == reg_id), None)
+    if not reg:
+        return jsonify({'ok': False, 'error': f'Regulation not found: {reg_id}'}), 404
+
+    roster_file = reg.get('roster_file', f'roster_{reg_id}.json')
+    try:
+        with open(os.path.join(DATA_DIR, roster_file), encoding='utf-8') as f:
+            data = json.load(f)
+        roster = sorted(data.get('pokemon', []))
+    except Exception:
+        return jsonify({'ok': False, 'error': f'Roster file not found: {roster_file}'}), 404
+
+    return jsonify({'ok': True, 'reg_id': reg_id, 'roster': roster, 'count': len(roster)})
 
 
 @bp.route('/moves')
