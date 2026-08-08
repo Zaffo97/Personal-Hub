@@ -61,8 +61,6 @@
   </div>
 </div>
 
-<div style="display:grid;grid-template-columns:1fr 420px;gap:1rem;align-items:start">
-  <!-- Tabella mosse -->
 {% if current_reg %}
 <div style="font-size:.75rem;color:var(--text-muted);margin-bottom:.5rem">
   Stai modificando: <strong>{{ current_reg.label }}</strong>
@@ -70,6 +68,9 @@
 </div>
 {% endif %}
 
+<!-- Tabella mosse a tutta larghezza: prima era in una griglia "1fr 420px" dove il
+     banner qui sopra occupava la colonna larga e la tabella si prendeva i 420px -->
+<div>
   <div class="card">
     <div class="card-header">
       <span class="card-title">📋 Lista mosse</span>
@@ -259,7 +260,9 @@ function renderTable(){
   if(editingDesc) setTimeout(function(){var el=document.getElementById('desc_edit_area');if(el)el.focus();},30);
 }
 
-function startEditDesc(el){ editingDesc=el.dataset.name; renderTable(); }
+// Riceve direttamente il nome della mossa: il punto di chiamata (riga 241) passa
+// una stringa, non l'elemento. Prima leggeva el.dataset.name e lanciava TypeError.
+function startEditDesc(name){ editingDesc=name; renderTable(); }
 function cancelDesc(){ editingDesc=null; renderTable(); }
 function saveDesc(el){
   var name=el.dataset.name;
@@ -267,8 +270,9 @@ function saveDesc(el){
   if(movesData.moves[name]) movesData.moves[name].desc=(area?area.value:'').trim();
   editingDesc=null; syncJson(); renderTable();
 }
-function removeMove(el){
-  var name=el.dataset.name;
+// Il pulsante elimina (riga 246) chiama deleteMove(nome): la funzione si chiamava
+// removeMove e leggeva el.dataset.name, quindi eliminare una mossa non funzionava.
+function deleteMove(name){
   if(!confirm('Rimuovere "'+name+'"?'))return;
   delete movesData.moves[name]; syncJson(); renderTable();
 }

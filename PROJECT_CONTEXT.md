@@ -1,6 +1,6 @@
 # 🗂️ PROJECT_CONTEXT — Personal Hub
 > Repo: https://github.com/Zaffo97/Personal-Hub.git  
-> Aggiornato: 09/06/2026 — generato da lettura diretta del codice sorgente
+> Aggiornato: 07/08/2026 — verificato eseguendo il codice, non solo leggendolo
 
 ---
 
@@ -80,7 +80,16 @@ personal-hub/
 │
 ├── scripts/                 # Utility di manutenzione (non parte del server)
 │
-├── static/                  # File statici (CSS, JS, immagini)
+├── static/
+│   ├── css/calcolatori.css        # Stili del calcolatore
+│   └── js/                       # ⭐ JS del calcolatore, caricato in QUEST'ORDINE
+│       ├── calcolatori-data.js      # bootstrap dal JSON + TYPE_CHART e tutte le costanti
+│       ├── calcolatori-core.js      # formule, nomi, motore abilità, motore meteo
+│       ├── calcolatori-danno.js     # tab Danno
+│       ├── calcolatori-speed.js     # tab Speed Tier
+│       ├── calcolatori-stat.js      # tab Stat Preview + forme
+│       ├── calcolatori-ref.js       # genera tabelle tipi/nature, overlay + tab Reference
+│       └── calcolatori-ui.js        # quick-load team, init
 │
 └── templates/
     ├── base.html                # Layout: sidebar · topbar · dark/light toggle
@@ -89,7 +98,7 @@ personal-hub/
     ├── gaming.html · game_form.html
     ├── pokemon.html             # Lista team VGC
     ├── team_form.html           # Team builder con select regulation
-    ├── calcolatori.html         # ⭐ Calcolatori VGC — 215KB, tutto inline
+    ├── calcolatori.html         # ⭐ Calcolatori VGC — 685 righe, solo HTML: zero JS inline
     ├── abilities_editor.html    # Editor abilità regulation-aware
     ├── regulation_editor.html   # Metadati regulation
     ├── regulations_list.html    # Elenco regulation
@@ -134,18 +143,14 @@ DB = os.path.join(os.path.dirname(__file__), "hub.db")
 DATA_DIR = os.path.join(os.path.dirname(__file__), "data")
 
 def get_db()       # → sqlite3.connect(DB) con row_factory e foreign_keys ON
-def init_db()      # → CREATE TABLE IF NOT EXISTS per tutte le tabelle + ALTER TABLE teams ADD regulation_id
+def init_db()      # → CREATE TABLE IF NOT EXISTS + ALTER TABLE teams ADD regulation_id
+                   #   crea anche l'utente di default admin/admin123
 def login_required # → decorator, redirect a auth.login se "username" non in session
 def _i(v, d=0)     # → int(v) con fallback d
 def _f(v, d=0.0)   # → float(v) con fallback d
-
-def calc_stat_champions(base, sp, alignment, is_hp=False):
-    if is_hp:
-        return base + sp         # HP: base_stat + sp (grezzo)
-    return math.floor((base + sp) * alignment)   # Altre: floor((base + sp) * alignment)
 ```
 
-> ⚠️ `calc_stat_champions` in Python è usata solo lato server. Il frontend usa `calcSt()` in JS in `calcolatori.html`. Devono restare **sincronizzate**.
+> ⚠️ **`calc_stat_champions()` non esiste più** (rimossa 07/08/2026). Era definita ma **mai chiamata** da nessun file, e usava una terza convenzione SP (`base + sp`) diversa sia dal JS sia dalla documentazione. Il calcolo delle stat vive **solo** in `calcSt()` in `calcolatori.html`.
 
 ---
 
@@ -170,7 +175,23 @@ Import da `data.py`: `DATA_DIR, REG_MA_ROSTER, MEGA_EVOLUTIONS_MA, NATURES, NATU
 ---
 
 ### `blueprints/api_pokemon.py` ⭐
-Tutte le API JSON del progetto (19KB). Prefix: nessuno (route `/api/*` dirette).
+API JSON con prefisso `/api/*`. **Non chiama PokéAPI a runtime**: legge solo `pokemon_catalog.json`.
+
+Risoluzione nomi e sprite (riscritta 07/08/2026):
+```python
+_normalize_key(name)   # minuscolo, senza punteggiatura, trattini singoli
+                       # regge "Mr. Rime" e "Palafin (Zero Form)"
+_slug_forma(nome)      # "Mega Venusaur" -> "venusaur-mega"
+                       # "Alolan Raichu" -> "raichu-alolan"   (aggettivo COMPLETO)
+                       # "Heat Rotom"    -> "rotom-heat"
+_INDICE                # indice costruito all'avvio: chiavi top-level + campo `name`
+                       # + le 84 forme annidate in `forms` + alias dei nomi base
+SPRITE_SLUG_OVERRIDES  # 19 casi irregolari; HD None = artwork grande assente,
+                       # si ricade sullo sprite normale
+```
+
+> ⚠️ Il catalogo tiene **84 forme annidate** dentro `forms` di 72 Pokémon. Senza `_INDICE` sono irraggiungibili: prima del fix **96 nomi su 300 davano 404**, quindi Mega e forme regionali non avevano né stat né sprite.
+> Tutti gli sprite vengono da **pokemondb**. Il repo `pokesprite` non contiene forme regionali, Rotom né Pokémon recenti: era la causa di 38 sprite rotti.
 
 ---
 
@@ -197,22 +218,32 @@ Tutte le API JSON del progetto (19KB). Prefix: nessuno (route `/api/*` dirette).
 | `/pokemon/team/<id>/delete` | POST | Elimina team |
 | `/pokemon/calcolatori` | GET | Calcolatori VGC (passa `CHAMPIONS_BST`, `ABILITIES_CALC`, `NATURES`) |
 | `/pokemon/regulations` | GET | Elenco regulation |
-| `/pokemon/regulation/<id>` | GET/POST | Editor metadati regulation |
+| `/pokemon/regulation/<id>` | GET | Editor metadati regulation |
 | `/pokemon/roster` | GET/POST | Editor roster (`?reg=<id>`) |
-| `/pokemon/mosse` | GET/POST | Editor mosse (`?reg=<id>`) |
-| `/pokemon/oggetti` | GET/POST | Editor oggetti (`?reg=<id>`) |
-| `/pokemon/abilities` | GET/POST | Editor abilità (`?reg=<id>`) |
+| `/pokemon/roster/archive` | POST | Archivia il roster corrente |
+| `/pokemon/roster/archives` | GET | Elenco archivi (JSON) |
+| `/pokemon/roster/restore/<filename>` | POST | Ripristina un archivio |
+| `/pokemon/mosse` · `/pokemon/mosse/archive` | GET/POST · POST | Editor mosse |
+| `/pokemon/oggetti` · `/pokemon/oggetti/archive` | GET/POST · POST | Editor oggetti |
+| `/pokemon/abilita` | GET/POST | Editor abilità — **`abilita`, non `abilities`** |
 
-### API Pokémon — `blueprints/api_pokemon.py`
+### API — sotto il blueprint `pokemon` (prefisso `/pokemon`)
 | URL | Metodo | Descrizione |
 |-----|--------|-------------|
-| `/api/pokemon/<name>` | GET | Stats + sprite da PokéAPI + override locale |
-| `/api/stat_champions` | GET | CHAMPIONS_BST serializzato in JSON |
-| `/api/regulations` | GET | Lista regulation |
-| `/api/regulation/<id>/data` | GET | Roster + mosse + oggetti + meccaniche |
-| `/api/regulations/save` | POST | Salva regulations.json |
-| `/api/regulations/create` | POST | Crea nuova regulation |
-| `/api/regulations/<id>/delete` | POST | Elimina regulation |
+| `/pokemon/api/abilities` | GET | Elenco abilità |
+| `/pokemon/api/abilities/update` | POST | Aggiorna un'abilità |
+| `/pokemon/api/abilities/delete` | POST | Elimina un'abilità |
+| `/pokemon/api/regulations/create` | POST | Crea regulation |
+| `/pokemon/api/regulations/<id>/delete` | POST | Elimina regulation |
+
+### API Pokémon — `blueprints/api_pokemon.py` (route `/api/*` dirette)
+| URL | Metodo | Descrizione |
+|-----|--------|-------------|
+| `/api/pokemon/<path:name>` | GET | Stats, tipi, abilità e sprite **dal catalogo locale** (nessuna chiamata a PokéAPI a runtime) |
+| `/api/regulation/<id>/data` | GET | Roster della regulation |
+| `/api/moves` | GET | Mosse Reg. MA |
+
+> ⚠️ **Non esistono** (erano documentate ma mai implementate): `/api/stat_champions`, `/api/regulations`, `/api/regulations/save`, `/api/team/<id>`.
 
 ---
 
@@ -237,25 +268,31 @@ Tutte create da `init_db()` in `extensions.py`.
 
 ---
 
+## 📦 Come è organizzato il calcolatore (dall'08/08/2026)
+
+`calcolatori.html` contiene **solo HTML**. Regole per modificarlo:
+
+1. **Non rimettere JS inline nel template.** Va in `static/js/calcolatori-*.js`, nel file del tab che tocca.
+2. **I dati di Flask passano da un solo punto**: il blocco `<script type="application/json" id="calc-bootstrap">` in fondo al template. `calcolatori-data.js` lo legge e dichiara `MOVES_DB`, `ABILITIES_DATA`, `REG_ID`, `CHAMPIONS_BST`. Per passare un nuovo dato dal blueprint, aggiungi una chiave lì — non un nuovo `<script>`.
+3. **L'ordine dei 6 `<script>` è obbligatorio**: `data` → `core` → `danno` → `speed` → `stat` → `ui`. I `const` di un file classico sono visibili agli altri, ma solo se dichiarati prima.
+4. Sono classic script, non moduli: le funzioni sono globali e gli `onclick` del template le vedono. Non aggiungere `type="module"`, romperebbe ogni handler inline.
+5. Il CSS della pagina va in `static/css/calcolatori.css`.
+6. **Le tabelle di riferimento non sono HTML**: i quattro `<div>` `tab_tipi_box`, `tab_nature_box`, `ovl_tipi_box`, `ovl_nature_box` sono vuoti nel template e li riempie `calcolatori-ref.js` al primo accesso. Per cambiare l'efficacia di un tipo si tocca **`TYPE_CHART` e basta**: la stessa costante che usa `calcDamage()`, così tabella e calcolo non possono divergere.
+
+> ⚠️ `TYPE_CHART` sta in `calcolatori-data.js` ed è l'**unica** type chart. Non ricrearne una locale dentro `calcDamage()`: era così fino all'08/08/2026, e la tabella mostrata all'utente era un blocco di HTML scollegato, duplicato in due copie da 46 KB.
+
+> ⚠️ `{% block extra_head %}` di `base.html` sta **fuori** dallo `<style>` (spostato l'08/08/2026): puoi metterci sia `<style>` sia `<link>`. Prima era dentro, e un `<link>` veniva silenziosamente ignorato.
+
+---
+
 ## 🧮 Formula Stat Champions
 
-### In Python — `extensions.py`
-```python
-def calc_stat_champions(base, sp, alignment, is_hp=False):
-    if is_hp:
-        return base + sp
-    return math.floor((base + sp) * alignment)
-```
-- `base` = base stat grezzo da `pokemon_catalog.json`
-- `sp` = SP investiti (0–32, ogni SP vale +1 in questa formula)
-- `alignment` = moltiplicatore natura (es. 1.1, 0.9, 1.0)
-- `is_hp` = True per calcolo HP
+**Unica implementazione**, in JavaScript — `static/js/calcolatori-core.js`:
 
-### In JavaScript — `calcolatori.html`
 ```javascript
 function calcSt(base, ev, iv, lvl, nm, isHP) {
     const b = parseInt(base, 10) || 0;
-    const e = parseInt(ev, 10) || 0;   // SP 0-32, ogni SP vale +2 in questa formula JS
+    const e = parseInt(ev, 10) || 0;   // SP 0-32, ogni SP vale +2 (convenzione Champions)
     const i = parseInt(iv, 10) ?? 31;
     const l = parseInt(lvl, 10) || 50;
     if (isHP) return Math.floor((2 * b + i + e * 2) * l / 100) + l + 10;
@@ -263,13 +300,34 @@ function calcSt(base, ev, iv, lvl, nm, isHP) {
 }
 ```
 
-> ⚠️ Le due formule **non sono identiche** — usano convenzioni diverse per SP.  
-> Il frontend JS è quello visibile all'utente: è la versione autorevole per il calcolatore.
+`updateSpeed()` in `calcolatori-speed.js` usa la **stessa** formula inline: se tocchi una delle due, allinea l'altra.
+
+> ⚠️ **Fino al 07/08/2026 le due erano disallineate**: Speed Tier usava `ev*2`, mentre `calcSt` (tab Danno e Stat Preview) usava `floor(ev/4)` — la convenzione EV standard 0-252, incompatibile col cap a 32 SP. Stesso Pokémon con 32 SP: **152 nello Speed Tier, 124 nello Stat Preview**. E investire tutti i 32 SP dava **+4** invece di **+32**, rendendo gli SP quasi inutili. Ora entrambe usano `ev*2`.
+
+**Caso di prova noto** (usalo per validare ogni modifica, come da regola #8):
+Incineroar (atk base 115) Adamant, 32 SP atk, Lv50 → Amoonguss (def 70, hp 114) Hardy, 32 SP hp e def, mossa fisica Buio BP 100.
+Atteso: **A=183, D=122, HP=221, danno 85-102 (38.5%–46.2%)**.
 
 ### Regole EV Champions
 - Max **32 SP** per singola stat
 - Max **66 SP** totali per team member
 - IV fissi **31**, Livello fisso **50**
+
+### Condizioni del calcolo danno — valori in uso
+
+Tutte misurate in browser l'08/08/2026, un effetto per volta.
+
+| Condizione | Moltiplicatore | Note |
+|---|---|---|
+| Critico | ×1.5 | **Ignora** gli stage negativi dell'attaccante e positivi del difensore, e ignora gli schermi |
+| Helping Hand | ×1.5 | |
+| Scottatura | ×0.5 su A | Solo mosse fisiche. Con Combattività (Guts) diventa ×1.5 |
+| Reflect / Light Screen | `SCHERMO_DOPPIE` = 2732/4096 | Valore delle **doppie**, non ×0.5. Ciascuno agisce solo sulla propria categoria |
+| Terreno elettrico / erboso / psichico | ×1.3 | Dipende **solo dal tipo della mossa**, mai dalla categoria |
+| Terreno nebbioso | ×0.5 | Solo mosse Drago |
+| Spread | ×0.75 | |
+
+> ⚠️ I terreni non hanno condizioni sulla categoria. Fino all'08/08/2026 ce le avevano, e Wild Charge, Energy Ball e Psychic Fangs non ricevevano nessun boost dal terreno corrispondente.
 
 ### Stage Multipliers (JS `stageMult`)
 ```
@@ -297,8 +355,15 @@ function calcSt(base, ev, iv, lvl, nm, isHP) {
 | `BS.atk` | Oggetto con stats+sprite del Pokémon attaccante caricato |
 | `BS.def` | Oggetto con stats+sprite del Pokémon difensore caricato |
 | `loadTimers` | Oggetto per debounce: chiavi `spe`, `atk`, `def` (500ms) |
-| `CHAMPIONS_DATA` | Ricevuto da Flask via `{{ champions_bst | tojson }}` |
-| `ABILITIES_LIST` | Ricevuto da Flask via `{{ abilities_calc | tojson }}` |
+| `CHAMPIONS_BST` | Ricevuto da Flask via `{{ champions_bst\|safe }}` (già `json.dumps` nel blueprint). 174 voci top-level, stat in **`base_stats.spe`** — non `.spe` |
+| `ABILITIES_DATA` | Ricevuto da Flask via `{{ abilities_data \| safe }}` — 408 abilità, con blocco `effect` |
+| `REG_ID` | Id della regulation attiva, da `{{ current_reg.id \| tojson }}` |
+| `catalogIndex()` / `catalogEntry(nome)` | Indice del catalogo che copre anche le **84 forme annidate** in `forms` — equivalente JS di `_INDICE` in `api_pokemon.py` |
+| `meteoEffettivo()` | `{weather, fonte}` — il meteo che il calcolo usa davvero. Le abilità `weather_override` vincono sulla tendina, le `weather_setter` valgono solo se non è stato scelto nulla. **Usare questo, non `f_weather` grezzo** |
+| `WEATHER_BALL_TYPE` / `tipoPallaClima(w, fonte)` | Mappa meteo→tipo per la Palla Clima; `weather_ball_type` di `abilities.json` fa da override quando il meteo viene da un'abilità |
+| `MOSSE_METEO` / `applicaMeteoAllaMossa()` | Mosse con BP o tipo dipendenti dal meteo (Weather Ball, Solar Beam, Solar Blade). Riscrive `mv_bp` e `mv_type` **nei campi visibili**, così il valore calcolato è quello che l'utente vede. Chiamata in testa a `calcDamage()` e da `onMoveSelect()` |
+
+> ⚠️ `CHAMPIONS_DATA` e `ABILITIES_LIST` **non esistono**: erano documentati con questi nomi ma nel template si chiamano `CHAMPIONS_BST` e `ABILITIES_DATA`.
 
 ### Variabili JS — Deprecate / Da Rimuovere
 | Variabile | Stato |
@@ -334,11 +399,12 @@ Usare `SLUG_OVERRIDES` da `data.py` per tutte le forme speciali (regionali, Roto
 | Pokémon Team Builder | ✅ | 6 slot, multi-regulation |
 | Sistema Multi-Regulation | ✅ | `regulations.json` + tabella DB |
 | Editor Abilità regulation-aware | ✅ | `abilities_editor.html` + `abilities.json` |
-| Calcolatore Danno — formula Gen9 | ✅ | Con type chart IT (18 tipi) |
-| Calcolatore Danno — abilità ATK/DEF | ✅ | `ABILITIES_CALC` (20 abilità) |
-| Speed Tier — abilità + condizioni | ✅ | `spe_abil`, checkbox, meteo |
-| Formula EV Champions (`e * 2`) | ✅ | Fix applicato in `calcSt()` JS |
-| `SLUG_OVERRIDES` forme speciali | ✅ | ~80 override in `data.py` |
+| Calcolatore Danno — formula Gen9 | ✅ | Con type chart IT (18 tipi). Verificato in browser 07/08/2026 |
+| Calcolatore Danno — abilità ATK/DEF | ✅ | **Motore data-driven** dal blocco `effect` di `abilities.json` |
+| Speed Tier — abilità + condizioni | ✅ | Stesso motore del tab Danno |
+| Stat Preview — tendina abilità | ✅ | Aggiunta 07/08/2026 su entrambi i lati |
+| Formula EV Champions (`e * 2`) | ✅ | Allineata in `calcSt()` **e** `updateSpeed()` |
+| Sprite Mega e forme regionali | ✅ | 296/300 nomi risolti, **0 immagini rotte** |
 | Arduino Projects | ✅ | |
 | Python Tracker | ✅ | |
 | PC Builder + DxDiag import | ✅ | |
@@ -347,16 +413,26 @@ Usare `SLUG_OVERRIDES` da `data.py` per tutte le forme speciali (regionali, Roto
 
 ## 🐛 Problemi Noti
 
-| # | Problema | Dettaglio | Priorità |
-|---|----------|-----------|----------|
-| 1 | Abilità tipo-cambio | Aerilate/Pixilate/Galvanize/Refrigerate cambiano tipo mossa — non gestiti in `calcDamage()` | Media |
-| 2 | Flag "contatto" mancante | Tough Claws e Fluffy dipendono da questo flag, non presente nel JSON mosse | Media |
-| 3 | Fluffy doppio effetto incompleto | ×0.5 su contatto + ×2 vs Fuoco — attualmente solo ×2 su fisica generica | Bassa |
-| 4 | Wonder Guard | Immune a tutto tranne super efficaci — richiede flag "tipo mossa" | Bassa |
-| 5 | Overgrow/Blaze/Torrent/Swarm | Attivi solo sotto 1/3 HP — attualmente sempre attivi se selezionati | Bassa |
-| 6 | `currentSpeAbility` deprecata | Variabile globale rimasta nel codice, non più usata | Bassa |
-| 7 | `atkAbilityFx`/`defAbilityFx` | Calcolate in `calcDamage()` ma non usate — dead code | Bassa |
-| 8 | `calc_stat_champions` Python/JS disallineate | Le due implementazioni usano convenzioni SP diverse — documentare o unificare | Media |
+**Tutti gli 8 problemi storici sono stati chiusi il 07/08/2026.** Vedi `BACKLOG.md` per ciò che resta aperto.
+
+| # | Problema | Come è stato chiuso |
+|---|----------|---------------------|
+| 1 | Abilità tipo-cambio | Nuovo effetto `ate` su Pellecielo/Pellefolletto/Pellegelo/Pellelettro/Normalità — cambia il tipo **prima** di STAB e type chart, ×1.2 |
+| 2 | Flag "contatto" mancante | Non mancava: `flags:["contact"]` c'era già su 164 mosse, nessuno lo leggeva. Ora compila la checkbox `f_contact` a ogni mossa scelta |
+| 3 | Fluffy incompleta | Non è un boost di Difesa: ×0.5 su contatto e ×2 sul Fuoco, indipendenti |
+| 4 | Wonder Guard | Implementata su `Magidifesa` (il nome corretto in `abilities.json`) |
+| 5 | Overgrow/Blaze/Torrent/Swarm | Nuova checkbox `f_atk_pinch` "Attaccante sotto 1/3 HP" |
+| 6 | `currentSpeAbility` | Rimossa |
+| 7 | `atkAbilityFx`/`defAbilityFx` | Rimossi con tutto il vecchio motore `getAbilityEffects()` |
+| 8 | Formule stat disallineate | `calc_stat_champions()` eliminata; `calcSt()` e `updateSpeed()` usano entrambe `ev*2` |
+
+### ⚠️ Il problema che nessuno aveva notato
+
+Fino al 07/08/2026 `calcolatori.html` conteneva un **`SyntaxError`** (resti di un merge alle righe 718-729: `const SPEED_META_STATIC=[` non chiuso + dichiarazioni duplicate). Il browser scartava l'intero blocco `<script>` da 320KB: **nessuna riga di JavaScript della pagina veniva eseguita**.
+
+Di conseguenza tutto ciò che questa tabella dava per "funzionante" non era mai stato provato in un browser. Lo stesso identico guasto è stato poi trovato in `pcbuilder.html:202`, dove teneva morto l'intero PC Builder.
+
+**Morale operativa:** dopo ogni modifica ai template, renderizzare la pagina ed eseguire `new vm.Script()` su ogni blocco inline. Intercetta questa classe di bug in pochi secondi.
 
 ---
 
@@ -370,3 +446,8 @@ Usare `SLUG_OVERRIDES` da `data.py` per tutte le forme speciali (regionali, Roto
 | 2026-05-07 | Sistema Regulation multi, refactor Blueprint, `extensions.py`, editor abilità |
 | 2026-05-19 | Select abilità ATK/DEF calcolatore, select abilità Speed Tier, checkbox condizioni Speed, fix `calcDamage()` (moltiplicatori diretti, HH deduplicato), fix formula EV Champions (`e*2`) |
 | 2026-06-09 | Generazione `PROJECT_CONTEXT.md` da lettura diretta del codice sorgente su GitHub |
+| 2026-08-08 | **Condizioni del calcolo danno verificate una per una** (24 casi misurati in browser): 3 bug nei terreni — elettrico, erboso e psichico avevano una restrizione di categoria inesistente nel gioco, quindi le mosse della categoria "sbagliata" non prendevano nulla; il critico non ignorava gli stage sfavorevoli all'attaccante; Reflect e Light Screen usavano il valore delle singole (×0.5) invece di quello delle doppie (2732/4096). Tutti corretti. Burn, Guts, Helping Hand, spread e accumulo dei moltiplicatori erano già giusti |
+| 2026-08-08 | **`calcolatori.html` spacchettato**: 1885 → 687 righe, **222 → 38 KB**, zero JS inline. CSS in `static/css/`, JS in 7 moduli `static/js/calcolatori-*.js`, dati da un blocco `application/json`. Le tabelle tipi e nature, 108 KB di HTML duplicato in due copie e scollegato dal motore, sono generate da `calcolatori-ref.js` a partire da `TYPE_CHART`/`NATURES`+`NM` — HTML risultante identico byte per byte all'originale, e 0 disaccordi su 324 celle nel confronto col motore. Parità verificata (regola #8, Speed Tier 189, 12 casi meteo, Drago→Folletto = 0). Corretto `extra_head` di `base.html`, che stava dentro lo `<style>` e lasciava un `</style>` orfano in 10 pagine — motivo per cui un `<link>` veniva ignorato |
+| 2026-08-08 | **Motore meteo** nel calcolatore: `meteoEffettivo()` fa vincere le abilità `weather_override` sulla tendina e fa evocare il meteo alle `weather_setter` quando non è stato scelto nulla; `tipoPallaClima()` legge `weather_ball_type` da `abilities.json` (campo presente su 7 abilità e mai usato prima); `applicaMeteoAllaMossa()` riscrive BP e tipo nei campi visibili. Coperte Weather Ball, Solar Beam, Solar Blade; aggiunta la Pioggia forte con `fire_blocked`. Verificato l'editor abilità: era già completo, la voce di backlog era stale |
+| 2026-08-08 | Verifica in browser di tutte le 13 pagine (script inline + handler negli attributi): 0 `SyntaxError`. Caso di prova regola #8 eseguito e superato (A=183, D=122, HP=221, 85-102). **Speed Tier**: `loadRegSpeed()` leggeva `bst.spe` invece di `base_stats.spe`, scartava 174 Pokémon su 174 e ricadeva muta sulla lista statica — ora costruisce 189 righe dal roster MA e segnala i 19 nomi assenti dal catalogo. **Ripristino roster**: l'`onsubmit` del pulsante Ripristina era un `SyntaxError`, `form.onsubmit` era `null` e il roster veniva sovrascritto senza conferma |
+| 2026-08-07 | Chiuso il rebase interrotto e ripristinato `calcolatori.html`. Corretto il `SyntaxError` che azzerava tutto il JS della pagina. Allineate le formule stat su `ev*2`. Motore abilità **data-driven** da `abilities.json` (56 abilità con effetto, tutte e 408 nelle tendine con ● sulle 44 attive). Chiusi i problemi noti 1-8. Tendina abilità nello Stat Preview. Pulizia dead code (−100 KB a caricamento). Sprite: 0 rotti su 296 nomi. Corretto il layout dei tre editor. Trovati e corretti 5 bug via grafo graphify, incluso il `SyntaxError` del PC Builder. Documentazione riallineata |

@@ -43,8 +43,6 @@
     </form>
   </div>
 </div>
-<div style="display:grid;grid-template-columns:1fr 340px;gap:1rem;align-items:start">
-
 {% if current_reg %}
 <div style="font-size:.75rem;color:var(--text-muted);margin-bottom:.5rem">
   Stai modificando: <strong>{{ current_reg.label }}</strong>
@@ -52,6 +50,9 @@
 </div>
 {% endif %}
 
+<!-- Tabella a tutta larghezza: il banner qui sopra stava dentro la griglia e si
+     prendeva la colonna larga, lasciando alla tabella solo 340px -->
+<div>
   <div class="card">
     <div class="card-header">
       <span class="card-title">📋 Lista oggetti</span>

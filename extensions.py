@@ -1,4 +1,4 @@
-import sqlite3, os, hashlib, math
+import sqlite3, os, hashlib
 from functools import wraps
 from flask import session, redirect, url_for
 from data import PYTHON_TOPICS
@@ -136,9 +136,3 @@ def _i(v, d=0):
 def _f(v, d=0.0):
     try: return float(v)
     except: return d
-
-
-def calc_stat_champions(base, sp, alignment, is_hp=False):
-    if is_hp:
-        return base + sp
-    return math.floor((base + sp) * alignment)

@@ -1,5 +1,7 @@
 # 📘 Personal Hub — Documentazione Completa
-> Ultima modifica: 10/05/2026 — v11.1a
+> Ultima modifica: 07/08/2026 — v16.2
+> Stato verificato eseguendo l'app, non solo leggendo il codice.
+> Per il lavoro ancora aperto vedi `BACKLOG.md`; per i dettagli tecnici `PROJECT_CONTEXT.md`.
 
 ---
 
@@ -36,9 +38,11 @@ personal-hub-v2/
 ├── extensions.py
 ├── hub.db
 ├── requirements.txt
+├── BACKLOG.md               # lavoro aperto (fonte: Nuove implementazioni.docx)
+├── PROJECT_CONTEXT.md       # dettagli tecnici e convenzioni
 ├── blueprints/
 │   ├── auth.py
-│   ├── main.py
+│   ├── dashboard.py         # (non "main.py")
 │   ├── gaming.py
 │   ├── pokemon.py
 │   ├── api_pokemon.py
@@ -47,40 +51,36 @@ personal-hub-v2/
 │   └── pcbuilder.py
 ├── data/
 │   ├── regulations.json
-│   ├── roster_ma.json
-│   ├── moves_ma.json
-│   ├── items_ma.json
-│   └── roster_<id>.json / moves_<id>.json / items_<id>.json
-└── templates/
-    ├── base.html
-    ├── login.html
-    ├── dashboard.html
-    ├── gaming.html
-    ├── game_form.html
-    ├── pokemon.html
-    ├── team_form.html
-    ├── calcolatori.html
-    ├── regulations_list.html
-    ├── regulation_editor.html
-    ├── moves_editor.html
-    ├── roster_editor.html
-    ├── items_editor.html
-    ├── arduino.html
-    ├── python.html
-    ├── pcbuilder.html
-    └── reference.html
+│   ├── pokemon_catalog.json # 174 Pokemon + 84 forme annidate in `forms`
+│   ├── abilities.json       # 408 abilita IT, 56 con blocco `effect`
+│   ├── roster_ma.json · moves_ma.json · items_ma.json
+│   └── archive/             # backup roster/mosse per regulation
+├── scripts/                 # manutenzione dati (non parte del server)
+│   ├── fix_pokemon_catalog.py
+│   ├── patch_catalog_abilities.py
+│   └── patch_abilities_effects.py
+└── templates/               # 18 template
+    ├── base.html · login.html · dashboard.html
+    ├── gaming.html · game_form.html
+    ├── pokemon.html · team_form.html · calcolatori.html
+    ├── regulations_list.html · regulation_editor.html
+    ├── moves_editor.html · roster_editor.html · items_editor.html
+    ├── abilities_editor.html
+    ├── arduino.html · python.html · pcbuilder.html
+    └── reference.html       # orfano: nessuna route lo renderizza
 ```
 
-### Note importanti sul refactor
+> Non esiste una cartella `static/`: CSS e JS sono inline nei template. `calcolatori.html` da solo pesa ~200 KB.
 
-Durante l'avvio del refactor sono emerse differenze tra il `data.py` reale e quello ipotizzato dalla documentazione precedente. Per consentire il boot immediato dell'app, sono stati temporaneamente neutralizzati alcuni import nei blueprint.
+### Refactor completato
 
-#### Shim temporanei usati per l'avvio
-- `CHAMPIONS_BST = {}` nei blueprint Pokémon/API
-- `TYPE_TABLE_HTML = ""`
-- `NATURE_TABLE_HTML = ""`
+Gli shim temporanei di bootstrap (`CHAMPIONS_BST = {}`, `TYPE_TABLE_HTML`, `NATURE_TABLE_HTML`) **non esistono più**: rimossi il 07/08/2026.
 
-Questi placeholder servono solo a evitare `ImportError` in fase di bootstrap. Quando il refactor sarà stabilizzato, conviene ripristinare questi oggetti nella loro posizione definitiva (`data.py` oppure modulo dedicato).
+- `CHAMPIONS_BST` è popolato per davvero da `data.py`, che carica **174 Pokémon** da `data/pokemon_catalog.json`
+- `TYPE_TABLE_HTML` e `NATURE_TABLE_HTML` erano stringhe vuote passate a un template che non le usava: eliminate insieme ai parametri `type_table` / `nature_table`
+- Le tabelle tipi e nature sono ora inline nel tab **Reference** di `calcolatori.html`
+
+> ⚠️ `templates/reference.html` esiste ma è **orfano**: nessuna route lo renderizza.
 
 ---
 
@@ -180,19 +180,21 @@ Registro centrale di tutte le regulation disponibili.
 | `/pokemon/roster` | GET, POST | `roster_editor()` | Editor roster |
 | `/pokemon/mosse` | GET, POST | `moves_editor()` | Editor mosse |
 | `/pokemon/oggetti` | GET, POST | `items_editor()` | Editor oggetti |
+| `/pokemon/abilita` | GET, POST | `abilities_editor()` | Editor abilità — **`abilita`, non `abilities`** |
 
-### 🔌 API Pokémon
+### 🔌 API
 | URL | Metodi | Descrizione |
 |-----|--------|-------------|
-| `/api/pokemon/<name>` | GET | Stats + sprite da PokéAPI/locali |
-| `/api/team/<id>` | GET | Dati team JSON |
-| `/api/stat_champions` | GET | Champions stats JSON |
-| `/api/moves` | GET | Mosse legacy Reg. M-A |
-| `/api/regulations` | GET | Elenco regulation |
-| `/api/regulation/<id>/data` | GET | Dati completi regulation |
-| `/api/regulations/save` | POST | Salva `regulations.json` |
-| `/api/regulations/create` | POST | Crea regulation |
-| `/api/regulations/<id>/delete` | POST | Elimina regulation |
+| `/api/pokemon/<path:name>` | GET | Stats, tipi, abilità e sprite **dal catalogo locale** |
+| `/api/regulation/<id>/data` | GET | Roster della regulation |
+| `/api/moves` | GET | Mosse Reg. M-A |
+| `/pokemon/api/abilities` | GET | Elenco abilità |
+| `/pokemon/api/abilities/update` · `/delete` | POST | Modifica / elimina abilità |
+| `/pokemon/api/regulations/create` | POST | Crea regulation |
+| `/pokemon/api/regulations/<id>/delete` | POST | Elimina regulation |
+
+> ⚠️ **Non esistono** (erano documentate ma mai implementate): `/api/team/<id>`, `/api/stat_champions`, `/api/regulations`, `/api/regulations/save`.
+> Nota: `/api/pokemon/<name>` **non chiama PokéAPI a runtime** — legge solo `pokemon_catalog.json`. Gli URL degli sprite puntano a pokemondb.
 
 ### 🤖 Arduino
 | URL | Metodi | Funzione | Descrizione |
@@ -223,21 +225,17 @@ Registro centrale di tutte le regulation disponibili.
 Responsabile della creazione applicazione Flask tramite `create_app()`, registrazione blueprint e bootstrap generale.
 
 ### `extensions.py`
-Contiene le estensioni condivise, in particolare l'istanza `db = SQLAlchemy()` inizializzata tramite app factory.
+**Nessun ORM: `sqlite3` grezzo.** Non c'è SQLAlchemy nel progetto — `requirements.txt` elenca solo `flask`.
+
+Espone `get_db()` (connessione con `row_factory = sqlite3.Row` e foreign keys ON), `init_db()` (crea le tabelle e l'utente di default `admin` / `admin123`), il decorator `login_required` e gli helper numerici `_i()` / `_f()`.
 
 ### `blueprints/`
-Ogni area funzionale è stata estratta in un modulo dedicato:
-- `auth.py`
-- `main.py`
-- `gaming.py`
-- `pokemon.py`
-- `api_pokemon.py`
-- `arduino.py`
-- `python_tracker.py`
-- `pcbuilder.py`
+- `auth.py` · `dashboard.py` (**non** `main.py`) · `gaming.py` · `pokemon.py` · `api_pokemon.py` · `arduino.py` · `python_tracker.py` · `pcbuilder.py`
 
 ### `data.py`
-Modulo per costanti e mapping statici del progetto. Al momento non contiene ancora tutti i simboli che la documentazione legacy attribuiva al file, per questo alcuni valori sono stati temporaneamente sostituiti nei blueprint.
+Costanti e mapping statici: `CHAMPIONS_BST` (174 Pokémon dal catalogo), `NATURES`, `NATURE_EFFECTS`, `SLUG_OVERRIDES`, `REG_MA_ROSTER`, `MEGA_EVOLUTIONS_MA`.
+
+> `ABILITIES_CALC` esiste ancora in `data.py` ma **non è più usata**: le abilità del calcolatore vengono da `data/abilities.json`.
 
 ### `data/`
 Contiene i JSON dinamici delle regulation.
@@ -246,49 +244,50 @@ Contiene i JSON dinamici delle regulation.
 
 ## 🧠 Calcolatori VGC
 
-La pagina `/pokemon/calcolatori` include tre aree principali:
-- **Danno**
-- **Speed Tier**
-- **Stat Preview**
+La pagina `/pokemon/calcolatori` include **quattro** tab: **Danno**, **Speed Tier**, **Stat Preview** e **Reference** (tabelle tipi e nature).
 
-### Regole EV Champions (Reg. M-A)
-- Max 32 EV per singola stat
-- Max 66 EV totali
-- IV fissi a 31
-- Livello fisso 50
+### Regole SP Champions (Reg. M-A)
+- Max **32 SP** per singola stat, max **66 SP** totali (`EV_FIELD_MAX` / `EV_TOTAL_MAX`)
+- IV fissi a 31, livello fisso 50
 
 ### Formula stat
-**HP:** `floor((2×base + 31 + floor(EV/4)) × lvl/100) + lvl + 10`
+Ogni SP vale **+2** — è la convenzione Champions, **non** gli EV standard 0-252:
 
-**Altre stat:** `floor((floor((2×base + 31 + floor(EV/4)) × lvl/100) + 5) × natura)`
+**HP:** `floor((2×base + 31 + SP×2) × lvl/100) + lvl + 10`
+**Altre:** `floor((floor((2×base + 31 + SP×2) × lvl/100) + 5) × natura)`
+
+> ⚠️ La versione precedente di questo documento riportava `floor(EV/4)`. È la formula standard, **incompatibile col cap a 32 SP**: dava +4 invece di +32 a investimento pieno. Corretta nel codice e qui il 07/08/2026.
+
+### Motore abilità
+Le abilità **non** sono hardcoded: `calcDamage()`, `updateSpeed()` e `updateStatPreview()` leggono il blocco `effect` di `data/abilities.json` tramite `abilityEffect(nome)`.
+
+- 408 abilità nelle tendine (nomi **in italiano**, come l'interfaccia), **56 con un effetto reale**
+- Il pallino ● marca quelle che incidono sul calcolo del tab corrente; le altre restano selezionabili come informazione
+- **Aggiungere un'abilità = modificare il JSON, zero codice.** Lo script `scripts/patch_abilities_effects.py` (con `--dry-run` e backup) aiuta a completare i blocchi `effect`
+
+Tipi di effetto supportati: `ate`, `tough_claws`, `wonder_guard`, `overgrow`, `filter`, `fluffy`, `thick_fat`, `multiscale`, `marvel_scale`, `fur_coat`, `technician`, `sheer_force`, `tinted_lens`, `purifying_salt`, `stab_multiplier`, `guts`, `stat_mult`, `spread_boost`, `type_boost_weather`, `weather_def_boost`, `weather_spdef_boost`, `immunity`, `absorb`, `speed_weather`, `speed_status`.
+
+> ⚠️ I nomi in `abilities.json` sono in italiano ma **non sempre quelli ufficiali**: `Magidifesa` è Wonder Guard, mentre `Spettroguardia` descrive in realtà Multiscaglia. Quando cerchi un'abilità, **fidati della descrizione, non del nome**.
 
 ---
 
-## 📝 Note operative attuali
+## 📝 Note operative
 
-### Priorità post-avvio
-Ora che l'app si avvia, il prossimo controllo consigliato è testare in browser queste pagine:
-- `/login`
-- `/`
-- `/pokemon`
-- `/pokemon/calcolatori`
-- `/gaming`
-- `/arduino`
-- `/python`
-- `/pcbuilder`
+### Come verificare una modifica ai template
 
-### Cosa aspettarsi nei prossimi bug
-I problemi residui più probabili dopo il refactor non sono più di bootstrap, ma di integrazione:
-- `url_for(...)` nei template
-- variabili mancanti passate a Jinja
-- endpoint JS che puntano ancora ai vecchi nomi
-- import temporanei da ripulire
+L'app che **si avvia** non significa che le pagine **funzionino**: un `SyntaxError` in un blocco `<script>` inline non produce nessun errore server-side, ma azzera tutto il JavaScript di quella pagina. È successo due volte in questo progetto (`calcolatori.html` e `pcbuilder.html`), in entrambi i casi per mesi senza accorgersene.
+
+Controllo consigliato dopo ogni modifica: renderizzare la pagina col test client, estrarre i blocchi `<script>` inline ed eseguire `new vm.Script()` su ciascuno. Individua il problema in pochi secondi.
+
+> Attenzione ai falsi positivi: i blocchi `<script type="application/json">` (es. `items-data` in `items_editor.html`) contengono dati, non codice, e non vanno passati al parser JS.
+
+Per i calcolatori vale in più la regola #8 di `PROJECT_CONTEXT.md`: ogni modifica va provata con un **caso noto** e confrontata con un valore calcolato a mano.
+
+### Stato delle pagine
+Tutte verificate il 07/08/2026: `/`, `/login`, `/pokemon`, `/pokemon/calcolatori`, `/pokemon/mosse`, `/pokemon/oggetti`, `/pokemon/roster`, `/pokemon/abilita`, `/pokemon/regulations`, `/pokemon/team/new`, `/gaming`, `/arduino`, `/python`, `/pcbuilder` — tutte 200, 18/18 template compilano, tutti i blocchi JS parsano.
 
 ### Obiettivo successivo
-Stabilizzare i blueprint eliminando gli shim temporanei e ricollocando in modo definitivo:
-- `CHAMPIONS_BST`
-- `TYPE_TABLE_HTML`
-- `NATURE_TABLE_HTML`
+Vedi `BACKLOG.md`. La voce più grossa è il **DB Pokedex completo** (tutti i Pokémon, mosse, abilità e oggetti di ogni generazione come regulation dedicata): abiliterebbe l'obiettivo di fondo, cioè aggiungere una regulation **senza IA, solo dall'interfaccia**, e risolverebbe da sola sia il buco Lycanroc sia le abilità incomplete nel catalogo.
 
 ---
 
@@ -301,3 +300,4 @@ Stabilizzare i blueprint eliminando gli shim temporanei e ricollocando in modo d
 | 2026-05-04 | v3–v9 | Calcolatori VGC completi, 461 mosse, fix EV/IV, editor mosse/roster |
 | 2026-05-07 | v10–v11 | Sistema Regulation multi, `regulations.json`, editor regulation, API regulation-aware |
 | 2026-05-10 | v11.1a | Refactor in blueprint, `app.py` con app factory, avvio riuscito con shim temporanei per import mancanti |
+| 2026-08-07 | v16.2 | Corretto il `SyntaxError` che azzerava tutto il JS di `calcolatori.html`; formule stat allineate su `SP×2`; motore abilità data-driven da `abilities.json`; risolti i problemi noti 1-8; tendina abilità nello Stat Preview; pulizia dead code (−100 KB); sprite Mega e forme regionali (0 rotti su 296); layout dei tre editor; 5 bug trovati via grafo graphify e corretti, incluso il `SyntaxError` del PC Builder; shim di bootstrap eliminati; documentazione riallineata al codice |

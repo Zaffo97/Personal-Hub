@@ -129,8 +129,12 @@ textarea.form-control{resize:vertical;min-height:70px}
   #sidebarOverlay.open{display:block}
   #content{padding:.85rem}
 }
-{% block extra_head %}{% endblock %}
 </style>
+{# extra_head sta FUORI dallo <style>: i template ci mettono <style> o <link> propri.
+   Prima era dentro, quindi il primo </style> del template figlio chiudeva questo
+   elemento e il </style> qui sotto restava orfano: funzionava per caso col CSS, e
+   un <link> veniva ignorato perche' trattato come testo CSS. #}
+{% block extra_head %}{% endblock %}
 </head>
 <body>
 <div id="sidebarOverlay" onclick="closeSidebar()"></div>

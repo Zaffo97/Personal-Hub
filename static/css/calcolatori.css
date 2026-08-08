@@ -1,0 +1,28 @@
+/* Stili del calcolatore VGC. Estratti da templates/calcolatori.html l'08/08/2026. */
+.calc-tabs{display:flex;gap:.3rem;margin-bottom:1rem;border-bottom:1px solid var(--border);padding-bottom:.5rem}
+.calc-tab{padding:.38rem .9rem;border-radius:var(--radius-md) var(--radius-md) 0 0;font-size:.8rem;font-weight:600;cursor:pointer;border:none;background:none;color:var(--text-muted);transition:.15s}
+.calc-tab.active{background:var(--primary);color:#fff}
+.calc-panel{display:none}.calc-panel.active{display:block}
+.stat-bar-wrap{display:flex;align-items:center;gap:.5rem;margin-bottom:.38rem}
+.stat-label{width:32px;font-size:.65rem;font-weight:700;color:var(--text-muted);text-align:right;text-transform:uppercase}
+.stat-bar-bg{flex:1;height:10px;background:var(--surface-off);border-radius:20px;overflow:hidden;position:relative}
+.stat-bar-max{position:absolute;top:0;left:0;height:100%;border-radius:20px}
+.stat-bar-fill{height:100%;border-radius:20px;transition:width .35s ease;position:relative;z-index:1}
+.stat-value{width:36px;font-size:.72rem;font-weight:700;text-align:right}
+.speed-row{display:flex;align-items:center;gap:.6rem;padding:.32rem .6rem;border-radius:var(--radius-sm);font-size:.78rem;transition:.12s}
+.speed-row:hover{background:var(--surface-off)}
+.speed-row.highlight{background:var(--primary-dim,color-mix(in oklch,var(--primary) 15%,transparent));color:var(--primary);font-weight:700}
+.speed-row.slower{opacity:.5}
+.dmg-result{background:var(--surface-off);border-radius:var(--radius-md);padding:.75rem 1rem;margin-top:.75rem}
+.dmg-bar-wrap{height:16px;background:var(--surface);border-radius:20px;overflow:hidden;margin:.4rem 0}
+.dmg-bar-fill{height:100%;border-radius:20px;background:linear-gradient(90deg,var(--primary),#6f9);transition:width .4s ease}
+.stat-grid{display:grid;grid-template-columns:repeat(6,1fr);gap:.3rem;margin-bottom:.4rem}
+.sn-inp{text-align:center;font-size:.72rem;padding:.28rem .1rem}
+.sn-lbl{font-size:.58rem;text-align:center;color:var(--text-muted);margin-top:.1rem;font-weight:700}
+.mv-tag{display:inline-flex;align-items:center;gap:.3rem;padding:.12rem .5rem;border-radius:20px;
+  font-size:.7rem;font-weight:700;background:var(--surface-off);border:1px solid var(--border)}
+.team-pk-btn{padding:.2rem .55rem;border-radius:var(--radius-md);font-size:.68rem;font-weight:700;
+  cursor:pointer;border:1px solid var(--border);background:var(--surface);transition:.12s}
+.team-pk-btn:hover{background:var(--primary);color:#fff;border-color:var(--primary)}
+.team-pk-btn.active-atk{background:var(--primary);color:#fff;border-color:var(--primary)}
+.team-pk-btn.active-def{background:color-mix(in oklch,var(--error,#c33) 80%,transparent);color:#fff;border-color:var(--error,#c33)}

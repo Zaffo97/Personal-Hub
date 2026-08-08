@@ -25,9 +25,6 @@
   </div>
 </div>
 
-<div style="display:grid;grid-template-columns:1fr 1fr;gap:1rem">
-
-<!-- Colonna sinistra: UI visuale -->
 {% if current_reg %}
 <div style="font-size:.75rem;color:var(--text-muted);margin-bottom:.5rem">
   Stai modificando: <strong>{{ current_reg.label }}</strong>
@@ -35,6 +32,11 @@
 </div>
 {% endif %}
 
+<!-- Il banner qui sopra stava dentro la griglia e occupava la prima cella,
+     sfasando di uno tutte le colonne. La lista Pokémon ha la colonna larga. -->
+<div style="display:grid;grid-template-columns:minmax(0,1.6fr) minmax(0,1fr);gap:1rem;align-items:start">
+
+<!-- Colonna sinistra: UI visuale -->
   <div>
     <div class="card">
       <div class="card-header">
@@ -161,7 +163,7 @@ async function addPkmn() {
   const name = inp.value.trim();
   if (!name) return;
   if (document.querySelector('.tag[data-name="' + name + '"]')) {
-    showMsg(name + ' e\u00e0 gia\u0027 nel roster.', 'warning');
+    showMsg(name + ' \u00e8 gi\u00e0 nel roster.', 'warning');
     inp.value = ''; return;
   }
   const btn = document.getElementById('addBtn');
@@ -233,7 +235,11 @@ async function loadArchives() {
         + '<code style="font-size:.62rem;display:block;color:var(--text-faint)">' + a.filename + '</code>'
         + '</div>'
         + '<form method="POST" action="/pokemon/roster/restore/' + encodeURIComponent(a.filename) + '"'
-        + ' onsubmit="return confirm(\'Ripristinare ' + a.regulation + '? Il roster corrente verra\u0027 salvato come backup.\')">"'
+        // Niente apostrofi in questa stringa: finisce dentro un attributo
+        // onsubmit delimitato da ', quindi l'apostrofo chiudeva la stringa del
+        // confirm. L'handler era un SyntaxError, form.onsubmit restava null e
+        // "Ripristina" sovrascriveva il roster senza chiedere conferma.
+        + ' onsubmit="return confirm(\'Ripristinare ' + a.regulation + '? Il roster corrente verra sovrascritto e salvato come backup.\')">'
         + '<button type="submit" class="btn btn-secondary btn-sm" style="font-size:.7rem">Ripristina</button>'
         + '</form></div>';
     }).join('');

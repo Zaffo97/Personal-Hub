@@ -10,7 +10,6 @@ from data import (
     NATURES,
     NATURE_EFFECTS,
     CHAMPIONS_BST,
-    ABILITIES_CALC
 )
 
 ABILITIES_FILE = os.path.join(os.path.dirname(__file__), "..", "data", "abilities.json")
@@ -30,9 +29,6 @@ def _save_abilities(data):
 
 def load_items():
     return {}
-
-TYPE_TABLE_HTML = ""
-NATURE_TABLE_HTML = ""
 
 bp = Blueprint("pokemon", __name__, url_prefix="/pokemon")
 
@@ -465,22 +461,18 @@ def calcolatori():
 
     return render_template(
         "calcolatori.html",
-        pkmn_db=CHAMPIONS_BST,
         roster=roster_calc,
         roster_calc=roster_calc,
         natures=NATURES,
         nature_effects=NATURE_EFFECTS,
         champions_bst=json.dumps(CHAMPIONS_BST or {}),
         mega_list=mega_list,
-        speed_tier_data=[],
-        type_table=TYPE_TABLE_HTML or "",
-        nature_table=NATURE_TABLE_HTML or "",
         items_data=load_items(reg_id),
         moves_data=load_moves(reg_id),
         current_reg=reg,
         regulations=regs,
+        # Le tendine abilità sono popolate lato JS da ABILITIES_DATA
         abilities_data=json.dumps(ab_data.get("abilities", {}), ensure_ascii=False),
-        abilities_list=sorted(ab_data.get("abilities", {}).keys())
     )
 
 @bp.route("/roster", methods=["GET", "POST"])

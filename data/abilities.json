@@ -25,7 +25,8 @@
       "desc": "Quando si è in difficoltà, potenzia le mosse di tipo Acqua.",
       "category": "other",
       "effect": {
-        "type": "none"
+        "type": "overgrow",
+        "move_type": "Acqua"
       }
     },
     "Acquascolo": {
@@ -83,14 +84,16 @@
       "desc": "Quando si è in difficoltà, potenzia le mosse di tipo Coleottero.",
       "category": "other",
       "effect": {
-        "type": "none"
+        "type": "overgrow",
+        "move_type": "Coleottero"
       }
     },
     "Aiutofuoco": {
       "desc": "Quando si è in difficoltà, potenzia le mosse di tipo Fuoco.",
       "category": "other",
       "effect": {
-        "type": "none"
+        "type": "overgrow",
+        "move_type": "Fuoco"
       }
     },
     "Albergamemorie": {
@@ -721,7 +724,8 @@
       "desc": "Quando si è in difficoltà, potenzia le mosse di tipo Erba.",
       "category": "other",
       "effect": {
-        "type": "none"
+        "type": "overgrow",
+        "move_type": "Erba"
       }
     },
     "Erbogenesi": {
@@ -787,7 +791,8 @@
       "desc": "Riduce la potenza delle mosse superefficaci.",
       "category": "other",
       "effect": {
-        "type": "none"
+        "type": "filter",
+        "value": 0.75
       }
     },
     "Fiorvelo": {
@@ -1313,7 +1318,7 @@
       "desc": "Rende vulnerabili solo alle mosse superefficaci.",
       "category": "other",
       "effect": {
-        "type": "none"
+        "type": "wonder_guard"
       }
     },
     "Magispecchio": {
@@ -1672,7 +1677,10 @@
       "desc": "Le mosse del Pokémon diventano di tipo Normale.",
       "category": "other",
       "effect": {
-        "type": "none"
+        "type": "ate",
+        "move_type": "Normale",
+        "value": 1.2,
+        "any_source": true
       }
     },
     "Nullodifesa": {
@@ -1827,7 +1835,9 @@
       "desc": "Le mosse di tipo Normale diventano di tipo Volante.",
       "category": "other",
       "effect": {
-        "type": "none"
+        "type": "ate",
+        "move_type": "Volante",
+        "value": 1.2
       }
     },
     "Pelledura": {
@@ -1841,21 +1851,27 @@
       "desc": "Le mosse di tipo Normale diventano di tipo Folletto.",
       "category": "other",
       "effect": {
-        "type": "none"
+        "type": "ate",
+        "move_type": "Folletto",
+        "value": 1.2
       }
     },
     "Pellegelo": {
       "desc": "Le mosse di tipo Normale diventano di tipo Ghiaccio.",
       "category": "other",
       "effect": {
-        "type": "none"
+        "type": "ate",
+        "move_type": "Ghiaccio",
+        "value": 1.2
       }
     },
     "Pellelettro": {
       "desc": "Le mosse di tipo Normale diventano di tipo Elettro e la loro potenza aumenta un po’.",
       "category": "other",
       "effect": {
-        "type": "none"
+        "type": "ate",
+        "move_type": "Elettro",
+        "value": 1.2
       }
     },
     "Peloderba": {
@@ -2284,7 +2300,8 @@
       "desc": "Riduce la potenza delle mosse superefficaci subite.",
       "category": "other",
       "effect": {
-        "type": "none"
+        "type": "filter",
+        "value": 0.75
       }
     },
     "Scudosoglia": {
@@ -2425,7 +2442,8 @@
       "desc": "Riduce la potenza delle mosse superefficaci.",
       "category": "other",
       "effect": {
-        "type": "none"
+        "type": "filter",
+        "value": 0.75
       }
     },
     "Sonno Assoluto": {
@@ -2847,7 +2865,8 @@
       "desc": "Potenzia le mosse che causano un contatto fisico.",
       "category": "other",
       "effect": {
-        "type": "none"
+        "type": "tough_claws",
+        "value": 1.3
       }
     },
     "Vampirico": {

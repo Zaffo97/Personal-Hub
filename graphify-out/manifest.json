@@ -1,0 +1,267 @@
+{
+  ".claude/launch.json": {
+    "mtime": 1786097594.366715,
+    "ast_hash": "84931d597ec85cb94fedf5f0d95f70bf",
+    "semantic_hash": "84931d597ec85cb94fedf5f0d95f70bf"
+  },
+  ".claude/settings.local.json": {
+    "mtime": 1786097471.0660098,
+    "ast_hash": "b3bef626d8055181e816917728f83739",
+    "semantic_hash": "b3bef626d8055181e816917728f83739"
+  },
+  "app.py": {
+    "mtime": 1785829984.0400991,
+    "ast_hash": "38a2c86688acee7a8055d02971c2d80d",
+    "semantic_hash": "38a2c86688acee7a8055d02971c2d80d"
+  },
+  "blueprints/__init__.py": {
+    "mtime": 1785829984.1190832,
+    "ast_hash": "bfc518c7dae05ffdf7ee58f999b07319",
+    "semantic_hash": "bfc518c7dae05ffdf7ee58f999b07319"
+  },
+  "blueprints/api_pokemon.py": {
+    "mtime": 1786107195.106001,
+    "ast_hash": "48f37b725665f13d28da2bcd41a92b9c",
+    "semantic_hash": "48f37b725665f13d28da2bcd41a92b9c"
+  },
+  "blueprints/arduino.py": {
+    "mtime": 1785829984.1509447,
+    "ast_hash": "f9b7cdd180186e7d265437bae8e6f667",
+    "semantic_hash": "f9b7cdd180186e7d265437bae8e6f667"
+  },
+  "blueprints/auth.py": {
+    "mtime": 1785829984.0874114,
+    "ast_hash": "2be7ee2f286daef4b7725eae68c62984",
+    "semantic_hash": "2be7ee2f286daef4b7725eae68c62984"
+  },
+  "blueprints/dashboard.py": {
+    "mtime": 1785829984.1246815,
+    "ast_hash": "98aab4d1bb7bd8c70c5dbf57a76375a8",
+    "semantic_hash": "98aab4d1bb7bd8c70c5dbf57a76375a8"
+  },
+  "blueprints/gaming.py": {
+    "mtime": 1785829984.1034472,
+    "ast_hash": "7f13517261af9701b78eab1a097286cf",
+    "semantic_hash": "7f13517261af9701b78eab1a097286cf"
+  },
+  "blueprints/pcbuilder.py": {
+    "mtime": 1785829984.1509447,
+    "ast_hash": "b47c0dce381f28e7b58186a853d66346",
+    "semantic_hash": "b47c0dce381f28e7b58186a853d66346"
+  },
+  "blueprints/pokemon.py": {
+    "mtime": 1786107195.106001,
+    "ast_hash": "23b5f9d0adf3863af12ac98260fee43e",
+    "semantic_hash": "23b5f9d0adf3863af12ac98260fee43e"
+  },
+  "blueprints/python_tracker.py": {
+    "mtime": 1785829984.1034472,
+    "ast_hash": "e7bda329248e1e3c56e7731cd9bcdd72",
+    "semantic_hash": "e7bda329248e1e3c56e7731cd9bcdd72"
+  },
+  "data.py": {
+    "mtime": 1785829984.0692706,
+    "ast_hash": "8b6175e67098ef51e181b317c3111556",
+    "semantic_hash": "8b6175e67098ef51e181b317c3111556"
+  },
+  "data/abilities.json": {
+    "mtime": 1786107195.106001,
+    "ast_hash": "02fe71256c809916cc4466889f5c87cd",
+    "semantic_hash": "02fe71256c809916cc4466889f5c87cd"
+  },
+  "data/archive/moves_Regulation_MA_2026-05-05.json": {
+    "mtime": 1785829987.6282594,
+    "ast_hash": "e64d3269f16749d3556a773a2bcf87e4",
+    "semantic_hash": "e64d3269f16749d3556a773a2bcf87e4"
+  },
+  "data/archive/roster_Regulation_MA_2026-05-05.json": {
+    "mtime": 1785829987.634117,
+    "ast_hash": "9eb22477209b23d11b3e65227d9dc7a5",
+    "semantic_hash": "9eb22477209b23d11b3e65227d9dc7a5"
+  },
+  "data/archive/roster_Regulation_MA_2026-05-05_002358_backup.json": {
+    "mtime": 1785829987.6408792,
+    "ast_hash": "9eb22477209b23d11b3e65227d9dc7a5",
+    "semantic_hash": "9eb22477209b23d11b3e65227d9dc7a5"
+  },
+  "data/items_ma.json": {
+    "mtime": 1785829987.5664504,
+    "ast_hash": "799847efc0bd7450887e72825807bd2f",
+    "semantic_hash": "799847efc0bd7450887e72825807bd2f"
+  },
+  "data/moves_ma.json": {
+    "mtime": 1785829987.5566108,
+    "ast_hash": "e64d3269f16749d3556a773a2bcf87e4",
+    "semantic_hash": "e64d3269f16749d3556a773a2bcf87e4"
+  },
+  "data/pokemon_catalog.json": {
+    "mtime": 1785829987.6039762,
+    "ast_hash": "c18fc75d3286ab2e2aab03ba0306f5f6",
+    "semantic_hash": "c18fc75d3286ab2e2aab03ba0306f5f6"
+  },
+  "data/regulations.json": {
+    "mtime": 1785829987.586043,
+    "ast_hash": "96ca8195cd6f7c5050210bbdb416ba08",
+    "semantic_hash": "96ca8195cd6f7c5050210bbdb416ba08"
+  },
+  "data/roster_ma.json": {
+    "mtime": 1785829987.586043,
+    "ast_hash": "35545d0338936eb4c8c404756fac21c1",
+    "semantic_hash": "35545d0338936eb4c8c404756fac21c1"
+  },
+  "extensions.py": {
+    "mtime": 1786107195.106001,
+    "ast_hash": "abe147b39c2347acdb69dc3ef5fc9a3f",
+    "semantic_hash": "abe147b39c2347acdb69dc3ef5fc9a3f"
+  },
+  "scripts/fix_pokemon_catalog.py": {
+    "mtime": 1785829984.2699285,
+    "ast_hash": "3e2699694acbe71f0efee11920108ec1",
+    "semantic_hash": "3e2699694acbe71f0efee11920108ec1"
+  },
+  "scripts/patch_abilities_effects.py": {
+    "mtime": 1786099305.3825626,
+    "ast_hash": "98c4a2a5eb6d5611080d6e94321c8fbb",
+    "semantic_hash": "98c4a2a5eb6d5611080d6e94321c8fbb"
+  },
+  "scripts/patch_catalog_abilities.py": {
+    "mtime": 1785829984.2786727,
+    "ast_hash": "537f2c21e7a772586f4be02a319a6ac4",
+    "semantic_hash": "537f2c21e7a772586f4be02a319a6ac4"
+  },
+  "BACKLOG.md": {
+    "mtime": 1786105179.9102595,
+    "ast_hash": "3bed7259410a57048ed52563d1b5a212",
+    "semantic_hash": "3bed7259410a57048ed52563d1b5a212"
+  },
+  "DOCUMENTAZIONE_PersonalHub.md": {
+    "mtime": 1785829984.0627916,
+    "ast_hash": "c5d47b647fd421f044ea5a9e0677a965",
+    "semantic_hash": "c5d47b647fd421f044ea5a9e0677a965"
+  },
+  "PROJECT_CONTEXT.md": {
+    "mtime": 1785829983.9963672,
+    "ast_hash": "f32010b8f947124c52ad9480f16adc3f",
+    "semantic_hash": "f32010b8f947124c52ad9480f16adc3f"
+  },
+  "README-GitHub.md": {
+    "mtime": 1785829984.0140073,
+    "ast_hash": "fcae0d86d273f1b1a34f862b57729393",
+    "semantic_hash": "fcae0d86d273f1b1a34f862b57729393"
+  },
+  "README.md": {
+    "mtime": 1785829984.0244381,
+    "ast_hash": "9b1ecd35427f29ceacfdaa19c122ee6d",
+    "semantic_hash": "9b1ecd35427f29ceacfdaa19c122ee6d"
+  },
+  "data/fetch_desc_report.txt": {
+    "mtime": 1785829987.5722108,
+    "ast_hash": "1c8250e6797f700eb24c508535a3b281",
+    "semantic_hash": "1c8250e6797f700eb24c508535a3b281"
+  },
+  "graphify-out/converted/Nuove implementazioni_c51d30f2.md": {
+    "mtime": 1786114367.8507452,
+    "ast_hash": "8ade36dcdd3a747e89c06b958a7af819",
+    "semantic_hash": "8ade36dcdd3a747e89c06b958a7af819"
+  },
+  "howtouse.txt": {
+    "mtime": 1785829984.0820346,
+    "ast_hash": "45f76cbc09fc793526c284643def37ef",
+    "semantic_hash": "45f76cbc09fc793526c284643def37ef"
+  },
+  "requirements.txt": {
+    "mtime": 1785829983.9963672,
+    "ast_hash": "681c67aed83d9ed61ad5165da7378e0a",
+    "semantic_hash": "681c67aed83d9ed61ad5165da7378e0a"
+  },
+  "templates/abilities_editor.html": {
+    "mtime": 1785829984.345857,
+    "ast_hash": "c6ac0e3529751751ef9159988e15cf6a",
+    "semantic_hash": "c6ac0e3529751751ef9159988e15cf6a"
+  },
+  "templates/arduino.html": {
+    "mtime": 1785829984.4114196,
+    "ast_hash": "814b2b7dfa554ea219ba9a03b1ed431f",
+    "semantic_hash": "814b2b7dfa554ea219ba9a03b1ed431f"
+  },
+  "templates/base.html": {
+    "mtime": 1785829984.3244398,
+    "ast_hash": "af71477efa4e6ca27e64acd0f134961f",
+    "semantic_hash": "af71477efa4e6ca27e64acd0f134961f"
+  },
+  "templates/calcolatori.html": {
+    "mtime": 1786107195.1153724,
+    "ast_hash": "a86f63b15c1b7717e7f99e57cb5d6304",
+    "semantic_hash": "a86f63b15c1b7717e7f99e57cb5d6304"
+  },
+  "templates/dashboard.html": {
+    "mtime": 1785829984.3721027,
+    "ast_hash": "599f70983b130abc0659893a70ccedea",
+    "semantic_hash": "599f70983b130abc0659893a70ccedea"
+  },
+  "templates/game_form.html": {
+    "mtime": 1785829984.4508438,
+    "ast_hash": "03ae45385636e21af58278ea922ce17b",
+    "semantic_hash": "03ae45385636e21af58278ea922ce17b"
+  },
+  "templates/gaming.html": {
+    "mtime": 1785829984.3244398,
+    "ast_hash": "29115ae62c343ded0d7f52a20bd5add3",
+    "semantic_hash": "29115ae62c343ded0d7f52a20bd5add3"
+  },
+  "templates/items_editor.html": {
+    "mtime": 1786107195.1153724,
+    "ast_hash": "62efaeeb4b554fadc89d590f1db6b098",
+    "semantic_hash": "62efaeeb4b554fadc89d590f1db6b098"
+  },
+  "templates/login.html": {
+    "mtime": 1785829984.3401804,
+    "ast_hash": "bb9ddb5f016e4971bee1e37cfee288de",
+    "semantic_hash": "bb9ddb5f016e4971bee1e37cfee288de"
+  },
+  "templates/moves_editor.html": {
+    "mtime": 1786107195.1173794,
+    "ast_hash": "2506d3c3255f485ea2f72075fa47720a",
+    "semantic_hash": "2506d3c3255f485ea2f72075fa47720a"
+  },
+  "templates/pcbuilder.html": {
+    "mtime": 1785829984.4347887,
+    "ast_hash": "1f35dd998d195fcba9c5d7038779bbba",
+    "semantic_hash": "1f35dd998d195fcba9c5d7038779bbba"
+  },
+  "templates/pokemon.html": {
+    "mtime": 1785829984.3084328,
+    "ast_hash": "134e4abe1f25b69d368a1718bda610b0",
+    "semantic_hash": "134e4abe1f25b69d368a1718bda610b0"
+  },
+  "templates/python.html": {
+    "mtime": 1785829984.29663,
+    "ast_hash": "759ffec718e25e2796bd8e99acebd7d6",
+    "semantic_hash": "759ffec718e25e2796bd8e99acebd7d6"
+  },
+  "templates/reference.html": {
+    "mtime": 1785829984.3721027,
+    "ast_hash": "4514745d0206463202c41cb76731ca54",
+    "semantic_hash": "4514745d0206463202c41cb76731ca54"
+  },
+  "templates/regulation_editor.html": {
+    "mtime": 1785829984.3579931,
+    "ast_hash": "b9d49f25031ad028f95c98e56685bf39",
+    "semantic_hash": "b9d49f25031ad028f95c98e56685bf39"
+  },
+  "templates/regulations_list.html": {
+    "mtime": 1785829984.29663,
+    "ast_hash": "67649f176a0d4d55508d6fa0609d27e8",
+    "semantic_hash": "67649f176a0d4d55508d6fa0609d27e8"
+  },
+  "templates/roster_editor.html": {
+    "mtime": 1786107195.1173794,
+    "ast_hash": "9f65c727748611a2d5e0dbb0507d5a72",
+    "semantic_hash": "9f65c727748611a2d5e0dbb0507d5a72"
+  },
+  "templates/team_form.html": {
+    "mtime": 1785829984.388164,
+    "ast_hash": "7be2f432dced9b2be818c44b7425cf90",
+    "semantic_hash": "7be2f432dced9b2be818c44b7425cf90"
+  }
+}
