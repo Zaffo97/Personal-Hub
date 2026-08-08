@@ -7,6 +7,15 @@
       "mega"
     ],
     "moves_file": "moves_ma.json",
-    "roster_file": "roster_ma.json"
+    "roster_file": "roster_ma.json",
+    "filter_file": "regulations/ma.json"
+  },
+  {
+    "id": "pokedex",
+    "label": "Pokedex — tutto il catalogo",
+    "filter_file": "regulations/pokedex.json",
+    "mechanics": [
+      "mega"
+    ]
   }
 ]

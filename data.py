@@ -167,16 +167,20 @@ ABILITIES_CALC = [
     "Steely Spirit", "Heatproof", "Water Bubble"
 ]
 
-# Carica base stats da pokemon_catalog.json
+# Carica base stats dal catalogo. data/catalog/pokemon.json è il database di
+# default completo; data/pokemon_catalog.json resta come fallback finché c'è.
 def _load_champions_bst():
-    path = os.path.join(DATA_DIR, "pokemon_catalog.json")
-    try:
-        with open(path, encoding="utf-8") as f:
-            catalog = json.load(f)
-        print(f"[DATA] Catalogo caricato: {len(catalog)} Pokémon")
-        return catalog
-    except Exception as e:
-        print(f"[DATA] Errore catalogo: {e}")
+    for path in (os.path.join(DATA_DIR, "catalog", "pokemon.json"),
+                 os.path.join(DATA_DIR, "pokemon_catalog.json")):
+        try:
+            with open(path, encoding="utf-8") as f:
+                catalog = json.load(f)
+            print(f"[DATA] Catalogo caricato: {len(catalog)} Pokémon da {os.path.basename(path)}")
+            return catalog
+        except Exception:
+            continue
+    if True:
+        print("[DATA] Errore catalogo: nessun file leggibile")
         return {
             'pikachu': {'base_stats': {'hp':35,'atk':55,'def':40,'spa':50,'spd':50,'spe':90}, 'types':['Elettro'], 'abilities':[], 'moves':[]},
             'mimikyu': {'base_stats': {'hp':90,'atk':72,'def':90,'spa':50,'spd':94,'spe':96}, 'types':['Spettro','Folletto'], 'abilities':[], 'moves':[]},

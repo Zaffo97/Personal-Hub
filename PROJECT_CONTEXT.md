@@ -167,8 +167,13 @@ def _save_regulations(regs)    # scrive data/regulations.json
 def _load_roster(reg)          # legge roster_file della regulation, fallback a REG_MA_ROSTER
 def _load_mega_map(reg)        # legge mega_map dal roster_file della regulation
 def load_abilities()           # legge data/abilities.json
-def _save_abilities(data)      # scrive data/abilities.json
+def _save_abilities(data)      # scrive data/abilities.json, tenendo da parte la versione
+                               #   precedente in archive/abilities_pre-salvataggio.json
+def _archive_dir()             # data/archive/, creata se manca
 ```
+
+> ⚠️ Passare **sempre** da `_save_abilities()` per scrivere le abilità: è lì che vive
+> la copia di sicurezza. Scrivere `data/abilities.json` a mano salta la protezione.
 
 Import da `data.py`: `DATA_DIR, REG_MA_ROSTER, MEGA_EVOLUTIONS_MA, NATURES, NATURE_EFFECTS, CHAMPIONS_BST, ABILITIES_CALC`
 
@@ -226,6 +231,9 @@ SPRITE_SLUG_OVERRIDES  # 19 casi irregolari; HD None = artwork grande assente,
 | `/pokemon/mosse` · `/pokemon/mosse/archive` | GET/POST · POST | Editor mosse |
 | `/pokemon/oggetti` · `/pokemon/oggetti/archive` | GET/POST · POST | Editor oggetti |
 | `/pokemon/abilita` | GET/POST | Editor abilità — **`abilita`, non `abilities`** |
+| `/pokemon/abilita/archive` | POST | Archivia le abilità correnti |
+| `/pokemon/abilita/archives` | GET | Elenco archivi abilità (JSON) |
+| `/pokemon/abilita/restore/<filename>` | POST | Ripristina un archivio (solo file `abilities_*` dell'archivio) |
 
 ### API — sotto il blueprint `pokemon` (prefisso `/pokemon`)
 | URL | Metodo | Descrizione |
@@ -446,6 +454,7 @@ Di conseguenza tutto ciò che questa tabella dava per "funzionante" non era mai 
 | 2026-05-07 | Sistema Regulation multi, refactor Blueprint, `extensions.py`, editor abilità |
 | 2026-05-19 | Select abilità ATK/DEF calcolatore, select abilità Speed Tier, checkbox condizioni Speed, fix `calcDamage()` (moltiplicatori diretti, HH deduplicato), fix formula EV Champions (`e*2`) |
 | 2026-06-09 | Generazione `PROJECT_CONTEXT.md` da lettura diretta del codice sorgente su GitHub |
+| 2026-08-08 | **Archivio e backup delle abilità**: `_save_abilities()` non teneva nulla da parte, quindi un salvataggio sbagliato azzerava 408 abilità. Ora copia automatica a scorrimento prima di ogni salvataggio, più archivio manuale, elenco e ripristino (`/pokemon/abilita/archive`, `/archives`, `/restore/<file>`). Il salvataggio rifiuta un `abilities` vuoto e il ripristino accetta solo file dell'archivio. 18 controlli end-to-end, giro completo con md5 identico |
 | 2026-08-08 | **Condizioni del calcolo danno verificate una per una** (24 casi misurati in browser): 3 bug nei terreni — elettrico, erboso e psichico avevano una restrizione di categoria inesistente nel gioco, quindi le mosse della categoria "sbagliata" non prendevano nulla; il critico non ignorava gli stage sfavorevoli all'attaccante; Reflect e Light Screen usavano il valore delle singole (×0.5) invece di quello delle doppie (2732/4096). Tutti corretti. Burn, Guts, Helping Hand, spread e accumulo dei moltiplicatori erano già giusti |
 | 2026-08-08 | **`calcolatori.html` spacchettato**: 1885 → 687 righe, **222 → 38 KB**, zero JS inline. CSS in `static/css/`, JS in 7 moduli `static/js/calcolatori-*.js`, dati da un blocco `application/json`. Le tabelle tipi e nature, 108 KB di HTML duplicato in due copie e scollegato dal motore, sono generate da `calcolatori-ref.js` a partire da `TYPE_CHART`/`NATURES`+`NM` — HTML risultante identico byte per byte all'originale, e 0 disaccordi su 324 celle nel confronto col motore. Parità verificata (regola #8, Speed Tier 189, 12 casi meteo, Drago→Folletto = 0). Corretto `extra_head` di `base.html`, che stava dentro lo `<style>` e lasciava un `</style>` orfano in 10 pagine — motivo per cui un `<link>` veniva ignorato |
 | 2026-08-08 | **Motore meteo** nel calcolatore: `meteoEffettivo()` fa vincere le abilità `weather_override` sulla tendina e fa evocare il meteo alle `weather_setter` quando non è stato scelto nulla; `tipoPallaClima()` legge `weather_ball_type` da `abilities.json` (campo presente su 7 abilità e mai usato prima); `applicaMeteoAllaMossa()` riscrive BP e tipo nei campi visibili. Coperte Weather Ball, Solar Beam, Solar Blade; aggiunta la Pioggia forte con `fire_blocked`. Verificato l'editor abilità: era già completo, la voce di backlog era stale |

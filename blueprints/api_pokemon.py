@@ -5,13 +5,18 @@ from data import DATA_DIR
 bp = Blueprint('api_pokemon', __name__, url_prefix='/api')
 
 # Carica catalogo una volta sola all'avvio
-_catalog_path = os.path.join(DATA_DIR, "pokemon_catalog.json")
-try:
-    with open(_catalog_path, encoding="utf-8") as _f:
-        POKEMON_CATALOG = json.load(_f)
-except Exception as e:
-    print(f"[API] pokemon_catalog.json error: {e}")
-    POKEMON_CATALOG = {}
+# data/catalog/pokemon.json è il database completo; il vecchio file resta fallback.
+POKEMON_CATALOG = {}
+for _catalog_path in (os.path.join(DATA_DIR, "catalog", "pokemon.json"),
+                      os.path.join(DATA_DIR, "pokemon_catalog.json")):
+    try:
+        with open(_catalog_path, encoding="utf-8") as _f:
+            POKEMON_CATALOG = json.load(_f)
+        break
+    except Exception as e:
+        _errore = e
+if not POKEMON_CATALOG:
+    print(f"[API] catalogo non leggibile: {_errore}")
 
 # Sprite fixes diretti (URL completo)
 # Usato per: mimikyu, e mega custom fan-made che non esistono online

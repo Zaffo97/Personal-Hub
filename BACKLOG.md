@@ -9,6 +9,39 @@ Legenda: ⬜ da fare · 🟨 parziale / da verificare · ✅ fatto
 
 ---
 
+## 🚧 IN CORSO — catalogo unico + regulation come filtro (08/08/2026)
+
+Nuovo modello: **un database di default** in `data/catalog/` con tutte le voci, e le
+regulation che contengono **solo elenchi di nomi** che puntano lì (`null` = tutte).
+
+**Fatto e verificato (29 controlli su 29):**
+- `data/catalog/` — 1032 specie + 321 forme, 921 mosse, 398 oggetti, 415 abilità
+- `data/regulations/ma.json` (elenchi di nomi) e `pokedex.json` (nessun filtro)
+- loader in `blueprints/pokemon.py` che filtrano il catalogo; `data.py` e
+  `api_pokemon.py` leggono il nuovo catalogo con fallback al vecchio file
+- editor roster/mosse/oggetti adattati: su una regulation migrata salvano la
+  **selezione dei nomi**, non i dati
+- Regulation MA identica a prima: stesse 461 mosse, 58 oggetti, 208 Pokémon, stessa
+  mega_map, dati invariati. Pokedex vede tutto.
+
+**Da fare alla ripresa:**
+1. **Editor del catalogo separato** (scelta già presa: schermata distinta dagli
+   editor di regulation) — è il punto 4, non ancora iniziato
+2. Verifica in browser del calcolatore col nuovo modello (regola #8, Speed Tier,
+   meteo, condizioni danno) — fatta solo lato server
+3. Decidere sui **doppioni di forme** creati dall'import: il catalogo ha sia
+   `Tauros (Combat Breed)` (preesistente) sia `Paldean Tauros (Combat Breed)` (nuovo)
+4. **Amoonguss non è nel roster di MA**: prima il calcolatore lo offriva lo stesso
+   perché `CHAMPIONS_BST` era globale. Ora la regulation filtra davvero, quindi in MA
+   non compare più. Se lo vuoi in MA va aggiunto al roster
+5. I file `data/roster_ma.json`, `moves_ma.json`, `items_ma.json`, `abilities.json` e
+   `pokemon_catalog.json` restano come **fallback**: dismetterli solo a verifica finita
+
+Script rieseguibili: `scripts/build_catalog.py` (`--dry-run` per provare) e
+`scripts/migra_regulation.py`. Entrambi si rifiutano di modificare dati curati.
+
+---
+
 ## 🐾 POKÉMON
 
 ### Abilità — 15.0
@@ -116,7 +149,7 @@ scottatura + Reflect = ×0.25, terreno erboso + HH + spread = ×1.4625 — e lo 
 |---|---|---|
 | ✅ | Formattazione editor mosse/oggetti/roster | Fatto 07/08/2026. Il banner "Stai modificando" stava dentro la griglia e occupava la colonna larga: la tabella mosse aveva 373px su 838 necessari (465 tagliati). Ora a tutta larghezza |
 | ⬜ | `textarea.form-control` batte `.code-area` | Emerso 08/08/2026: in `base.html` la regola `textarea.form-control{min-height:70px}` ha specificità elemento+classe e vince su `.code-area{min-height:380px}` a prescindere dall'ordine. Le textarea JSON di abilità, mosse e oggetti sono alte **70px invece di 380**. Fix: usare `textarea.code-area` |
-| ⬜ | **Editor abilità senza archivio né backup** | Emerso 08/08/2026: roster, mosse e oggetti hanno `/archive` (e il roster anche `/archives` + `/restore`), l'editor abilità no. `_save_abilities()` in `blueprints/pokemon.py:24` sovrascrive `data/abilities.json` senza copia di sicurezza: un salvataggio sbagliato azzera 408 abilità, **incluse le 56 con blocco `effect` da cui dipende il calcolatore danno**. L'unico backup esistente (`abilities.json.20260807_124209.bak`) l'ha creato uno script, non l'app |
+| ✅ | Editor abilità senza archivio né backup | Fatto 08/08/2026. Archivio manuale, elenco, ripristino e **copia automatica prima di ogni salvataggio**. Ora l'editor abilità è il più protetto dei quattro |
 | ⬜ | Colonne tab Danno del calcolatore | 360/264/360 px, altezze 546/689/562: i tre riquadri chiudono a quote diverse. Non è un bug, è scelta di layout — da decidere se e come cambiarla |
 | ⬜ | Nessun `.gitignore` | `hub.db` e 11 `.pyc` sono tracciati in git; la doc dice esplicitamente di non committare `hub.db` |
 | ⬜ | `main` diverge da `origin/main` | Locale avanti 2 / indietro 4. I commit remoti contengono un marker di conflitto e hanno perso `PROJECT_CONTEXT.md`. Riallineare richiede force-push |
@@ -128,6 +161,16 @@ scottatura + Reflect = ×0.25, terreno erboso + HH + spread = ×1.4625 — e lo 
 ---
 
 ## ✅ Chiuso l'08/08/2026
+
+- **Archivio e backup delle abilità** — `_save_abilities()` sovrascriveva `data/abilities.json` senza tenere nulla da parte: un salvataggio sbagliato azzerava 408 abilità, incluse le 56 con blocco `effect` da cui dipende il calcolatore. Ora:
+  - **copia automatica** della versione precedente a ogni salvataggio, in `data/archive/abilities_pre-salvataggio.json`. È a scorrimento — sempre lo stesso nome — così non riempie la cartella. Protegge anche chi non tocca mai il pulsante Archivia
+  - **archivio manuale** con `/pokemon/abilita/archive`, **elenco** con `/pokemon/abilita/archives`, **ripristino** con `/pokemon/abilita/restore/<file>`
+  - il salvataggio **rifiuta** un `abilities` vuoto o non-oggetto, che prima avrebbe cancellato tutto, e il messaggio mostra la differenza di conteggio (`408 voci (-12 rispetto a prima)`), così un calo anomalo si vede subito
+  - il ripristino accetta solo file dell'archivio col prefisso giusto: `../../app.py` viene respinto
+
+  Verificato con 18 controlli end-to-end sul test client, compresi il giro completo archivia → salvataggio distruttivo → ripristina con **md5 identico all'originale**, i 4 payload che devono essere rifiutati, e il path traversal. Il test lavora sui dati veri, quindi ripristina lo stato e verifica di averlo fatto: file identico e nessun archivio residuo.
+
+  Lato interfaccia, gli `onsubmit` generati sono stati passati a `new Function()` prima di considerarli fatti: è la classe di bug che teneva il Ripristina del roster senza conferma.
 
 - **Terreni: boost legato alla categoria sbagliata** ⚠️ — elettrico e psichico agivano solo sulle mosse speciali, erboso solo sulle fisiche. Nel gioco il boost dipende **solo dal tipo della mossa**. Quindi Wild Charge in terreno elettrico, Energy Ball in quello erboso e Psychic Fangs in quello psichico non prendevano **nulla**: misurato 68 → 68. Ora 68 → 88. Il terreno nebbioso era già corretto (non aveva la restrizione)
 

@@ -103,6 +103,27 @@
       </div>
     </div>
     <div class="card mt-0">
+      <div class="card-header">
+        <span class="card-title">🗄️ Archivio</span>
+      </div>
+      <div class="card-body">
+        <p class="text-xs text-muted mb-2" style="line-height:1.6">
+          Ogni salvataggio tiene da parte la versione precedente in automatico.
+          Archivia a mano prima di modifiche grosse: gli archivi restano.
+        </p>
+        <form method="POST" action="/pokemon/abilita/archive"
+              onsubmit="return confirm('Archiviare le abilita correnti?')"
+              style="margin-bottom:.5rem">
+          <button type="submit" class="btn btn-secondary btn-sm">📦 Archivia abilità correnti</button>
+        </form>
+        <button class="btn btn-sm" style="font-size:.72rem" onclick="loadAbilityArchives()">
+          Vedi archivi salvati
+        </button>
+        <div id="ab_archives" style="margin-top:.5rem"></div>
+      </div>
+    </div>
+
+    <div class="card mt-0">
       <div class="card-body text-sm">
         <strong>File:</strong> <code style="font-size:.72rem">data/abilities.json</code><br>
         <p class="text-xs text-muted mt-2" style="line-height:1.6">
@@ -255,6 +276,41 @@ function addAbility(){
     effect
   };
   syncJson(); renderTable(); closeModal();
+}
+
+// ── Archivio ─────────────────────────────────────────────────
+// Nessun apostrofo nei testi del confirm: finisce in un attributo onsubmit
+// delimitato da ', dove un apostrofo chiuderebbe la stringa e l'handler
+// diventerebbe un SyntaxError (era il bug del Ripristina in roster_editor).
+async function loadAbilityArchives(){
+  const el = document.getElementById('ab_archives');
+  el.innerHTML = '<span class="text-xs text-muted">Caricamento...</span>';
+  try {
+    const res = await fetch('/pokemon/abilita/archives');
+    const data = await res.json();
+    if(!data.length){
+      el.innerHTML = '<p class="text-xs text-muted mt-1">Nessun archivio salvato.</p>';
+      return;
+    }
+    el.innerHTML = data.map(function(a){
+      const etichetta = a.automatico
+        ? '<span style="font-size:.62rem;color:var(--primary);font-weight:700">copia automatica</span>'
+        : '<span style="font-size:.62rem;color:var(--text-faint)">' + a.filename + '</span>';
+      return '<div style="display:flex;align-items:center;justify-content:space-between;'
+        + 'padding:.4rem 0;border-bottom:1px solid var(--border);gap:.5rem;flex-wrap:wrap">'
+        + '<div>'
+        + '<span style="font-size:.78rem;font-weight:600">' + a.count + ' abilità</span>'
+        + '<span class="text-muted" style="font-size:.72rem"> &mdash; ' + a.modificato + '</span>'
+        + '<code style="display:block">' + etichetta + '</code>'
+        + '</div>'
+        + '<form method="POST" action="/pokemon/abilita/restore/' + encodeURIComponent(a.filename) + '"'
+        + ' onsubmit="return confirm(\'Ripristinare ' + a.count + ' abilita da questo archivio? Le abilita correnti verranno salvate come copia automatica.\')">'
+        + '<button type="submit" class="btn btn-secondary btn-sm" style="font-size:.7rem">Ripristina</button>'
+        + '</form></div>';
+    }).join('');
+  } catch(e) {
+    el.innerHTML = '<span style="color:#c33;font-size:.75rem">Errore caricamento archivi.</span>';
+  }
 }
 
 // ── JSON sync ────────────────────────────────────────────────

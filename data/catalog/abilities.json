@@ -1,0 +1,3084 @@
+{
+  "abilities": {
+    "Abillegame": {
+      "desc": "Aumenta la frequenza di mosse multicolpo.",
+      "category": "other",
+      "effect": {
+        "type": "none"
+      }
+    },
+    "Acceleratore": {
+      "desc": "La statistica Velocità aumenta gradualmente.",
+      "category": "other",
+      "effect": {
+        "type": "none"
+      }
+    },
+    "Accendilotta": {
+      "desc": "L’aspetto del Pokémon cambia in base alla modalità di lotta.",
+      "category": "other",
+      "effect": {
+        "type": "none"
+      }
+    },
+    "Acquaiuto": {
+      "desc": "Quando si è in difficoltà, potenzia le mosse di tipo Acqua.",
+      "category": "other",
+      "effect": {
+        "type": "overgrow",
+        "move_type": "Acqua"
+      }
+    },
+    "Acquascolo": {
+      "desc": "Neutralizza mosse di tipo Acqua per aumentare l’Attacco Speciale.",
+      "category": "other",
+      "effect": {
+        "type": "none"
+      }
+    },
+    "Adattabilità": {
+      "desc": "STAB aumentato da 1.5x a 2x.",
+      "category": "stab_boost",
+      "stab_multiplier": 2.0,
+      "effect": {
+        "type": "stab_multiplier",
+        "value": 2.0
+      }
+    },
+    "Affilama": {
+      "desc": "Powers up slicing moves.",
+      "category": "other",
+      "effect": {
+        "type": "none"
+      }
+    },
+    "Agilità Motoria": {
+      "desc": "La Speed non può essere ridotta.",
+      "category": "speed_boost",
+      "effect": {
+        "type": "none"
+      }
+    },
+    "Agiltecnica": {
+      "desc": "Aumenta la Velocità dopo aver usato o perso uno strumento.",
+      "category": "other",
+      "effect": {
+        "type": "none"
+      }
+    },
+    "Agitazione": {
+      "desc": "Il nemico viene intimidito e non può mangiare bacche.",
+      "category": "other",
+      "effect": {
+        "type": "none"
+      }
+    },
+    "Agonismo": {
+      "desc": "L’Attacco aumenta quando un nemico fa calare le statistiche.",
+      "category": "other",
+      "effect": {
+        "type": "none"
+      }
+    },
+    "Aiutinsetto": {
+      "desc": "Quando si è in difficoltà, potenzia le mosse di tipo Coleottero.",
+      "category": "other",
+      "effect": {
+        "type": "overgrow",
+        "move_type": "Coleottero"
+      }
+    },
+    "Aiutofuoco": {
+      "desc": "Quando si è in difficoltà, potenzia le mosse di tipo Fuoco.",
+      "category": "other",
+      "effect": {
+        "type": "overgrow",
+        "move_type": "Fuoco"
+      }
+    },
+    "Albergamemorie": {
+      "desc": "The Pokémon's heart fills with memories, causing the Mask to shine and one of the Pokémon's stats to be boosted.",
+      "category": "other",
+      "effect": {
+        "type": "none"
+      }
+    },
+    "Aliraffica": {
+      "desc": "Dà priorità alle mosse di tipo Volante.",
+      "category": "other",
+      "effect": {
+        "type": "none"
+      }
+    },
+    "Altalena": {
+      "desc": "Aumenta una statistica e ne riduce un’altra.",
+      "category": "other",
+      "effect": {
+        "type": "none"
+      }
+    },
+    "Alternacura": {
+      "desc": "Cura i problemi di stato quando il Pokémon viene sostituito.",
+      "category": "other",
+      "effect": {
+        "type": "none"
+      }
+    },
+    "Amicoscudo": {
+      "desc": "Riduce il danno subito dagli alleati.",
+      "category": "other",
+      "effect": {
+        "type": "none"
+      }
+    },
+    "Amorefiliale": {
+      "desc": "Il Pokémon e il suo piccolo attaccano insieme.",
+      "category": "other",
+      "effect": {
+        "type": "none"
+      }
+    },
+    "Amuleto Nefasto": {
+      "desc": "The power of the Pokémon's ruinous wooden tablets lowers the Attack stats of all Pokémon except itself.",
+      "category": "other",
+      "effect": {
+        "type": "none"
+      }
+    },
+    "Anima Errante": {
+      "desc": "Se il Pokémon subisce un attacco diretto, scambia la sua abilità con quella di chi lo ha colpito.",
+      "category": "other",
+      "effect": {
+        "type": "none"
+      }
+    },
+    "Annullabarriere": {
+      "desc": "Quando il Pokémon entra in campo, annulla l’effetto di Schermoluce, Riflesso e Velaurora sia per i nemici che per gli alleati.",
+      "category": "other",
+      "effect": {
+        "type": "none"
+      }
+    },
+    "Antagonismo": {
+      "desc": "Rende più forti contro nemici dello stesso sesso.",
+      "category": "other",
+      "effect": {
+        "type": "none"
+      }
+    },
+    "Antifuoco": {
+      "desc": "Indebolisce l’effetto di mosse di tipo Fuoco.",
+      "category": "other",
+      "effect": {
+        "type": "none"
+      }
+    },
+    "Antifurto": {
+      "desc": "Protegge il Pokémon dal furto di strumenti.",
+      "category": "other",
+      "effect": {
+        "type": "none"
+      }
+    },
+    "Antimeteo": {
+      "desc": "Neutralizza gli effetti delle condizioni atmosferiche.",
+      "category": "other",
+      "effect": {
+        "type": "none"
+      }
+    },
+    "Antiproiettile": {
+      "desc": "Protegge da alcune mosse a base di proiettili e bombe.",
+      "category": "other",
+      "effect": {
+        "type": "none"
+      }
+    },
+    "Antisuono": {
+      "desc": "Fornisce immunità alle mosse basate sul suono.",
+      "category": "other",
+      "effect": {
+        "type": "none"
+      }
+    },
+    "Aqua Boost": {
+      "desc": "Abilità: Aqua Boost.",
+      "category": "other",
+      "effect": {
+        "type": "none"
+      }
+    },
+    "Aromavelo": {
+      "desc": "Protegge sé e gli alleati da mosse che limitano la scelta di attacchi.",
+      "category": "other",
+      "effect": {
+        "type": "none"
+      }
+    },
+    "Arraffalesto": {
+      "desc": "Al contatto subito, ruba lo strumento di chi lo ha attaccato.",
+      "category": "other",
+      "effect": {
+        "type": "none"
+      }
+    },
+    "Arroganza": {
+      "desc": "Aumenta l’Attacco quando manda un nemico KO.",
+      "category": "other",
+      "effect": {
+        "type": "none"
+      }
+    },
+    "Assorbacqua": {
+      "desc": "Ridà PS se il Pokémon subisce una mossa di tipo Acqua.",
+      "category": "other",
+      "effect": {
+        "type": "none"
+      }
+    },
+    "Assorbiacqua": {
+      "desc": "Immunità alle mosse Acqua; se colpito ripristina i PS.",
+      "category": "type_immunity",
+      "immunity": [
+        "Acqua"
+      ],
+      "effect": {
+        "type": "absorb",
+        "move_type": "Acqua"
+      }
+    },
+    "Assorbifuoco": {
+      "desc": "Immunità alle mosse Fuoco; se colpito ripristina i PS.",
+      "category": "type_immunity",
+      "immunity": [
+        "Fuoco"
+      ],
+      "effect": {
+        "type": "absorb",
+        "move_type": "Fuoco"
+      }
+    },
+    "Assorbivolt": {
+      "desc": "Ridà PS se il Pokémon subisce una mossa di tipo Elettro.",
+      "category": "other",
+      "effect": {
+        "type": "none"
+      }
+    },
+    "Aurafolletto": {
+      "desc": "Potenzia le mosse di tipo Folletto di tutti i Pokémon.",
+      "category": "other",
+      "effect": {
+        "type": "none"
+      }
+    },
+    "Auratetra": {
+      "desc": "Potenzia le mosse di tipo Buio di tutti i Pokémon.",
+      "category": "other",
+      "effect": {
+        "type": "none"
+      }
+    },
+    "Banco": {
+      "desc": "Quando ha molti PS, il Pokémon forma un banco con i propri simili e si rafforza. Quando ne ha pochi, il banco si disperde.",
+      "category": "other",
+      "effect": {
+        "type": "none"
+      }
+    },
+    "Batteria": {
+      "desc": "Aumenta la potenza delle mosse speciali degli alleati.",
+      "category": "other",
+      "effect": {
+        "type": "none"
+      }
+    },
+    "Bentostato": {
+      "desc": "The Pokémon takes no damage when hit by Fire-type moves. Instead, its Defense stat is sharply boosted.",
+      "category": "other",
+      "effect": {
+        "type": "none"
+      }
+    },
+    "Black Hole": {
+      "desc": "Abilità: Black Hole.",
+      "category": "other",
+      "effect": {
+        "type": "none"
+      }
+    },
+    "Blindospecchio": {
+      "desc": "Rimanda al mittente le diminuzioni alle statistiche subite.",
+      "category": "other",
+      "effect": {
+        "type": "none"
+      }
+    },
+    "Boccolidoro": {
+      "desc": "Se il Pokémon viene colpito da un attacco diretto, la Velocità di chi l’ha colpito diminuisce.",
+      "category": "other",
+      "effect": {
+        "type": "none"
+      }
+    },
+    "Bodyguard": {
+      "desc": "Abilità: Bodyguard.",
+      "category": "other",
+      "effect": {
+        "type": "none"
+      }
+    },
+    "Bolladacqua": {
+      "desc": "Riduce la potenza delle mosse di tipo Fuoco subite e rende immuni alle scottature.",
+      "category": "other",
+      "effect": {
+        "type": "none"
+      }
+    },
+    "Bonanza": {
+      "desc": "Abilità: Bonanza.",
+      "category": "other",
+      "effect": {
+        "type": "none"
+      }
+    },
+    "Bruciaimpeto": {
+      "desc": "Aumenta l’Attacco Speciale se il Pokémon è scottato.",
+      "category": "other",
+      "effect": {
+        "type": "none"
+      }
+    },
+    "Burla": {
+      "desc": "Dà priorità a mosse che alterano lo stato.",
+      "category": "other",
+      "effect": {
+        "type": "none"
+      }
+    },
+    "Calming": {
+      "desc": "Abilità: Calming.",
+      "category": "other",
+      "effect": {
+        "type": "none"
+      }
+    },
+    "Cambiacolore": {
+      "desc": "Il Pokémon acquisisce il tipo della mossa subita.",
+      "category": "other",
+      "effect": {
+        "type": "none"
+      }
+    },
+    "Cane da Guardia": {
+      "desc": "Boosts the Pokémon’s Attack stat if intimidated. Moves and items that would force the Pokémon to switch out also fail to work.",
+      "category": "other",
+      "effect": {
+        "type": "none"
+      }
+    },
+    "Carica Quark": {
+      "desc": "Boosts the Pokémon's most proficient stat on Electric Terrain or if the Pokémon is holding Booster Energy.",
+      "category": "other",
+      "effect": {
+        "type": "none"
+      }
+    },
+    "Cartavetro": {
+      "desc": "Il nemico che manda a segno una mossa fisica viene danneggiato.",
+      "category": "other",
+      "effect": {
+        "type": "none"
+      }
+    },
+    "Catena Tossica": {
+      "desc": "The power of the Pokémon's toxic chain may badly poison any target the Pokémon hits with a move",
+      "category": "other",
+      "effect": {
+        "type": "none"
+      }
+    },
+    "Cecchino": {
+      "desc": "Aumenta i danni inflitti dai brutti colpi.",
+      "category": "other",
+      "effect": {
+        "type": "none"
+      }
+    },
+    "Celebrate": {
+      "desc": "Abilità: Celebrate.",
+      "category": "other",
+      "effect": {
+        "type": "none"
+      }
+    },
+    "Cerebroforza": {
+      "desc": "Potenzia le mosse superefficaci.",
+      "category": "other",
+      "effect": {
+        "type": "none"
+      }
+    },
+    "Climber": {
+      "desc": "Abilità: Climber.",
+      "category": "other",
+      "effect": {
+        "type": "none"
+      }
+    },
+    "Clorofilla": {
+      "desc": "La Speed è raddoppiata sotto il Sole.",
+      "category": "speed_boost",
+      "speed_multiplier": {
+        "weather": [
+          "sun",
+          "harshsun"
+        ],
+        "value": 2.0
+      },
+      "effect": {
+        "type": "speed_weather",
+        "weather": "sun",
+        "value": 2.0
+      }
+    },
+    "Codarmatura": {
+      "desc": "The mysterious tail covering the Pokémon's head makes opponents unable to use priority moves against the Pokémon or its allies.",
+      "category": "other",
+      "effect": {
+        "type": "none"
+      }
+    },
+    "Codasurf": {
+      "desc": "In presenza di un Campo Elettrico, la Velocità raddoppia.",
+      "category": "other",
+      "effect": {
+        "type": "none"
+      }
+    },
+    "Coglibacche": {
+      "desc": "Può ricreare una bacca utilizzata.",
+      "category": "other",
+      "effect": {
+        "type": "none"
+      }
+    },
+    "Colpo Secco": {
+      "desc": "Le mosse Fuoco hanno potenza aumentata del 50% sotto il Sole.",
+      "category": "weather_boost",
+      "effect": {
+        "type": "type_boost_weather",
+        "move_type": "Fuoco",
+        "weather": "sun",
+        "value": 1.5
+      }
+    },
+    "Colpolesto": {
+      "desc": "A volte permette al Pokémon di agire per primo.",
+      "category": "other",
+      "effect": {
+        "type": "none"
+      }
+    },
+    "Combattività": {
+      "desc": "Se scottato, l'Attacco fisico non viene dimezzato e aumenta del 50%.",
+      "category": "status_boost",
+      "guts": true,
+      "effect": {
+        "type": "guts"
+      }
+    },
+    "Compressione": {
+      "desc": "Tutte le mosse hanno potenza aumentata del 30%.",
+      "category": "power_boost",
+      "bp_multiplier": 1.3,
+      "effect": {
+        "type": "tinted_lens"
+      }
+    },
+    "Confidence": {
+      "desc": "Abilità: Confidence.",
+      "category": "other",
+      "effect": {
+        "type": "none"
+      }
+    },
+    "Conqueror": {
+      "desc": "Abilità: Conqueror.",
+      "category": "other",
+      "effect": {
+        "type": "none"
+      }
+    },
+    "Convertivolt": {
+      "desc": "The Pokémon becomes charged when it takes damage, boosting the power of the next Electric-type move the Pokémon uses.",
+      "category": "other",
+      "effect": {
+        "type": "none"
+      }
+    },
+    "Copricapo": {
+      "desc": "Protegge il Pokémon da polvere, sabbia e grandine.",
+      "category": "other",
+      "effect": {
+        "type": "none"
+      }
+    },
+    "Copripioggia": {
+      "desc": "Il Pokémon recupera PS quando piove.",
+      "category": "other",
+      "effect": {
+        "type": "none"
+      }
+    },
+    "Coprotagonismo": {
+      "desc": "When the Pokémon enters a battle, it copies an ally's stat changes.",
+      "category": "other",
+      "effect": {
+        "type": "none"
+      }
+    },
+    "Corpo Aureo": {
+      "desc": "A body of pure, solid gold gives the Pokémon full immunity to other Pokémon's status moves.",
+      "category": "other",
+      "effect": {
+        "type": "none"
+      }
+    },
+    "Corpochiaro": {
+      "desc": "Le statistiche del Pokémon non possono essere ridotte.",
+      "category": "other",
+      "effect": {
+        "type": "none"
+      }
+    },
+    "Corpodifuoco": {
+      "desc": "Al contatto subito, chi sferra l’attacco può venire scottato.",
+      "category": "other",
+      "effect": {
+        "type": "none"
+      }
+    },
+    "Corpofunesto": {
+      "desc": "A volte inibisce l’ultima mossa usata dal nemico.",
+      "category": "other",
+      "effect": {
+        "type": "none"
+      }
+    },
+    "Corpogelo": {
+      "desc": "Il Pokémon recupera PS quando grandina.",
+      "category": "other",
+      "effect": {
+        "type": "none"
+      }
+    },
+    "Corposgargiante": {
+      "desc": "Il Pokémon sbalordisce il nemico e non gli permette di attaccarlo con mosse che hanno priorità alta.",
+      "category": "other",
+      "effect": {
+        "type": "none"
+      }
+    },
+    "Corrosione": {
+      "desc": "Il Pokémon è in grado di avvelenare il bersaglio anche se questo è di tipo Acciaio o Veleno.",
+      "category": "other",
+      "effect": {
+        "type": "none"
+      }
+    },
+    "Cuordeciso": {
+      "desc": "Aumenta la Velocità se il Pokémon tentenna.",
+      "category": "other",
+      "effect": {
+        "type": "none"
+      }
+    },
+    "Cuoreanima": {
+      "desc": "Aumenta l’Attacco Speciale ogni volta che un Pokémon va KO.",
+      "category": "other",
+      "effect": {
+        "type": "none"
+      }
+    },
+    "Curacuore": {
+      "desc": "A volte cura i problemi di stato degli alleati.",
+      "category": "other",
+      "effect": {
+        "type": "none"
+      }
+    },
+    "Daze": {
+      "desc": "Abilità: Daze.",
+      "category": "other",
+      "effect": {
+        "type": "none"
+      }
+    },
+    "Decoy": {
+      "desc": "Abilità: Decoy.",
+      "category": "other",
+      "effect": {
+        "type": "none"
+      }
+    },
+    "Deep Sleep": {
+      "desc": "Abilità: Deep Sleep.",
+      "category": "other",
+      "effect": {
+        "type": "none"
+      }
+    },
+    "Dentistretti": {
+      "desc": "Aumenta l’Attacco in caso di problemi di stato.",
+      "category": "other",
+      "effect": {
+        "type": "none"
+      }
+    },
+    "Disgust": {
+      "desc": "Abilità: Disgust.",
+      "category": "other",
+      "effect": {
+        "type": "none"
+      }
+    },
+    "Disinvoltura": {
+      "desc": "Le statistiche possono cambiare senza preavviso.",
+      "category": "other",
+      "effect": {
+        "type": "none"
+      }
+    },
+    "Distacco": {
+      "desc": "Il Pokémon è in grado di usare tutte le sue mosse senza entrare in contatto diretto con il bersaglio.",
+      "category": "other",
+      "effect": {
+        "type": "none"
+      }
+    },
+    "Dodge": {
+      "desc": "Abilità: Dodge.",
+      "category": "other",
+      "effect": {
+        "type": "none"
+      }
+    },
+    "Dolcevelo": {
+      "desc": "Impedisce a sé e agli alleati di addormentarsi.",
+      "category": "other",
+      "effect": {
+        "type": "none"
+      }
+    },
+    "Download": {
+      "desc": "Regola la potenza in base al nemico.",
+      "category": "other",
+      "effect": {
+        "type": "none"
+      }
+    },
+    "Dragomascelle": {
+      "desc": "Potenzia le mosse di tipo Drago.",
+      "category": "other",
+      "effect": {
+        "type": "none"
+      }
+    },
+    "Dragonize": {
+      "desc": "The Pokémon's Normal-type moves become Dragon-type moves and their power is boosted by 20%.",
+      "category": "other",
+      "effect": {
+        "type": "none"
+      }
+    },
+    "Elettrogenesi": {
+      "desc": "Quando il Pokémon entra in campo, lo trasforma in un Campo Elettrico.",
+      "category": "other",
+      "effect": {
+        "type": "none"
+      }
+    },
+    "Elettrorapid": {
+      "desc": "Le mosse di tipo Elettro subite fanno aumentare la Velocità.",
+      "category": "other",
+      "effect": {
+        "type": "none"
+      }
+    },
+    "Elicopinna": {
+      "desc": "Permette di ignorare gli effetti di mosse e abilità che attirano altre mosse.",
+      "category": "other",
+      "effect": {
+        "type": "none"
+      }
+    },
+    "Energia Eolica": {
+      "desc": "The Pokémon becomes charged when it is hit by a wind move, boosting the power of the next Electric-type move the Pokémon uses.",
+      "category": "other",
+      "effect": {
+        "type": "none"
+      }
+    },
+    "Erbaiuto": {
+      "desc": "Quando si è in difficoltà, potenzia le mosse di tipo Erba.",
+      "category": "other",
+      "effect": {
+        "type": "overgrow",
+        "move_type": "Erba"
+      }
+    },
+    "Erbogenesi": {
+      "desc": "Quando il Pokémon entra in campo, lo trasforma in un Campo Erboso.",
+      "category": "other",
+      "effect": {
+        "type": "none"
+      }
+    },
+    "Erboristeria": {
+      "desc": "Potenzia le mosse Erba quando i PS sono bassi (<1/3).",
+      "category": "stat_boost_low_hp",
+      "effect": {
+        "type": "overgrow",
+        "move_type": "Erba"
+      }
+    },
+    "Espellinterno": {
+      "desc": "Se il Pokémon viene mandato KO da un attacco, infligge a chi lo ha sferrato tanti danni quanti erano i suoi PS prima di ricevere il colpo.",
+      "category": "other",
+      "effect": {
+        "type": "none"
+      }
+    },
+    "Explode": {
+      "desc": "Abilità: Explode.",
+      "category": "other",
+      "effect": {
+        "type": "none"
+      }
+    },
+    "Fantasmanto": {
+      "desc": "Il panno che ricopre il Pokémon lo protegge da un singolo attacco.",
+      "category": "other",
+      "effect": {
+        "type": "none"
+      }
+    },
+    "Ferromascella": {
+      "desc": "La robusta mascella del Pokémon permette morsi molto potenti.",
+      "category": "other",
+      "effect": {
+        "type": "none"
+      }
+    },
+    "Ferropugno": {
+      "desc": "Potenzia le mosse che utilizzano pugni.",
+      "category": "other",
+      "effect": {
+        "type": "none"
+      }
+    },
+    "Filtraggio": {
+      "desc": "Danni super efficaci ridotti del 25%.",
+      "category": "damage_reduction",
+      "super_effective_reduction": 0.75,
+      "effect": {
+        "type": "filter",
+        "value": 0.75
+      }
+    },
+    "Filtro": {
+      "desc": "Riduce la potenza delle mosse superefficaci.",
+      "category": "other",
+      "effect": {
+        "type": "filter",
+        "value": 0.75
+      }
+    },
+    "Fiorvelo": {
+      "desc": "Evita il calo delle statistiche degli alleati di tipo Erba.",
+      "category": "other",
+      "effect": {
+        "type": "none"
+      }
+    },
+    "Flame Boost": {
+      "desc": "Abilità: Flame Boost.",
+      "category": "other",
+      "effect": {
+        "type": "none"
+      }
+    },
+    "Flusso Delta": {
+      "desc": "Crea un clima che annulla i punti deboli del tipo Volante.",
+      "category": "other",
+      "effect": {
+        "type": "none"
+      }
+    },
+    "Fogliamanto": {
+      "desc": "Evita problemi di stato quando c’è il sole.",
+      "category": "other",
+      "effect": {
+        "type": "none"
+      }
+    },
+    "Foltopelo": {
+      "desc": "Dimezza il danno degli attacchi fisici subiti.",
+      "category": "other",
+      "effect": {
+        "type": "none"
+      }
+    },
+    "Fonte Energetica": {
+      "desc": "Potenzia le mosse di chi si trova nelle immediate vicinanze.",
+      "category": "other",
+      "effect": {
+        "type": "none"
+      }
+    },
+    "Fortune": {
+      "desc": "Abilità: Fortune.",
+      "category": "other",
+      "effect": {
+        "type": "none"
+      }
+    },
+    "Forza Bruta": {
+      "desc": "Mosse con effetto secondario hanno potenza aumentata del 30%.",
+      "category": "power_boost",
+      "sheer_force": true,
+      "effect": {
+        "type": "sheer_force"
+      }
+    },
+    "Forza Chimica": {
+      "desc": "Il Pokémon trasforma la propria abilità in quella di un alleato andato KO.",
+      "category": "other",
+      "effect": {
+        "type": "none"
+      }
+    },
+    "Forza Interiore": {
+      "desc": "Evita che il Pokémon tentenni.",
+      "category": "other",
+      "effect": {
+        "type": "none"
+      }
+    },
+    "Forzabruta": {
+      "desc": "Aumenta i danni annullando altri effetti delle mosse.",
+      "category": "other",
+      "effect": {
+        "type": "none"
+      }
+    },
+    "Forzapura": {
+      "desc": "Migliora la statistica Attacco del Pokémon.",
+      "category": "other",
+      "effect": {
+        "type": "none"
+      }
+    },
+    "Frangiaura": {
+      "desc": "Inverte gli effetti di tutte le aure.",
+      "category": "other",
+      "effect": {
+        "type": "none"
+      }
+    },
+    "Frighten": {
+      "desc": "Abilità: Frighten.",
+      "category": "other",
+      "effect": {
+        "type": "none"
+      }
+    },
+    "Frostbite": {
+      "desc": "Abilità: Frostbite.",
+      "category": "other",
+      "effect": {
+        "type": "none"
+      }
+    },
+    "Fuga": {
+      "desc": "La Speed è raddoppiata durante la Tempesta di Sabbia.",
+      "category": "speed_boost",
+      "speed_multiplier": {
+        "weather": [
+          "sand"
+        ],
+        "value": 2.0
+      },
+      "effect": {
+        "type": "speed_weather",
+        "weather": "sand",
+        "value": 2.0
+      }
+    },
+    "Fugafacile": {
+      "desc": "Garantisce la fuga dai Pokémon selvatici.",
+      "category": "other",
+      "effect": {
+        "type": "none"
+      }
+    },
+    "Fuggifuggi": {
+      "desc": "Se i PS scendono a metà o meno, il Pokémon si fa prendere dalla paura e abbandona la lotta in tutta fretta.",
+      "category": "other",
+      "effect": {
+        "type": "none"
+      }
+    },
+    "Fumochiaro": {
+      "desc": "Le statistiche del Pokémon non possono essere ridotte.",
+      "category": "other",
+      "effect": {
+        "type": "none"
+      }
+    },
+    "Fuocardore": {
+      "desc": "Potenzia le proprie mosse Fuoco se se ne subisce una.",
+      "category": "other",
+      "effect": {
+        "type": "none"
+      }
+    },
+    "Furore": {
+      "desc": "Se i PS scendono a metà o meno a causa di un attacco, l’Attacco Speciale aumenta.",
+      "category": "other",
+      "effect": {
+        "type": "none"
+      }
+    },
+    "Gas Reagente": {
+      "desc": "Se in campo c’è un Pokémon con Gas Reagente, gli effetti delle abilità di tutti gli altri Pokémon vengono annullati o non si attivano.",
+      "category": "other",
+      "effect": {
+        "type": "none"
+      }
+    },
+    "Gelofaccia": {
+      "desc": "Grazie al ghiaccio sulla testa, il Pokémon può incassare i danni causati da mosse fisiche, ma cambia forma. Torna al suo stato originale quando grandina.",
+      "category": "other",
+      "effect": {
+        "type": "none"
+      }
+    },
+    "Geloscaglie": {
+      "desc": "Scaglie di ghiaccio proteggono il Pokémon dalle mosse speciali, dimezzandone i danni subiti.",
+      "category": "other",
+      "effect": {
+        "type": "none"
+      }
+    },
+    "Generale Supremo": {
+      "desc": "When the Pokémon enters a battle, its Attack and Sp. Atk stats are slightly boosted for each of the allies in its party that have already been defeated.",
+      "category": "other",
+      "effect": {
+        "type": "none"
+      }
+    },
+    "Giustizia": {
+      "desc": "L’Attacco aumenta se si è colpiti da una mossa di tipo Buio.",
+      "category": "other",
+      "effect": {
+        "type": "none"
+      }
+    },
+    "Grancollera": {
+      "desc": "Massimizza l’Attacco se si subisce un brutto colpo.",
+      "category": "other",
+      "effect": {
+        "type": "none"
+      }
+    },
+    "Grass Cloak": {
+      "desc": "Abilità: Grass Cloak.",
+      "category": "other",
+      "effect": {
+        "type": "none"
+      }
+    },
+    "Grassospesso": {
+      "desc": "Aumenta la resistenza alle mosse di tipo Fuoco e Ghiaccio.",
+      "category": "other",
+      "effect": {
+        "type": "none"
+      }
+    },
+    "Guancegonfie": {
+      "desc": "Fa recuperare PS quando il Pokémon mangia una bacca.",
+      "category": "other",
+      "effect": {
+        "type": "none"
+      }
+    },
+    "Gulp": {
+      "desc": "Abilità: Gulp.",
+      "category": "other",
+      "effect": {
+        "type": "none"
+      }
+    },
+    "Guscioscudo": {
+      "desc": "Evita che il Pokémon subisca brutti colpi.",
+      "category": "other",
+      "effect": {
+        "type": "none"
+      }
+    },
+    "Herbivore": {
+      "desc": "Abilità: Herbivore.",
+      "category": "other",
+      "effect": {
+        "type": "none"
+      }
+    },
+    "Hero": {
+      "desc": "Abilità: Hero.",
+      "category": "other",
+      "effect": {
+        "type": "none"
+      }
+    },
+    "High-rise": {
+      "desc": "Abilità: High-rise.",
+      "category": "other",
+      "effect": {
+        "type": "none"
+      }
+    },
+    "Hot Blooded": {
+      "desc": "Abilità: Hot Blooded.",
+      "category": "other",
+      "effect": {
+        "type": "none"
+      }
+    },
+    "Idratazione": {
+      "desc": "Cura i problemi di stato se piove.",
+      "category": "other",
+      "effect": {
+        "type": "none"
+      }
+    },
+    "Idrorinforzo": {
+      "desc": "Se il Pokémon subisce una mossa di tipo Acqua, la sua Difesa aumenta di molto.",
+      "category": "other",
+      "effect": {
+        "type": "none"
+      }
+    },
+    "Idrovelo": {
+      "desc": "Evita che il Pokémon resti scottato.",
+      "category": "other",
+      "effect": {
+        "type": "none"
+      }
+    },
+    "Idrovoce": {
+      "desc": "Le mosse basate sul suono del Pokémon con questa abilità diventano di tipo Acqua.",
+      "category": "other",
+      "effect": {
+        "type": "none"
+      }
+    },
+    "Illusione": {
+      "desc": "Entra con le sembianze dell’ultimo Pokémon in squadra.",
+      "category": "other",
+      "effect": {
+        "type": "none"
+      }
+    },
+    "Immunità": {
+      "desc": "Impedisce al Pokémon di venire avvelenato.",
+      "category": "other",
+      "effect": {
+        "type": "none"
+      }
+    },
+    "Impaccio": {
+      "desc": "Il Pokémon non può usare lo strumento che ha.",
+      "category": "other",
+      "effect": {
+        "type": "none"
+      }
+    },
+    "Imprudenza": {
+      "desc": "Ignora le modifiche alle statistiche del nemico.",
+      "category": "other",
+      "effect": {
+        "type": "none"
+      }
+    },
+    "Incantevole": {
+      "desc": "Al contatto subito, chi sferra l’attacco può infatuarsi.",
+      "category": "other",
+      "effect": {
+        "type": "none"
+      }
+    },
+    "Indagine": {
+      "desc": "Il Pokémon scopre che strumento ha il nemico.",
+      "category": "other",
+      "effect": {
+        "type": "none"
+      }
+    },
+    "Indifferenza": {
+      "desc": "Protegge il Pokémon da infatuazioni e provocazioni.",
+      "category": "other",
+      "effect": {
+        "type": "none"
+      }
+    },
+    "Inghiottimissile": {
+      "desc": "Quando usa Surf o Sub, il Pokémon cattura una preda. Se subisce dei danni, la sputa fuori per attaccare.",
+      "category": "other",
+      "effect": {
+        "type": "none"
+      }
+    },
+    "Insettocchi": {
+      "desc": "Aumenta la precisione del Pokémon.",
+      "category": "other",
+      "effect": {
+        "type": "none"
+      }
+    },
+    "Insonnia": {
+      "desc": "Impedisce al Pokémon di addormentarsi.",
+      "category": "other",
+      "effect": {
+        "type": "none"
+      }
+    },
+    "Instinct": {
+      "desc": "Abilità: Instinct.",
+      "category": "other",
+      "effect": {
+        "type": "none"
+      }
+    },
+    "Interference": {
+      "desc": "Abilità: Interference.",
+      "category": "other",
+      "effect": {
+        "type": "none"
+      }
+    },
+    "Intrapasso": {
+      "desc": "Attacca evitando le barriere del nemico.",
+      "category": "other",
+      "effect": {
+        "type": "none"
+      }
+    },
+    "Intricopiedi": {
+      "desc": "Aumenta l’elusione se il Pokémon è confuso.",
+      "category": "other",
+      "effect": {
+        "type": "none"
+      }
+    },
+    "Inversione": {
+      "desc": "Le modifiche alle statistiche hanno effetto inverso.",
+      "category": "other",
+      "effect": {
+        "type": "none"
+      }
+    },
+    "Ipertaglio": {
+      "desc": "Evita che la statistica Attacco venga ridotta.",
+      "category": "other",
+      "effect": {
+        "type": "none"
+      }
+    },
+    "Iraguscio": {
+      "desc": "When an attack causes its HP to drop to half or less, the Pokémon gets angry. This lowers its Defense and Sp. Def stats but boosts its Attack, Sp. Atk, and Speed stats.",
+      "category": "other",
+      "effect": {
+        "type": "none"
+      }
+    },
+    "Jagged Edge": {
+      "desc": "Abilità: Jagged Edge.",
+      "category": "other",
+      "effect": {
+        "type": "none"
+      }
+    },
+    "Lanugine": {
+      "desc": "Se il Pokémon subisce un attacco, sparge della lanugine che diminuisce la Velocità di tutti i Pokémon in campo tranne la sua.",
+      "category": "damage_reduction",
+      "contact_reduction": 0.5,
+      "fire_weakness": 2.0,
+      "effect": {
+        "type": "fluffy"
+      }
+    },
+    "Last Bastion": {
+      "desc": "Abilità: Last Bastion.",
+      "category": "other",
+      "effect": {
+        "type": "none"
+      }
+    },
+    "Leggiadro": {
+      "desc": "Gli effetti secondari delle mosse sono più probabili.",
+      "category": "other",
+      "effect": {
+        "type": "none"
+      }
+    },
+    "Lentifumé": {
+      "desc": "Potenzia le mosse non molto efficaci.",
+      "category": "other",
+      "effect": {
+        "type": "none"
+      }
+    },
+    "Lentocres": {
+      "desc": "Placeholder — nessun effetto sul danno.",
+      "category": "other",
+      "effect": {
+        "type": "none"
+      }
+    },
+    "Lentoinizio": {
+      "desc": "Dimezza per un po’ l’Attacco e la Velocità.",
+      "category": "other",
+      "effect": {
+        "type": "none"
+      }
+    },
+    "Levitazione": {
+      "desc": "Immunità alle mosse Terra.",
+      "category": "type_immunity",
+      "immunity": [
+        "Terra"
+      ],
+      "effect": {
+        "type": "immunity",
+        "move_type": "Terra"
+      }
+    },
+    "Libero": {
+      "desc": "Cambia il tipo del Pokémon in quello della mossa che usa.",
+      "category": "other",
+      "effect": {
+        "type": "none"
+      }
+    },
+    "Life Force": {
+      "desc": "Abilità: Life Force.",
+      "category": "other",
+      "effect": {
+        "type": "none"
+      }
+    },
+    "Lottascudo": {
+      "desc": "Evita che il Pokémon subisca brutti colpi.",
+      "category": "other",
+      "effect": {
+        "type": "none"
+      }
+    },
+    "Lullaby": {
+      "desc": "Abilità: Lullaby.",
+      "category": "other",
+      "effect": {
+        "type": "none"
+      }
+    },
+    "Lunchbox": {
+      "desc": "Abilità: Lunchbox.",
+      "category": "other",
+      "effect": {
+        "type": "none"
+      }
+    },
+    "Macroforza": {
+      "desc": "Migliora la statistica Attacco del Pokémon.",
+      "category": "other",
+      "effect": {
+        "type": "none"
+      }
+    },
+    "Magicscudo": {
+      "desc": "Il Pokémon subisce danni solo da attacchi diretti.",
+      "category": "other",
+      "effect": {
+        "type": "none"
+      }
+    },
+    "Magidifesa": {
+      "desc": "Rende vulnerabili solo alle mosse superefficaci.",
+      "category": "other",
+      "effect": {
+        "type": "wonder_guard"
+      }
+    },
+    "Magispecchio": {
+      "desc": "Riflette al mittente le mosse di stato.",
+      "category": "other",
+      "effect": {
+        "type": "none"
+      }
+    },
+    "Magmascudo": {
+      "desc": "Evita che il Pokémon venga congelato.",
+      "category": "other",
+      "effect": {
+        "type": "none"
+      }
+    },
+    "Magnetismo": {
+      "desc": "Impedisce la fuga ai Pokémon di tipo Acciaio.",
+      "category": "other",
+      "effect": {
+        "type": "none"
+      }
+    },
+    "Malia Tossica": {
+      "desc": "Pokémon poisoned by Pecharunt's moves will also become confused.",
+      "category": "other",
+      "effect": {
+        "type": "none"
+      }
+    },
+    "Mangiaerba": {
+      "desc": "Neutralizza le mosse di tipo Erba subite per aumentare l’Attacco.",
+      "category": "other",
+      "effect": {
+        "type": "none"
+      }
+    },
+    "Mangiaterra": {
+      "desc": "If hit by a Ground-type move, the Pokémon has its HP restored instead of taking damage.",
+      "category": "other",
+      "effect": {
+        "type": "none"
+      }
+    },
+    "Mantelneve": {
+      "desc": "Aumenta l’elusione quando grandina.",
+      "category": "other",
+      "effect": {
+        "type": "none"
+      }
+    },
+    "Manto Neve": {
+      "desc": "La Difesa è aumentata del 50% durante la Neve.",
+      "category": "weather_boost",
+      "effect": {
+        "type": "weather_def_boost",
+        "weather": "snow",
+        "value": 1.5
+      }
+    },
+    "Manto Slaccio": {
+      "desc": "La Speed è raddoppiata durante la Neve.",
+      "category": "speed_boost",
+      "speed_multiplier": {
+        "weather": [
+          "snow"
+        ],
+        "value": 2.0
+      },
+      "effect": {
+        "type": "speed_weather",
+        "weather": "snow",
+        "value": 2.0
+      }
+    },
+    "Mantossina": {
+      "desc": "Scatters poison spikes at the feet of the opposing team when the Pokémon takes damage from physical moves.",
+      "category": "other",
+      "effect": {
+        "type": "none"
+      }
+    },
+    "Mare Primordiale": {
+      "desc": "Crea un clima che rende inefficaci   gli attacchi di tipo Fuoco.",
+      "category": "other",
+      "effect": {
+        "type": "none"
+      }
+    },
+    "Maturazione": {
+      "desc": "Fa maturare le bacche raddoppiandone gli effetti.",
+      "category": "other",
+      "effect": {
+        "type": "none"
+      }
+    },
+    "Medic": {
+      "desc": "Abilità: Medic.",
+      "category": "other",
+      "effect": {
+        "type": "none"
+      }
+    },
+    "Mega Arrampicata": {
+      "desc": "Placeholder — nessun effetto sul danno.",
+      "category": "other",
+      "effect": {
+        "type": "none"
+      }
+    },
+    "Mega Sol": {
+      "desc": "Agisce come se ci fosse il Sole forte indipendentemente dal meteo reale.",
+      "category": "weather_override",
+      "weather_override": "harshsun",
+      "atk_boost": {
+        "type": "Fuoco",
+        "multiplier": 1.5
+      },
+      "atk_penalty": {
+        "type": "Acqua",
+        "multiplier": 0.5
+      },
+      "weather_ball_type": "Fuoco",
+      "effect": {
+        "type": "weather_override",
+        "weather": "harshsun"
+      }
+    },
+    "Megalancio": {
+      "desc": "Potenzia le mosse “pulsar” e altre come Ondasana.",
+      "category": "other",
+      "effect": {
+        "type": "none"
+      }
+    },
+    "Melee": {
+      "desc": "Abilità: Melee.",
+      "category": "other",
+      "effect": {
+        "type": "none"
+      }
+    },
+    "Melma": {
+      "desc": "Danneggia i Pokémon che usano mosse ruba-PS.",
+      "category": "other",
+      "effect": {
+        "type": "none"
+      }
+    },
+    "Meno": {
+      "desc": "Aumenta l’Attacco Speciale se ci sono Pokémon con Meno o Più.",
+      "category": "other",
+      "effect": {
+        "type": "none"
+      }
+    },
+    "Mente Locale": {
+      "desc": "Impedisce al Pokémon di venire confuso.",
+      "category": "other",
+      "effect": {
+        "type": "none"
+      }
+    },
+    "Metalleggero": {
+      "desc": "Dimezza il peso del Pokémon.",
+      "category": "other",
+      "effect": {
+        "type": "none"
+      }
+    },
+    "Metalpesante": {
+      "desc": "Raddoppia il peso del Pokémon.",
+      "category": "other",
+      "effect": {
+        "type": "none"
+      }
+    },
+    "Metalprotezione": {
+      "desc": "Rende immuni alla diminuzione delle statistiche causata da abilità o mosse di altri Pokémon.",
+      "category": "other",
+      "effect": {
+        "type": "none"
+      }
+    },
+    "Micoforza": {
+      "desc": "The Pokémon will always act more slowly when using status moves, but these moves will be unimpeded by the Ability of the target.",
+      "category": "other",
+      "effect": {
+        "type": "none"
+      }
+    },
+    "Mielincetta": {
+      "desc": "Il Pokémon può raccogliere Miele.",
+      "category": "other",
+      "effect": {
+        "type": "none"
+      }
+    },
+    "Mimetismo": {
+      "desc": "Il tipo del Pokémon cambia a seconda dello stato del campo.",
+      "category": "other",
+      "effect": {
+        "type": "none"
+      }
+    },
+    "Monile Nefasto": {
+      "desc": "The power of the Pokémon's ruinous beads lowers the Sp. Def stats of all Pokémon except itself.",
+      "category": "other",
+      "effect": {
+        "type": "none"
+      }
+    },
+    "Mood Maker": {
+      "desc": "Abilità: Mood Maker.",
+      "category": "other",
+      "effect": {
+        "type": "none"
+      }
+    },
+    "Morbidone": {
+      "desc": "Dimezza il danno causato dagli attacchi diretti di un nemico, ma raddoppia quello subito dalle mosse di tipo Fuoco.",
+      "category": "other",
+      "effect": {
+        "type": "none"
+      }
+    },
+    "Morfosintonia": {
+      "desc": "Se il Pokémon manda KO un nemico, il legame con l’Allenatore si rafforza, attivando la trasformazione in Greninja Forma Ash. Acqualame si potenzia.",
+      "category": "other",
+      "effect": {
+        "type": "none"
+      }
+    },
+    "Motore Adronico": {
+      "desc": "Turns the ground into Electric Terrain when the Pokémon enters a battle. The futuristic engine within the Pokémon also boosts its Sp. Atk stat on Electric Terrain.",
+      "category": "other",
+      "effect": {
+        "type": "none"
+      }
+    },
+    "Mountaineer": {
+      "desc": "Abilità: Mountaineer.",
+      "category": "other",
+      "effect": {
+        "type": "none"
+      }
+    },
+    "Multiscaglia": {
+      "desc": "Danni ricevuti dimezzati se a PS pieni.",
+      "category": "damage_reduction",
+      "multiscale": true,
+      "effect": {
+        "type": "multiscale"
+      }
+    },
+    "Multisquame": {
+      "desc": "Riduce il danno subito se i PS sono al massimo.",
+      "category": "other",
+      "effect": {
+        "type": "none"
+      }
+    },
+    "Multitipo": {
+      "desc": "Cambia il tipo del Pokémon a seconda della lastra che ha.",
+      "category": "other",
+      "effect": {
+        "type": "none"
+      }
+    },
+    "Mummia": {
+      "desc": "L’abilità del nemico cambia in Mummia dopo il contatto.",
+      "category": "other",
+      "effect": {
+        "type": "none"
+      }
+    },
+    "Muta": {
+      "desc": "Può curare i problemi di stato del Pokémon.",
+      "category": "other",
+      "effect": {
+        "type": "none"
+      }
+    },
+    "Mutatipo": {
+      "desc": "Cambia il tipo del Pokémon in quello della mossa usata.",
+      "category": "other",
+      "effect": {
+        "type": "none"
+      }
+    },
+    "Nebbiogenesi": {
+      "desc": "Quando il Pokémon entra in campo, lo trasforma in un Campo Nebbioso.",
+      "category": "other",
+      "effect": {
+        "type": "none"
+      }
+    },
+    "Nervisaldi": {
+      "desc": "I Pokémon di tipo Spettro sono colpiti da mosse Normale e Lotta.",
+      "category": "other",
+      "effect": {
+        "type": "none"
+      }
+    },
+    "Nervosismo": {
+      "desc": "L'Attacco Speciale è aumentato del 50%.",
+      "category": "stat_modifier",
+      "atk_stat_mult": {
+        "stat": "spa",
+        "value": 1.5
+      },
+      "effect": {
+        "type": "stat_mult",
+        "stat": "spa",
+        "value": 1.5
+      }
+    },
+    "Nessuna": {
+      "desc": "Nessuna abilità selezionata.",
+      "category": "none",
+      "effect": {
+        "type": "none"
+      }
+    },
+    "Nevischio": {
+      "desc": "Evoca la Neve all'ingresso in campo.",
+      "category": "weather_setter",
+      "weather_ball_type": "Ghiaccio",
+      "effect": {
+        "type": "weather_setter",
+        "weather": "snow"
+      }
+    },
+    "Nitrito Bianco": {
+      "desc": "Quando manda KO il nemico, emette un nitrito agghiacciante, aumentando il proprio Attacco.",
+      "category": "other",
+      "effect": {
+        "type": "none"
+      }
+    },
+    "Nitrito Nero": {
+      "desc": "Quando manda KO il nemico, emette un nitrito terrificante, aumentando il proprio Attacco Speciale.",
+      "category": "other",
+      "effect": {
+        "type": "none"
+      }
+    },
+    "Nomad": {
+      "desc": "Abilità: Nomad.",
+      "category": "other",
+      "effect": {
+        "type": "none"
+      }
+    },
+    "Normalità": {
+      "desc": "Le mosse del Pokémon diventano di tipo Normale.",
+      "category": "other",
+      "effect": {
+        "type": "ate",
+        "move_type": "Normale",
+        "value": 1.2,
+        "any_source": true
+      }
+    },
+    "Nullodifesa": {
+      "desc": "Le mosse del Pokémon e del nemico vanno sempre a segno.",
+      "category": "other",
+      "effect": {
+        "type": "none"
+      }
+    },
+    "Nuoto Veloce": {
+      "desc": "La Speed è raddoppiata sotto la Pioggia.",
+      "category": "speed_boost",
+      "speed_multiplier": {
+        "weather": [
+          "rain",
+          "heavyrain"
+        ],
+        "value": 2.0
+      },
+      "effect": {
+        "type": "speed_weather",
+        "weather": "rain",
+        "value": 2.0
+      }
+    },
+    "Nuotovelox": {
+      "desc": "Se piove, la statistica Velocità aumenta.",
+      "category": "other",
+      "effect": {
+        "type": "none"
+      }
+    },
+    "Nurse": {
+      "desc": "Abilità: Nurse.",
+      "category": "other",
+      "effect": {
+        "type": "none"
+      }
+    },
+    "Occhio Interiore ": {
+      "desc": "The Pokémon ignores changes to opponents' evasiveness, its accuracy can't be lowered, and it can hit Ghost types with Normal-type and Fighting-type moves",
+      "category": "other",
+      "effect": {
+        "type": "none"
+      }
+    },
+    "Odore Tenace": {
+      "desc": "Contact with the Pokémon changes the attacker's Ability to Lingering Aroma.",
+      "category": "other",
+      "effect": {
+        "type": "none"
+      }
+    },
+    "Ombra Fantasma": {
+      "desc": "Danni ricevuti dimezzati se a PS pieni.",
+      "category": "damage_reduction",
+      "multiscale": true,
+      "effect": {
+        "type": "multiscale"
+      }
+    },
+    "Omnipotent": {
+      "desc": "Abilità: Omnipotent.",
+      "category": "other",
+      "effect": {
+        "type": "none"
+      }
+    },
+    "Ospitalità": {
+      "desc": "When the Pokémon enters a battle, it showers its ally with hospitality, restoring a small amount of the ally's HP",
+      "category": "other",
+      "effect": {
+        "type": "none"
+      }
+    },
+    "Paleoattivazione": {
+      "desc": "Boosts the Pokémon's most proficient stat in harsh sunlight or if the Pokémon is holding Booster Energy.",
+      "category": "other",
+      "effect": {
+        "type": "none"
+      }
+    },
+    "Pancialterna": {
+      "desc": "Alla fine di ogni turno cambia forma, alternando tra Motivo Panciapiena e Motivo Panciavuota.",
+      "category": "other",
+      "effect": {
+        "type": "none"
+      }
+    },
+    "Parafulmine": {
+      "desc": "Neutralizza mosse di tipo Elettro per aumentare l’Attacco Speciale.",
+      "category": "other",
+      "effect": {
+        "type": "none"
+      }
+    },
+    "Parry": {
+      "desc": "Abilità: Parry.",
+      "category": "other",
+      "effect": {
+        "type": "none"
+      }
+    },
+    "Passo Veloce": {
+      "desc": "La Speed è aumentata del 50% se il Pokémon ha un problema di stato.",
+      "category": "speed_boost",
+      "speed_multiplier": {
+        "condition": "status",
+        "value": 1.5
+      },
+      "effect": {
+        "type": "speed_status",
+        "value": 1.5
+      }
+    },
+    "Passoindietro": {
+      "desc": "Se i PS scendono a metà o meno, il Pokémon abbandona la lotta per sfuggire al pericolo.",
+      "category": "other",
+      "effect": {
+        "type": "none"
+      }
+    },
+    "Pastelvelo": {
+      "desc": "Protegge il Pokémon e gli alleati dai problemi di stato causati dal veleno.",
+      "category": "other",
+      "effect": {
+        "type": "none"
+      }
+    },
+    "Paura": {
+      "desc": "Per paura di certi tipi di mosse, la Velocità sale.",
+      "category": "other",
+      "effect": {
+        "type": "none"
+      }
+    },
+    "Pedinombra": {
+      "desc": "Impedisce la fuga al nemico.",
+      "category": "other",
+      "effect": {
+        "type": "none"
+      }
+    },
+    "Pellearsa": {
+      "desc": "Riduce i PS se fa caldo. In presenza di acqua, ridà PS.",
+      "category": "other",
+      "effect": {
+        "type": "none"
+      }
+    },
+    "Pellecielo": {
+      "desc": "Le mosse di tipo Normale diventano di tipo Volante.",
+      "category": "other",
+      "effect": {
+        "type": "ate",
+        "move_type": "Volante",
+        "value": 1.2
+      }
+    },
+    "Pelledura": {
+      "desc": "Aumenta la Difesa in caso di problemi di stato.",
+      "category": "other",
+      "effect": {
+        "type": "none"
+      }
+    },
+    "Pellefolletto": {
+      "desc": "Le mosse di tipo Normale diventano di tipo Folletto.",
+      "category": "other",
+      "effect": {
+        "type": "ate",
+        "move_type": "Folletto",
+        "value": 1.2
+      }
+    },
+    "Pellegelo": {
+      "desc": "Le mosse di tipo Normale diventano di tipo Ghiaccio.",
+      "category": "other",
+      "effect": {
+        "type": "ate",
+        "move_type": "Ghiaccio",
+        "value": 1.2
+      }
+    },
+    "Pellelettro": {
+      "desc": "Le mosse di tipo Normale diventano di tipo Elettro e la loro potenza aumenta un po’.",
+      "category": "other",
+      "effect": {
+        "type": "ate",
+        "move_type": "Elettro",
+        "value": 1.2
+      }
+    },
+    "Peloderba": {
+      "desc": "Aumenta la Difesa durante l’effetto di Campo Erboso.",
+      "category": "other",
+      "effect": {
+        "type": "none"
+      }
+    },
+    "Perception": {
+      "desc": "Abilità: Perception.",
+      "category": "other",
+      "effect": {
+        "type": "none"
+      }
+    },
+    "Pettinfuori": {
+      "desc": "Evita che la Difesa diminuisca.",
+      "category": "other",
+      "effect": {
+        "type": "none"
+      }
+    },
+    "Piedisvelti": {
+      "desc": "Aumenta la Velocità se c’è un problema di stato.",
+      "category": "other",
+      "effect": {
+        "type": "none"
+      }
+    },
+    "Piercing Drill": {
+      "desc": "When the Pokémon uses contact moves, it can hit even targets that are protecting themselves, dealing 1/4 of the damage that the move would otherwise deal. Everything aside from the target's protective effects is still triggered.",
+      "category": "other",
+      "effect": {
+        "type": "none"
+      }
+    },
+    "Pigrone": {
+      "desc": "Il Pokémon attacca un turno sì e uno no.",
+      "category": "other",
+      "effect": {
+        "type": "none"
+      }
+    },
+    "Pioggerella": {
+      "desc": "Evoca la Pioggia all'ingresso in campo.",
+      "category": "weather_setter",
+      "weather_ball_type": "Acqua",
+      "effect": {
+        "type": "weather_setter",
+        "weather": "rain"
+      }
+    },
+    "Pioggia Perpetua": {
+      "desc": "Agisce come se ci fosse Pioggia forte indipendentemente dal meteo reale. Le mosse Fuoco falliscono.",
+      "category": "weather_override",
+      "weather_override": "heavyrain",
+      "atk_boost": {
+        "type": "Acqua",
+        "multiplier": 1.5
+      },
+      "fire_blocked": true,
+      "weather_ball_type": "Acqua",
+      "effect": {
+        "type": "weather_override",
+        "weather": "heavyrain"
+      }
+    },
+    "Piovischio": {
+      "desc": "Quando scende in campo, il Pokémon attira la pioggia.",
+      "category": "other",
+      "effect": {
+        "type": "none"
+      }
+    },
+    "Piroturbina": {
+      "desc": "Neutralizza le abilità che bloccano le mosse.",
+      "category": "other",
+      "effect": {
+        "type": "none"
+      }
+    },
+    "Più": {
+      "desc": "Aumenta l’Attacco Speciale se ci sono Pokémon con Meno o Più.",
+      "category": "other",
+      "effect": {
+        "type": "none"
+      }
+    },
+    "Polifagia": {
+      "desc": "L'Attacco Speciale è aumentato del 50%.",
+      "category": "stat_modifier",
+      "atk_stat_mult": {
+        "stat": "spa",
+        "value": 1.5
+      },
+      "effect": {
+        "type": "stat_mult",
+        "stat": "spa",
+        "value": 1.5
+      }
+    },
+    "Polvoscudo": {
+      "desc": "Annulla gli effetti secondari delle mosse subite.",
+      "category": "other",
+      "effect": {
+        "type": "none"
+      }
+    },
+    "Ponderazione": {
+      "desc": "Se agisce per ultimo, la potenza della mossa sale.",
+      "category": "other",
+      "effect": {
+        "type": "none"
+      }
+    },
+    "Portamassi": {
+      "desc": "Powers up Rock-type moves.",
+      "category": "other",
+      "effect": {
+        "type": "none"
+      }
+    },
+    "Power Nap": {
+      "desc": "Abilità: Power Nap.",
+      "category": "other",
+      "effect": {
+        "type": "none"
+      }
+    },
+    "Premonizione": {
+      "desc": "Scopre la mossa più potente del nemico.",
+      "category": "other",
+      "effect": {
+        "type": "none"
+      }
+    },
+    "Prepotenza": {
+      "desc": "Riduce la statistica Attacco del nemico.",
+      "category": "other",
+      "effect": {
+        "type": "none"
+      }
+    },
+    "Presagio": {
+      "desc": "Rivela se il nemico ha mosse pericolose.",
+      "category": "other",
+      "effect": {
+        "type": "none"
+      }
+    },
+    "Pressione": {
+      "desc": "Il nemico usa più PP.",
+      "category": "other",
+      "effect": {
+        "type": "none"
+      }
+    },
+    "Prestigiatore": {
+      "desc": "Ruba lo strumento del Pokémon su cui è stata usata una mossa.",
+      "category": "other",
+      "effect": {
+        "type": "none"
+      }
+    },
+    "Previsioni": {
+      "desc": "La forma di Castform cambia in base alle condizioni atmosferiche.",
+      "category": "other",
+      "effect": {
+        "type": "none"
+      }
+    },
+    "Pride": {
+      "desc": "Abilità: Pride.",
+      "category": "other",
+      "effect": {
+        "type": "none"
+      }
+    },
+    "Primacura": {
+      "desc": "Le mosse che ripristinano direttamente i PS del Pokémon acquistano priorità alta.",
+      "category": "other",
+      "effect": {
+        "type": "none"
+      }
+    },
+    "Prisma Armatura": {
+      "desc": "Danni super efficaci ridotti del 25%.",
+      "category": "damage_reduction",
+      "super_effective_reduction": 0.75,
+      "effect": {
+        "type": "filter",
+        "value": 0.75
+      }
+    },
+    "Psicogenesi": {
+      "desc": "Quando il Pokémon entra in campo, lo trasforma in un Campo Psichico.",
+      "category": "other",
+      "effect": {
+        "type": "none"
+      }
+    },
+    "Pugni Invisibili": {
+      "desc": "Quando il Pokémon utilizza un attacco diretto, gli effetti di mosse protettive vengono ignorati.",
+      "category": "other",
+      "effect": {
+        "type": "none"
+      }
+    },
+    "Punk Rock": {
+      "desc": "Aumenta la potenza delle mosse basate sul suono. Inoltre, dimezza i danni subiti dal Pokémon se viene colpito da tali mosse.",
+      "category": "other",
+      "effect": {
+        "type": "none"
+      }
+    },
+    "Raccattapalle": {
+      "desc": "Se il Pokémon non ha uno strumento con sé, raccoglie la Poké Ball del primo tentativo di cattura fallito.",
+      "category": "other",
+      "effect": {
+        "type": "none"
+      }
+    },
+    "Raccolta": {
+      "desc": "Aumenta la probabilità di trovare strumenti.",
+      "category": "other",
+      "effect": {
+        "type": "none"
+      }
+    },
+    "Rallentatore": {
+      "desc": "I nemici attaccano sempre per primi, anche se sono più lenti.",
+      "category": "other",
+      "effect": {
+        "type": "none"
+      }
+    },
+    "Regalfiore": {
+      "desc": "Se c’è il sole, potenzia i Pokémon alleati.",
+      "category": "other",
+      "effect": {
+        "type": "none"
+      }
+    },
+    "Regalità": {
+      "desc": "L’aura di regalità del Pokémon impedisce al nemico di attaccarlo con mosse che hanno priorità alta.",
+      "category": "other",
+      "effect": {
+        "type": "none"
+      }
+    },
+    "Remasabbia": {
+      "desc": "La Velocità aumenta nelle tempeste di sabbia.",
+      "category": "other",
+      "effect": {
+        "type": "none"
+      }
+    },
+    "Ricezione": {
+      "desc": "Il Pokémon acquisisce l’abilità di un alleato andato KO.",
+      "category": "other",
+      "effect": {
+        "type": "none"
+      }
+    },
+    "Rigenergia": {
+      "desc": "Il Pokémon recupera un po’ di PS quando viene sostituito.",
+      "category": "other",
+      "effect": {
+        "type": "none"
+      }
+    },
+    "Riparo": {
+      "desc": "Neutralizza gli effetti delle condizioni atmosferiche.",
+      "category": "other",
+      "effect": {
+        "type": "none"
+      }
+    },
+    "Risplendi": {
+      "desc": "È più probabile incontrare Pokémon selvatici.",
+      "category": "other",
+      "effect": {
+        "type": "none"
+      }
+    },
+    "Ritmo d’Oricalco": {
+      "desc": "Turns the sunlight harsh when the Pokémon enters a battle. The ancient pulse thrumming through the Pokémon also boosts its Attack stat in harsh sunlight.",
+      "category": "other",
+      "effect": {
+        "type": "none"
+      }
+    },
+    "Rompiforma": {
+      "desc": "Neutralizza le abilità che bloccano le mosse.",
+      "category": "other",
+      "effect": {
+        "type": "none"
+      }
+    },
+    "Ruminante": {
+      "desc": "When the Pokémon eats a Berry, it will regurgitate that Berry at the end of the next turn and eat it one more time.",
+      "category": "other",
+      "effect": {
+        "type": "none"
+      }
+    },
+    "Run Up": {
+      "desc": "Abilità: Run Up.",
+      "category": "other",
+      "effect": {
+        "type": "none"
+      }
+    },
+    "Sabbiafiume": {
+      "desc": "Causa una tempesta di sabbia durante la lotta.",
+      "category": "other",
+      "effect": {
+        "type": "none"
+      }
+    },
+    "Sabbiavelo": {
+      "desc": "L’elusione aumenta durante le tempeste di sabbia.",
+      "category": "other",
+      "effect": {
+        "type": "none"
+      }
+    },
+    "Sale Purificante": {
+      "desc": "The Pokémon's pure salt protects it from status conditions and halves the damage taken from Ghost-type moves.",
+      "category": "damage_reduction",
+      "def_multiplier": {
+        "types": [
+          "Spettro"
+        ],
+        "multiplier": 0.5
+      },
+      "effect": {
+        "type": "purifying_salt"
+      }
+    },
+    "Sandpit": {
+      "desc": "Abilità: Sandpit.",
+      "category": "other",
+      "effect": {
+        "type": "none"
+      }
+    },
+    "Scendineve": {
+      "desc": "Il Pokémon provoca una grandinata durante la lotta.",
+      "category": "other",
+      "effect": {
+        "type": "none"
+      }
+    },
+    "Schermosaldo": {
+      "desc": "Danni super efficaci ridotti del 25%.",
+      "category": "damage_reduction",
+      "super_effective_reduction": 0.75,
+      "effect": {
+        "type": "filter",
+        "value": 0.75
+      }
+    },
+    "Sciamefusione": {
+      "desc": "Se i PS del Pokémon scendono a metà o meno, le cellule si raggruppano e gli permettono di assumere la Forma Perfetta.",
+      "category": "other",
+      "effect": {
+        "type": "none"
+      }
+    },
+    "Scioltezza": {
+      "desc": "Il Pokémon è protetto contro la paralisi.",
+      "category": "other",
+      "effect": {
+        "type": "none"
+      }
+    },
+    "Sciroppo Sublime": {
+      "desc": "Lowers the evasion of opposing Pokémon by 1 stage when first sent into battle",
+      "category": "other",
+      "effect": {
+        "type": "none"
+      }
+    },
+    "Sconforto": {
+      "desc": "Le statistiche scendono se i PS calano a metà o meno.",
+      "category": "other",
+      "effect": {
+        "type": "none"
+      }
+    },
+    "Scoppio": {
+      "desc": "Arreca danni al Pokémon che sferra il colpo finale.",
+      "category": "other",
+      "effect": {
+        "type": "none"
+      }
+    },
+    "Scrocco": {
+      "desc": "If an opponent's stat is boosted, the Pokémon seizes the opportunity to boost the same stat for itself.",
+      "category": "other",
+      "effect": {
+        "type": "none"
+      }
+    },
+    "Scudo Peluria": {
+      "desc": "Danni fisici ricevuti ridotti del 50%.",
+      "category": "damage_reduction",
+      "def_multiplier": {
+        "category": "physical",
+        "multiplier": 0.5
+      },
+      "effect": {
+        "type": "fur_coat"
+      }
+    },
+    "Scudo Saldo": {
+      "desc": "Quando il Pokémon entra in campo, la sua Difesa aumenta.",
+      "category": "other",
+      "effect": {
+        "type": "none"
+      }
+    },
+    "Scudoprisma": {
+      "desc": "Riduce la potenza delle mosse superefficaci subite.",
+      "category": "other",
+      "effect": {
+        "type": "filter",
+        "value": 0.75
+      }
+    },
+    "Scudosoglia": {
+      "desc": "Se i PS scendono a metà o meno, il guscio si rompe e il Pokémon si prepara all’offensiva.",
+      "category": "other",
+      "effect": {
+        "type": "none"
+      }
+    },
+    "Sequence": {
+      "desc": "Abilità: Sequence.",
+      "category": "other",
+      "effect": {
+        "type": "none"
+      }
+    },
+    "Sforzo": {
+      "desc": "L'Attacco fisico è aumentato del 50%.",
+      "category": "stat_modifier",
+      "atk_stat_mult": {
+        "stat": "atk",
+        "value": 1.5
+      },
+      "effect": {
+        "type": "stat_mult",
+        "stat": "atk",
+        "value": 1.5
+      }
+    },
+    "Sguardofermo": {
+      "desc": "Evita che la precisione diminuisca.",
+      "category": "other",
+      "effect": {
+        "type": "none"
+      }
+    },
+    "Shackle": {
+      "desc": "Abilità: Shackle.",
+      "category": "other",
+      "effect": {
+        "type": "none"
+      }
+    },
+    "Shadow Dash": {
+      "desc": "Abilità: Shadow Dash.",
+      "category": "other",
+      "effect": {
+        "type": "none"
+      }
+    },
+    "Share": {
+      "desc": "Abilità: Share.",
+      "category": "other",
+      "effect": {
+        "type": "none"
+      }
+    },
+    "Shield": {
+      "desc": "Abilità: Shield.",
+      "category": "other",
+      "effect": {
+        "type": "none"
+      }
+    },
+    "Siccità": {
+      "desc": "Evoca il Sole all'ingresso in campo.",
+      "category": "weather_setter",
+      "weather_ball_type": "Fuoco",
+      "effect": {
+        "type": "weather_setter",
+        "weather": "sun"
+      }
+    },
+    "Silicoforza": {
+      "desc": "Potenzia alcune mosse nelle tempeste di sabbia.",
+      "category": "other",
+      "effect": {
+        "type": "none"
+      }
+    },
+    "Simbiosi": {
+      "desc": "Il Pokémon può passare il suo strumento a un alleato.",
+      "category": "other",
+      "effect": {
+        "type": "none"
+      }
+    },
+    "Sincrodanza": {
+      "desc": "Permette al Pokémon di copiare immediatamente qualsiasi mossa basata sulla danza usata da un altro Pokémon in campo.",
+      "category": "other",
+      "effect": {
+        "type": "none"
+      }
+    },
+    "Sincronismo": {
+      "desc": "Avvelena, paralizza o scotta il nemico che infligge lo stato.",
+      "category": "other",
+      "effect": {
+        "type": "none"
+      }
+    },
+    "Sintonia Equina": {
+      "desc": "Il Pokémon ha una doppia abilità: Agitazione di Calyrex e Nitrito Bianco di Glastrier.",
+      "category": "other",
+      "effect": {
+        "type": "none"
+      }
+    },
+    "Sistema Primevo": {
+      "desc": "Il tipo del Pokémon cambia in base alla ROM installata.",
+      "category": "other",
+      "effect": {
+        "type": "none"
+      }
+    },
+    "Skater": {
+      "desc": "Abilità: Skater.",
+      "category": "other",
+      "effect": {
+        "type": "none"
+      }
+    },
+    "Sogniamari": {
+      "desc": "Riduce i PS dei nemici addormentati.",
+      "category": "other",
+      "effect": {
+        "type": "none"
+      }
+    },
+    "Solarpotere": {
+      "desc": "Se c’è il sole aumenta l’Attacco Speciale, ma riduce i PS.",
+      "category": "other",
+      "effect": {
+        "type": "none"
+      }
+    },
+    "Solidroccia": {
+      "desc": "Riduce la potenza delle mosse superefficaci.",
+      "category": "other",
+      "effect": {
+        "type": "filter",
+        "value": 0.75
+      }
+    },
+    "Sonno Assoluto": {
+      "desc": "Il Pokémon si trova in un costante stato di dormiveglia che gli impedisce di svegliarsi. Può attaccare anche da addormentato.",
+      "category": "other",
+      "effect": {
+        "type": "none"
+      }
+    },
+    "Sopportazione": {
+      "desc": "Se il Pokémon subisce un attacco, la sua Difesa aumenta.",
+      "category": "other",
+      "effect": {
+        "type": "none"
+      }
+    },
+    "Sorveglianza": {
+      "desc": "Raddoppia i danni inflitti a un bersaglio che è appena entrato in campo per sostituire un altro Pokémon.",
+      "category": "other",
+      "effect": {
+        "type": "none"
+      }
+    },
+    "Sosia": {
+      "desc": "Si trasforma nel Pokémon che ha davanti.",
+      "category": "other",
+      "effect": {
+        "type": "none"
+      }
+    },
+    "Sottilguscio": {
+      "desc": "Riduce la Difesa e aumenta la Velocità se il Pokémon è colpito.",
+      "category": "other",
+      "effect": {
+        "type": "none"
+      }
+    },
+    "Spada Indomita": {
+      "desc": "Quando il Pokémon entra in campo, il suo Attacco aumenta.",
+      "category": "other",
+      "effect": {
+        "type": "none"
+      }
+    },
+    "Spada Nefasta": {
+      "desc": "The power of the Pokémon's ruinous sword lowers the Defense stats of all Pokémon except itself.",
+      "category": "other",
+      "effect": {
+        "type": "none"
+      }
+    },
+    "Spalaneve": {
+      "desc": "Se grandina, la Velocità aumenta.",
+      "category": "other",
+      "effect": {
+        "type": "none"
+      }
+    },
+    "Spargisemi": {
+      "desc": "Turns the ground into Grassy Terrain when the Pokémon is hit by an attack.",
+      "category": "other",
+      "effect": {
+        "type": "none"
+      }
+    },
+    "Spargispora": {
+      "desc": "Al contatto può causare avvelenamento, paralisi o sonno.",
+      "category": "other",
+      "effect": {
+        "type": "none"
+      }
+    },
+    "Spessore": {
+      "desc": "Dimezza il danno subito da mosse Fuoco e Ghiaccio.",
+      "category": "damage_reduction",
+      "def_multiplier": {
+        "types": [
+          "Fuoco",
+          "Ghiaccio"
+        ],
+        "multiplier": 0.5
+      },
+      "effect": {
+        "type": "thick_fat"
+      }
+    },
+    "Spettroguardia": {
+      "desc": "Se i PS sono al massimo, riduce il danno subito.",
+      "category": "other",
+      "effect": {
+        "type": "none"
+      }
+    },
+    "Spicy Spray": {
+      "desc": "When the Pokémon takes damage from a move, it burns the attacker.",
+      "category": "other",
+      "effect": {
+        "type": "none"
+      }
+    },
+    "Spietatezza": {
+      "desc": "Gli attacchi sferrati su un bersaglio avvelenato producono sempre brutti colpi.",
+      "category": "other",
+      "effect": {
+        "type": "none"
+      }
+    },
+    "Spineferrate": {
+      "desc": "Se chi attacca mette a segno una mossa fisica, viene danneggiato.",
+      "category": "other",
+      "effect": {
+        "type": "none"
+      }
+    },
+    "Spirit": {
+      "desc": "Abilità: Spirit.",
+      "category": "other",
+      "effect": {
+        "type": "none"
+      }
+    },
+    "Spiritoferreo": {
+      "desc": "Potenzia gli attacchi di tipo Acciaio degli alleati.",
+      "category": "other",
+      "effect": {
+        "type": "none"
+      }
+    },
+    "Spiritovivo": {
+      "desc": "Impedisce al Pokémon di addormentarsi.",
+      "category": "other",
+      "effect": {
+        "type": "none"
+      }
+    },
+    "Splendicute": {
+      "desc": "Resiste più facilmente ai cambiamenti di stato.",
+      "category": "other",
+      "effect": {
+        "type": "none"
+      }
+    },
+    "Sponge": {
+      "desc": "Abilità: Sponge.",
+      "category": "other",
+      "effect": {
+        "type": "none"
+      }
+    },
+    "Sprint": {
+      "desc": "Abilità: Sprint.",
+      "category": "other",
+      "effect": {
+        "type": "none"
+      }
+    },
+    "Sputasabbia": {
+      "desc": "Quando il Pokémon viene colpito da un attacco, scatena una tempesta di sabbia.",
+      "category": "other",
+      "effect": {
+        "type": "none"
+      }
+    },
+    "Squame Miracolo": {
+      "desc": "Se scottato, avvelenato o paralizzato, la Difesa è aumentata del 50%.",
+      "category": "status_boost",
+      "effect": {
+        "type": "marvel_scale"
+      }
+    },
+    "Statico": {
+      "desc": "Il contatto fisico con il Pokémon può causare paralisi.",
+      "category": "other",
+      "effect": {
+        "type": "none"
+      }
+    },
+    "Stato Zen": {
+      "desc": "Se il Pokémon è in difficoltà, ne cambia l’aspetto.",
+      "category": "other",
+      "effect": {
+        "type": "none"
+      }
+    },
+    "Stealth": {
+      "desc": "Abilità: Stealth.",
+      "category": "other",
+      "effect": {
+        "type": "none"
+      }
+    },
+    "Stranofarmaco": {
+      "desc": "Quando il Pokémon entra in campo, sparge un farmaco dalla conchiglia che annulla le modifiche alle statistiche degli alleati.",
+      "category": "other",
+      "effect": {
+        "type": "none"
+      }
+    },
+    "Supercambio": {
+      "desc": "The Pokémon transforms into its Hero Form when it switches out.",
+      "category": "other",
+      "effect": {
+        "type": "none"
+      }
+    },
+    "Supersorte": {
+      "desc": "Aumenta la probabilità di infliggere brutti colpi.",
+      "category": "other",
+      "effect": {
+        "type": "none"
+      }
+    },
+    "Sveglialampo": {
+      "desc": "Il Pokémon impiega metà del tempo per risvegliarsi dal sonno rispetto agli altri.",
+      "category": "other",
+      "effect": {
+        "type": "none"
+      }
+    },
+    "Tanfo": {
+      "desc": "A volte il cattivo odore fa tentennare i nemici.",
+      "category": "other",
+      "effect": {
+        "type": "none"
+      }
+    },
+    "Tecnico": {
+      "desc": "Mosse con potenza base ≤60 hanno potenza aumentata del 50%.",
+      "category": "power_boost",
+      "technician": true,
+      "effect": {
+        "type": "technician"
+      }
+    },
+    "Telepatia": {
+      "desc": "Prevede ed evita gli attacchi degli alleati.",
+      "category": "other",
+      "effect": {
+        "type": "none"
+      }
+    },
+    "Temerarietà": {
+      "desc": "Potenzia le mosse che provocano contraccolpi.",
+      "category": "other",
+      "effect": {
+        "type": "none"
+      }
+    },
+    "Tempesta di Sabbia": {
+      "desc": "Evoca una Tempesta di Sabbia all'ingresso in campo.",
+      "category": "weather_setter",
+      "weather_ball_type": "Roccia",
+      "effect": {
+        "type": "weather_setter",
+        "weather": "sand"
+      }
+    },
+    "Tempra": {
+      "desc": "La Difesa Speciale è aumentata del 50% durante la Tempesta di Sabbia.",
+      "category": "weather_boost",
+      "effect": {
+        "type": "weather_spdef_boost",
+        "weather": "sand",
+        "value": 1.5
+      }
+    },
+    "Tempracciaio": {
+      "desc": "Aumenta la potenza delle mosse di tipo Acciaio.",
+      "category": "other",
+      "effect": {
+        "type": "none"
+      }
+    },
+    "Tenacia": {
+      "desc": "L’Attacco aumenta quando un nemico fa calare le statistiche.",
+      "category": "other",
+      "effect": {
+        "type": "none"
+      }
+    },
+    "Tenacity": {
+      "desc": "Abilità: Tenacity.",
+      "category": "other",
+      "effect": {
+        "type": "none"
+      }
+    },
+    "Teraguscio": {
+      "desc": "The Pokémon's shell contains the powers of each type. All damage-dealing moves that hit the Pokémon when its HP is full will not be very effective.",
+      "category": "other",
+      "effect": {
+        "type": "none"
+      }
+    },
+    "Teramorfosi": {
+      "desc": "When the Pokémon enters a battle, it absorbs the energy around itself and transforms into its Terastal Form.",
+      "category": "other",
+      "effect": {
+        "type": "none"
+      }
+    },
+    "Teravolt": {
+      "desc": "Neutralizza le abilità che bloccano le mosse.",
+      "category": "other",
+      "effect": {
+        "type": "none"
+      }
+    },
+    "Termoscambio": {
+      "desc": "Boosts the Attack stat when the Pokémon is hit by a Fire-type move. The Pokémon also cannot be burned.",
+      "category": "other",
+      "effect": {
+        "type": "none"
+      }
+    },
+    "Terra Estrema": {
+      "desc": "Crea un clima che rende inefficaci   gli attacchi di tipo Acqua.",
+      "category": "other",
+      "effect": {
+        "type": "none"
+      }
+    },
+    "Testadura": {
+      "desc": "Protegge il Pokémon dai contraccolpi.",
+      "category": "other",
+      "effect": {
+        "type": "none"
+      }
+    },
+    "Thrust": {
+      "desc": "Abilità: Thrust.",
+      "category": "other",
+      "effect": {
+        "type": "none"
+      }
+    },
+    "Tiratore": {
+      "desc": "Boost ×1.3 per mosse che colpiscono più bersagli.",
+      "category": "power_boost",
+      "spread_boost": 1.3,
+      "effect": {
+        "type": "spread_boost",
+        "value": 1.3
+      }
+    },
+    "Torre di Comando": {
+      "desc": "When the Pokémon enters a battle, it goes inside the mouth of an ally Dondozo if one is on the field. The Pokémon then issues commands from there.",
+      "category": "other",
+      "effect": {
+        "type": "none"
+      }
+    },
+    "Torrente": {
+      "desc": "Potenzia le mosse Acqua quando i PS sono bassi (<1/3).",
+      "category": "stat_boost_low_hp",
+      "effect": {
+        "type": "overgrow",
+        "move_type": "Acqua"
+      }
+    },
+    "Torrentismo": {
+      "desc": "Potenzia le mosse Acqua quando i PS sono bassi (<1/3).",
+      "category": "stat_boost_low_hp",
+      "effect": {
+        "type": "overgrow",
+        "move_type": "Acqua"
+      }
+    },
+    "Traccia": {
+      "desc": "Copia l’abilità del nemico.",
+      "category": "other",
+      "effect": {
+        "type": "none"
+      }
+    },
+    "Transistor": {
+      "desc": "Potenzia le mosse di tipo Elettro.",
+      "category": "other",
+      "effect": {
+        "type": "none"
+      }
+    },
+    "Trappoarena": {
+      "desc": "Impedisce la fuga al nemico.",
+      "category": "other",
+      "effect": {
+        "type": "none"
+      }
+    },
+    "Tuttafretta": {
+      "desc": "Aumenta l’Attacco, ma riduce la precisione.",
+      "category": "other",
+      "effect": {
+        "type": "none"
+      }
+    },
+    "Ultimotocco": {
+      "desc": "Se il Pokémon viene colpito da un attacco diretto, dopo tre turni va KO assieme a chi lo ha attaccato. Se uno dei due viene sostituito, non va KO.",
+      "category": "other",
+      "effect": {
+        "type": "none"
+      }
+    },
+    "Ultraboost": {
+      "desc": "Se il Pokémon ha mandato KO almeno un altro Pokémon nel turno, aumenta la propria statistica di punta.",
+      "category": "other",
+      "effect": {
+        "type": "none"
+      }
+    },
+    "Umidità": {
+      "desc": "Impedisce le mosse autodistruttive.",
+      "category": "other",
+      "effect": {
+        "type": "none"
+      }
+    },
+    "Unghiedure": {
+      "desc": "Potenzia le mosse che causano un contatto fisico.",
+      "category": "other",
+      "effect": {
+        "type": "tough_claws",
+        "value": 1.3
+      }
+    },
+    "Vampirico": {
+      "desc": "Potenzia le mosse Fuoco quando i PS sono bassi (<1/3).",
+      "category": "stat_boost_low_hp",
+      "effect": {
+        "type": "overgrow",
+        "move_type": "Fuoco"
+      }
+    },
+    "Vanguard": {
+      "desc": "Abilità: Vanguard.",
+      "category": "other",
+      "effect": {
+        "type": "none"
+      }
+    },
+    "Vapormacchina": {
+      "desc": "Se il Pokémon viene colpito da una mossa di tipo Acqua o Fuoco, la sua Velocità aumenta moltissimo.",
+      "category": "other",
+      "effect": {
+        "type": "none"
+      }
+    },
+    "Vaso Nefasto": {
+      "desc": "The power of the Pokémon's ruinous vessel lowers the Sp. Atk stats of all Pokémon except itself.",
+      "category": "other",
+      "effect": {
+        "type": "none"
+      }
+    },
+    "Velencura": {
+      "desc": "Ridà PS se il Pokémon è avvelenato.",
+      "category": "other",
+      "effect": {
+        "type": "none"
+      }
+    },
+    "Velenimpeto": {
+      "desc": "Aumenta l’Attacco se il Pokémon è avvelenato.",
+      "category": "other",
+      "effect": {
+        "type": "none"
+      }
+    },
+    "Velenopunto": {
+      "desc": "Può avvelenare chi manda a segno una mossa fisica.",
+      "category": "other",
+      "effect": {
+        "type": "none"
+      }
+    },
+    "Velentocco": {
+      "desc": "Può avvelenare il nemico al solo contatto fisico.",
+      "category": "other",
+      "effect": {
+        "type": "none"
+      }
+    },
+    "Vento Misterioso": {
+      "desc": "Agisce come se ci fosse Nebbia perpetua indipendentemente dal meteo reale.",
+      "category": "weather_override",
+      "weather_override": "fog",
+      "weather_ball_type": "Normale",
+      "effect": {
+        "type": "weather_override",
+        "weather": "fog"
+      }
+    },
+    "Vento Propizio": {
+      "desc": "Boosts the Pokémon's Attack stat if Tailwind takes effect or if the Pokémon is hit by a wind move. The Pokémon also takes no damage from wind moves.",
+      "category": "other",
+      "effect": {
+        "type": "none"
+      }
+    },
+    "Ventose": {
+      "desc": "Resiste a strumenti e mosse di sostituzione.",
+      "category": "other",
+      "effect": {
+        "type": "none"
+      }
+    },
+    "Vigore": {
+      "desc": "Evita che il Pokémon vada KO in un sol colpo.",
+      "category": "other",
+      "effect": {
+        "type": "none"
+      }
+    },
+    "Vigorilla": {
+      "desc": "Aumenta l’Attacco ma costringe il Pokémon a usare solo la prima mossa selezionata.",
+      "category": "other",
+      "effect": {
+        "type": "none"
+      }
+    },
+    "Viscosità": {
+      "desc": "Riduce la Velocità del Pokémon con cui entra in contatto.",
+      "category": "other",
+      "effect": {
+        "type": "none"
+      }
+    },
+    "Vittorstella": {
+      "desc": "Aumenta la precisione di chi la possiede e quella degli alleati.",
+      "category": "other",
+      "effect": {
+        "type": "none"
+      }
+    },
+    "Volontà di Ferro": {
+      "desc": "Permette di ignorare gli effetti di mosse e abilità che attirano altre mosse.",
+      "category": "other",
+      "effect": {
+        "type": "none"
+      }
+    },
+    "Voltassorbi": {
+      "desc": "Immunità alle mosse Elettro; se colpito ripristina i PS.",
+      "category": "type_immunity",
+      "immunity": [
+        "Elettro"
+      ],
+      "effect": {
+        "type": "absorb",
+        "move_type": "Elettro"
+      }
+    },
+    "Voracità": {
+      "desc": "Favorisce l’uso anticipato di una bacca tenuta dal Pokémon.",
+      "category": "other",
+      "effect": {
+        "type": "none"
+      }
+    },
+    "Warm Blanket": {
+      "desc": "Abilità: Warm Blanket.",
+      "category": "other",
+      "effect": {
+        "type": "none"
+      }
+    },
+    "Wave Rider": {
+      "desc": "Abilità: Wave Rider.",
+      "category": "other",
+      "effect": {
+        "type": "none"
+      }
+    },
+    "Zeroformazione": {
+      "desc": "When Terapagos changes into its Stellar Form, it uses its hidden powers to eliminate all effects of weather and terrain, reducing them to zero.",
+      "category": "other",
+      "effect": {
+        "type": "none"
+      }
+    },
+    "Occhio Interiore": {
+      "desc": "",
+      "category": "other",
+      "effect": {
+        "type": "none"
+      },
+      "nome_en": "Mind’s Eye"
+    },
+    "Punta Perforante": {
+      "desc": "",
+      "category": "other",
+      "effect": {
+        "type": "none"
+      },
+      "nome_en": "Piercing Drill"
+    },
+    "Pelledrago": {
+      "desc": "",
+      "category": "other",
+      "effect": {
+        "type": "none"
+      },
+      "nome_en": "Dragonize"
+    },
+    "Megasolar": {
+      "desc": "",
+      "category": "other",
+      "effect": {
+        "type": "none"
+      },
+      "nome_en": "Mega Sol"
+    },
+    "Spargipiccante": {
+      "desc": "",
+      "category": "other",
+      "effect": {
+        "type": "none"
+      },
+      "nome_en": "Spicy Spray"
+    },
+    "Eelevate": {
+      "desc": "",
+      "category": "other",
+      "effect": {
+        "type": "none"
+      },
+      "nome_en": "Eelevate"
+    },
+    "Fire Mane": {
+      "desc": "",
+      "category": "other",
+      "effect": {
+        "type": "none"
+      },
+      "nome_en": "Fire Mane"
+    }
+  }
+}

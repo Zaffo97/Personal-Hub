@@ -1,0 +1,2050 @@
+{
+  "Black Belt": {
+    "category": "type_boost",
+    "modifier": 1.2,
+    "desc": "Aumenta del 20% il danno delle mosse di tipo Lotta.",
+    "effect": "boost_fighting"
+  },
+  "Black Glasses": {
+    "category": "type_boost",
+    "modifier": 1.2,
+    "desc": "Aumenta del 20% il danno delle mosse di tipo Buio.",
+    "effect": "boost_dark"
+  },
+  "Charcoal": {
+    "category": "type_boost",
+    "modifier": 1.2,
+    "desc": "Aumenta del 20% il danno delle mosse di tipo Fuoco.",
+    "effect": "boost_fire"
+  },
+  "Dragon Fang": {
+    "category": "type_boost",
+    "modifier": 1.2,
+    "desc": "Aumenta del 20% il danno delle mosse di tipo Drago.",
+    "effect": "boost_dragon"
+  },
+  "Fairy Feather": {
+    "category": "type_boost",
+    "modifier": 1.2,
+    "desc": "Aumenta del 20% il danno delle mosse di tipo Folletto.",
+    "effect": "boost_fairy"
+  },
+  "Hard Stone": {
+    "category": "type_boost",
+    "modifier": 1.2,
+    "desc": "Aumenta del 20% il danno delle mosse di tipo Roccia.",
+    "effect": "boost_rock"
+  },
+  "Magnet": {
+    "category": "type_boost",
+    "modifier": 1.2,
+    "desc": "Aumenta del 20% il danno delle mosse di tipo Elettro.",
+    "effect": "boost_electric"
+  },
+  "Metal Coat": {
+    "category": "type_boost",
+    "modifier": 1.2,
+    "desc": "Aumenta del 20% il danno delle mosse di tipo Acciaio.",
+    "effect": "boost_steel"
+  },
+  "Miracle Seed": {
+    "category": "type_boost",
+    "modifier": 1.2,
+    "desc": "Aumenta del 20% il danno delle mosse di tipo Erba.",
+    "effect": "boost_grass"
+  },
+  "Mystic Water": {
+    "category": "type_boost",
+    "modifier": 1.2,
+    "desc": "Aumenta del 20% il danno delle mosse di tipo Acqua.",
+    "effect": "boost_water"
+  },
+  "Never-Melt Ice": {
+    "category": "type_boost",
+    "modifier": 1.2,
+    "desc": "Aumenta del 20% il danno delle mosse di tipo Ghiaccio.",
+    "effect": "boost_ice"
+  },
+  "Poison Barb": {
+    "category": "type_boost",
+    "modifier": 1.2,
+    "desc": "Aumenta del 20% il danno delle mosse di tipo Veleno.",
+    "effect": "boost_poison"
+  },
+  "Sharp Beak": {
+    "category": "type_boost",
+    "modifier": 1.2,
+    "desc": "Aumenta del 20% il danno delle mosse di tipo Volante.",
+    "effect": "boost_flying"
+  },
+  "Silk Scarf": {
+    "category": "type_boost",
+    "modifier": 1.2,
+    "desc": "Aumenta del 20% il danno delle mosse di tipo Normale.",
+    "effect": "boost_normal"
+  },
+  "Silver Powder": {
+    "category": "type_boost",
+    "modifier": 1.2,
+    "desc": "Aumenta del 20% il danno delle mosse di tipo Coleottero.",
+    "effect": "boost_bug"
+  },
+  "Soft Sand": {
+    "category": "type_boost",
+    "modifier": 1.2,
+    "desc": "Aumenta del 20% il danno delle mosse di tipo Terra.",
+    "effect": "boost_ground"
+  },
+  "Spell Tag": {
+    "category": "type_boost",
+    "modifier": 1.2,
+    "desc": "Aumenta del 20% il danno delle mosse di tipo Spettro.",
+    "effect": "boost_ghost"
+  },
+  "Twisted Spoon": {
+    "category": "type_boost",
+    "modifier": 1.2,
+    "desc": "Aumenta del 20% il danno delle mosse di tipo Psico.",
+    "effect": "boost_psychic"
+  },
+  "Choice Scarf": {
+    "category": "choice",
+    "modifier": 1.5,
+    "desc": "Aumenta la Velocità del 50% ma blocca su una sola mossa.",
+    "effect": "boost_spe"
+  },
+  "Leftovers": {
+    "category": "healing",
+    "modifier": null,
+    "desc": "Recupera 1/16 dei PS massimi alla fine di ogni turno.",
+    "effect": "regen"
+  },
+  "Shell Bell": {
+    "category": "healing",
+    "modifier": null,
+    "desc": "Recupera 1/8 del danno inflitto al portatore.",
+    "effect": "drain"
+  },
+  "Sitrus Berry": {
+    "category": "berry",
+    "modifier": null,
+    "desc": "Recupera 1/4 dei PS massimi quando i PS scendono sotto la metà. Uso singolo.",
+    "effect": "heal_hp"
+  },
+  "Lum Berry": {
+    "category": "berry",
+    "modifier": null,
+    "desc": "Cura qualsiasi status o confusione. Uso singolo.",
+    "effect": "cure_status"
+  },
+  "Chesto Berry": {
+    "category": "berry",
+    "modifier": null,
+    "desc": "Cura il sonno. Uso singolo.",
+    "effect": "cure_sleep"
+  },
+  "Oran Berry": {
+    "category": "berry",
+    "modifier": null,
+    "desc": "Recupera 10 PS quando i PS scendono sotto la metà. Uso singolo.",
+    "effect": "heal_10hp"
+  },
+  "Persim Berry": {
+    "category": "berry",
+    "modifier": null,
+    "desc": "Cura la confusione. Uso singolo.",
+    "effect": "cure_confusion"
+  },
+  "Leppa Berry": {
+    "category": "berry",
+    "modifier": null,
+    "desc": "Recupera 10 PP a una mossa quando i PP sono esauriti. Uso singolo.",
+    "effect": "restore_pp"
+  },
+  "Aspear Berry": {
+    "category": "berry",
+    "modifier": null,
+    "desc": "Cura il congelamento. Uso singolo.",
+    "effect": "cure_freeze"
+  },
+  "Rawst Berry": {
+    "category": "berry",
+    "modifier": null,
+    "desc": "Cura la bruciatura. Uso singolo.",
+    "effect": "cure_burn"
+  },
+  "Pecha Berry": {
+    "category": "berry",
+    "modifier": null,
+    "desc": "Cura l'avvelenamento. Uso singolo.",
+    "effect": "cure_poison"
+  },
+  "Cheri Berry": {
+    "category": "berry",
+    "modifier": null,
+    "desc": "Cura la paralisi. Uso singolo.",
+    "effect": "cure_paralysis"
+  },
+  "Focus Sash": {
+    "category": "survival",
+    "modifier": null,
+    "desc": "Se a PS pieni, sopravvive con 1 PS a un KO diretto. Uso singolo.",
+    "effect": "endure_ko"
+  },
+  "Focus Band": {
+    "category": "survival",
+    "modifier": null,
+    "desc": "10% di probabilità di sopravvivere con 1 PS a un KO diretto.",
+    "effect": "endure_chance"
+  },
+  "White Herb": {
+    "category": "utility",
+    "modifier": null,
+    "desc": "Ripristina le statistiche abbassate una volta. Uso singolo.",
+    "effect": "restore_stats"
+  },
+  "Mental Herb": {
+    "category": "utility",
+    "modifier": null,
+    "desc": "Cura Innamoramento, Accalappianeve, Bis, Inibitore e simili. Uso singolo.",
+    "effect": "cure_mental"
+  },
+  "Scope Lens": {
+    "category": "utility",
+    "modifier": null,
+    "desc": "Aumenta di 1 livello il rapporto di colpo critico.",
+    "effect": "crit_boost"
+  },
+  "Light Ball": {
+    "category": "utility",
+    "modifier": 2.0,
+    "desc": "Solo Pikachu: raddoppia Attacco e Attacco Speciale.",
+    "effect": "pikachu_boost"
+  },
+  "Bright Powder": {
+    "category": "utility",
+    "modifier": null,
+    "desc": "Riduce del 10% la precisione delle mosse avversarie.",
+    "effect": "lower_acc"
+  },
+  "King's Rock": {
+    "category": "utility",
+    "modifier": null,
+    "desc": "10% di probabilità di far arretrare il bersaglio dopo un attacco.",
+    "effect": "flinch_chance"
+  },
+  "Quick Claw": {
+    "category": "utility",
+    "modifier": null,
+    "desc": "20% di probabilità di agire per primo tra mosse della stessa priorità.",
+    "effect": "quick_move"
+  },
+  "Babiri Berry": {
+    "category": "berry",
+    "modifier": 0.5,
+    "desc": "Dimezza il danno di una mossa super-efficace di tipo Acciaio. Uso singolo.",
+    "effect": "resist_steel"
+  },
+  "Charti Berry": {
+    "category": "berry",
+    "modifier": 0.5,
+    "desc": "Dimezza il danno di una mossa super-efficace di tipo Roccia. Uso singolo.",
+    "effect": "resist_rock"
+  },
+  "Chilan Berry": {
+    "category": "berry",
+    "modifier": 0.5,
+    "desc": "Dimezza il danno di una mossa di tipo Normale. Uso singolo.",
+    "effect": "resist_normal"
+  },
+  "Chople Berry": {
+    "category": "berry",
+    "modifier": 0.5,
+    "desc": "Dimezza il danno di una mossa super-efficace di tipo Lotta. Uso singolo.",
+    "effect": "resist_fighting"
+  },
+  "Coba Berry": {
+    "category": "berry",
+    "modifier": 0.5,
+    "desc": "Dimezza il danno di una mossa super-efficace di tipo Volante. Uso singolo.",
+    "effect": "resist_flying"
+  },
+  "Colbur Berry": {
+    "category": "berry",
+    "modifier": 0.5,
+    "desc": "Dimezza il danno di una mossa super-efficace di tipo Buio. Uso singolo.",
+    "effect": "resist_dark"
+  },
+  "Haban Berry": {
+    "category": "berry",
+    "modifier": 0.5,
+    "desc": "Dimezza il danno di una mossa super-efficace di tipo Drago. Uso singolo.",
+    "effect": "resist_dragon"
+  },
+  "Kasib Berry": {
+    "category": "berry",
+    "modifier": 0.5,
+    "desc": "Dimezza il danno di una mossa super-efficace di tipo Spettro. Uso singolo.",
+    "effect": "resist_ghost"
+  },
+  "Kebia Berry": {
+    "category": "berry",
+    "modifier": 0.5,
+    "desc": "Dimezza il danno di una mossa super-efficace di tipo Veleno. Uso singolo.",
+    "effect": "resist_poison"
+  },
+  "Occa Berry": {
+    "category": "berry",
+    "modifier": 0.5,
+    "desc": "Dimezza il danno di una mossa super-efficace di tipo Fuoco. Uso singolo.",
+    "effect": "resist_fire"
+  },
+  "Passho Berry": {
+    "category": "berry",
+    "modifier": 0.5,
+    "desc": "Dimezza il danno di una mossa super-efficace di tipo Acqua. Uso singolo.",
+    "effect": "resist_water"
+  },
+  "Payapa Berry": {
+    "category": "berry",
+    "modifier": 0.5,
+    "desc": "Dimezza il danno di una mossa super-efficace di tipo Psico. Uso singolo.",
+    "effect": "resist_psychic"
+  },
+  "Rindo Berry": {
+    "category": "berry",
+    "modifier": 0.5,
+    "desc": "Dimezza il danno di una mossa super-efficace di tipo Erba. Uso singolo.",
+    "effect": "resist_grass"
+  },
+  "Roseli Berry": {
+    "category": "berry",
+    "modifier": 0.5,
+    "desc": "Dimezza il danno di una mossa super-efficace di tipo Folletto. Uso singolo.",
+    "effect": "resist_fairy"
+  },
+  "Shuca Berry": {
+    "category": "berry",
+    "modifier": 0.5,
+    "desc": "Dimezza il danno di una mossa super-efficace di tipo Terra. Uso singolo.",
+    "effect": "resist_ground"
+  },
+  "Tanga Berry": {
+    "category": "berry",
+    "modifier": 0.5,
+    "desc": "Dimezza il danno di una mossa super-efficace di tipo Coleottero. Uso singolo.",
+    "effect": "resist_bug"
+  },
+  "Wacan Berry": {
+    "category": "berry",
+    "modifier": 0.5,
+    "desc": "Dimezza il danno di una mossa super-efficace di tipo Elettro. Uso singolo.",
+    "effect": "resist_electric"
+  },
+  "Yache Berry": {
+    "category": "berry",
+    "modifier": 0.5,
+    "desc": "Dimezza il danno di una mossa super-efficace di tipo Ghiaccio. Uso singolo.",
+    "effect": "resist_ice"
+  },
+  "Potion": {
+    "category": "other",
+    "desc": "Rimedio spray per le ferite. Restituisce 20 PS a un Pokémon.",
+    "categoria_pokeapi": "healing"
+  },
+  "Antidote": {
+    "category": "other",
+    "desc": "Rimedio spray. Cura un Pokémon dall’avvelenamento.",
+    "categoria_pokeapi": "status-cures"
+  },
+  "Burn Heal": {
+    "category": "other",
+    "desc": "Rimedio spray. Cura un Pokémon dalla scottatura.",
+    "categoria_pokeapi": "status-cures"
+  },
+  "Ice Heal": {
+    "category": "other",
+    "desc": "Rimedio spray. Cura un Pokémon dal congelamento.",
+    "categoria_pokeapi": "status-cures"
+  },
+  "Awakening": {
+    "category": "other",
+    "desc": "Rimedio spray. Sveglia un Pokémon addormentato.",
+    "categoria_pokeapi": "status-cures"
+  },
+  "Paralyze Heal": {
+    "category": "other",
+    "desc": "Rimedio spray. Cura un Pokémon dalla paralisi.",
+    "categoria_pokeapi": "status-cures"
+  },
+  "Full Restore": {
+    "category": "other",
+    "desc": "Rimedio che restituisce tutti i PS a un Pokémon e cura i suoi problemi di stato.",
+    "categoria_pokeapi": "healing"
+  },
+  "Max Potion": {
+    "category": "other",
+    "desc": "Rimedio spray per le ferite. Restituisce tutti i PS a un Pokémon.",
+    "categoria_pokeapi": "healing"
+  },
+  "Hyper Potion": {
+    "category": "other",
+    "desc": "Rimedio spray per le ferite. Restituisce 120 PS a un Pokémon.",
+    "categoria_pokeapi": "healing"
+  },
+  "Super Potion": {
+    "category": "other",
+    "desc": "Rimedio spray per le ferite. Restituisce 60 PS a un Pokémon.",
+    "categoria_pokeapi": "healing"
+  },
+  "Full Heal": {
+    "category": "other",
+    "desc": "Rimedio spray. Cura tutti i problemi di stato di un Pokémon.",
+    "categoria_pokeapi": "status-cures"
+  },
+  "Revive": {
+    "category": "other",
+    "desc": "Rimedio che rianima un Pokémon esausto e gli restituisce metà dei suoi PS massimi.",
+    "categoria_pokeapi": "revival"
+  },
+  "Max Revive": {
+    "category": "other",
+    "desc": "Rimedio che rianima un Pokémon esausto restituendogli tutti i PS.",
+    "categoria_pokeapi": "revival"
+  },
+  "Fresh Water": {
+    "category": "other",
+    "desc": "Acqua ricca di sostanze minerali. Restituisce 30 PS a un Pokémon.",
+    "categoria_pokeapi": "healing"
+  },
+  "Soda Pop": {
+    "category": "other",
+    "desc": "Bevanda frizzante. Restituisce 50 PS a un Pokémon.",
+    "categoria_pokeapi": "healing"
+  },
+  "Lemonade": {
+    "category": "other",
+    "desc": "Bevanda molto dolce. Restituisce 70 PS a un Pokémon.",
+    "categoria_pokeapi": "healing"
+  },
+  "Moomoo Milk": {
+    "category": "other",
+    "desc": "Latte ricco di sostanze nutrienti. Restituisce 100 PS a un Pokémon.",
+    "categoria_pokeapi": "healing"
+  },
+  "Energy Powder": {
+    "category": "other",
+    "desc": "Rimedio amarissimo in polvere. Restituisce 60 PS a un Pokémon.",
+    "categoria_pokeapi": "healing"
+  },
+  "Energy Root": {
+    "category": "other",
+    "desc": "Radice amarissima. Restituisce 120 PS a un Pokémon.",
+    "categoria_pokeapi": "healing"
+  },
+  "Heal Powder": {
+    "category": "other",
+    "desc": "Rimedio amarissimo in polvere. Cura tutti i problemi di stato di un Pokémon.",
+    "categoria_pokeapi": "status-cures"
+  },
+  "Revival Herb": {
+    "category": "other",
+    "desc": "Erba medicinale amarissima. Rianima un Pokémon esausto e gli restituisce tutti i PS.",
+    "categoria_pokeapi": "revival"
+  },
+  "Lava Cookie": {
+    "category": "other",
+    "desc": "Specialità tipica di Cuordilava. Cura tutti i problemi di stato di un Pokémon.",
+    "categoria_pokeapi": "status-cures"
+  },
+  "Berry Juice": {
+    "category": "other",
+    "desc": "Bevanda di puro succo di bacche. Restituisce 20 PS a un Pokémon.",
+    "categoria_pokeapi": "healing"
+  },
+  "Sacred Ash": {
+    "category": "other",
+    "desc": "Rimedio che rianima tutti i Pokémon esausti, restituendo loro anche tutti i PS.",
+    "categoria_pokeapi": "revival"
+  },
+  "HP Up": {
+    "category": "other",
+    "desc": "Bevanda nutriente per Pokémon. Aumenta i punti base dei PS.",
+    "categoria_pokeapi": "vitamins"
+  },
+  "Protein": {
+    "category": "other",
+    "desc": "Bevanda nutriente per Pokémon. Aumenta i punti base dell’Attacco.",
+    "categoria_pokeapi": "vitamins"
+  },
+  "Iron": {
+    "category": "other",
+    "desc": "Bevanda nutriente per Pokémon. Aumenta i punti base della Difesa.",
+    "categoria_pokeapi": "vitamins"
+  },
+  "Carbos": {
+    "category": "other",
+    "desc": "Bevanda nutriente per Pokémon. Aumenta i punti base della Velocità.",
+    "categoria_pokeapi": "vitamins"
+  },
+  "Calcium": {
+    "category": "other",
+    "desc": "Bevanda nutriente per Pokémon. Aumenta i punti base dell’Attacco Speciale.",
+    "categoria_pokeapi": "vitamins"
+  },
+  "Rare Candy": {
+    "category": "other",
+    "desc": "Caramella altamente energetica. Fa salire un Pokémon di un livello.",
+    "categoria_pokeapi": "vitamins"
+  },
+  "PP Up": {
+    "category": "other",
+    "desc": "Aumenta di poco i PP massimi di una mossa a scelta tra quelle conosciute dal Pokémon.",
+    "categoria_pokeapi": "vitamins"
+  },
+  "Zinc": {
+    "category": "other",
+    "desc": "Bevanda nutriente per Pokémon. Aumenta i punti base della Difesa Speciale.",
+    "categoria_pokeapi": "vitamins"
+  },
+  "PP Max": {
+    "category": "other",
+    "desc": "Porta al limite i PP massimi di una mossa a scelta tra quelle conosciute dal Pokémon.",
+    "categoria_pokeapi": "vitamins"
+  },
+  "Old Gateau": {
+    "category": "other",
+    "desc": "Specialità segreta dell’Antico Château. Cura tutti i problemi di stato di un Pokémon.",
+    "categoria_pokeapi": "status-cures"
+  },
+  "Adamant Orb": {
+    "category": "other",
+    "desc": "Sfera molto luminosa da dare a Dialga. Potenzia le mosse di tipo Drago e Acciaio.",
+    "categoria_pokeapi": "species-specific"
+  },
+  "Lustrous Orb": {
+    "category": "other",
+    "desc": "Sfera splendente da dare a Palkia. Potenzia le mosse di tipo Drago e Acqua.",
+    "categoria_pokeapi": "species-specific"
+  },
+  "Figy Berry": {
+    "category": "other",
+    "desc": "Se un Pokémon in difficoltà ha questa bacca, recupera dei PS. Se al Pokémon non piace il suo sapore, può causare confusione.",
+    "categoria_pokeapi": "picky-healing"
+  },
+  "Wiki Berry": {
+    "category": "other",
+    "desc": "Se un Pokémon in difficoltà ha questa bacca, recupera dei PS. Se al Pokémon non piace il suo sapore, può causare confusione.",
+    "categoria_pokeapi": "picky-healing"
+  },
+  "Mago Berry": {
+    "category": "other",
+    "desc": "Se un Pokémon in difficoltà ha questa bacca, recupera dei PS. Se al Pokémon non piace il suo sapore, può causare confusione.",
+    "categoria_pokeapi": "picky-healing"
+  },
+  "Aguav Berry": {
+    "category": "other",
+    "desc": "Se un Pokémon in difficoltà ha questa bacca, recupera dei PS. Se al Pokémon non piace il suo sapore, può causare confusione.",
+    "categoria_pokeapi": "picky-healing"
+  },
+  "Iapapa Berry": {
+    "category": "other",
+    "desc": "Se un Pokémon in difficoltà ha questa bacca, recupera dei PS. Se al Pokémon non piace il suo sapore, può causare confusione.",
+    "categoria_pokeapi": "picky-healing"
+  },
+  "Liechi Berry": {
+    "category": "other",
+    "desc": "Se il Pokémon che ha questa bacca si trova in difficoltà, il suo Attacco aumenta.",
+    "categoria_pokeapi": "in-a-pinch"
+  },
+  "Ganlon Berry": {
+    "category": "other",
+    "desc": "Se il Pokémon che ha questa bacca si trova in difficoltà, la sua Difesa aumenta.",
+    "categoria_pokeapi": "in-a-pinch"
+  },
+  "Salac Berry": {
+    "category": "other",
+    "desc": "Se il Pokémon che ha questa bacca si trova in difficoltà, la sua Velocità aumenta.",
+    "categoria_pokeapi": "in-a-pinch"
+  },
+  "Petaya Berry": {
+    "category": "other",
+    "desc": "Se il Pokémon che ha questa bacca si trova in difficoltà, il suo Attacco Speciale aumenta.",
+    "categoria_pokeapi": "in-a-pinch"
+  },
+  "Apicot Berry": {
+    "category": "other",
+    "desc": "Se il Pokémon che ha questa bacca si trova in difficoltà, la sua Difesa Speciale aumenta.",
+    "categoria_pokeapi": "in-a-pinch"
+  },
+  "Lansat Berry": {
+    "category": "other",
+    "desc": "Se il Pokémon che ha questa bacca si trova in difficoltà, la probabilità di sferrare brutti colpi aumenta.",
+    "categoria_pokeapi": "in-a-pinch"
+  },
+  "Starf Berry": {
+    "category": "other",
+    "desc": "Se il Pokémon che ha questa bacca si trova in difficoltà, una delle sue statistiche aumenta di molto.",
+    "categoria_pokeapi": "in-a-pinch"
+  },
+  "Micle Berry": {
+    "category": "other",
+    "desc": "Se il Pokémon che ha questa bacca si trova in difficoltà, la precisione della sua mossa successiva aumenta.",
+    "categoria_pokeapi": "in-a-pinch"
+  },
+  "Custap Berry": {
+    "category": "other",
+    "desc": "Se il Pokémon che ha questa bacca si trova in difficoltà, sferra la sua mossa per primo. Funziona una sola volta.",
+    "categoria_pokeapi": "in-a-pinch"
+  },
+  "Macho Brace": {
+    "category": "other",
+    "desc": "Strumento da dare a un Pokémon. Attrezzo pesante che riduce la Velocità ma aiuta la crescita delle statistiche.",
+    "categoria_pokeapi": "effort-training"
+  },
+  "Exp. Share": {
+    "category": "other",
+    "desc": "Se attivato, tutti i Pokémon della squadra ricevono Punti Esperienza dalla lotta anche se non vi hanno partecipato.",
+    "categoria_pokeapi": "training"
+  },
+  "Soothe Bell": {
+    "category": "other",
+    "desc": "Strumento da dare a un Pokémon. Campanella dal suono rassicurante che calma chi la usa aumentandone il livello di amicizia.",
+    "categoria_pokeapi": "training"
+  },
+  "Choice Band": {
+    "category": "other",
+    "desc": "Strumento da dare a un Pokémon. Questa benda aumenta l’Attacco, ma permette l’uso di una sola mossa.",
+    "categoria_pokeapi": "choice"
+  },
+  "King’s Rock": {
+    "category": "other",
+    "desc": "Strumento da dare a un Pokémon. Se chi lo usa arreca danni, può far tentennare il nemico.",
+    "categoria_pokeapi": "held-items"
+  },
+  "Amulet Coin": {
+    "category": "other",
+    "desc": "Strumento da dare a un Pokémon. Se chi ce l’ha partecipa alla lotta, i guadagni raddoppiano.",
+    "categoria_pokeapi": "training"
+  },
+  "Cleanse Tag": {
+    "category": "other",
+    "desc": "Strumento da dare a un Pokémon. Se chi ce l’ha è il primo della squadra, aiuta ad allontanare i Pokémon selvatici.",
+    "categoria_pokeapi": "training"
+  },
+  "Soul Dew": {
+    "category": "other",
+    "desc": "Sfera miracolosa da dare a Latios o Latias. Aumenta la potenza delle mosse di tipo Psico e Drago.",
+    "categoria_pokeapi": "species-specific"
+  },
+  "Deep Sea Tooth": {
+    "category": "other",
+    "desc": "Strumento da dare a Clamperl. Dente dai bagliori argentei che aumenta l’Attacco Speciale.",
+    "categoria_pokeapi": "species-specific"
+  },
+  "Deep Sea Scale": {
+    "category": "other",
+    "desc": "Strumento da dare a Clamperl. Squama dai bagliori rosei che aumenta la Difesa Speciale.",
+    "categoria_pokeapi": "species-specific"
+  },
+  "Smoke Ball": {
+    "category": "other",
+    "desc": "Strumento da dare a un Pokémon. Permette di fuggire con successo da un Pokémon selvatico.",
+    "categoria_pokeapi": "held-items"
+  },
+  "Everstone": {
+    "category": "other",
+    "desc": "Strumento da dare a un Pokémon. Chi ha questa pietra particolare evita l’evoluzione.",
+    "categoria_pokeapi": "training"
+  },
+  "Lucky Egg": {
+    "category": "other",
+    "desc": "Strumento da dare a un Pokémon. Uovo pieno di felicità che aumenta i Punti Esperienza ottenuti nelle lotte.",
+    "categoria_pokeapi": "training"
+  },
+  "Sea Incense": {
+    "category": "other",
+    "desc": "Strumento da dare a un Pokémon. Incenso dal profumo esotico che potenzia le mosse di tipo Acqua.",
+    "categoria_pokeapi": "type-enhancement"
+  },
+  "Lax Incense": {
+    "category": "other",
+    "desc": "Strumento da dare a un Pokémon. Il suo aroma intenso riduce la precisione del nemico.",
+    "categoria_pokeapi": "held-items"
+  },
+  "Lucky Punch": {
+    "category": "other",
+    "desc": "Strumento da dare a Chansey. Guanti che aumentano molto la probabilità di sferrare brutti colpi.",
+    "categoria_pokeapi": "species-specific"
+  },
+  "Metal Powder": {
+    "category": "other",
+    "desc": "Strumento da dare a Ditto. Strana polvere finissima e al tempo stesso dura che migliora la Difesa.",
+    "categoria_pokeapi": "species-specific"
+  },
+  "Thick Club": {
+    "category": "other",
+    "desc": "Strumento da dare a Cubone o Marowak. Osso duro che migliora la potenza delle mosse fisiche.",
+    "categoria_pokeapi": "species-specific"
+  },
+  "Leek": {
+    "category": "other",
+    "desc": "Strumento da dare a Farfetch’d. Lungo gambo di porro che aumenta molto la probabilità di sferrare brutti colpi.",
+    "categoria_pokeapi": "species-specific"
+  },
+  "Red Scarf": {
+    "category": "other",
+    "desc": "Strumento da dare a un Pokémon. Aumenta la “Classe” di chi l’indossa in una gara.",
+    "categoria_pokeapi": "scarves"
+  },
+  "Blue Scarf": {
+    "category": "other",
+    "desc": "Strumento da dare a un Pokémon. Aumenta la “Bellezza” di chi l’indossa in una gara.",
+    "categoria_pokeapi": "scarves"
+  },
+  "Pink Scarf": {
+    "category": "other",
+    "desc": "Strumento da dare a un Pokémon. Aumenta la “Grazia” di chi l’indossa in una gara.",
+    "categoria_pokeapi": "scarves"
+  },
+  "Green Scarf": {
+    "category": "other",
+    "desc": "Strumento da dare a un Pokémon. Aumenta l’“Acume” di chi l’indossa in una gara.",
+    "categoria_pokeapi": "scarves"
+  },
+  "Yellow Scarf": {
+    "category": "other",
+    "desc": "Strumento da dare a un Pokémon. Aumenta la “Grinta” di chi l’indossa in una gara.",
+    "categoria_pokeapi": "scarves"
+  },
+  "Wide Lens": {
+    "category": "other",
+    "desc": "Strumento da dare a un Pokémon. Lente d’ingrandimento che aumenta di poco la precisione delle mosse.",
+    "categoria_pokeapi": "held-items"
+  },
+  "Muscle Band": {
+    "category": "other",
+    "desc": "Strumento da dare a un Pokémon. Fascia che potenzia di poco le mosse fisiche.",
+    "categoria_pokeapi": "held-items"
+  },
+  "Wise Glasses": {
+    "category": "other",
+    "desc": "Strumento da dare a un Pokémon. Paio di occhiali dalle lenti spesse che potenzia di poco le mosse speciali.",
+    "categoria_pokeapi": "held-items"
+  },
+  "Expert Belt": {
+    "category": "other",
+    "desc": "Strumento da dare a un Pokémon. Cintura consumata che potenzia di poco le mosse superefficaci.",
+    "categoria_pokeapi": "held-items"
+  },
+  "Light Clay": {
+    "category": "other",
+    "desc": "Strumento da dare a un Pokémon. Allunga la durata delle mosse barriera come Schermoluce e Riflesso.",
+    "categoria_pokeapi": "held-items"
+  },
+  "Life Orb": {
+    "category": "other",
+    "desc": "Strumento da dare a un Pokémon. Potenzia le mosse a scapito di alcuni PS per ogni colpo.",
+    "categoria_pokeapi": "held-items"
+  },
+  "Power Herb": {
+    "category": "other",
+    "desc": "Strumento monouso da dare a un Pokémon. Permette l’uso immediato di una mossa che in genere richiede un turno prima di essere eseguita.",
+    "categoria_pokeapi": "held-items"
+  },
+  "Toxic Orb": {
+    "category": "other",
+    "desc": "Strumento da dare a un Pokémon. Sfera bizzarra che iperavvelena chi l’ha con sé in una lotta.",
+    "categoria_pokeapi": "bad-held-items"
+  },
+  "Flame Orb": {
+    "category": "other",
+    "desc": "Strumento da dare a un Pokémon. Sfera bizzarra che procura una scottatura a chi l’ha con sé in una lotta.",
+    "categoria_pokeapi": "bad-held-items"
+  },
+  "Quick Powder": {
+    "category": "other",
+    "desc": "Strumento da dare a Ditto. Questa strana polvere, fine e al contempo dura, aumenta la Velocità.",
+    "categoria_pokeapi": "species-specific"
+  },
+  "Zoom Lens": {
+    "category": "other",
+    "desc": "Strumento da dare a un Pokémon. Se chi ce l’ha attacca dopo il nemico, la sua precisione aumenta.",
+    "categoria_pokeapi": "held-items"
+  },
+  "Metronome": {
+    "category": "other",
+    "desc": "Strumento da dare a un Pokémon. Potenzia una mossa usata più volte di seguito. Il potenziamento svanisce al cambio di mossa.",
+    "categoria_pokeapi": "held-items"
+  },
+  "Iron Ball": {
+    "category": "other",
+    "desc": "Riduce la Velocità e rende vulnerabili alle mosse di tipo Terra se chi ce l’ha è di tipo Volante o ha l’abilità Levitazione.",
+    "categoria_pokeapi": "bad-held-items"
+  },
+  "Lagging Tail": {
+    "category": "other",
+    "desc": "Strumento da dare a un Pokémon. È tremendamente pesante e rende più lenti del normale.",
+    "categoria_pokeapi": "bad-held-items"
+  },
+  "Destiny Knot": {
+    "category": "other",
+    "desc": "Gomitolo di filo rosso sottile da dare a un Pokémon. Se il Pokémon rimane infatuato, contagia anche il nemico.",
+    "categoria_pokeapi": "held-items"
+  },
+  "Black Sludge": {
+    "category": "other",
+    "desc": "Strumento da dare a un Pokémon. Restituisce gradualmente PS ai Pokémon di tipo Veleno, ma danneggia tutti gli altri.",
+    "categoria_pokeapi": "held-items"
+  },
+  "Icy Rock": {
+    "category": "other",
+    "desc": "Strumento da dare a un Pokémon. Allunga la durata della mossa Grandine.",
+    "categoria_pokeapi": "held-items"
+  },
+  "Smooth Rock": {
+    "category": "other",
+    "desc": "Strumento da dare a un Pokémon. Allunga la durata della mossa Terrempesta.",
+    "categoria_pokeapi": "held-items"
+  },
+  "Heat Rock": {
+    "category": "other",
+    "desc": "Strumento da dare a un Pokémon. Allunga la durata della mossa Giornodisole.",
+    "categoria_pokeapi": "held-items"
+  },
+  "Damp Rock": {
+    "category": "other",
+    "desc": "Strumento da dare a un Pokémon. Allunga la durata della mossa Pioggiadanza.",
+    "categoria_pokeapi": "held-items"
+  },
+  "Grip Claw": {
+    "category": "other",
+    "desc": "Strumento da dare a un Pokémon. Prolunga gli attacchi multiturno come Avvolgibotta e Legatutto.",
+    "categoria_pokeapi": "held-items"
+  },
+  "Sticky Barb": {
+    "category": "other",
+    "desc": "Strumento che danneggia chi ce l’ha a ogni turno. Può attaccarsi a un Pokémon che entra in contatto con chi ce l’ha a causa di un attacco.",
+    "categoria_pokeapi": "bad-held-items"
+  },
+  "Power Bracer": {
+    "category": "other",
+    "desc": "Strumento da dare a un Pokémon. Riduce la Velocità nella lotta ma permette ai punti base dell’Attacco di crescere più rapidamente.",
+    "categoria_pokeapi": "effort-training"
+  },
+  "Power Belt": {
+    "category": "other",
+    "desc": "Strumento da dare a un Pokémon. Riduce la Velocità nella lotta ma permette ai punti base della Difesa di crescere più rapidamente.",
+    "categoria_pokeapi": "effort-training"
+  },
+  "Power Lens": {
+    "category": "other",
+    "desc": "Strumento da dare a un Pokémon. Riduce la Velocità nella lotta ma permette ai punti base dell’Attacco Speciale di crescere più rapidamente.",
+    "categoria_pokeapi": "effort-training"
+  },
+  "Power Band": {
+    "category": "other",
+    "desc": "Strumento da dare a un Pokémon. Riduce la Velocità nella lotta ma permette ai punti base della Difesa Speciale di crescere più rapidamente.",
+    "categoria_pokeapi": "effort-training"
+  },
+  "Power Anklet": {
+    "category": "other",
+    "desc": "Strumento da dare a un Pokémon. Riduce la Velocità nella lotta ma permette ai punti base della Velocità di crescere più rapidamente.",
+    "categoria_pokeapi": "effort-training"
+  },
+  "Power Weight": {
+    "category": "other",
+    "desc": "Strumento da dare a un Pokémon. Riduce la Velocità nella lotta ma permette ai punti base dei PS di crescere più rapidamente.",
+    "categoria_pokeapi": "effort-training"
+  },
+  "Shed Shell": {
+    "category": "other",
+    "desc": "Un Pokémon con questo robusto guscio può essere sempre sostituito, anche se sotto l’effetto di mosse o abilità antifuga.",
+    "categoria_pokeapi": "held-items"
+  },
+  "Big Root": {
+    "category": "other",
+    "desc": "Strumento da dare a un Pokémon. Potenzia le mosse ruba-PS facendo recuperare un maggior numero di PS.",
+    "categoria_pokeapi": "held-items"
+  },
+  "Choice Specs": {
+    "category": "other",
+    "desc": "Strumento da dare a un Pokémon. Questi occhiali aumentano la potenza delle mosse speciali, ma permettono l’uso di una sola mossa.",
+    "categoria_pokeapi": "choice"
+  },
+  "Flame Plate": {
+    "category": "other",
+    "desc": "Strumento da dare a un Pokémon. Lastra di pietra che potenzia le mosse di tipo Fuoco.",
+    "categoria_pokeapi": "plates"
+  },
+  "Splash Plate": {
+    "category": "other",
+    "desc": "Strumento da dare a un Pokémon. Lastra di pietra che potenzia le mosse di tipo Acqua.",
+    "categoria_pokeapi": "plates"
+  },
+  "Zap Plate": {
+    "category": "other",
+    "desc": "Strumento da dare a un Pokémon. Lastra di pietra che potenzia le mosse di tipo Elettro.",
+    "categoria_pokeapi": "plates"
+  },
+  "Meadow Plate": {
+    "category": "other",
+    "desc": "Strumento da dare a un Pokémon. Lastra di pietra che potenzia le mosse di tipo Erba.",
+    "categoria_pokeapi": "plates"
+  },
+  "Icicle Plate": {
+    "category": "other",
+    "desc": "Strumento da dare a un Pokémon. Lastra di pietra che potenzia le mosse di tipo Ghiaccio.",
+    "categoria_pokeapi": "plates"
+  },
+  "Fist Plate": {
+    "category": "other",
+    "desc": "Strumento da dare a un Pokémon. Lastra di pietra che potenzia le mosse di tipo Lotta.",
+    "categoria_pokeapi": "plates"
+  },
+  "Toxic Plate": {
+    "category": "other",
+    "desc": "Strumento da dare a un Pokémon. Lastra di pietra che potenzia le mosse di tipo Veleno.",
+    "categoria_pokeapi": "plates"
+  },
+  "Earth Plate": {
+    "category": "other",
+    "desc": "Strumento da dare a un Pokémon. Lastra di pietra che potenzia le mosse di tipo Terra.",
+    "categoria_pokeapi": "plates"
+  },
+  "Sky Plate": {
+    "category": "other",
+    "desc": "Strumento da dare a un Pokémon. Lastra di pietra che potenzia le mosse di tipo Volante.",
+    "categoria_pokeapi": "plates"
+  },
+  "Mind Plate": {
+    "category": "other",
+    "desc": "Strumento da dare a un Pokémon. Lastra di pietra che potenzia le mosse di tipo Psico.",
+    "categoria_pokeapi": "plates"
+  },
+  "Insect Plate": {
+    "category": "other",
+    "desc": "Strumento da dare a un Pokémon. Lastra di pietra che potenzia le mosse di tipo Coleottero.",
+    "categoria_pokeapi": "plates"
+  },
+  "Stone Plate": {
+    "category": "other",
+    "desc": "Strumento da dare a un Pokémon. Lastra di pietra che potenzia le mosse di tipo Roccia.",
+    "categoria_pokeapi": "plates"
+  },
+  "Spooky Plate": {
+    "category": "other",
+    "desc": "Strumento da dare a un Pokémon. Lastra di pietra che potenzia le mosse di tipo Spettro.",
+    "categoria_pokeapi": "plates"
+  },
+  "Draco Plate": {
+    "category": "other",
+    "desc": "Strumento da dare a un Pokémon. Lastra di pietra che potenzia le mosse di tipo Drago.",
+    "categoria_pokeapi": "plates"
+  },
+  "Dread Plate": {
+    "category": "other",
+    "desc": "Strumento da dare a un Pokémon. Lastra di pietra che potenzia le mosse di tipo Buio.",
+    "categoria_pokeapi": "plates"
+  },
+  "Iron Plate": {
+    "category": "other",
+    "desc": "Strumento da dare a un Pokémon. Lastra di pietra che potenzia le mosse di tipo Acciaio.",
+    "categoria_pokeapi": "plates"
+  },
+  "Odd Incense": {
+    "category": "other",
+    "desc": "Strumento da dare a un Pokémon. Incenso dal profumo esotico che potenzia le mosse di tipo Psico.",
+    "categoria_pokeapi": "type-enhancement"
+  },
+  "Rock Incense": {
+    "category": "other",
+    "desc": "Strumento da dare a un Pokémon. Incenso dal profumo esotico che potenzia le mosse di tipo Roccia.",
+    "categoria_pokeapi": "type-enhancement"
+  },
+  "Full Incense": {
+    "category": "other",
+    "desc": "Strumento da dare a un Pokémon. Incenso dal profumo esotico che rende gonfi e lenti.",
+    "categoria_pokeapi": "bad-held-items"
+  },
+  "Wave Incense": {
+    "category": "other",
+    "desc": "Strumento da dare a un Pokémon. Incenso dal profumo esotico che potenzia le mosse di tipo Acqua.",
+    "categoria_pokeapi": "type-enhancement"
+  },
+  "Rose Incense": {
+    "category": "other",
+    "desc": "Strumento da dare a un Pokémon. Incenso dal profumo esotico che potenzia le mosse di tipo Erba.",
+    "categoria_pokeapi": "type-enhancement"
+  },
+  "Luck Incense": {
+    "category": "other",
+    "desc": "Strumento da dare a un Pokémon. Se chi ce l’ha partecipa alla lotta, i guadagni raddoppiano.",
+    "categoria_pokeapi": "training"
+  },
+  "Pure Incense": {
+    "category": "other",
+    "desc": "Strumento da dare a un Pokémon. Se chi ce l’ha è il primo della squadra, aiuta ad allontanare i Pokémon selvatici.",
+    "categoria_pokeapi": "training"
+  },
+  "Razor Claw": {
+    "category": "other",
+    "desc": "Strumento da dare a un Pokémon. Artiglio che aumenta la probabilità di sferrare brutti colpi.",
+    "categoria_pokeapi": "held-items"
+  },
+  "Razor Fang": {
+    "category": "other",
+    "desc": "Strumento da dare a un Pokémon. Chi ce l’ha può far tentennare il nemico colpito.",
+    "categoria_pokeapi": "held-items"
+  },
+  "Griseous Orb": {
+    "category": "other",
+    "desc": "Poliedro splendente da dare a Giratina. Aumenta la potenza delle mosse di tipo Drago e Spettro.",
+    "categoria_pokeapi": "species-specific"
+  },
+  "Douse Drive": {
+    "category": "other",
+    "desc": "Modulo da dare a Genesect. Trasforma Tecnobotto in una mossa di tipo Acqua.",
+    "categoria_pokeapi": "species-specific"
+  },
+  "Shock Drive": {
+    "category": "other",
+    "desc": "Modulo da dare a Genesect. Trasforma Tecnobotto in una mossa di tipo Elettro.",
+    "categoria_pokeapi": "species-specific"
+  },
+  "Burn Drive": {
+    "category": "other",
+    "desc": "Modulo da dare a Genesect. Trasforma Tecnobotto in una mossa di tipo Fuoco.",
+    "categoria_pokeapi": "species-specific"
+  },
+  "Chill Drive": {
+    "category": "other",
+    "desc": "Modulo da dare a Genesect. Trasforma Tecnobotto in una mossa di tipo Ghiaccio.",
+    "categoria_pokeapi": "species-specific"
+  },
+  "Sweet Heart": {
+    "category": "other",
+    "desc": "Cioccolato molto dolce. Restituisce 20 PS a un Pokémon.",
+    "categoria_pokeapi": "healing"
+  },
+  "Eviolite": {
+    "category": "other",
+    "desc": "Misterioso concentrato di materia evolutiva. Aumenta la Difesa e la Difesa Speciale di un Pokémon che può ancora evolversi.",
+    "categoria_pokeapi": "held-items"
+  },
+  "Float Stone": {
+    "category": "other",
+    "desc": "Pietra leggerissima che riduce il peso del Pokémon che l’ha con sé.",
+    "categoria_pokeapi": "held-items"
+  },
+  "Rocky Helmet": {
+    "category": "other",
+    "desc": "Se il Pokémon che ha questo strumento è colpito da un attacco diretto, anche il nemico subisce dei danni.",
+    "categoria_pokeapi": "held-items"
+  },
+  "Air Balloon": {
+    "category": "other",
+    "desc": "Permette al Pokémon che ha questo strumento di fluttuare in aria. Scoppia se il Pokémon è colpito da un attacco.",
+    "categoria_pokeapi": "held-items"
+  },
+  "Red Card": {
+    "category": "other",
+    "desc": "Cartellino dal potere misterioso. Chi ce l’ha fa ritirare dalla lotta il Pokémon che lo ha colpito.",
+    "categoria_pokeapi": "held-items"
+  },
+  "Ring Target": {
+    "category": "other",
+    "desc": "Se un Pokémon ha questo strumento, le mosse che di norma non hanno effetto contro il suo tipo vanno a segno.",
+    "categoria_pokeapi": "held-items"
+  },
+  "Binding Band": {
+    "category": "other",
+    "desc": "Strumento da dare a un Pokémon che aumenta la potenza di mosse come Avvolgibotta e Legatutto.",
+    "categoria_pokeapi": "held-items"
+  },
+  "Absorb Bulb": {
+    "category": "other",
+    "desc": "Bulbo monouso. Se il Pokémon che ha questo strumento subisce una mossa di tipo Acqua, il suo Attacco Speciale aumenta.",
+    "categoria_pokeapi": "held-items"
+  },
+  "Cell Battery": {
+    "category": "other",
+    "desc": "Pila monouso. Se il Pokémon che ha questo strumento subisce un attacco di tipo Elettro, il suo Attacco aumenta.",
+    "categoria_pokeapi": "held-items"
+  },
+  "Eject Button": {
+    "category": "other",
+    "desc": "Se il Pokémon che ha questo strumento è colpito da un attacco, viene immediatamente sostituito da un altro membro della squadra.",
+    "categoria_pokeapi": "held-items"
+  },
+  "Fire Gem": {
+    "category": "other",
+    "desc": "Strumento da dare a un Pokémon. Gioiello che potenzia una sola volta le mosse di tipo Fuoco.",
+    "categoria_pokeapi": "jewels"
+  },
+  "Water Gem": {
+    "category": "other",
+    "desc": "Strumento da dare a un Pokémon. Gioiello che potenzia una sola volta le mosse di tipo Acqua.",
+    "categoria_pokeapi": "jewels"
+  },
+  "Electric Gem": {
+    "category": "other",
+    "desc": "Strumento da dare a un Pokémon. Gioiello che potenzia una sola volta le mosse di tipo Elettro.",
+    "categoria_pokeapi": "jewels"
+  },
+  "Grass Gem": {
+    "category": "other",
+    "desc": "Strumento da dare a un Pokémon. Gioiello che potenzia una sola volta le mosse di tipo Erba.",
+    "categoria_pokeapi": "jewels"
+  },
+  "Ice Gem": {
+    "category": "other",
+    "desc": "Strumento da dare a un Pokémon. Gioiello che potenzia una sola volta le mosse di tipo Ghiaccio.",
+    "categoria_pokeapi": "jewels"
+  },
+  "Fighting Gem": {
+    "category": "other",
+    "desc": "Strumento da dare a un Pokémon. Gioiello che potenzia una sola volta le mosse di tipo Lotta.",
+    "categoria_pokeapi": "jewels"
+  },
+  "Poison Gem": {
+    "category": "other",
+    "desc": "Strumento da dare a un Pokémon. Gioiello che potenzia una sola volta le mosse di tipo Veleno.",
+    "categoria_pokeapi": "jewels"
+  },
+  "Ground Gem": {
+    "category": "other",
+    "desc": "Strumento da dare a un Pokémon. Gioiello che potenzia una sola volta le mosse di tipo Terra.",
+    "categoria_pokeapi": "jewels"
+  },
+  "Flying Gem": {
+    "category": "other",
+    "desc": "Strumento da dare a un Pokémon. Gioiello che potenzia una sola volta le mosse di tipo Volante.",
+    "categoria_pokeapi": "jewels"
+  },
+  "Psychic Gem": {
+    "category": "other",
+    "desc": "Strumento da dare a un Pokémon. Gioiello che potenzia una sola volta le mosse di tipo Psico.",
+    "categoria_pokeapi": "jewels"
+  },
+  "Bug Gem": {
+    "category": "other",
+    "desc": "Strumento da dare a un Pokémon. Gioiello che potenzia una sola volta le mosse di tipo Coleottero.",
+    "categoria_pokeapi": "jewels"
+  },
+  "Rock Gem": {
+    "category": "other",
+    "desc": "Strumento da dare a un Pokémon. Gioiello che potenzia una sola volta le mosse di tipo Roccia.",
+    "categoria_pokeapi": "jewels"
+  },
+  "Ghost Gem": {
+    "category": "other",
+    "desc": "Strumento da dare a un Pokémon. Gioiello che potenzia una sola volta le mosse di tipo Spettro.",
+    "categoria_pokeapi": "jewels"
+  },
+  "Dark Gem": {
+    "category": "other",
+    "desc": "Strumento da dare a un Pokémon. Gioiello che potenzia una sola volta le mosse di tipo Buio.",
+    "categoria_pokeapi": "jewels"
+  },
+  "Steel Gem": {
+    "category": "other",
+    "desc": "Strumento da dare a un Pokémon. Gioiello che potenzia una sola volta le mosse di tipo Acciaio.",
+    "categoria_pokeapi": "jewels"
+  },
+  "Health Feather": {
+    "category": "other",
+    "desc": "Strumento da usare su un Pokémon. Ne aumenta di poco i punti base dei PS.",
+    "categoria_pokeapi": "vitamins"
+  },
+  "Muscle Feather": {
+    "category": "other",
+    "desc": "Strumento da usare su un Pokémon. Ne aumenta di poco i punti base dell’Attacco.",
+    "categoria_pokeapi": "vitamins"
+  },
+  "Resist Feather": {
+    "category": "other",
+    "desc": "Strumento da usare su un Pokémon. Ne aumenta di poco i punti base della Difesa.",
+    "categoria_pokeapi": "vitamins"
+  },
+  "Genius Feather": {
+    "category": "other",
+    "desc": "Strumento da usare su un Pokémon. Ne aumenta di poco i punti base dell’Attacco Speciale.",
+    "categoria_pokeapi": "vitamins"
+  },
+  "Clever Feather": {
+    "category": "other",
+    "desc": "Strumento da usare su un Pokémon. Ne aumenta di poco i punti base della Difesa Speciale.",
+    "categoria_pokeapi": "vitamins"
+  },
+  "Swift Feather": {
+    "category": "other",
+    "desc": "Strumento da usare su un Pokémon. Ne aumenta di poco i punti base della Velocità.",
+    "categoria_pokeapi": "vitamins"
+  },
+  "Pass Orb": {
+    "category": "other",
+    "desc": "Bilia misteriosa che racchiude l’energia di Unima ed è in grado di lanciare il Passapotere.",
+    "categoria_pokeapi": "held-items"
+  },
+  "Casteliacone": {
+    "category": "other",
+    "desc": "Il famoso gelato di Austropoli. Cura tutti i problemi di stato di un Pokémon.",
+    "categoria_pokeapi": "status-cures"
+  },
+  "Dragon Gem": {
+    "category": "other",
+    "desc": "Strumento da dare a un Pokémon. Gioiello che potenzia una sola volta le mosse di tipo Drago.",
+    "categoria_pokeapi": "jewels"
+  },
+  "Normal Gem": {
+    "category": "other",
+    "desc": "Strumento da dare a un Pokémon. Gioiello che potenzia una sola volta le mosse di tipo Normale.",
+    "categoria_pokeapi": "jewels"
+  },
+  "Weakness Policy": {
+    "category": "other",
+    "desc": "Se il Pokémon viene colpito da una mossa contro cui è debole, l’Attacco e l’Attacco Speciale aumentano considerevolmente.",
+    "categoria_pokeapi": "held-items"
+  },
+  "Assault Vest": {
+    "category": "other",
+    "desc": "Strumento da dare a un Pokémon. Questo corpetto aumenta la Difesa Speciale ma impedisce l’uso di mosse di stato.",
+    "categoria_pokeapi": "held-items"
+  },
+  "Pixie Plate": {
+    "category": "other",
+    "desc": "Strumento da dare a un Pokémon. Lastra di pietra che potenzia le mosse di tipo Folletto.",
+    "categoria_pokeapi": "plates"
+  },
+  "Ability Capsule": {
+    "category": "other",
+    "desc": "Se usata su un Pokémon che può avere due abilità, questa capsula permette di cambiare quella attiva.",
+    "categoria_pokeapi": "vitamins"
+  },
+  "Luminous Moss": {
+    "category": "other",
+    "desc": "Muschio luminoso monouso. Se il Pokémon che ha questo strumento subisce una mossa di tipo Acqua, la sua Difesa Speciale aumenta.",
+    "categoria_pokeapi": "held-items"
+  },
+  "Snowball": {
+    "category": "other",
+    "desc": "Palla di neve monouso. Se il Pokémon che ce l’ha subisce una mossa di tipo Ghiaccio, il suo Attacco aumenta.",
+    "categoria_pokeapi": "held-items"
+  },
+  "Safety Goggles": {
+    "category": "other",
+    "desc": "Visiera che protegge dai danni legati alle condizioni atmosferiche e dalla maggior parte delle mosse che rilasciano polvere.",
+    "categoria_pokeapi": "held-items"
+  },
+  "Gengarite": {
+    "category": "other",
+    "desc": "Un esemplare delle misteriose Megapietre. Data a Gengar, gli permette di megaevolversi durante la lotta.",
+    "categoria_pokeapi": "mega-stones"
+  },
+  "Gardevoirite": {
+    "category": "other",
+    "desc": "Un esemplare delle misteriose Megapietre. Data a Gardevoir, gli permette di megaevolversi durante la lotta.",
+    "categoria_pokeapi": "mega-stones"
+  },
+  "Ampharosite": {
+    "category": "other",
+    "desc": "Un esemplare delle misteriose Megapietre. Data ad Ampharos, gli permette di megaevolversi durante la lotta.",
+    "categoria_pokeapi": "mega-stones"
+  },
+  "Venusaurite": {
+    "category": "other",
+    "desc": "Un esemplare delle misteriose Megapietre. Data a Venusaur, gli permette di megaevolversi durante la lotta.",
+    "categoria_pokeapi": "mega-stones"
+  },
+  "Charizardite X": {
+    "category": "other",
+    "desc": "Un esemplare delle misteriose Megapietre. Data a Charizard, gli permette di megaevolversi durante la lotta.",
+    "categoria_pokeapi": "mega-stones"
+  },
+  "Blastoisinite": {
+    "category": "other",
+    "desc": "Un esemplare delle misteriose Megapietre. Data a Blastoise, gli permette di megaevolversi durante la lotta.",
+    "categoria_pokeapi": "mega-stones"
+  },
+  "Mewtwonite X": {
+    "category": "other",
+    "desc": "Un esemplare delle misteriose Megapietre. Data a Mewtwo, gli permette di megaevolversi durante la lotta.",
+    "categoria_pokeapi": "mega-stones"
+  },
+  "Mewtwonite Y": {
+    "category": "other",
+    "desc": "Un esemplare delle misteriose Megapietre. Data a Mewtwo, gli permette di megaevolversi durante la lotta.",
+    "categoria_pokeapi": "mega-stones"
+  },
+  "Blazikenite": {
+    "category": "other",
+    "desc": "Un esemplare delle misteriose Megapietre. Data a Blaziken, gli permette di megaevolversi durante la lotta.",
+    "categoria_pokeapi": "mega-stones"
+  },
+  "Medichamite": {
+    "category": "other",
+    "desc": "Un esemplare delle misteriose Megapietre. Data a Medicham, gli permette di megaevolversi durante la lotta.",
+    "categoria_pokeapi": "mega-stones"
+  },
+  "Houndoominite": {
+    "category": "other",
+    "desc": "Un esemplare delle misteriose Megapietre. Data a Houndoom, gli permette di megaevolversi durante la lotta.",
+    "categoria_pokeapi": "mega-stones"
+  },
+  "Aggronite": {
+    "category": "other",
+    "desc": "Un esemplare delle misteriose Megapietre. Data ad Aggron, gli permette di megaevolversi durante la lotta.",
+    "categoria_pokeapi": "mega-stones"
+  },
+  "Banettite": {
+    "category": "other",
+    "desc": "Un esemplare delle misteriose Megapietre. Data a Banette, gli permette di megaevolversi durante la lotta.",
+    "categoria_pokeapi": "mega-stones"
+  },
+  "Tyranitarite": {
+    "category": "other",
+    "desc": "Un esemplare delle misteriose Megapietre. Data a Tyranitar, gli permette di megaevolversi durante la lotta.",
+    "categoria_pokeapi": "mega-stones"
+  },
+  "Scizorite": {
+    "category": "other",
+    "desc": "Un esemplare delle misteriose Megapietre. Data a Scizor, gli permette di megaevolversi durante la lotta.",
+    "categoria_pokeapi": "mega-stones"
+  },
+  "Pinsirite": {
+    "category": "other",
+    "desc": "Un esemplare delle misteriose Megapietre. Data a Pinsir, gli permette di megaevolversi durante la lotta.",
+    "categoria_pokeapi": "mega-stones"
+  },
+  "Aerodactylite": {
+    "category": "other",
+    "desc": "Un esemplare delle misteriose Megapietre. Data ad Aerodactyl, gli permette di megaevolversi durante la lotta.",
+    "categoria_pokeapi": "mega-stones"
+  },
+  "Lucarionite": {
+    "category": "other",
+    "desc": "Un esemplare delle misteriose Megapietre. Data a Lucario, gli permette di megaevolversi durante la lotta.",
+    "categoria_pokeapi": "mega-stones"
+  },
+  "Abomasite": {
+    "category": "other",
+    "desc": "Un esemplare delle misteriose Megapietre. Data ad Abomasnow, gli permette di megaevolversi durante la lotta.",
+    "categoria_pokeapi": "mega-stones"
+  },
+  "Kangaskhanite": {
+    "category": "other",
+    "desc": "Un esemplare delle misteriose Megapietre. Data a Kangaskhan, gli permette di megaevolversi durante la lotta.",
+    "categoria_pokeapi": "mega-stones"
+  },
+  "Gyaradosite": {
+    "category": "other",
+    "desc": "Un esemplare delle misteriose Megapietre. Data a Gyarados, gli permette di megaevolversi durante la lotta.",
+    "categoria_pokeapi": "mega-stones"
+  },
+  "Absolite": {
+    "category": "other",
+    "desc": "Un esemplare delle misteriose Megapietre. Data ad Absol, gli permette di megaevolversi durante la lotta.",
+    "categoria_pokeapi": "mega-stones"
+  },
+  "Charizardite Y": {
+    "category": "other",
+    "desc": "Un esemplare delle misteriose Megapietre. Data a Charizard, gli permette di megaevolversi durante la lotta.",
+    "categoria_pokeapi": "mega-stones"
+  },
+  "Alakazite": {
+    "category": "other",
+    "desc": "Un esemplare delle misteriose Megapietre. Data ad Alakazam, gli permette di megaevolversi durante la lotta.",
+    "categoria_pokeapi": "mega-stones"
+  },
+  "Heracronite": {
+    "category": "other",
+    "desc": "Un esemplare delle misteriose Megapietre. Data a Heracross, gli permette di megaevolversi durante la lotta.",
+    "categoria_pokeapi": "mega-stones"
+  },
+  "Mawilite": {
+    "category": "other",
+    "desc": "Un esemplare delle misteriose Megapietre. Data a Mawile, gli permette di megaevolversi durante la lotta.",
+    "categoria_pokeapi": "mega-stones"
+  },
+  "Manectite": {
+    "category": "other",
+    "desc": "Un esemplare delle misteriose Megapietre. Data a Manectric, gli permette di megaevolversi durante la lotta.",
+    "categoria_pokeapi": "mega-stones"
+  },
+  "Garchompite": {
+    "category": "other",
+    "desc": "Un esemplare delle misteriose Megapietre. Data a Garchomp, gli permette di megaevolversi durante la lotta.",
+    "categoria_pokeapi": "mega-stones"
+  },
+  "Lumiose Galette": {
+    "category": "other",
+    "desc": "Un famoso dolce di Luminopoli. Può guarire un Pokémon da tutti i problemi di stato.",
+    "categoria_pokeapi": "status-cures"
+  },
+  "Fairy Gem": {
+    "category": "other",
+    "desc": "Strumento da dare a un Pokémon. Gioiello che potenzia una sola volta le mosse di tipo Folletto.",
+    "categoria_pokeapi": "jewels"
+  },
+  "Latiasite": {
+    "category": "other",
+    "desc": "Un esemplare delle misteriose Megapietre. Data a Latias, gli permette di megaevolversi durante la lotta.",
+    "categoria_pokeapi": "mega-stones"
+  },
+  "Latiosite": {
+    "category": "other",
+    "desc": "Un esemplare delle misteriose Megapietre. Data a Latios, gli permette di megaevolversi durante la lotta.",
+    "categoria_pokeapi": "mega-stones"
+  },
+  "Shalour Sable": {
+    "category": "other",
+    "desc": "Il famoso Yantafrollino di Yantaropoli. Cura tutti i problemi di stato di un Pokémon.",
+    "categoria_pokeapi": "status-cures"
+  },
+  "Swampertite": {
+    "category": "other",
+    "desc": "Una delle misteriose Megapietre. Data a Swampert, gli permette di megaevolversi durante la lotta.",
+    "categoria_pokeapi": "mega-stones"
+  },
+  "Sceptilite": {
+    "category": "other",
+    "desc": "Una delle misteriose Megapietre. Data a Sceptile, gli permette di megaevolversi durante la lotta.",
+    "categoria_pokeapi": "mega-stones"
+  },
+  "Sablenite": {
+    "category": "other",
+    "desc": "Una delle misteriose Megapietre. Data a Sableye, gli permette di megaevolversi durante la lotta.",
+    "categoria_pokeapi": "mega-stones"
+  },
+  "Altarianite": {
+    "category": "other",
+    "desc": "Una delle misteriose Megapietre. Data a Altaria, gli permette di megaevolversi durante la lotta.",
+    "categoria_pokeapi": "mega-stones"
+  },
+  "Galladite": {
+    "category": "other",
+    "desc": "Una delle misteriose Megapietre. Data a Gallade, gli permette di megaevolversi durante la lotta.",
+    "categoria_pokeapi": "mega-stones"
+  },
+  "Audinite": {
+    "category": "other",
+    "desc": "Una delle misteriose Megapietre. Data a Audino, gli permette di megaevolversi durante la lotta.",
+    "categoria_pokeapi": "mega-stones"
+  },
+  "Metagrossite": {
+    "category": "other",
+    "desc": "Una delle misteriose Megapietre. Data a Metagross, gli permette di megaevolversi durante la lotta.",
+    "categoria_pokeapi": "mega-stones"
+  },
+  "Sharpedonite": {
+    "category": "other",
+    "desc": "Una delle misteriose Megapietre. Data a Sharpedo, gli permette di megaevolversi durante la lotta.",
+    "categoria_pokeapi": "mega-stones"
+  },
+  "Slowbronite": {
+    "category": "other",
+    "desc": "Una delle misteriose Megapietre. Data a Slowbro, gli permette di megaevolversi durante la lotta.",
+    "categoria_pokeapi": "mega-stones"
+  },
+  "Steelixite": {
+    "category": "other",
+    "desc": "Una delle misteriose Megapietre. Data a Steelix, gli permette di megaevolversi durante la lotta.",
+    "categoria_pokeapi": "mega-stones"
+  },
+  "Pidgeotite": {
+    "category": "other",
+    "desc": "Una delle misteriose Megapietre. Data a Pidgeot, gli permette di megaevolversi durante la lotta.",
+    "categoria_pokeapi": "mega-stones"
+  },
+  "Glalitite": {
+    "category": "other",
+    "desc": "Una delle misteriose Megapietre. Data a Glalie, gli permette di megaevolversi durante la lotta.",
+    "categoria_pokeapi": "mega-stones"
+  },
+  "Diancite": {
+    "category": "other",
+    "desc": "Una delle misteriose Megapietre. Data a Diancie, gli permette di megaevolversi durante la lotta.",
+    "categoria_pokeapi": "mega-stones"
+  },
+  "Cameruptite": {
+    "category": "other",
+    "desc": "Una delle misteriose Megapietre. Data a Camerupt, gli permette di megaevolversi durante la lotta.",
+    "categoria_pokeapi": "mega-stones"
+  },
+  "Lopunnite": {
+    "category": "other",
+    "desc": "Una delle misteriose Megapietre. Data a Lopunny, gli permette di megaevolversi durante la lotta.",
+    "categoria_pokeapi": "mega-stones"
+  },
+  "Salamencite": {
+    "category": "other",
+    "desc": "Una delle misteriose Megapietre. Data a Salamence, gli permette di megaevolversi durante la lotta.",
+    "categoria_pokeapi": "mega-stones"
+  },
+  "Beedrillite": {
+    "category": "other",
+    "desc": "Una delle misteriose Megapietre. Data a Beedrill, gli permette di megaevolversi durante la lotta.",
+    "categoria_pokeapi": "mega-stones"
+  },
+  "Normalium Z": {
+    "category": "other",
+    "desc": "Cristallo in cui è immagazzinato il Potere Z. Consente di trasformare le mosse di tipo Normale in mosse Z.",
+    "categoria_pokeapi": "z-crystals"
+  },
+  "Firium Z": {
+    "category": "other",
+    "desc": "Cristallo in cui è immagazzinato il Potere Z. Consente di trasformare le mosse di tipo Fuoco in mosse Z.",
+    "categoria_pokeapi": "z-crystals"
+  },
+  "Waterium Z": {
+    "category": "other",
+    "desc": "Cristallo in cui è immagazzinato il Potere Z. Consente di trasformare le mosse di tipo Acqua in mosse Z.",
+    "categoria_pokeapi": "z-crystals"
+  },
+  "Electrium Z": {
+    "category": "other",
+    "desc": "Cristallo in cui è immagazzinato il Potere Z. Consente di trasformare le mosse di tipo Elettro in mosse Z.",
+    "categoria_pokeapi": "z-crystals"
+  },
+  "Grassium Z": {
+    "category": "other",
+    "desc": "Cristallo in cui è immagazzinato il Potere Z. Consente di trasformare le mosse di tipo Erba in mosse Z.",
+    "categoria_pokeapi": "z-crystals"
+  },
+  "Icium Z": {
+    "category": "other",
+    "desc": "Cristallo in cui è immagazzinato il Potere Z. Consente di trasformare le mosse di tipo Ghiaccio in mosse Z.",
+    "categoria_pokeapi": "z-crystals"
+  },
+  "Fightinium Z": {
+    "category": "other",
+    "desc": "Cristallo in cui è immagazzinato il Potere Z. Consente di trasformare le mosse di tipo Lotta in mosse Z.",
+    "categoria_pokeapi": "z-crystals"
+  },
+  "Poisonium Z": {
+    "category": "other",
+    "desc": "Cristallo in cui è immagazzinato il Potere Z. Consente di trasformare le mosse di tipo Veleno in mosse Z.",
+    "categoria_pokeapi": "z-crystals"
+  },
+  "Groundium Z": {
+    "category": "other",
+    "desc": "Cristallo in cui è immagazzinato il Potere Z. Consente di trasformare le mosse di tipo Terra in mosse Z.",
+    "categoria_pokeapi": "z-crystals"
+  },
+  "Flyinium Z": {
+    "category": "other",
+    "desc": "Cristallo in cui è immagazzinato il Potere Z. Consente di trasformare le mosse di tipo Volante in mosse Z.",
+    "categoria_pokeapi": "z-crystals"
+  },
+  "Psychium Z": {
+    "category": "other",
+    "desc": "Cristallo in cui è immagazzinato il Potere Z. Consente di trasformare le mosse di tipo Psico in mosse Z.",
+    "categoria_pokeapi": "z-crystals"
+  },
+  "Buginium Z": {
+    "category": "other",
+    "desc": "Cristallo in cui è immagazzinato il Potere Z. Consente di trasformare le mosse di tipo Coleottero in mosse Z.",
+    "categoria_pokeapi": "z-crystals"
+  },
+  "Rockium Z": {
+    "category": "other",
+    "desc": "Cristallo in cui è immagazzinato il Potere Z. Consente di trasformare le mosse di tipo Roccia in mosse Z.",
+    "categoria_pokeapi": "z-crystals"
+  },
+  "Ghostium Z": {
+    "category": "other",
+    "desc": "Cristallo in cui è immagazzinato il Potere Z. Consente di trasformare le mosse di tipo Spettro in mosse Z.",
+    "categoria_pokeapi": "z-crystals"
+  },
+  "Dragonium Z": {
+    "category": "other",
+    "desc": "Cristallo in cui è immagazzinato il Potere Z. Consente di trasformare le mosse di tipo Drago in mosse Z.",
+    "categoria_pokeapi": "z-crystals"
+  },
+  "Darkinium Z": {
+    "category": "other",
+    "desc": "Cristallo in cui è immagazzinato il Potere Z. Consente di trasformare le mosse di tipo Buio in mosse Z.",
+    "categoria_pokeapi": "z-crystals"
+  },
+  "Steelium Z": {
+    "category": "other",
+    "desc": "Cristallo in cui è immagazzinato il Potere Z. Consente di trasformare le mosse di tipo Acciaio in mosse Z.",
+    "categoria_pokeapi": "z-crystals"
+  },
+  "Fairium Z": {
+    "category": "other",
+    "desc": "Cristallo in cui è immagazzinato il Potere Z. Consente di trasformare le mosse di tipo Folletto in mosse Z.",
+    "categoria_pokeapi": "z-crystals"
+  },
+  "Pikanium Z": {
+    "category": "other",
+    "desc": "Cristallo in cui è immagazzinato il Potere Z. Consente di trasformare la mossa Locomovolt di Pikachu in una mossa Z.",
+    "categoria_pokeapi": "z-crystals"
+  },
+  "Decidium Z": {
+    "category": "other",
+    "desc": "Cristallo in cui è immagazzinato il Potere Z. Consente di trasformare la mossa Cucitura d’Ombra di Decidueye in una mossa Z.",
+    "categoria_pokeapi": "z-crystals"
+  },
+  "Incinium Z": {
+    "category": "other",
+    "desc": "Cristallo in cui è immagazzinato il Potere Z. Consente di trasformare la mossa Braccioteso di Incineroar in una mossa Z.",
+    "categoria_pokeapi": "z-crystals"
+  },
+  "Primarium Z": {
+    "category": "other",
+    "desc": "Cristallo in cui è immagazzinato il Potere Z. Consente di trasformare la mossa Canto Effimero di Primarina in una mossa Z.",
+    "categoria_pokeapi": "z-crystals"
+  },
+  "Tapunium Z": {
+    "category": "other",
+    "desc": "Cristallo in cui è immagazzinato il Potere Z. Consente di trasformare la mossa Ira della Natura dei Tapu in una mossa Z.",
+    "categoria_pokeapi": "z-crystals"
+  },
+  "Marshadium Z": {
+    "category": "other",
+    "desc": "Cristallo in cui è immagazzinato il Potere Z. Consente di trasformare la mossa Ombrafurto di Marshadow in una mossa Z.",
+    "categoria_pokeapi": "z-crystals"
+  },
+  "Aloraichium Z": {
+    "category": "other",
+    "desc": "Cristallo in cui è immagazzinato il Potere Z. Consente di trasformare la mossa Fulmine del Raichu di Alola in una mossa Z.",
+    "categoria_pokeapi": "z-crystals"
+  },
+  "Snorlium Z": {
+    "category": "other",
+    "desc": "Cristallo in cui è immagazzinato il Potere Z. Consente di trasformare la mossa Gigaimpatto di Snorlax in una mossa Z.",
+    "categoria_pokeapi": "z-crystals"
+  },
+  "Eevium Z": {
+    "category": "other",
+    "desc": "Cristallo in cui è immagazzinato il Potere Z. Consente di trasformare la mossa Ultimascelta di Eevee in una mossa Z.",
+    "categoria_pokeapi": "z-crystals"
+  },
+  "Mewnium Z": {
+    "category": "other",
+    "desc": "Cristallo in cui è immagazzinato il Potere Z. Consente di trasformare la mossa Psichico di Mew in una mossa Z.",
+    "categoria_pokeapi": "z-crystals"
+  },
+  "Pikashunium Z": {
+    "category": "other",
+    "desc": "Cristallo in cui è immagazzinato il Potere Z. Consente di trasformare la mossa Fulmine di Pikachu con il berretto in una mossa Z.",
+    "categoria_pokeapi": "z-crystals"
+  },
+  "Adrenaline Orb": {
+    "category": "other",
+    "desc": "Data a un Pokémon, aumenta la Velocità se subisce Prepotenza.",
+    "categoria_pokeapi": "held-items"
+  },
+  "Big Malasada": {
+    "category": "other",
+    "desc": "Frittella tipica di Alola. Cura tutti i problemi di stato di un Pokémon.",
+    "categoria_pokeapi": "status-cures"
+  },
+  "Red Nectar": {
+    "category": "other",
+    "desc": "Nettare ottenuto dai fiori del Prato Ula Ula. Fa cambiare forma a una determinata specie di Pokémon.",
+    "categoria_pokeapi": "species-specific"
+  },
+  "Yellow Nectar": {
+    "category": "other",
+    "desc": "Nettare ottenuto dai fiori del Prato Mele Mele. Fa cambiare forma a una determinata specie di Pokémon.",
+    "categoria_pokeapi": "species-specific"
+  },
+  "Pink Nectar": {
+    "category": "other",
+    "desc": "Nettare ottenuto dai fiori delle aiuole di Viale Royale. Fa cambiare forma a una determinata specie di Pokémon.",
+    "categoria_pokeapi": "species-specific"
+  },
+  "Purple Nectar": {
+    "category": "other",
+    "desc": "Nettare ottenuto dai fiori del Prato Poni. Fa cambiare forma a una determinata specie di Pokémon.",
+    "categoria_pokeapi": "species-specific"
+  },
+  "Terrain Extender": {
+    "category": "other",
+    "desc": "Se un Pokémon ha questo strumento, l’effetto di una sua mossa o abilità che modifica il campo di lotta durerà più a lungo.",
+    "categoria_pokeapi": "held-items"
+  },
+  "Protective Pads": {
+    "category": "other",
+    "desc": "Protegge dagli effetti causati dal contatto diretto con altri Pokémon.",
+    "categoria_pokeapi": "held-items"
+  },
+  "Electric Seed": {
+    "category": "other",
+    "desc": "Strumento da dare a un Pokémon. Fa aumentare la Difesa quando il terreno di lotta è nello stato di Campo Elettrico.",
+    "categoria_pokeapi": "held-items"
+  },
+  "Psychic Seed": {
+    "category": "other",
+    "desc": "Strumento da dare a un Pokémon. Fa aumentare la Difesa Speciale quando il terreno di lotta è nello stato di Campo Psichico.",
+    "categoria_pokeapi": "held-items"
+  },
+  "Misty Seed": {
+    "category": "other",
+    "desc": "Strumento da dare a un Pokémon. Fa aumentare la Difesa Speciale quando il terreno di lotta è nello stato di Campo Nebbioso.",
+    "categoria_pokeapi": "held-items"
+  },
+  "Grassy Seed": {
+    "category": "other",
+    "desc": "Strumento da dare a un Pokémon. Fa aumentare la Difesa quando il terreno di lotta è nello stato di Campo Erboso.",
+    "categoria_pokeapi": "held-items"
+  },
+  "Fighting Memory": {
+    "category": "other",
+    "desc": "ROM contenente dati sul tipo Lotta in formato digitale. Permette a un certo Pokémon di cambiare tipo.",
+    "categoria_pokeapi": "memories"
+  },
+  "Flying Memory": {
+    "category": "other",
+    "desc": "ROM contenente dati sul tipo Volante in formato digitale. Permette a un certo Pokémon di cambiare tipo.",
+    "categoria_pokeapi": "memories"
+  },
+  "Poison Memory": {
+    "category": "other",
+    "desc": "ROM contenente dati sul tipo Veleno in formato digitale. Permette a un certo Pokémon di cambiare tipo.",
+    "categoria_pokeapi": "memories"
+  },
+  "Ground Memory": {
+    "category": "other",
+    "desc": "ROM contenente dati sul tipo Terra in formato digitale. Permette a un certo Pokémon di cambiare tipo.",
+    "categoria_pokeapi": "memories"
+  },
+  "Rock Memory": {
+    "category": "other",
+    "desc": "ROM contenente dati sul tipo Roccia in formato digitale. Permette a un certo Pokémon di cambiare tipo.",
+    "categoria_pokeapi": "memories"
+  },
+  "Bug Memory": {
+    "category": "other",
+    "desc": "ROM contenente dati sul tipo Coleottero in formato digitale. Permette a un certo Pokémon di cambiare tipo.",
+    "categoria_pokeapi": "memories"
+  },
+  "Ghost Memory": {
+    "category": "other",
+    "desc": "ROM contenente dati sul tipo Spettro in formato digitale. Permette a un certo Pokémon di cambiare tipo.",
+    "categoria_pokeapi": "memories"
+  },
+  "Steel Memory": {
+    "category": "other",
+    "desc": "ROM contenente dati sul tipo Acciaio in formato digitale. Permette a un certo Pokémon di cambiare tipo.",
+    "categoria_pokeapi": "memories"
+  },
+  "Fire Memory": {
+    "category": "other",
+    "desc": "ROM contenente dati sul tipo Fuoco in formato digitale. Permette a un certo Pokémon di cambiare tipo.",
+    "categoria_pokeapi": "memories"
+  },
+  "Water Memory": {
+    "category": "other",
+    "desc": "ROM contenente dati sul tipo Acqua in formato digitale. Permette a un certo Pokémon di cambiare tipo.",
+    "categoria_pokeapi": "memories"
+  },
+  "Grass Memory": {
+    "category": "other",
+    "desc": "ROM contenente dati sul tipo Erba in formato digitale. Permette a un certo Pokémon di cambiare tipo.",
+    "categoria_pokeapi": "memories"
+  },
+  "Electric Memory": {
+    "category": "other",
+    "desc": "ROM contenente dati sul tipo Elettro in formato digitale. Permette a un certo Pokémon di cambiare tipo.",
+    "categoria_pokeapi": "memories"
+  },
+  "Psychic Memory": {
+    "category": "other",
+    "desc": "ROM contenente dati sul tipo Psico in formato digitale. Permette a un certo Pokémon di cambiare tipo.",
+    "categoria_pokeapi": "memories"
+  },
+  "Ice Memory": {
+    "category": "other",
+    "desc": "ROM contenente dati sul tipo Ghiaccio in formato digitale. Permette a un certo Pokémon di cambiare tipo.",
+    "categoria_pokeapi": "memories"
+  },
+  "Dragon Memory": {
+    "category": "other",
+    "desc": "ROM contenente dati sul tipo Drago in formato digitale. Permette a un certo Pokémon di cambiare tipo.",
+    "categoria_pokeapi": "memories"
+  },
+  "Dark Memory": {
+    "category": "other",
+    "desc": "ROM contenente dati sul tipo Buio in formato digitale. Permette a un certo Pokémon di cambiare tipo.",
+    "categoria_pokeapi": "memories"
+  },
+  "Fairy Memory": {
+    "category": "other",
+    "desc": "ROM contenente dati sul tipo Folletto in formato digitale. Permette a un certo Pokémon di cambiare tipo.",
+    "categoria_pokeapi": "memories"
+  },
+  "Pewter Crunchies": {
+    "category": "other",
+    "desc": "I salatini tipici di Plumbeopoli. Curano tutti i problemi di stato di un Pokémon.",
+    "categoria_pokeapi": "status-cures"
+  },
+  "Health Candy": {
+    "category": "other",
+    "desc": "Una caramella piena zeppa di energia. Aumenta i PS di un Pokémon.",
+    "categoria_pokeapi": "vitamins"
+  },
+  "Mighty Candy": {
+    "category": "other",
+    "desc": "Una caramella piena zeppa di energia. Aumenta l’Attacco di un Pokémon.",
+    "categoria_pokeapi": "vitamins"
+  },
+  "Tough Candy": {
+    "category": "other",
+    "desc": "Una caramella piena zeppa di energia. Aumenta la Difesa di un Pokémon.",
+    "categoria_pokeapi": "vitamins"
+  },
+  "Smart Candy": {
+    "category": "other",
+    "desc": "Una caramella piena zeppa di energia. Aumenta l’Attacco Speciale di un Pokémon.",
+    "categoria_pokeapi": "vitamins"
+  },
+  "Courage Candy": {
+    "category": "other",
+    "desc": "Una caramella piena zeppa di energia. Aumenta la Difesa Speciale di un Pokémon.",
+    "categoria_pokeapi": "vitamins"
+  },
+  "Quick Candy": {
+    "category": "other",
+    "desc": "Una caramella piena zeppa di energia. Aumenta la Velocità di un Pokémon.",
+    "categoria_pokeapi": "vitamins"
+  },
+  "Health Candy L": {
+    "category": "other",
+    "desc": "Una caramella piena zeppa di energia. Aumenta i PS di un Pokémon di livello 30 o superiore.",
+    "categoria_pokeapi": "vitamins"
+  },
+  "Mighty Candy L": {
+    "category": "other",
+    "desc": "Una caramella piena zeppa di energia. Aumenta l’Attacco di un Pokémon di livello 30 o superiore.",
+    "categoria_pokeapi": "vitamins"
+  },
+  "Tough Candy L": {
+    "category": "other",
+    "desc": "Una caramella piena zeppa di energia. Aumenta la Difesa di un Pokémon di livello 30 o superiore.",
+    "categoria_pokeapi": "vitamins"
+  },
+  "Smart Candy L": {
+    "category": "other",
+    "desc": "Una caramella piena zeppa di energia. Aumenta l’Attacco Speciale di un Pokémon di livello 30 o superiore.",
+    "categoria_pokeapi": "vitamins"
+  },
+  "Courage Candy L": {
+    "category": "other",
+    "desc": "Una caramella piena zeppa di energia. Aumenta la Difesa Speciale di un Pokémon di livello 30 o superiore.",
+    "categoria_pokeapi": "vitamins"
+  },
+  "Quick Candy L": {
+    "category": "other",
+    "desc": "Una caramella piena zeppa di energia. Aumenta la Velocità di un Pokémon di livello 30 o superiore.",
+    "categoria_pokeapi": "vitamins"
+  },
+  "Health Candy XL": {
+    "category": "other",
+    "desc": "Una caramella piena zeppa di energia. Aumenta i PS di un Pokémon di livello 60 o superiore.",
+    "categoria_pokeapi": "vitamins"
+  },
+  "Mighty Candy XL": {
+    "category": "other",
+    "desc": "Una caramella piena zeppa di energia. Aumenta l’Attacco di un Pokémon di livello 60 o superiore.",
+    "categoria_pokeapi": "vitamins"
+  },
+  "Tough Candy XL": {
+    "category": "other",
+    "desc": "Una caramella piena zeppa di energia. Aumenta la Difesa di un Pokémon di livello 60 o superiore.",
+    "categoria_pokeapi": "vitamins"
+  },
+  "Smart Candy XL": {
+    "category": "other",
+    "desc": "Una caramella piena zeppa di energia. Aumenta l’Attacco Speciale di un Pokémon di livello 60 o superiore.",
+    "categoria_pokeapi": "vitamins"
+  },
+  "Courage Candy XL": {
+    "category": "other",
+    "desc": "Una caramella piena zeppa di energia. Aumenta la Difesa Speciale di un Pokémon di livello 60 o superiore.",
+    "categoria_pokeapi": "vitamins"
+  },
+  "Quick Candy XL": {
+    "category": "other",
+    "desc": "Una caramella piena zeppa di energia. Aumenta la Velocità di un Pokémon di livello 60 o superiore.",
+    "categoria_pokeapi": "vitamins"
+  },
+  "Rusted Sword": {
+    "category": "other",
+    "desc": "Si racconta che in passato un eroe riuscì a respingere la calamità servendosi di questa spada. Ora è tutta arrugginita e rovinata.",
+    "categoria_pokeapi": "species-specific"
+  },
+  "Rusted Shield": {
+    "category": "other",
+    "desc": "Si racconta che in passato un eroe riuscì a respingere la calamità servendosi di questo scudo. Ora è tutto arrugginito e rovinato.",
+    "categoria_pokeapi": "species-specific"
+  },
+  "Throat Spray": {
+    "category": "other",
+    "desc": "Aumenta l’Attacco Speciale quando il Pokémon usa una mossa basata sul suono.",
+    "categoria_pokeapi": "held-items"
+  },
+  "Eject Pack": {
+    "category": "other",
+    "desc": "Strumento da dare a un Pokémon. Se le sue statistiche diminuiscono, viene sostituito da un altro Pokémon della squadra.",
+    "categoria_pokeapi": "held-items"
+  },
+  "Heavy-Duty Boots": {
+    "category": "other",
+    "desc": "Protegge il Pokémon che ce l’ha dagli effetti di trappole e di altri ostacoli piazzati ai suoi piedi.",
+    "categoria_pokeapi": "held-items"
+  },
+  "Blunder Policy": {
+    "category": "other",
+    "desc": "Se una mossa non va a segno a causa della scarsa precisione, la Velocità aumenta considerevolmente.",
+    "categoria_pokeapi": "held-items"
+  },
+  "Room Service": {
+    "category": "other",
+    "desc": "Se un Pokémon ha questo strumento quando il campo di lotta è sotto l’effetto di Distortozona, la sua Velocità diminuisce.",
+    "categoria_pokeapi": "held-items"
+  },
+  "Utility Umbrella": {
+    "category": "other",
+    "desc": "Strumento da dare a un Pokémon. Protegge dagli effetti causati dalla pioggia e dalla luce solare intensa.",
+    "categoria_pokeapi": "held-items"
+  },
+  "Exp. Candy XS": {
+    "category": "other",
+    "desc": "Caramella altamente energetica che aumenta di pochissimo i Punti Esperienza di un Pokémon.",
+    "categoria_pokeapi": "vitamins"
+  },
+  "Exp. Candy S": {
+    "category": "other",
+    "desc": "Caramella altamente energetica che aumenta di poco i Punti Esperienza di un Pokémon.",
+    "categoria_pokeapi": "vitamins"
+  },
+  "Exp. Candy M": {
+    "category": "other",
+    "desc": "Caramella altamente energetica che aumenta moderatamente i Punti Esperienza di un Pokémon.",
+    "categoria_pokeapi": "vitamins"
+  },
+  "Exp. Candy L": {
+    "category": "other",
+    "desc": "Caramella altamente energetica che aumenta di molto i Punti Esperienza di un Pokémon.",
+    "categoria_pokeapi": "vitamins"
+  },
+  "Exp. Candy XL": {
+    "category": "other",
+    "desc": "Caramella altamente energetica che aumenta moltissimo i Punti Esperienza di un Pokémon.",
+    "categoria_pokeapi": "vitamins"
+  },
+  "Dynamax Candy": {
+    "category": "other",
+    "desc": "Caramella altamente energetica che aumenta di un punto il Livello Dynamax. Più alto è il livello, più aumentano i PS del Pokémon quando si dynamaxizza.",
+    "categoria_pokeapi": "vitamins"
+  },
+  "Max Honey": {
+    "category": "other",
+    "desc": "Miele prodotto dai Vespiquen dynamaxizzati. Se aggiunto alla Zuppamax la rende molto saporita. Ha anche gli stessi effetti di un Revitalizzante Max.",
+    "categoria_pokeapi": "revival"
+  },
+  "Ability Patch": {
+    "category": "other",
+    "desc": "Cerotto che permette a un Pokémon dotato di un’abilità comune di cambiarla in una più rara.",
+    "categoria_pokeapi": "vitamins"
+  },
+  "Blank Plate": {
+    "category": "other",
+    "desc": "",
+    "categoria_pokeapi": "plates"
+  },
+  "Legend Plate": {
+    "category": "other",
+    "desc": "",
+    "categoria_pokeapi": "plates"
+  },
+  "Booster Energy": {
+    "category": "other",
+    "desc": "",
+    "categoria_pokeapi": "held-items"
+  },
+  "Ability Shield": {
+    "category": "other",
+    "desc": "",
+    "categoria_pokeapi": "held-items"
+  },
+  "Clear Amulet": {
+    "category": "other",
+    "desc": "",
+    "categoria_pokeapi": "held-items"
+  },
+  "Mirror Herb": {
+    "category": "other",
+    "desc": "",
+    "categoria_pokeapi": "held-items"
+  },
+  "Punching Glove": {
+    "category": "other",
+    "desc": "",
+    "categoria_pokeapi": "held-items"
+  },
+  "Covert Cloak": {
+    "category": "other",
+    "desc": "",
+    "categoria_pokeapi": "held-items"
+  },
+  "Loaded Dice": {
+    "category": "other",
+    "desc": "",
+    "categoria_pokeapi": "held-items"
+  },
+  "Wellspring Mask": {
+    "category": "other",
+    "desc": "",
+    "categoria_pokeapi": "held-items"
+  },
+  "Hearthflame Mask": {
+    "category": "other",
+    "desc": "",
+    "categoria_pokeapi": "held-items"
+  },
+  "Cornerstone Mask": {
+    "category": "other",
+    "desc": "",
+    "categoria_pokeapi": "held-items"
+  },
+  "Health Mochi": {
+    "category": "other",
+    "desc": "",
+    "categoria_pokeapi": "vitamins"
+  },
+  "Muscle Mochi": {
+    "category": "other",
+    "desc": "",
+    "categoria_pokeapi": "vitamins"
+  },
+  "Resist Mochi": {
+    "category": "other",
+    "desc": "",
+    "categoria_pokeapi": "vitamins"
+  },
+  "Genius Mochi": {
+    "category": "other",
+    "desc": "",
+    "categoria_pokeapi": "vitamins"
+  },
+  "Clever Mochi": {
+    "category": "other",
+    "desc": "",
+    "categoria_pokeapi": "vitamins"
+  },
+  "Swift Mochi": {
+    "category": "other",
+    "desc": "",
+    "categoria_pokeapi": "vitamins"
+  },
+  "Fresh Start Mochi": {
+    "category": "other",
+    "desc": "",
+    "categoria_pokeapi": "vitamins"
+  }
+}
