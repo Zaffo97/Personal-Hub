@@ -172,8 +172,20 @@ def _save_abilities(data)      # scrive data/abilities.json, tenendo da parte la
 def _archive_dir()             # data/archive/, creata se manca
 ```
 
-> ⚠️ Passare **sempre** da `_save_abilities()` per scrivere le abilità: è lì che vive
-> la copia di sicurezza. Scrivere `data/abilities.json` a mano salta la protezione.
+> ⚠️ Passare **sempre** da `_save_abilities()` per le abilità e da `salva_catalogo()`
+> per gli altri database: è lì che vive la copia di sicurezza. Scrivere i file del
+> catalogo a mano salta la protezione.
+
+### Catalogo e regulation — chi modifica cosa
+
+| Schermata | Modifica |
+|---|---|
+| `/pokemon/catalogo` | **i dati**: base stat, potenza, tipi, effetti, descrizioni |
+| `/pokemon/roster` · `/mosse` · `/oggetti` | **quali nomi** fanno parte della regulation |
+
+Helper: `voci_catalogo(db)` legge sempre un dizionario piatto (le abilità sono
+avvolte in `{"abilities": ...}`, gli altri tre no), `salva_catalogo(db, voci)` scrive
+tenendo la copia precedente in `data/archive/catalog_<db>_pre-salvataggio.json`.
 
 Import da `data.py`: `DATA_DIR, REG_MA_ROSTER, MEGA_EVOLUTIONS_MA, NATURES, NATURE_EFFECTS, CHAMPIONS_BST, ABILITIES_CALC`
 
@@ -230,6 +242,11 @@ SPRITE_SLUG_OVERRIDES  # 19 casi irregolari; HD None = artwork grande assente,
 | `/pokemon/roster/restore/<filename>` | POST | Ripristina un archivio |
 | `/pokemon/mosse` · `/pokemon/mosse/archive` | GET/POST · POST | Editor mosse |
 | `/pokemon/oggetti` · `/pokemon/oggetti/archive` | GET/POST · POST | Editor oggetti |
+| `/pokemon/catalogo` | GET | ⭐ **Editor del catalogo** (`?db=pokemon\|moves\|abilities\|items`) — modifica i **dati** |
+| `/pokemon/api/catalogo/<db>/voce` | GET | JSON di una singola voce (`?nome=`) |
+| `/pokemon/api/catalogo/<db>/salva` | POST | Crea, aggiorna o rinomina una voce |
+| `/pokemon/api/catalogo/<db>/elimina` | POST | Elimina una voce, segnalando le regulation che la usano |
+| `/pokemon/catalogo/<db>/archive` · `/archives` · `/restore/<file>` | POST · GET · POST | Archivio del catalogo |
 | `/pokemon/abilita` | GET/POST | Editor abilità — **`abilita`, non `abilities`** |
 | `/pokemon/abilita/archive` | POST | Archivia le abilità correnti |
 | `/pokemon/abilita/archives` | GET | Elenco archivi abilità (JSON) |
@@ -454,6 +471,7 @@ Di conseguenza tutto ciò che questa tabella dava per "funzionante" non era mai 
 | 2026-05-07 | Sistema Regulation multi, refactor Blueprint, `extensions.py`, editor abilità |
 | 2026-05-19 | Select abilità ATK/DEF calcolatore, select abilità Speed Tier, checkbox condizioni Speed, fix `calcDamage()` (moltiplicatori diretti, HH deduplicato), fix formula EV Champions (`e*2`) |
 | 2026-06-09 | Generazione `PROJECT_CONTEXT.md` da lettura diretta del codice sorgente su GitHub |
+| 2026-08-10 | **Editor del catalogo separato** (`/pokemon/catalogo`): quattro linguette, modifica una voce per volta via API invece di scaricare 449 KB nel browser, tabella limitata a 300 righe con ricerca, avviso se elimini una voce usata da una regulation, archivio e copia automatica pre-salvataggio. 31 controlli end-to-end. Verificato in browser il nuovo modello: regola #8 esatta, 8 condizioni di danno, 7 casi meteo, 19 pagine pulite, Speed Tier da 189 a 202 su 208. Corretto `/api/moves`, che leggeva `moves_ma.json` hardcoded e faceva crollare le mosse del Pokedex da 921 a 461 |
 | 2026-08-08 | **Archivio e backup delle abilità**: `_save_abilities()` non teneva nulla da parte, quindi un salvataggio sbagliato azzerava 408 abilità. Ora copia automatica a scorrimento prima di ogni salvataggio, più archivio manuale, elenco e ripristino (`/pokemon/abilita/archive`, `/archives`, `/restore/<file>`). Il salvataggio rifiuta un `abilities` vuoto e il ripristino accetta solo file dell'archivio. 18 controlli end-to-end, giro completo con md5 identico |
 | 2026-08-08 | **Condizioni del calcolo danno verificate una per una** (24 casi misurati in browser): 3 bug nei terreni — elettrico, erboso e psichico avevano una restrizione di categoria inesistente nel gioco, quindi le mosse della categoria "sbagliata" non prendevano nulla; il critico non ignorava gli stage sfavorevoli all'attaccante; Reflect e Light Screen usavano il valore delle singole (×0.5) invece di quello delle doppie (2732/4096). Tutti corretti. Burn, Guts, Helping Hand, spread e accumulo dei moltiplicatori erano già giusti |
 | 2026-08-08 | **`calcolatori.html` spacchettato**: 1885 → 687 righe, **222 → 38 KB**, zero JS inline. CSS in `static/css/`, JS in 7 moduli `static/js/calcolatori-*.js`, dati da un blocco `application/json`. Le tabelle tipi e nature, 108 KB di HTML duplicato in due copie e scollegato dal motore, sono generate da `calcolatori-ref.js` a partire da `TYPE_CHART`/`NATURES`+`NM` — HTML risultante identico byte per byte all'originale, e 0 disaccordi su 324 celle nel confronto col motore. Parità verificata (regola #8, Speed Tier 189, 12 casi meteo, Drago→Folletto = 0). Corretto `extra_head` di `base.html`, che stava dentro lo `<style>` e lasciava un `</style>` orfano in 10 pagine — motivo per cui un `<link>` veniva ignorato |

@@ -1,0 +1,247 @@
+{% extends "base.html" %}
+{% block title %}Catalogo – Hub{% endblock %}
+{% block topbar_title %}📚 Catalogo{% endblock %}
+{% block extra_head %}
+<style>
+.cat-table{width:100%;border-collapse:collapse;font-size:.78rem}
+.cat-table th{background:var(--surface-off);padding:.4rem .6rem;text-align:left;font-size:.7rem;
+  font-weight:700;color:var(--text-muted);text-transform:uppercase;
+  position:sticky;top:0;z-index:1;border-bottom:1px solid var(--border)}
+.cat-table td{padding:.3rem .6rem;border-bottom:1px solid color-mix(in oklch,var(--border) 40%,transparent)}
+.cat-table tr:hover td{background:var(--surface-off)}
+.db-tab{padding:.35rem .8rem;border-radius:var(--radius-md);font-size:.78rem;font-weight:600;
+  cursor:pointer;border:1px solid var(--border);background:none;color:var(--text-muted);text-decoration:none}
+.db-tab.active{background:var(--primary);color:#fff;border-color:var(--primary)}
+.code-area{font-family:"JetBrains Mono","Courier New",monospace;font-size:.72rem;resize:vertical;min-height:300px}
+textarea.code-area{min-height:300px}
+</style>
+{% endblock %}
+{% block content %}
+<div class="page-header">
+  <div class="flex items-center gap-2">
+    <a href="/pokemon" class="btn btn-secondary btn-sm">← Pokémon</a>
+    <div>
+      <h1>📚 Catalogo — Editor</h1>
+      <p class="text-muted text-sm">
+        Qui si modificano i <strong>dati</strong>. Negli editor di regulation si sceglie
+        soltanto <strong>quali voci</strong> ne fanno parte.
+      </p>
+    </div>
+  </div>
+</div>
+
+<div style="display:flex;gap:.4rem;margin-bottom:1rem;flex-wrap:wrap">
+  {% for d in db_disponibili %}
+    <a href="{{ url_for('pokemon.catalog_editor', db=d) }}"
+       class="db-tab {% if d == db %}active{% endif %}">
+      {{ {'pokemon':'🐾 Pokémon','moves':'⚔️ Mosse','abilities':'🧬 Abilità','items':'🎒 Oggetti'}[d] }}
+      <span style="opacity:.7">{{ conteggi[d] }}</span>
+    </a>
+  {% endfor %}
+</div>
+
+<div style="display:grid;grid-template-columns:1fr 420px;gap:1rem;align-items:start">
+
+  <div class="card">
+    <div class="card-header">
+      <span class="card-title">{{ totale }} voci</span>
+      <button class="btn btn-primary btn-sm" onclick="nuovaVoce()">+ Aggiungi</button>
+    </div>
+    <div class="card-body" style="padding-top:.5rem">
+      <div style="display:flex;gap:.5rem;margin-bottom:.65rem;align-items:center;flex-wrap:wrap">
+        <input id="cerca" class="form-control" style="max-width:220px;font-size:.78rem"
+               placeholder="🔍 Cerca..." oninput="rendi()">
+        <span id="conteggio" class="text-xs text-muted"></span>
+      </div>
+      <div style="max-height:560px;overflow-y:auto">
+        <table class="cat-table">
+          <thead><tr>
+            <th>Nome</th><th>Info</th><th style="text-align:right">Valore</th><th></th><th></th>
+          </tr></thead>
+          <tbody id="corpo"></tbody>
+        </table>
+      </div>
+      <p id="troppi" class="text-xs text-muted mt-2" style="display:none"></p>
+    </div>
+  </div>
+
+  <div>
+    <div class="card">
+      <div class="card-header"><span class="card-title" id="titolo_voce">Nessuna voce selezionata</span></div>
+      <div class="card-body">
+        <div class="form-group">
+          <label>Nome</label>
+          <input id="voce_nome" class="form-control" style="font-size:.8rem" placeholder="Seleziona una voce dalla tabella">
+        </div>
+        <div class="form-group mb-0">
+          <label>JSON della voce</label>
+          <textarea id="voce_json" class="form-control code-area" spellcheck="false"></textarea>
+        </div>
+        <div class="flex gap-2 mt-2">
+          <button class="btn btn-primary" onclick="salvaVoce()">💾 Salva voce</button>
+          <button class="btn btn-secondary" onclick="annulla()">↩ Annulla</button>
+        </div>
+        <p id="esito" class="text-xs mt-2" style="display:none"></p>
+      </div>
+    </div>
+
+    <div class="card mt-0">
+      <div class="card-header"><span class="card-title">🗄️ Archivio</span></div>
+      <div class="card-body">
+        <p class="text-xs text-muted mb-2" style="line-height:1.6">
+          Ogni salvataggio tiene da parte la versione precedente in automatico.
+        </p>
+        <form method="POST" action="{{ url_for('pokemon.catalog_archive', db=db) }}"
+              onsubmit="return confirm('Archiviare il catalogo {{ db }}?')" style="margin-bottom:.5rem">
+          <button type="submit" class="btn btn-secondary btn-sm">📦 Archivia {{ db }}</button>
+        </form>
+        <button class="btn btn-sm" style="font-size:.72rem" onclick="caricaArchivi()">Vedi archivi salvati</button>
+        <div id="archivi" style="margin-top:.5rem"></div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<script type="application/json" id="indice-dati">{{ indice_json | safe }}</script>
+<script>
+const DB = {{ db | tojson }};
+const INDICE = JSON.parse(document.getElementById('indice-dati').textContent);
+const MAX_RIGHE = 300;   // oltre, la tabella diventa illeggibile e lenta
+let nomeOriginale = null;
+
+function esc(s){ return String(s == null ? '' : s)
+  .replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;'); }
+
+function rendi(){
+  const q = document.getElementById('cerca').value.toLowerCase();
+  const filtrate = q ? INDICE.filter(r => r.nome.toLowerCase().includes(q)
+                                       || (r.info || '').toLowerCase().includes(q)) : INDICE;
+  const mostrate = filtrate.slice(0, MAX_RIGHE);
+  document.getElementById('conteggio').textContent = filtrate.length + ' voci';
+  const avviso = document.getElementById('troppi');
+  if (filtrate.length > MAX_RIGHE) {
+    avviso.textContent = `Mostrate le prime ${MAX_RIGHE} di ${filtrate.length}. Cerca per restringere.`;
+    avviso.style.display = 'block';
+  } else avviso.style.display = 'none';
+
+  document.getElementById('corpo').innerHTML = mostrate.map(r =>
+    '<tr>'
+    + '<td><strong>' + esc(r.nome) + '</strong></td>'
+    + '<td class="text-muted" style="font-size:.72rem">' + esc(r.info) + '</td>'
+    + '<td style="text-align:right">' + (r.numero || '') + '</td>'
+    + '<td class="text-muted" style="font-size:.68rem">' + esc(r.extra) + '</td>'
+    + '<td style="white-space:nowrap">'
+    + '<button class="btn btn-secondary btn-sm" style="font-size:.68rem" onclick="apri(' + JSON.stringify(r.chiave).replace(/"/g,'&quot;') + ')">✎</button> '
+    + '<button class="btn btn-sm" style="font-size:.68rem;color:var(--error,#e05555)" onclick="elimina(' + JSON.stringify(r.chiave).replace(/"/g,'&quot;') + ')">🗑</button>'
+    + '</td></tr>').join('');
+}
+
+function messaggio(testo, errore){
+  const el = document.getElementById('esito');
+  el.textContent = testo;
+  el.style.color = errore ? 'var(--error,#e05555)' : 'var(--primary)';
+  el.style.display = 'block';
+}
+
+async function apri(chiave){
+  messaggio('Caricamento...', false);
+  try{
+    const r = await fetch('/pokemon/api/catalogo/' + DB + '/voce?nome=' + encodeURIComponent(chiave));
+    const d = await r.json();
+    if(!d.ok){ messaggio(d.error, true); return; }
+    nomeOriginale = d.nome;
+    document.getElementById('voce_nome').value = d.nome;
+    document.getElementById('voce_json').value = JSON.stringify(d.voce, null, 2);
+    document.getElementById('titolo_voce').textContent = d.nome;
+    messaggio('', false);
+    document.getElementById('esito').style.display = 'none';
+  }catch(e){ messaggio('Errore: ' + e.message, true); }
+}
+
+function nuovaVoce(){
+  nomeOriginale = null;
+  document.getElementById('voce_nome').value = '';
+  const modelli = {
+    pokemon: {name:'', types:[], abilities:[], base_stats:{hp:0,atk:0,def:0,spa:0,spd:0,spe:0}},
+    moves:   {bp:0, category:'physical', type:'normal', desc:'', accuracy:100},
+    abilities:{desc:'', category:'other', effect:{type:'none'}},
+    items:   {category:'other', desc:''}
+  };
+  document.getElementById('voce_json').value = JSON.stringify(modelli[DB], null, 2);
+  document.getElementById('titolo_voce').textContent = 'Nuova voce';
+  document.getElementById('esito').style.display = 'none';
+}
+
+function annulla(){
+  nomeOriginale = null;
+  document.getElementById('voce_nome').value = '';
+  document.getElementById('voce_json').value = '';
+  document.getElementById('titolo_voce').textContent = 'Nessuna voce selezionata';
+  document.getElementById('esito').style.display = 'none';
+}
+
+async function salvaVoce(){
+  const nome = document.getElementById('voce_nome').value.trim();
+  if(!nome){ messaggio('Il nome è obbligatorio', true); return; }
+  let voce;
+  try{ voce = JSON.parse(document.getElementById('voce_json').value); }
+  catch(e){ messaggio('JSON non valido: ' + e.message, true); return; }
+  try{
+    const r = await fetch('/pokemon/api/catalogo/' + DB + '/salva', {
+      method:'POST', headers:{'Content-Type':'application/json'},
+      body: JSON.stringify({nome, voce, nome_originale: nomeOriginale})
+    });
+    const d = await r.json();
+    if(!d.ok){ messaggio(d.error, true); return; }
+    // aggiorna la tabella senza ricaricare la pagina
+    const i = INDICE.findIndex(x => x.chiave === (nomeOriginale || nome));
+    if(i >= 0) INDICE[i] = d.riga; else INDICE.push(d.riga);
+    nomeOriginale = nome;
+    rendi();
+    messaggio('Salvato. Il catalogo ha ' + d.totale + ' voci.', false);
+  }catch(e){ messaggio('Errore: ' + e.message, true); }
+}
+
+async function elimina(chiave){
+  if(!confirm('Eliminare "' + chiave + '" dal catalogo?')) return;
+  try{
+    const r = await fetch('/pokemon/api/catalogo/' + DB + '/elimina', {
+      method:'POST', headers:{'Content-Type':'application/json'},
+      body: JSON.stringify({nome: chiave})
+    });
+    const d = await r.json();
+    if(!d.ok){ messaggio(d.error, true); return; }
+    const i = INDICE.findIndex(x => x.chiave === chiave);
+    if(i >= 0) INDICE.splice(i, 1);
+    rendi();
+    messaggio(d.usata_da && d.usata_da.length
+      ? 'Eliminata, ma era usata da: ' + d.usata_da.join(', ')
+      : 'Eliminata. Restano ' + d.totale + ' voci.', d.usata_da && d.usata_da.length);
+  }catch(e){ messaggio('Errore: ' + e.message, true); }
+}
+
+async function caricaArchivi(){
+  const el = document.getElementById('archivi');
+  el.innerHTML = '<span class="text-xs text-muted">Caricamento...</span>';
+  try{
+    const r = await fetch('/pokemon/catalogo/' + DB + '/archives');
+    const dati = await r.json();
+    if(!dati.length){ el.innerHTML = '<p class="text-xs text-muted mt-1">Nessun archivio salvato.</p>'; return; }
+    // Niente apostrofi nel confirm: finisce in un attributo onsubmit delimitato da '
+    el.innerHTML = dati.map(a =>
+      '<div style="display:flex;align-items:center;justify-content:space-between;'
+      + 'padding:.4rem 0;border-bottom:1px solid var(--border);gap:.5rem;flex-wrap:wrap">'
+      + '<div><span style="font-size:.78rem;font-weight:600">' + a.count + ' voci</span>'
+      + '<span class="text-muted" style="font-size:.72rem"> &mdash; ' + esc(a.modificato) + '</span>'
+      + '<code style="font-size:.62rem;display:block;color:var(--text-faint)">'
+      + (a.automatico ? 'copia automatica' : esc(a.filename)) + '</code></div>'
+      + '<form method="POST" action="/pokemon/catalogo/' + DB + '/restore/' + encodeURIComponent(a.filename) + '"'
+      + ' onsubmit="return confirm(\'Ripristinare ' + a.count + ' voci da questo archivio? Le voci correnti verranno salvate come copia automatica.\')">'
+      + '<button type="submit" class="btn btn-secondary btn-sm" style="font-size:.7rem">Ripristina</button>'
+      + '</form></div>').join('');
+  }catch(e){ el.innerHTML = '<span style="color:#c33;font-size:.75rem">Errore caricamento archivi.</span>'; }
+}
+
+rendi();
+</script>
+{% endblock %}

@@ -67,6 +67,13 @@ def _save_abilities(data):
 CATALOG_DIR = os.path.join(DATA_DIR, "catalog")
 
 
+DB_CATALOGO = ("pokemon", "moves", "abilities", "items")
+
+# Le abilità sono avvolte in {"abilities": ...} perché è la forma che l'editor
+# abilità, l'archivio e il ripristino usano da sempre. Gli altri tre sono piatti.
+DB_AVVOLTI = {"abilities": "abilities"}
+
+
 def load_catalog(nome):
     """Legge data/catalog/<nome>.json — pokemon | moves | abilities | items."""
     try:
@@ -74,6 +81,60 @@ def load_catalog(nome):
             return json.load(f)
     except Exception:
         return {}
+
+
+def voci_catalogo(db):
+    """Le voci di un database del catalogo, sempre come dizionario piatto."""
+    dati = load_catalog(db)
+    chiave = DB_AVVOLTI.get(db)
+    return dati.get(chiave, {}) if chiave else dati
+
+
+def salva_catalogo(db, voci):
+    """Scrive un database del catalogo, tenendo da parte la versione precedente.
+
+    Stessa rete di sicurezza delle abilità: una copia a scorrimento prima di ogni
+    salvataggio, così un errore nell'editor non azzera 1032 Pokémon o 921 mosse.
+    """
+    percorso = os.path.join(CATALOG_DIR, f"{db}.json")
+    os.makedirs(CATALOG_DIR, exist_ok=True)
+    if os.path.exists(percorso):
+        try:
+            with open(percorso, encoding="utf-8") as f:
+                precedente = f.read()
+            copia = os.path.join(_archive_dir(), f"catalog_{db}_pre-salvataggio.json")
+            with open(copia, "w", encoding="utf-8") as f:
+                f.write(precedente)
+        except Exception:
+            pass  # il backup non deve mai impedire il salvataggio
+
+    chiave = DB_AVVOLTI.get(db)
+    dati = {chiave: voci} if chiave else voci
+    with open(percorso, "w", encoding="utf-8") as f:
+        json.dump(dati, f, ensure_ascii=False, indent=2)
+
+
+def _riga_indice(db, nome, voce):
+    """Riga compatta per la tabella dell'editor: evita di mandare al browser
+    449 KB di catalogo quando servono quattro campi per riga."""
+    if db == "pokemon":
+        bs = voce.get("base_stats") or {}
+        return {"nome": voce.get("name") or nome, "chiave": nome,
+                "info": " · ".join(voce.get("types") or []),
+                "numero": sum(bs.values()) if bs else 0,
+                "extra": f"{len(voce.get('forms') or {})} forme" if voce.get("forms") else ""}
+    if db == "moves":
+        return {"nome": nome, "chiave": nome,
+                "info": f"{voce.get('type', '')} · {voce.get('category', '')}",
+                "numero": voce.get("bp") or 0,
+                "extra": ", ".join(voce.get("flags") or [])}
+    if db == "abilities":
+        fx = (voce.get("effect") or {}).get("type", "none")
+        return {"nome": nome, "chiave": nome, "info": voce.get("category", ""),
+                "numero": 0, "extra": "" if fx == "none" else f"● {fx}"}
+    return {"nome": nome, "chiave": nome, "info": voce.get("category", ""),
+            "numero": voce.get("modifier") or 0,
+            "extra": voce.get("categoria_pokeapi", "")}
 
 
 def _load_filtro(reg):
@@ -430,6 +491,160 @@ def abilities_restore(filename):
     except Exception as e:
         flash(f"❌ Errore ripristino: {e}", "error")
     return redirect(url_for("pokemon.abilities_editor"))
+
+
+# ---------------------------------------------------------------------------
+# EDITOR DEL CATALOGO — schermata separata dagli editor di regulation.
+# Qui si modificano i DATI (base stat, potenza, effetti); negli editor di
+# regulation si sceglie soltanto QUALI nomi ne fanno parte.
+# ---------------------------------------------------------------------------
+@bp.route("/catalogo")
+@login_required
+def catalog_editor():
+    db = request.args.get("db", "pokemon")
+    if db not in DB_CATALOGO:
+        db = "pokemon"
+    voci = voci_catalogo(db)
+    indice = sorted((_riga_indice(db, n, v) for n, v in voci.items()),
+                    key=lambda r: r["nome"].lower())
+    return render_template(
+        "catalog_editor.html",
+        db=db,
+        db_disponibili=DB_CATALOGO,
+        conteggi={d: len(voci_catalogo(d)) for d in DB_CATALOGO},
+        indice_json=json.dumps(indice, ensure_ascii=False),
+        totale=len(voci),
+    )
+
+
+@bp.route("/api/catalogo/<db>/voce")
+@login_required
+def api_catalogo_voce(db):
+    """JSON completo di una singola voce: la tabella manda solo l'indice compatto."""
+    if db not in DB_CATALOGO:
+        return jsonify({"ok": False, "error": "database sconosciuto"}), 404
+    nome = request.args.get("nome", "")
+    voce = voci_catalogo(db).get(nome)
+    if voce is None:
+        return jsonify({"ok": False, "error": f"voce non trovata: {nome}"}), 404
+    return jsonify({"ok": True, "nome": nome, "voce": voce})
+
+
+@bp.route("/api/catalogo/<db>/salva", methods=["POST"])
+@login_required
+def api_catalogo_salva(db):
+    """Crea o aggiorna una singola voce del catalogo."""
+    if db not in DB_CATALOGO:
+        return jsonify({"ok": False, "error": "database sconosciuto"}), 404
+    payload = request.get_json(silent=True) or {}
+    nome = (payload.get("nome") or "").strip()
+    voce = payload.get("voce")
+    nome_originale = (payload.get("nome_originale") or "").strip()
+    if not nome:
+        return jsonify({"ok": False, "error": "nome obbligatorio"}), 400
+    if not isinstance(voce, dict):
+        return jsonify({"ok": False, "error": "la voce deve essere un oggetto"}), 400
+
+    voci = voci_catalogo(db)
+    if nome_originale and nome_originale != nome:
+        voci.pop(nome_originale, None)      # rinomina
+    elif not nome_originale and nome in voci:
+        return jsonify({"ok": False, "error": f"'{nome}' esiste già"}), 400
+    voci[nome] = voce
+    salva_catalogo(db, voci)
+    return jsonify({"ok": True, "totale": len(voci),
+                    "riga": _riga_indice(db, nome, voce)})
+
+
+@bp.route("/api/catalogo/<db>/elimina", methods=["POST"])
+@login_required
+def api_catalogo_elimina(db):
+    if db not in DB_CATALOGO:
+        return jsonify({"ok": False, "error": "database sconosciuto"}), 404
+    nome = ((request.get_json(silent=True) or {}).get("nome") or "").strip()
+    voci = voci_catalogo(db)
+    if nome not in voci:
+        return jsonify({"ok": False, "error": f"voce non trovata: {nome}"}), 404
+    # Una voce del catalogo può essere referenziata da una regulation: avvisa.
+    usata_da = []
+    for reg in _list_regulation_files():
+        filtro = _load_filtro(reg)
+        if not filtro:
+            continue
+        elenco = filtro.get({"moves": "moves", "items": "items"}.get(db, "pokemon"))
+        if elenco and nome in elenco:
+            usata_da.append(reg.get("label", reg["id"]))
+    del voci[nome]
+    salva_catalogo(db, voci)
+    return jsonify({"ok": True, "totale": len(voci), "usata_da": usata_da})
+
+
+@bp.route("/catalogo/<db>/archive", methods=["POST"])
+@login_required
+def catalog_archive(db):
+    if db not in DB_CATALOGO:
+        flash("Database sconosciuto", "error")
+        return redirect(url_for("pokemon.catalog_editor"))
+    try:
+        voci = voci_catalogo(db)
+        nome = f"catalog_{db}_{datetime.now().strftime('%Y-%m-%d_%H%M%S')}.json"
+        with open(os.path.join(_archive_dir(), nome), "w", encoding="utf-8") as f:
+            json.dump(voci, f, ensure_ascii=False, indent=2)
+        flash(f"📦 Catalogo {db} archiviato come {nome} ({len(voci)} voci)", "success")
+    except Exception as e:
+        flash(f"❌ Errore archivio: {e}", "error")
+    return redirect(url_for("pokemon.catalog_editor", db=db))
+
+
+@bp.route("/catalogo/<db>/archives")
+@login_required
+def catalog_archives(db):
+    d = _archive_dir()
+    prefisso = f"catalog_{db}_"
+    archivi = []
+    for fn in sorted(os.listdir(d), reverse=True):
+        if not fn.startswith(prefisso) or not fn.endswith(".json"):
+            continue
+        percorso = os.path.join(d, fn)
+        try:
+            with open(percorso, encoding="utf-8") as f:
+                contenuto = json.load(f)
+            chiave = DB_AVVOLTI.get(db)
+            voci = contenuto.get(chiave, {}) if chiave else contenuto
+            archivi.append({
+                "filename": fn, "count": len(voci),
+                "modificato": datetime.fromtimestamp(os.path.getmtime(percorso)).strftime("%d/%m/%Y %H:%M"),
+                "automatico": fn == f"{prefisso}pre-salvataggio.json",
+            })
+        except Exception:
+            pass
+    return json.dumps(archivi), 200, {"Content-Type": "application/json"}
+
+
+@bp.route("/catalogo/<db>/restore/<path:filename>", methods=["POST"])
+@login_required
+def catalog_restore(db, filename):
+    if db not in DB_CATALOGO:
+        flash("Database sconosciuto", "error")
+        return redirect(url_for("pokemon.catalog_editor"))
+    nome = os.path.basename(filename)          # niente path traversal
+    percorso = os.path.join(_archive_dir(), nome)
+    if not nome.startswith(f"catalog_{db}_") or not os.path.isfile(percorso):
+        flash(f"❌ Archivio non trovato: {nome}", "error")
+        return redirect(url_for("pokemon.catalog_editor", db=db))
+    try:
+        with open(percorso, encoding="utf-8") as f:
+            contenuto = json.load(f)
+        chiave = DB_AVVOLTI.get(db)
+        voci = contenuto.get(chiave, {}) if chiave else contenuto
+        if not isinstance(voci, dict) or not voci:
+            flash(f"❌ {nome} non contiene voci valide", "error")
+            return redirect(url_for("pokemon.catalog_editor", db=db))
+        salva_catalogo(db, voci)             # tiene da parte la versione corrente
+        flash(f"↩ Catalogo {db} ripristinato da {nome}: {len(voci)} voci", "success")
+    except Exception as e:
+        flash(f"❌ Errore ripristino: {e}", "error")
+    return redirect(url_for("pokemon.catalog_editor", db=db))
 
 
 @bp.route("/api/abilities/update", methods=["POST"])

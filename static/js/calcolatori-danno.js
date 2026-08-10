@@ -1,15 +1,14 @@
 // calcolatori-danno.js — tab Danno: DB mosse, caricamento lati, formula Gen 9.
 // Serve calcolatori-data.js e calcolatori-core.js caricati prima.
 
-async function loadMovesDB(){
-  try{
-    const r=await fetch('/api/moves');const d=await r.json();
-    if(d.ok){
-      MOVES_DB=d.moves;
-      const dl=document.getElementById('mv_dl');
-      if(dl) dl.innerHTML=Object.keys(MOVES_DB).sort().map(m=>'<option value="'+m+'">').join('');
-    }
-  }catch(e){console.warn('Mosse non caricate:',e);}
+// MOVES_DB arriva già dal blocco calc-bootstrap, filtrato sulla regulation attiva.
+// Prima questa funzione rifaceva fetch su /api/moves, che legge moves_ma.json
+// hardcoded: su qualunque regulation diversa da MA le mosse corrette venivano
+// sovrascritte con quelle di MA (su Pokedex: 921 -> 461).
+function loadMovesDB(){
+  const dl = document.getElementById('mv_dl');
+  if (dl) dl.innerHTML = Object.keys(MOVES_DB).sort()
+    .map(m => '<option value="' + m + '">').join('');
 }
 function onMoveSelect(){
   const mv=document.getElementById('mv_name').value.trim();

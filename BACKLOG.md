@@ -9,7 +9,31 @@ Legenda: ⬜ da fare · 🟨 parziale / da verificare · ✅ fatto
 
 ---
 
-## 🚧 IN CORSO — catalogo unico + regulation come filtro (08/08/2026)
+## ✅ Chiuso il 10/08/2026 — catalogo unico completato
+
+- **Verifica in browser del nuovo modello** — regola #8 esatta sul Pokedex (A=183,
+  D=122, HP=221, 85-102), 8 condizioni di danno su 8, 7 casi meteo su 7, tabelle di
+  riferimento rigenerate, 19 pagine senza errori di sintassi. **Speed Tier da 189 a
+  202 su 208**: il catalogo ha colmato quasi tutti i buchi, ne restano 6
+- **`/api/moves` ignorava la regulation** ⚠️ — leggeva `moves_ma.json` hardcoded, e
+  `loadMovesDB()` ci sovrascriveva sopra le mosse corrette arrivate dal bootstrap:
+  sul Pokedex le mosse passavano da **921 a 461**. Ora l'endpoint accetta `?reg=` e
+  `loadMovesDB()` non rifà più il fetch, perché il bootstrap porta già le mosse
+  filtrate sulla regulation attiva
+- **Editor del catalogo separato** — nuova schermata `/pokemon/catalogo` con le
+  quattro linguette (Pokémon · Mosse · Abilità · Oggetti). Modifica una voce per
+  volta via API invece di scaricare 449 KB di JSON nel browser; tabella limitata a
+  300 righe con ricerca; creazione, rinomina ed eliminazione, con avviso se la voce
+  è usata da una regulation. Archivio, elenco, ripristino e copia automatica prima
+  di ogni salvataggio, come per le abilità. 31 controlli end-to-end superati, con i
+  quattro file del catalogo verificati identici dopo il ripristino
+
+> La distinzione ora è netta: **`/pokemon/catalogo` modifica i dati**, gli editor di
+> regulation scelgono **quali nomi** ne fanno parte.
+
+---
+
+## 🚧 STATO — catalogo unico + regulation come filtro (08/08/2026)
 
 Nuovo modello: **un database di default** in `data/catalog/` con tutte le voci, e le
 regulation che contengono **solo elenchi di nomi** che puntano lì (`null` = tutte).
@@ -24,17 +48,19 @@ regulation che contengono **solo elenchi di nomi** che puntano lì (`null` = tut
 - Regulation MA identica a prima: stesse 461 mosse, 58 oggetti, 208 Pokémon, stessa
   mega_map, dati invariati. Pokedex vede tutto.
 
-**Da fare alla ripresa:**
-1. **Editor del catalogo separato** (scelta già presa: schermata distinta dagli
-   editor di regulation) — è il punto 4, non ancora iniziato
-2. Verifica in browser del calcolatore col nuovo modello (regola #8, Speed Tier,
-   meteo, condizioni danno) — fatta solo lato server
-3. Decidere sui **doppioni di forme** creati dall'import: il catalogo ha sia
-   `Tauros (Combat Breed)` (preesistente) sia `Paldean Tauros (Combat Breed)` (nuovo)
-4. **Amoonguss non è nel roster di MA**: prima il calcolatore lo offriva lo stesso
-   perché `CHAMPIONS_BST` era globale. Ora la regulation filtra davvero, quindi in MA
-   non compare più. Se lo vuoi in MA va aggiunto al roster
-5. I file `data/roster_ma.json`, `moves_ma.json`, `items_ma.json`, `abilities.json` e
+**Da decidere, non urgente:**
+1. **Doppioni di forme** creati dall'import: il catalogo ha sia
+   `Tauros (Combat Breed)` (preesistente) sia `Paldean Tauros (Combat Breed)` (nuovo).
+   Stessa cosa per un paio di Mega Meowstic. Da unificare col nuovo editor del catalogo
+2. **Il roster di MA è ristretto**: non contiene Amoonguss, Rillaboom, Urshifu,
+   Flutter Mane, Chi-Yu. Prima il calcolatore li offriva lo stesso perché
+   `CHAMPIONS_BST` era globale; ora la regulation filtra davvero e in MA non
+   compaiono. Se li vuoi, vanno aggiunti al roster — è il comportamento richiesto,
+   ma è un cambiamento visibile
+3. **6 nomi del roster MA restano irrisolti** nello Speed Tier: `Lycanroc-Dusk`,
+   `Lycanroc-Midnight`, `Stunfisk-Galar` e i tre `Tauros-Paldea-*`. Sono alias che
+   il catalogo ha sotto nomi ufficiali diversi
+4. I file `data/roster_ma.json`, `moves_ma.json`, `items_ma.json`, `abilities.json` e
    `pokemon_catalog.json` restano come **fallback**: dismetterli solo a verifica finita
 
 Script rieseguibili: `scripts/build_catalog.py` (`--dry-run` per provare) e
