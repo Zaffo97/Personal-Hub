@@ -102,6 +102,23 @@
   <div class="card">
     <div class="card-header"><span class="card-title">&#128196; Editor Contenuti</span></div>
     <div class="card-body">
+      {% if reg.filter_file %}
+      <p style="font-size:.82rem;color:var(--text-muted);margin-bottom:1rem">
+        Questa regulation è un <strong>filtro sul catalogo</strong>: qui scegli
+        <strong>quali</strong> voci ne fanno parte. I dati (base stat, potenza,
+        effetti) si modificano nel <a href="/pokemon/catalogo">catalogo</a>.
+      </p>
+      <div style="display:flex;flex-direction:column;gap:.6rem">
+        {% for d, etichetta in [('pokemon','🦢 Pokémon'), ('moves','⚡ Mosse'),
+                                ('items','🎒 Oggetti'), ('abilities','🧬 Abilità')] %}
+        <a href="/pokemon/regulation/{{ reg.id }}/contenuto?db={{ d }}" class="btn btn-secondary"
+           style="display:flex;align-items:center;gap:.5rem;justify-content:space-between">
+          <span>{{ etichetta }}</span>
+          <span style="font-size:.72rem;opacity:.7">scegli cosa includere →</span>
+        </a>
+        {% endfor %}
+      </div>
+      {% else %}
       <p style="font-size:.82rem;color:var(--text-muted);margin-bottom:1rem">
         Modifica direttamente roster, mosse e oggetti di questa regulation.
         Ogni editor carica e salva solo i file di <strong>{{ reg.label }}</strong>.
@@ -120,6 +137,7 @@
           <span style="font-size:.72rem;font-family:monospace;opacity:.7">{{ reg.items_file }}</span>
         </a>
       </div>
+      {% endif %}
 
       <hr style="margin:1rem 0;border-color:var(--border)">
 

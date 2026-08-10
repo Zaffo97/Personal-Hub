@@ -494,6 +494,81 @@ def abilities_restore(filename):
 
 
 # ---------------------------------------------------------------------------
+# CONTENUTI DI UNA REGULATION — si sceglie QUALI voci del catalogo ne fanno parte.
+# I dati restano nel catalogo: qui si spuntano soltanto dei nomi.
+# ---------------------------------------------------------------------------
+CAMPO_FILTRO = {"pokemon": "pokemon", "moves": "moves", "items": "items", "abilities": "abilities"}
+
+
+def _nomi_selezionabili(db):
+    """Nomi del catalogo proponibili per una regulation, ordinati."""
+    if db == "pokemon":
+        return _nomi_catalogo_pokemon(load_catalog("pokemon"))
+    return sorted(voci_catalogo(db))
+
+
+@bp.route("/regulation/<reg_id>/contenuto")
+@login_required
+def regulation_content(reg_id):
+    db = request.args.get("db", "pokemon")
+    if db not in CAMPO_FILTRO:
+        db = "pokemon"
+    regs = _list_regulation_files()
+    reg = next((r for r in regs if r["id"] == reg_id), None)
+    if not reg:
+        flash(f"Regulation '{reg_id}' non trovata", "error")
+        return redirect(url_for("pokemon.regulations_list"))
+
+    filtro = _load_filtro(reg)
+    if filtro is None:
+        flash("Questa regulation usa ancora i file vecchi: convertila con "
+              "scripts/migra_regulation.py per poterne scegliere i contenuti.", "error")
+        return redirect(url_for("pokemon.regulation_editor", reg_id=reg_id))
+
+    selezionati = filtro.get(CAMPO_FILTRO[db])
+    disponibili = _nomi_selezionabili(db)
+    conteggi = {}
+    for d in CAMPO_FILTRO:
+        sel = filtro.get(CAMPO_FILTRO[d])
+        conteggi[d] = {"scelti": len(_nomi_selezionabili(d)) if sel is None else len(sel),
+                       "totale": len(_nomi_selezionabili(d)),
+                       "tutto": sel is None}
+    return render_template(
+        "regulation_content.html",
+        reg=reg, db=db, db_disponibili=list(CAMPO_FILTRO), conteggi=conteggi,
+        tutto=selezionati is None,
+        disponibili_json=json.dumps(disponibili, ensure_ascii=False),
+        selezionati_json=json.dumps(sorted(selezionati) if selezionati else [], ensure_ascii=False),
+    )
+
+
+@bp.route("/api/regulation/<reg_id>/contenuto/<db>", methods=["POST"])
+@login_required
+def api_regulation_content_save(reg_id, db):
+    if db not in CAMPO_FILTRO:
+        return jsonify({"ok": False, "error": "database sconosciuto"}), 404
+    regs = _list_regulation_files()
+    reg = next((r for r in regs if r["id"] == reg_id), None)
+    if not reg or _load_filtro(reg) is None:
+        return jsonify({"ok": False, "error": "regulation non trovata o non convertita"}), 404
+
+    payload = request.get_json(silent=True) or {}
+    if payload.get("tutto"):
+        _salva_filtro(reg, CAMPO_FILTRO[db], None)   # null = tutte le voci
+        return jsonify({"ok": True, "tutto": True, "scelti": len(_nomi_selezionabili(db))})
+
+    nomi = payload.get("nomi")
+    if not isinstance(nomi, list):
+        return jsonify({"ok": False, "error": "serve un elenco di nomi"}), 400
+    validi = set(_nomi_selezionabili(db))
+    ignorati = [n for n in nomi if n not in validi]
+    _salva_filtro(reg, CAMPO_FILTRO[db], [n for n in nomi if n in validi])
+    return jsonify({"ok": True, "tutto": False,
+                    "scelti": len([n for n in nomi if n in validi]),
+                    "ignorati": ignorati[:20]})
+
+
+# ---------------------------------------------------------------------------
 # EDITOR DEL CATALOGO — schermata separata dagli editor di regulation.
 # Qui si modificano i DATI (base stat, potenza, effetti); negli editor di
 # regulation si sceglie soltanto QUALI nomi ne fanno parte.
@@ -706,34 +781,50 @@ def api_regulations_create():
     if any(r["id"] == reg_id for r in regs):
         return jsonify({"ok": False, "error": f"Regulation '{reg_id}' già esistente"}), 409
 
-    # Nomi file derivati dall'id
-    roster_file = data.get("roster_file") or f"roster_{reg_id}.json"
-    moves_file  = data.get("moves_file")  or f"moves_{reg_id}.json"
-    items_file  = data.get("items_file")  or f"items_{reg_id}.json"
+    # Una regulation nuova nasce nel modello a filtro: elenchi di nomi che puntano
+    # al catalogo, mai una copia dei dati.
+    #   partenza = "vuota"  -> non contiene nulla, si popola dalla schermata contenuti
+    #              "tutto"  -> null ovunque, vede tutto il catalogo
+    #              "<id>"   -> copia gli elenchi da una regulation esistente
+    partenza = (data.get("partenza") or "vuota").strip().lower()
+    if partenza == "tutto":
+        elenchi = {"pokemon": None, "moves": None, "items": None, "abilities": None}
+        mega_map = {}
+    elif partenza in {r["id"] for r in regs}:
+        sorgente = next(r for r in regs if r["id"] == partenza)
+        filtro_sorgente = _load_filtro(sorgente) or {}
+        elenchi = {k: filtro_sorgente.get(k) for k in ("pokemon", "moves", "items", "abilities")}
+        mega_map = filtro_sorgente.get("mega_map") or {}
+    else:
+        partenza = "vuota"
+        elenchi = {"pokemon": [], "moves": [], "items": [], "abilities": None}
+        mega_map = {}
 
-    # Crea i file JSON vuoti se non esistono
-    for fname, default in [
-        (roster_file, {"regulation": reg_label, "pokemon": [], "mega_map": {}, "last_updated": datetime.now().strftime("%Y-%m-%d")}),
-        (moves_file,  {"regulation": reg_label, "moves": {}, "last_updated": datetime.now().strftime("%Y-%m-%d")}),
-        (items_file,  {"regulation": reg_label, "items": {}}),
-    ]:
-        fpath = os.path.join(DATA_DIR, fname)
-        if not os.path.exists(fpath):
-            os.makedirs(DATA_DIR, exist_ok=True)
-            with open(fpath, "w", encoding="utf-8") as fh:
-                json.dump(default, fh, ensure_ascii=False, indent=2)
+    filtro = {
+        "id": reg_id,
+        "label": reg_label,
+        "_commento": ("Solo elenchi di nomi: i dati stanno in data/catalog/. "
+                      "null significa 'tutte le voci del catalogo'."),
+        "last_updated": datetime.now().strftime("%Y-%m-%d"),
+        **elenchi,
+        "mega_map": mega_map,
+        "overrides": {},
+    }
+    percorso_filtro = os.path.join("regulations", f"{reg_id}.json")
+    os.makedirs(os.path.join(DATA_DIR, "regulations"), exist_ok=True)
+    with open(os.path.join(DATA_DIR, percorso_filtro), "w", encoding="utf-8") as fh:
+        json.dump(filtro, fh, ensure_ascii=False, indent=2)
 
     new_reg = {
-        "id":           reg_id,
-        "label":        reg_label,
-        "roster_file":  roster_file,
-        "moves_file":   moves_file,
-        "items_file":   items_file,
+        "id":          reg_id,
+        "label":       reg_label,
+        "filter_file": percorso_filtro.replace(os.sep, "/"),
+        "mechanics":   data.get("mechanics") or ["mega"],
     }
     regs.append(new_reg)
     _save_regulations(regs)
 
-    return jsonify({"ok": True, "regulation": new_reg}), 201
+    return jsonify({"ok": True, "regulation": new_reg, "partenza": partenza}), 201
 
 
 # ---------------------------------------------------------------------------

@@ -1,0 +1,146 @@
+{% extends "base.html" %}
+{% block title %}Contenuti {{ reg.label }} – Hub{% endblock %}
+{% block topbar_title %}🎯 Contenuti regulation{% endblock %}
+{% block extra_head %}
+<style>
+.sel-lista{max-height:520px;overflow-y:auto;border:1px solid var(--border);border-radius:var(--radius-md)}
+.sel-riga{display:flex;align-items:center;gap:.5rem;padding:.28rem .6rem;font-size:.78rem;
+  border-bottom:1px solid color-mix(in oklch,var(--border) 40%,transparent)}
+.sel-riga:hover{background:var(--surface-off)}
+.sel-riga input{margin:0;cursor:pointer}
+.db-tab{padding:.35rem .8rem;border-radius:var(--radius-md);font-size:.78rem;font-weight:600;
+  cursor:pointer;border:1px solid var(--border);background:none;color:var(--text-muted);text-decoration:none}
+.db-tab.active{background:var(--primary);color:#fff;border-color:var(--primary)}
+</style>
+{% endblock %}
+{% block content %}
+<div class="page-header">
+  <div class="flex items-center gap-2">
+    <a href="/pokemon/regulation/{{ reg.id }}" class="btn btn-secondary btn-sm">← {{ reg.label }}</a>
+    <div>
+      <h1>🎯 Cosa fa parte di {{ reg.label }}</h1>
+      <p class="text-muted text-sm">
+        Spunta le voci del catalogo che appartengono a questa regulation.
+        I <strong>dati</strong> non si toccano qui: stanno nel
+        <a href="/pokemon/catalogo">catalogo</a>.
+      </p>
+    </div>
+  </div>
+</div>
+
+<div style="display:flex;gap:.4rem;margin-bottom:1rem;flex-wrap:wrap">
+  {% for d in db_disponibili %}
+    <a href="{{ url_for('pokemon.regulation_content', reg_id=reg.id, db=d) }}"
+       class="db-tab {% if d == db %}active{% endif %}">
+      {{ {'pokemon':'🐾 Pokémon','moves':'⚔️ Mosse','abilities':'🧬 Abilità','items':'🎒 Oggetti'}[d] }}
+      <span style="opacity:.7">
+        {% if conteggi[d].tutto %}tutte{% else %}{{ conteggi[d].scelti }}/{{ conteggi[d].totale }}{% endif %}
+      </span>
+    </a>
+  {% endfor %}
+</div>
+
+<div class="card">
+  <div class="card-body">
+    <label style="display:flex;align-items:center;gap:.5rem;font-size:.82rem;font-weight:600;margin-bottom:.75rem">
+      <input type="checkbox" id="tutto" {% if tutto %}checked{% endif %} onchange="cambiaTutto()">
+      Includi <strong>tutte</strong> le voci del catalogo, anche quelle aggiunte in futuro
+    </label>
+
+    <div id="pannello" {% if tutto %}style="opacity:.4;pointer-events:none"{% endif %}>
+      <div style="display:flex;gap:.5rem;margin-bottom:.65rem;align-items:center;flex-wrap:wrap">
+        <input id="cerca" class="form-control" style="max-width:240px;font-size:.78rem"
+               placeholder="🔍 Cerca..." oninput="rendi()">
+        <button class="btn btn-secondary btn-sm" onclick="spuntaFiltrati(true)">Seleziona i filtrati</button>
+        <button class="btn btn-secondary btn-sm" onclick="spuntaFiltrati(false)">Deseleziona i filtrati</button>
+        <span id="conteggio" class="text-xs text-muted"></span>
+      </div>
+      <div class="sel-lista" id="lista"></div>
+      <p id="troppi" class="text-xs text-muted mt-2" style="display:none"></p>
+    </div>
+
+    <div class="flex gap-2 mt-3">
+      <button class="btn btn-primary" onclick="salva()">💾 Salva contenuti</button>
+      <a href="/pokemon/regulation/{{ reg.id }}" class="btn btn-secondary">Annulla</a>
+      <span id="esito" class="text-xs" style="align-self:center"></span>
+    </div>
+  </div>
+</div>
+
+<script type="application/json" id="dati-disponibili">{{ disponibili_json | safe }}</script>
+<script type="application/json" id="dati-selezionati">{{ selezionati_json | safe }}</script>
+<script>
+const REG = {{ reg.id | tojson }};
+const DB = {{ db | tojson }};
+const DISPONIBILI = JSON.parse(document.getElementById('dati-disponibili').textContent);
+const scelti = new Set(JSON.parse(document.getElementById('dati-selezionati').textContent));
+const MAX_RIGHE = 400;
+
+function esc(s){ return String(s == null ? '' : s)
+  .replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;'); }
+
+function filtrati(){
+  const q = document.getElementById('cerca').value.toLowerCase();
+  return q ? DISPONIBILI.filter(n => n.toLowerCase().includes(q)) : DISPONIBILI;
+}
+
+function rendi(){
+  const f = filtrati();
+  const mostrate = f.slice(0, MAX_RIGHE);
+  document.getElementById('conteggio').textContent =
+    `${scelti.size} scelti su ${DISPONIBILI.length} · ${f.length} nel filtro`;
+  const avviso = document.getElementById('troppi');
+  if (f.length > MAX_RIGHE) {
+    avviso.textContent = `Mostrate le prime ${MAX_RIGHE} di ${f.length}. `
+      + `"Seleziona i filtrati" agisce comunque su tutte e ${f.length}.`;
+    avviso.style.display = 'block';
+  } else avviso.style.display = 'none';
+
+  document.getElementById('lista').innerHTML = mostrate.map(n =>
+    '<label class="sel-riga"><input type="checkbox" ' + (scelti.has(n) ? 'checked ' : '')
+    + 'onchange="commuta(' + JSON.stringify(n).replace(/"/g,'&quot;') + ', this.checked)">'
+    + '<span>' + esc(n) + '</span></label>').join('');
+}
+
+function commuta(nome, acceso){
+  if (acceso) scelti.add(nome); else scelti.delete(nome);
+  document.getElementById('conteggio').textContent =
+    `${scelti.size} scelti su ${DISPONIBILI.length} · ${filtrati().length} nel filtro`;
+}
+
+function spuntaFiltrati(acceso){
+  // agisce su TUTTI i filtrati, non solo sulle righe visibili
+  filtrati().forEach(n => acceso ? scelti.add(n) : scelti.delete(n));
+  rendi();
+}
+
+function cambiaTutto(){
+  const attivo = document.getElementById('tutto').checked;
+  const p = document.getElementById('pannello');
+  p.style.opacity = attivo ? .4 : 1;
+  p.style.pointerEvents = attivo ? 'none' : 'auto';
+}
+
+async function salva(){
+  const tutto = document.getElementById('tutto').checked;
+  const esito = document.getElementById('esito');
+  esito.textContent = 'Salvataggio...';
+  esito.style.color = 'var(--text-muted)';
+  try{
+    const r = await fetch('/pokemon/api/regulation/' + REG + '/contenuto/' + DB, {
+      method:'POST', headers:{'Content-Type':'application/json'},
+      body: JSON.stringify(tutto ? {tutto:true} : {tutto:false, nomi:[...scelti]})
+    });
+    const d = await r.json();
+    if(!d.ok){ esito.textContent = d.error; esito.style.color = 'var(--error,#e05555)'; return; }
+    esito.style.color = 'var(--primary)';
+    esito.textContent = d.tutto
+      ? `Salvato: tutte le ${d.scelti} voci del catalogo.`
+      : `Salvato: ${d.scelti} voci`
+        + (d.ignorati && d.ignorati.length ? ` (${d.ignorati.length} nomi ignorati perché non nel catalogo)` : '');
+  }catch(e){ esito.textContent = 'Errore: ' + e.message; esito.style.color = 'var(--error,#e05555)'; }
+}
+
+rendi();
+</script>
+{% endblock %}

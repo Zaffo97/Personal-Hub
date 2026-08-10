@@ -9,6 +9,38 @@ Legenda: ⬜ da fare · 🟨 parziale / da verificare · ✅ fatto
 
 ---
 
+## ⚠️ Regulation MA — da riallineare alla vera M-A
+
+`ma` deve corrispondere alla **vera Regulation M-A di Pokémon Champions**. L'elenco
+attuale è ereditato dai file storici del progetto ed è **non verificato**: contiene
+208 Pokémon fra cui Alcremie, Appletun, Arbok, Ariados e Audino, ma **non** Amoonguss,
+Rillaboom, Urshifu, Flutter Mane e Chi-Yu. Non va preso come fonte di verità.
+
+Ora la struttura per riallinearla c'è: catalogo completo + schermata
+`/pokemon/regulation/ma/contenuto` per spuntare cosa ne fa parte. **Serve l'elenco
+reale di M-A**: non va dedotto né inventato. Stesso discorso per la **M-B**, che
+l'utente aggiungerà in seguito — la creazione di una regulation nuova produce già il
+formato a filtro, quindi basterà crearla e spuntarne i contenuti.
+
+---
+
+## ✅ Chiuso il 10/08/2026 — struttura pronta ad agganciare le regulation
+
+- **Creazione regulation nel modello a filtro** — `api_regulations_create` generava
+  ancora i vecchi `roster_/moves_/items_`, quindi una M-B nuova sarebbe nata fuori dal
+  catalogo. Ora crea `data/regulations/<id>.json` con elenchi di nomi e registra
+  `filter_file`. Tre punti di partenza: **vuota** (default), **tutto** il catalogo, o
+  **copia** da una regulation esistente
+- **Schermata contenuti** `/pokemon/regulation/<id>/contenuto?db=…` — spunti quali
+  voci del catalogo appartengono alla regulation, con le quattro linguette e i
+  contatori (`208/1350`, `461/921`, `58/398`, `tutte`). Ricerca, selezione di massa
+  che agisce su **tutti i filtrati** e non solo sulle 400 righe visibili, e una
+  casella "includi tutte le voci, anche quelle future" che scrive `null` nel filtro.
+  I nomi non presenti nel catalogo vengono ignorati e segnalati
+- 24 controlli sul ciclo completo: creo una regulation, la trovo vuota, ne scelgo i
+  contenuti, verifico che i loader filtrino davvero, provo "tutto" e la copia da MA,
+  apro il calcolatore sulla regulation nuova. 23 pagine senza errori di sintassi
+
 ## ✅ Chiuso il 10/08/2026 — catalogo unico completato
 
 - **Doppioni unificati e `ALIAS` riparati** — i doppioni veri erano **solo 3**: il

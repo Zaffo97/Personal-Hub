@@ -181,7 +181,13 @@ def _archive_dir()             # data/archive/, creata se manca
 | Schermata | Modifica |
 |---|---|
 | `/pokemon/catalogo` | **i dati**: base stat, potenza, tipi, effetti, descrizioni |
-| `/pokemon/roster` · `/mosse` · `/oggetti` | **quali nomi** fanno parte della regulation |
+| `/pokemon/regulation/<id>/contenuto` | **quali voci** fanno parte della regulation (schermata a spunte) |
+| `/pokemon/roster` · `/mosse` · `/oggetti` | idem, ma via JSON grezzo |
+
+> ⚠️ **`ma` è la vera Regulation M-A di Pokémon Champions.** L'elenco attuale è
+> ereditato dai file storici e **non è verificato** — non usarlo come fonte di verità
+> e non dedurre da lì cosa sia legale. Quando serve popolare M-A o la futura M-B,
+> l'elenco va chiesto: il catalogo contiene tutto, la regulation è solo un filtro.
 
 Helper: `voci_catalogo(db)` legge sempre un dizionario piatto (le abilità sono
 avvolte in `{"abilities": ...}`, gli altri tre no), `salva_catalogo(db, voci)` scrive
@@ -242,6 +248,8 @@ SPRITE_SLUG_OVERRIDES  # 19 casi irregolari; HD None = artwork grande assente,
 | `/pokemon/roster/restore/<filename>` | POST | Ripristina un archivio |
 | `/pokemon/mosse` · `/pokemon/mosse/archive` | GET/POST · POST | Editor mosse |
 | `/pokemon/oggetti` · `/pokemon/oggetti/archive` | GET/POST · POST | Editor oggetti |
+| `/pokemon/regulation/<id>/contenuto` | GET | ⭐ **Contenuti della regulation** (`?db=…`) — sceglie **quali** voci ne fanno parte |
+| `/pokemon/api/regulation/<id>/contenuto/<db>` | POST | Salva l'elenco (o `tutto: true` per non filtrare) |
 | `/pokemon/catalogo` | GET | ⭐ **Editor del catalogo** (`?db=pokemon\|moves\|abilities\|items`) — modifica i **dati** |
 | `/pokemon/api/catalogo/<db>/voce` | GET | JSON di una singola voce (`?nome=`) |
 | `/pokemon/api/catalogo/<db>/salva` | POST | Crea, aggiorna o rinomina una voce |
