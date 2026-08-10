@@ -11,6 +11,26 @@ Legenda: ⬜ da fare · 🟨 parziale / da verificare · ✅ fatto
 
 ## ✅ Chiuso il 10/08/2026 — catalogo unico completato
 
+- **Doppioni unificati e `ALIAS` riparati** — i doppioni veri erano **solo 3**: il
+  trio `Tauros (X Breed)` scritto a mano accanto a `Paldean Tauros (X Breed)`
+  importato, identici campo per campo a parte lo `slug`. Rimossi quelli a mano.
+  Mega Machamp, Mega Meowstic e i Gourgeist **non** erano doppioni: sono forme
+  originali tue, senza corrispettivo ufficiale, e sono rimaste.
+
+  Nel controllo sono saltati fuori **6 `ALIAS` che non puntavano a nulla**: tre a
+  `Tauros (Paldean Combat)` e simili, nomi inesistenti nel catalogo; due
+  (`Lycanroc-Dusk`, `Lycanroc-Midnight`) puntavano a sé stessi; `Stunfisk-Galar`
+  mancava del tutto. Erano esattamente i 6 nomi che lo Speed Tier non risolveva.
+
+  **Speed Tier: 208 su 208, nessun nome irrisolto** (era 189 prima del catalogo,
+  202 dopo). Regola #8 invariata, 19 pagine pulite.
+
+  > Nota di metodo: la prima ricerca dei doppioni usava "stessi tipi e stesse stat"
+  > e dava 17 gruppi — quasi tutti falsi positivi (i 7 nuclei di Minior, i costumi
+  > di Pikachu, le build di Koraidon: stat identiche ma forme diverse davvero). Il
+  > segnale giusto era un altro: le forme **senza `slug`**, cioè quelle scritte a
+  > mano e mai riconciliate con i dati ufficiali.
+
 - **Verifica in browser del nuovo modello** — regola #8 esatta sul Pokedex (A=183,
   D=122, HP=221, 85-102), 8 condizioni di danno su 8, 7 casi meteo su 7, tabelle di
   riferimento rigenerate, 19 pagine senza errori di sintassi. **Speed Tier da 189 a
@@ -49,18 +69,12 @@ regulation che contengono **solo elenchi di nomi** che puntano lì (`null` = tut
   mega_map, dati invariati. Pokedex vede tutto.
 
 **Da decidere, non urgente:**
-1. **Doppioni di forme** creati dall'import: il catalogo ha sia
-   `Tauros (Combat Breed)` (preesistente) sia `Paldean Tauros (Combat Breed)` (nuovo).
-   Stessa cosa per un paio di Mega Meowstic. Da unificare col nuovo editor del catalogo
-2. **Il roster di MA è ristretto**: non contiene Amoonguss, Rillaboom, Urshifu,
+1. **Il roster di MA è ristretto**: non contiene Amoonguss, Rillaboom, Urshifu,
    Flutter Mane, Chi-Yu. Prima il calcolatore li offriva lo stesso perché
    `CHAMPIONS_BST` era globale; ora la regulation filtra davvero e in MA non
    compaiono. Se li vuoi, vanno aggiunti al roster — è il comportamento richiesto,
    ma è un cambiamento visibile
-3. **6 nomi del roster MA restano irrisolti** nello Speed Tier: `Lycanroc-Dusk`,
-   `Lycanroc-Midnight`, `Stunfisk-Galar` e i tre `Tauros-Paldea-*`. Sono alias che
-   il catalogo ha sotto nomi ufficiali diversi
-4. I file `data/roster_ma.json`, `moves_ma.json`, `items_ma.json`, `abilities.json` e
+2. I file `data/roster_ma.json`, `moves_ma.json`, `items_ma.json`, `abilities.json` e
    `pokemon_catalog.json` restano come **fallback**: dismetterli solo a verifica finita
 
 Script rieseguibili: `scripts/build_catalog.py` (`--dry-run` per provare) e

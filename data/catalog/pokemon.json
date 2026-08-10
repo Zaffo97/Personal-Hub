@@ -1161,62 +1161,6 @@
       "spe": 110
     },
     "forms": {
-      "Tauros (Combat Breed)": {
-        "types": [
-          "Lotta"
-        ],
-        "base_stats": {
-          "hp": 75,
-          "atk": 110,
-          "def": 105,
-          "spa": 30,
-          "spd": 70,
-          "spe": 100
-        },
-        "abilities": [
-          "Intimidate",
-          "Anger Point",
-          "Cud Chew"
-        ]
-      },
-      "Tauros (Blaze Breed)": {
-        "types": [
-          "Lotta",
-          "Fuoco"
-        ],
-        "base_stats": {
-          "hp": 75,
-          "atk": 110,
-          "def": 105,
-          "spa": 30,
-          "spd": 70,
-          "spe": 100
-        },
-        "abilities": [
-          "Intimidate",
-          "Anger Point",
-          "Cud Chew"
-        ]
-      },
-      "Tauros (Aqua Breed)": {
-        "types": [
-          "Lotta",
-          "Acqua"
-        ],
-        "base_stats": {
-          "hp": 75,
-          "atk": 110,
-          "def": 105,
-          "spa": 30,
-          "spd": 70,
-          "spe": 100
-        },
-        "abilities": [
-          "Intimidate",
-          "Anger Point",
-          "Cud Chew"
-        ]
-      },
       "Paldean Tauros (Combat Breed)": {
         "types": [
           "Lotta"
