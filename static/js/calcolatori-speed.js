@@ -46,10 +46,18 @@ async function loadSpePkmn(){
     const speAbilSel = document.getElementById('spe_abil');
     if (speAbilSel && d.abilities && d.abilities.length) {
       speAbilSel.innerHTML = '<option value="">— Nessuna —</option>';
+    // Il catalogo Pokémon cita le abilità col nome inglese: qui si risale alla
+    // chiave e si mostra il nome nella lingua attiva, come nelle altre tendine.
+    // Il `value` resta il nome di partenza — `abilityEffect` lo risolve comunque.
     d.abilities.forEach(ab => {
       const opt = document.createElement('option');
       opt.value = ab;
-      opt.textContent = ab;
+      const chiave = risolviChiave(ABILITIES_DATA, ab);
+      const voce = ABILITIES_DATA[chiave];
+      const incide = ['speed_weather', 'speed_status'].includes(abilityEffect(ab).type);
+      opt.textContent = (incide ? '● ' : '') + nomeVis(voce, chiave);
+      if (incide) opt.style.fontWeight = '600';
+      if (voce && voce.desc) opt.title = voce.desc;
       speAbilSel.appendChild(opt);
     });
 }

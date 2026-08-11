@@ -27,7 +27,13 @@ function getNM(nat,stat){return NM[nat]?.[stat]||1.0;}
 // I nomi nel JSON sono in italiano, come le tendine dell'interfaccia.
 function abilityEffect(name) {
   if (!name) return { type: 'none' };
-  const voce = ABILITIES_DATA[name];
+  // Il match esatto sulla chiave non basta: il catalogo Pokémon cita le abilità
+  // col **nome inglese** (`Swift Swim`) mentre le chiavi sono italiane
+  // (`Nuotovelox`), quindi le tendine popolate dalle abilità del Pokémon non
+  // trovavano mai niente — Kingdra sotto pioggia restava a 105 invece di 210.
+  // `risolviChiave` accetta chiave, nome italiano e nome inglese, come già fa
+  // la casella delle mosse.
+  const voce = ABILITIES_DATA[risolviChiave(ABILITIES_DATA, name)];
   return (voce && voce.effect) ? voce.effect : { type: 'none' };
 }
 

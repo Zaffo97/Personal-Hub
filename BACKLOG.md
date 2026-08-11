@@ -196,10 +196,10 @@ commutatore ha sempre qualcosa da mostrare.
   `Meowstic (Male)`…). Giusto così: il nome italiano di una forma non è deducibile e
   non va inventato. I **21** diversi sono i Paradosso più `Type: Null` →
   `Crinealato`, `Manoferrea`, `Lunaruggente`, `Tipo Zero`…
-- **abilità (103)** ⬜ — questo è l'unico numero che vale la pena guardare, e la wiki
-  **non** lo chiude: ne recupera 5 e conferma che sono identiche nelle due lingue
-  (`Download`, `Libero`, `Punk Rock`, `Teravolt`, `Transistor`). Il motivo è che il
-  problema non è di traduzione, vedi qui sotto
+- **abilità (103)** ✅ — chiuse l'11/08/2026, ma **non traducendole**: erano doppioni,
+  e 24 coppie sono state fuse. La wiki infatti non le chiudeva: ne recuperava 5,
+  confermando che sono identiche nelle due lingue (`Download`, `Libero`, `Punk Rock`,
+  `Teravolt`, `Transistor`). Il problema non era di traduzione, vedi qui sotto
 
 ### ✅ Il secondo giro — `python scripts/importa_nomi_wiki.py [--dry-run] [--solo …]`
 
@@ -247,7 +247,92 @@ Da guardare anche `Mirror Herb` → **Foglia carbone**: è quello che scrive la 
 scheda e infobox, ma è l'unico dei 20 che non somiglia né all'inglese né al giapponese
 (*Mimic Herb*).
 
-### ⬜ Le 103 abilità: non è un problema di traduzione, è un doppione
+### ✅ Le abilità doppie — fuse l'11/08/2026
+
+**24 coppie fuse**, `data/catalog/abilities.json` da **415 a 391 voci**, con
+`python scripts/fondi_abilita_doppie.py [--dry-run]` (rieseguibile, copia in
+`data/archive/abilities_pre-fusione.json`). **39 controlli su 39.**
+
+**Il guasto era più grosso della fusione.** Il catalogo Pokémon cita le abilità col
+**nome inglese** (`Swift Swim`), mentre le chiavi del file sono italiane
+(`Nuotovelox`), e `abilityEffect()` faceva un match **esatto sulla chiave**: dei
+**307** nomi di abilità posseduti dai Pokémon, **zero** arrivavano a un effetto, e
+tutti e 56 gli effetti del file erano irraggiungibili partendo da un Pokémon. Nel tab
+Danno non si vedeva — lì la tendina elenca tutte le abilità in italiano e si sceglie a
+mano — ma nello **Speed Tier**, dove la tendina è popolata con le abilità del Pokémon,
+nessun effetto si applicava mai. Misurato: **Kingdra sotto pioggia con Swift Swim
+restava a 105 di Velocità invece di 210**.
+
+Servivano tutte e due le metà, e da sole non bastavano:
+
+1. **`abilityEffect()` ora risolve per chiave, nome italiano e nome inglese**, con lo
+   stesso `risolviChiave()` già usato dalla casella delle mosse. Da sola non
+   avrebbe acceso niente: avrebbe risolto su `Nuotovelox`, che era **inerte**
+2. **la fusione**: l'effetto passa dalla voce vecchia a quella ufficiale. Da sola non
+   avrebbe acceso niente: l'effetto sarebbe finito sulla voce giusta, ma il nome
+   inglese non l'avrebbe raggiunta
+
+Dopo: Kingdra **105 → 210**, esattamente ×2. Dei 307 nomi posseduti dai Pokémon,
+**307 risolvono** su una voce (erano 7) e quelli che arrivano a un effetto attivo
+passano da **22 a 39** a parità di risoluzione.
+
+**Le coppie non sono state indovinate.** L'accoppiamento automatico per somiglianza di
+testo è stato provato e sbagliava — proponeva `Combattività` → `Bruciaimpeto` e
+`Nuoto Veloce` → `Clorofilla`. Ogni voce è invece mappata a mano sull'**abilità reale
+che il suo `effect` descrive**, e lo script risolve quel nome inglese contro i dati,
+fermandosi su ciò che non trova. 24 su 24 risolte, tutte con la controparte appesa a
+un Pokémon vero:
+
+| | |
+|---|---|
+| `Combattività` → `Dentistretti` (Guts) | `Nuoto Veloce` → `Nuotovelox` (Swift Swim) |
+| `Assorbiacqua` → `Assorbacqua` · `Voltassorbi` → `Assorbivolt` | `Fuga` → `Remasabbia` · `Manto Slaccio` → `Spalaneve` |
+| `Multiscaglia` → `Multisquame` · `Ombra Fantasma` → `Spettroguardia` | `Pioggerella` → `Piovischio` · `Nevischio` → `Scendineve` |
+| `Scudo Peluria` → `Foltopelo` · `Spessore` → `Grassospesso` | `Tempesta di Sabbia` → `Sabbiafiume` |
+| `Squame Miracolo` → `Pelledura` · `Passo Veloce` → `Piedisvelti` | `Mega Sol` → `Terra Estrema` (Desolate Land) |
+| `Filtraggio`/`Prisma Armatura`/`Schermosaldo` → `Filtro`/`Scudoprisma`/`Solidroccia` | `Pioggia Perpetua` → `Mare Primordiale` |
+| `Erboristeria` → `Erbaiuto` · `Torrente` e `Torrentismo` → `Acquaiuto` | `Vampirico` → `Aiutofuoco` |
+
+Sulle 7 coppie dove **anche** la voce ufficiale aveva già un effetto, i due blocchi
+sono stati confrontati prima di sovrascrivere: **identici 7 su 7**, quindi la
+sovrascrittura non cambia nessun numero. Alla voce ufficiale seguono anche `category`,
+i campi extra di calcolo (`weather_ball_type`, `atk_boost`, …) e la `desc` della
+vecchia, che descrive l'effetto applicato davvero invece della formula generica.
+Chiave, `nome_it` e `nome_en` restano quelli ufficiali.
+
+> Correzione a quanto scritto sopra in questo file: **`Spettroguardia` non è un nome
+> sbagliato**. È **Shadow Shield**, che ha davvero l'effetto di Multiscale — la
+> descrizione era giusta e la nota «descrive Multiscaglia» era un falso allarme.
+
+**Le 10 che non ho toccato**, per decisione di Davide dell'11/08/2026: il loro effetto
+non corrisponde a nessuna abilità reale, quindi accoppiarle vorrebbe dire decidere che
+l'effetto attuale è sbagliato. Sono probabilmente abilità **di Champions**:
+
+| Voce | Perché non torna |
+|---|---|
+| `Nervosismo`, `Polifagia` | SpA +50% fisso, e sono identiche fra loro |
+| `Sforzo` | Attacco +50% — Huge Power e Pure Power raddoppiano |
+| `Tiratore` | +30% sulle mosse ad area — nessuna abilità reale |
+| `Manto Neve` | Difesa +50% con la Neve — Snow Cloak dà elusione, e il +Def è la meccanica della Neve |
+| `Tempra` | SpD +50% con la sabbia — è la meccanica della sabbia sui Roccia |
+| `Assorbifuoco` | immunità Fuoco **che cura** — Flash Fire non cura |
+| `Colpo Secco` | mosse Fuoco +50% sotto il Sole — Solar Power alza lo SpA |
+| `Compressione` | `effect` dice `tinted_lens`, la desc dice «tutte le mosse +30%» |
+| `Vento Misterioso` | meteo `fog` perpetuo — la nebbia non è un meteo del gioco |
+
+Intatte anche le **7** senza traduzione ma appese a un Pokémon (`Download`,
+`Eelevate`, `Fire Mane`, `Libero`, `Punk Rock`, `Teravolt`, `Transistor`): non sono
+doppioni di nessuno.
+
+### ⬜ Aperto dalla fusione
+
+| | Voce | Note |
+|---|---|---|
+| ⬜ | **`Megasolar` ha `nome_en: "Mega Sol"`** | Un aggancio sbagliato dell'import: `Mega Sol` non è un nome inglese. Ora che la vecchia `Mega Sol` non c'è più, scrivere «Mega Sol» risolve su `Megasolar`, che è **inerte**, invece che su `Terra Estrema`. Nessun Pokémon usa quel nome, quindi non rompe niente oggi |
+| ⬜ | **`ABILITIES_CALC` non la usa nessuno** | Definita in `data.py:178`, **zero consumer** in tutto il progetto: il pallino ● sulle abilità che incidono lo calcola `abilityIncideSulDanno()` in JS. Contiene per giunta 19 nomi inglesi che non sono chiavi. Da togliere nell'inventario finale — e `CLAUDE.md` la cita fra le cose che dipendono dalle chiavi, il che non è più vero |
+| ⬜ | **Il fallback `data/abilities.json` ha ancora le 24 vecchie** | È il file legacy, letto solo se `data/catalog/abilities.json` manca. Se quel giorno arrivasse, si tornerebbe alla situazione di prima. Da dismettere con gli altri file storici |
+
+### ⬜ Com'era il problema, prima della fusione
 
 Il secondo giro l'ha chiarito. La wiki ha **306** abilità ufficiali con nome italiano e
 inglese, il catalogo ne ha **415**, e le 307 già tradotte usano tutte il nome ufficiale
@@ -760,7 +845,7 @@ Dettagli che vale la pena ricordare:
 | ✅ | 53 `onmouseout` morti in `templates/python.html:45` | Chiuso 11/08/2026. Il ramo `{% else %}` aggiungeva due apici dentro una stringa già quotata (`this.style.background=''''`, `SyntaxError`), quindi su ogni argomento **non** completato l'handler era `null`. Tolti i due apici: da **0 handler vivi su 53 a 53 su 53**, provato eseguendo mouseover/mouseout |
 | ✅ | `loadSpePkmn()` non ricalcola | Chiuso 11/08/2026: aggiunta la chiamata a `updateSpeed()`. Incineroar → base 60, Velocità **80**; Dragapult → base 142, Velocità **162** |
 | ⬜ | Speed Tier senza limite di righe | `renderSpeed()` stampa una `<div>` per ogni voce. Misurato l'11/08/2026 ora che `pokedex` è il default: **1343 righe, 714 KB di HTML** in un solo `innerHTML` — ma `loadRegSpeed()` impiega **14 ms**, quindi è peso nel DOM, non lentezza percepita. Le altre tabelle del progetto si fermano a 300 righe |
-| ⬜ | Nomi in `abilities.json` da rivedere → **fondere i doppioni** | Alcuni non corrispondono all'abilità descritta (es. `Spettroguardia` descrive Multiscaglia; il vero Wonder Guard è `Magidifesa`). Convivono nomi ufficiali IT e nomi di altra fonte. L'11/08/2026 il giro sulla wiki ha spiegato perché: **le due famiglie coesistono nello stesso file**, 307 voci col nome ufficiale (collegate ai Pokémon, ma solo 22 con un effetto attivo) e 108 vecchie (34 con l'effetto che il calcolatore usa davvero). Il lavoro non è tradurre, è fondere ogni coppia. Dettagli e tabella nella sezione dello switch lingua, in cima |
+| ✅ | Nomi in `abilities.json` da rivedere → **fondere i doppioni** | Chiuso 11/08/2026: 24 coppie fuse, 415 → 391 voci, e `abilityEffect()` ora risolve anche per nome inglese. Dettagli nella sezione «Le abilità doppie», in cima. ⚠️ Restano le 10 voci il cui effetto non corrisponde a nessuna abilità reale, tenute apposta | Alcuni non corrispondono all'abilità descritta (es. `Spettroguardia` descrive Multiscaglia; il vero Wonder Guard è `Magidifesa`). Convivono nomi ufficiali IT e nomi di altra fonte. L'11/08/2026 il giro sulla wiki ha spiegato perché: **le due famiglie coesistono nello stesso file**, 307 voci col nome ufficiale (collegate ai Pokémon, ma solo 22 con un effetto attivo) e 108 vecchie (34 con l'effetto che il calcolatore usa davvero). Il lavoro non è tradurre, è fondere ogni coppia. Dettagli e tabella nella sezione dello switch lingua, in cima |
 | ⬜ | Catalogo con abilità incomplete | Ricontato 10/08/2026 sul catalogo unico: **243 specie su 1029** hanno una sola abilità (il vecchio "84 su 174" era sul catalogo pre-unificazione). Quasi tutti ne hanno 2-3 con la nascosta |
 | ✅ | Chiavi mega incoerenti nel catalogo | Chiuso 11/08/2026. Non erano anomalie ma **doppioni**: `mega-banette`, `mega-chimecho` e `mega-crabominable` esistevano sia come chiave top-level sia come forma annidata nella specie base. Le forme annidate, deconvertite, sono quelle giuste — le top-level sono state rimosse (1029 → 1026 voci). Gli override sprite in `api_pokemon.py:70-73` **restano**: sono indicizzati sul nome normalizzato, non sulla chiave, e servono ancora perché Mega Chimecho e Mega Crabominable sono inventate e non hanno uno sprite online |
 
