@@ -60,7 +60,15 @@ commutatore ha sempre qualcosa da mostrare.
   `Assorbacqua`. È la vecchia voce *"Nomi in abilities.json da rivedere"*, ora
   **quantificata**: **312 su 415 usano il nome ufficiale, 103 no**
 
-### Cosa NON copre ancora
+### ⬜ Cosa manca — deciso con Davide l'11/08/2026
+
+| | Voce | Note |
+|---|---|---|
+| ⬜ | **Nomi e descrizioni tradotti anche negli editor** | Oggi `/pokemon/catalogo`, `/pokemon/mosse`, `/pokemon/oggetti` e `/pokemon/abilita` mostrano la **chiave**, e le descrizioni sono solo in italiano. Vanno tradotti sia i nomi sia i `desc` di mosse, abilità e oggetti. Serve un secondo giro di import per i testi inglesi — la chiave resta comunque l'identità della voce, quindi va deciso come mostrare entrambe |
+| ⬜ | **Lo switch riguarda solo la sezione Pokémon: dirlo, o nasconderlo altrove** | Il pulsante oggi compare su tutte le pagine ma traduce solo i dati Pokémon. A Davide non interessa tradurre Gaming, Arduino, PC Builder e Python: meglio **mostrare il pulsante solo sotto `/pokemon/*`**, così non promette quello che non fa |
+| ⬜ | **Bandierine al posto di `IT`/`EN`** | Bandiera italiana e bandiera del Regno Unito come pulsante, al posto delle due lettere |
+
+### Cosa NON copre ancora (stato tecnico)
 
 - ⬜ **le stringhe dell'interfaccia** — etichette, pulsanti, titoli: italiano fisso in
   ~19 template. È il secondo blocco
@@ -406,6 +414,21 @@ accendendo un effetto alla volta e confrontando il rapporto col moltiplicatore a
 
 Verificati anche l'accumulo dei moltiplicatori — Helping Hand + critico = ×2.25 esatto,
 scottatura + Reflect = ×0.25, terreno erboso + HH + spread = ×1.4625 — e lo spread a ×0.75.
+
+---
+
+## 👥 UTENTI E PERMESSI (sezione nuova — 11/08/2026)
+
+| | Voce |
+|---|---|
+| ⬜ | **Gestione utenti con permessi per sezione.** Poter aggiungere utenti **normali** e **amministratori**, e scegliere per ognuno quali sezioni può vedere, con una casella da spuntare per sezione (Pokémon, Gaming, Arduino, PC Builder, Python, Stampa 3D…). Obiettivo: far entrare altre persone nella web app facendo vedere loro solo ciò che le riguarda |
+
+Punti di partenza già presenti: la tabella `users` ha **già** la colonna `role`
+(`DEFAULT 'user'`, e l'utente `admin` è creato con `role='admin'`), ma **nessuno la
+legge**: `login_required` in `extensions.py` controlla solo che ci sia `username` in
+sessione. Servono quindi una tabella o una colonna per i permessi di sezione, un
+decoratore che li verifichi, la sidebar che nasconda le voci non permesse, e una
+schermata di amministrazione per gestirli.
 
 ---
 
