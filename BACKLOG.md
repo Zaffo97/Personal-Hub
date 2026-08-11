@@ -9,6 +9,41 @@ Legenda: ⬜ da fare · 🟨 parziale / da verificare · ✅ fatto
 
 ---
 
+## 🏁 ⬜ DA FARE PER ULTIMO — il giro completo di collaudo
+
+**Questa voce si chiude dopo tutte le altre.** Quando i lavori in questo file sono
+finiti, si fa **un giro completo della web app**: ogni sezione, ogni pagina, **ogni
+campo e ogni funzione**, per vedere se c'è qualcosa che non torna. Non un controllo a
+campione sulle cose toccate di recente — tutto, comprese le parti che nessuno guarda da
+mesi.
+
+Perché serve, e perché va fatto **alla fine**: qui i bachi peggiori non hanno mai dato
+errore. Il PC Builder è rimasto inerte per settimane per un apice di troppo, il
+Ripristina del roster sovrascriveva senza chiedere conferma, lo Speed Tier ricadeva in
+silenzio su una lista statica e `/api/moves` leggeva il file sbagliato. Tutta roba che
+si vede solo **usando** la pagina, e che un lavoro fatto dopo può rimettere in piedi.
+
+Cosa deve coprire il giro, come promemoria — da dettagliare quando ci si arriva:
+
+- **ogni campo di ogni form**: vuoto, valore limite, valore assurdo, caratteri strani
+  (apostrofi e accenti: è la classe di bug che ha ucciso il Ripristina)
+- **ogni pulsante e ogni azione**: creazione, modifica, eliminazione, ripristino,
+  import, export — e la conferma dove deve esserci
+- **le due lingue**, `IT` ed `EN`, su tutte le pagine Pokémon
+- **tutte le regulation**, non solo `ma`: `pokedex` e `mb` sono quelle dove sono
+  usciti i bachi degli endpoint
+- **il calcolatore in tutti e quattro i tab**, con la regola #8 come pietra di paragone
+- lo sweep tecnico che qui ha già ripagato: rendere ogni pagina ed eseguire
+  `new Function()` su **ogni blocco `<script>` e ogni handler inline**
+- le sezioni non-Pokémon, che ricevono meno attenzione: Gaming, Arduino, PC Builder,
+  Python, e la Stampa 3D quando ci sarà
+
+L'esito va scritto qui, con i numeri: quante pagine, quanti campi, quante anomalie
+trovate e quali. Le anomalie che non rientrano nello scope del giro si segnalano, non
+si correggono al volo.
+
+---
+
 ## 🟨 Switch lingua IT ⇄ EN — primo blocco chiuso (11/08/2026)
 
 Pulsante **`IT`/`EN`** in `base.html`, accanto a quello del tema. Cambia lingua a

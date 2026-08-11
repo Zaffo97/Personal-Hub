@@ -13,7 +13,21 @@ Non aspettare che te lo dica lui: proponilo tu, subito dopo aver committato.
 
 Vale anche quando si sta chiudendo la sessione, o quando Davide dice che ha finito.
 
-**Prima di proporre il push, esporta i dati:**
+**Prima di proporre il push, due cose, in quest'ordine.**
+
+**1. Aggiorna `BACKLOG.md`** con quello che è successo nella sessione: cosa hai chiuso
+(con la data e i numeri della verifica) e cosa resta **sospeso** — le voci aperte, i
+casi da decidere a mano, i bachi trovati e non corretti perché fuori scope. Se una voce
+esisteva già, spuntala o correggila invece di scriverne una seconda.
+
+Non è un doppione della regola #5 ("tieni aggiornati `BACKLOG.md` e `PROJECT_CONTEXT.md`
+insieme al codice"): quella dice *quando* scrivere, questa è il **controllo prima di
+spingere**. Un push che porta su GitHub del codice senza il backlog aggiornato lascia il
+lavoro senza la sua spiegazione, ed è proprio quando serve — alla sessione dopo, che di
+questa non ricorda niente. Se non c'è niente da aggiungere, dillo esplicitamente a
+Davide invece di saltare il passo in silenzio.
+
+**2. Esporta i dati:**
 
 ```bash
 python scripts/esporta_dati.py
