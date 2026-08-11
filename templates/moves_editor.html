@@ -45,8 +45,14 @@ textarea.code-area{min-height:380px}
       <a href="/pokemon/calcolatori" class="btn btn-secondary btn-sm">← Calcolatori</a>
       <div>
         <h1>⚔️ Mosse — Editor</h1>
-        <p class="text-muted text-sm">{{ moves_data.moves|length }} mosse · Regulation: <strong>{{ current_reg.label }}</strong> · BP e categoria auto-compilati nel calcolatore</p>
+        <p class="text-muted text-sm">{{ moves_data.moves|length }} mosse · BP e categoria auto-compilati nel calcolatore</p>
       </div>
+      <select onchange="location.href='/pokemon/mosse?reg='+this.value"
+              class="form-control" style="max-width:200px;font-size:.82rem">
+        {% for r in regulations %}
+        <option value="{{ r.id }}" {% if r.id == current_reg.id %}selected{% endif %}>{{ r.label }}</option>
+        {% endfor %}
+      </select>
     </div>
   </div>
 </div>

@@ -21,8 +21,14 @@ textarea.code-area{min-height:300px}
     <a href="/pokemon" class="btn btn-secondary btn-sm">← Indietro</a>
     <div>
       <h1>📋 Roster — Editor</h1>
-      <p class="text-muted text-sm">Regulation: <strong>{{ current_reg.label }}</strong> · Aggiorna la lista Pokémon e le Mega Evoluzioni senza toccare il codice</p>
+      <p class="text-muted text-sm">Aggiorna la lista Pokémon e le Mega Evoluzioni senza toccare il codice</p>
     </div>
+    <select onchange="location.href='/pokemon/roster?reg='+this.value"
+            class="form-control" style="max-width:200px;font-size:.82rem">
+      {% for r in regulations %}
+      <option value="{{ r.id }}" {% if r.id == current_reg.id %}selected{% endif %}>{{ r.label }}</option>
+      {% endfor %}
+    </select>
   </div>
 </div>
 

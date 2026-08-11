@@ -175,13 +175,11 @@ SLUG_OVERRIDES = {
     "gourgeist-(super)": "gourgeist-super",
 }
 
-ABILITIES_CALC = [
-    "Adaptability", "Filter", "Fluffy", "Fur Coat", "Guts",
-    "Hustle", "Ice Scales", "Multiscale", "Neuroforce",
-    "Prism Armor", "Shadow Shield", "Sheer Force", "Technician",
-    "Thick Fat", "Tough Claws", "Transistor", "Dragons Maw",
-    "Steely Spirit", "Heatproof", "Water Bubble"
-]
+# `ABILITIES_CALC` stava qui: elenco di 20 nomi inglesi delle abilità "supportate
+# dal calcolatore". Rimossa l'11/08/2026 perché **non la importava nessuno**: chi
+# marca le abilità che incidono è `abilityIncideSulDanno()` in calcolatori-core.js,
+# che legge il blocco `effect` del catalogo — quindi l'elenco non solo era inerte,
+# era anche destinato a divergere dai dati veri.
 
 # Carica base stats dal catalogo. data/catalog/pokemon.json è il database di
 # default completo; data/pokemon_catalog.json resta come fallback finché c'è.

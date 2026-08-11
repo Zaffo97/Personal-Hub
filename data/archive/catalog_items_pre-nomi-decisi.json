@@ -551,7 +551,7 @@
     "category": "other",
     "desc": "Rimedio che rianima un Pokémon esausto restituendogli tutti i PS.",
     "categoria_pokeapi": "revival",
-    "nome_it": "Revitalizzante Max",
+    "nome_it": "Revitalizz. Max",
     "nome_en": "Max Revive"
   },
   "Fresh Water": {
@@ -824,7 +824,7 @@
     "category": "other",
     "desc": "Se attivato, tutti i Pokémon della squadra ricevono Punti Esperienza dalla lotta anche se non vi hanno partecipato.",
     "categoria_pokeapi": "training",
-    "nome_it": "Condividi Esperienza",
+    "nome_it": "Condividi esp.",
     "nome_en": "Exp. Share"
   },
   "Soothe Bell": {

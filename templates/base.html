@@ -181,9 +181,31 @@ textarea.form-control{resize:vertical;min-height:70px}
       <span class="topbar-title">{% block topbar_title %}{% endblock %}</span>
     </div>
     <div class="topbar-actions">
-      <button class="btn-icon" onclick="toggleLingua()" id="langBtn"
+      {# Il pulsante traduce **solo i nomi dei dati Pokémon**: fuori da /pokemon/*
+         non farebbe niente, quindi non si mostra invece di promettere il falso.
+         Bandiera della lingua **attiva**, disegnata inline: le emoji bandiera su
+         Windows non vengono renderizzate come tali e si leggerebbero "IT"/"GB". #}
+      {% if request.path.startswith('/pokemon') %}
+      <button class="btn-icon" onclick="toggleLingua()" id="langBtn" data-lang="{{ lang }}"
               title="{% if lang == 'it' %}Switch to English{% else %}Passa all'italiano{% endif %}"
-              style="font-weight:700;font-size:.72rem;letter-spacing:.04em">{{ lang|upper }}</button>
+              style="padding:0 .35rem">
+        {% if lang == 'it' %}
+        <svg width="21" height="15" viewBox="0 0 21 15" style="border-radius:2px;display:block">
+          <rect width="7" height="15" fill="#009246"/>
+          <rect x="7" width="7" height="15" fill="#fff"/>
+          <rect x="14" width="7" height="15" fill="#ce2b37"/>
+        </svg>
+        {% else %}
+        <svg width="21" height="15" viewBox="0 0 60 30" style="border-radius:2px;display:block">
+          <rect width="60" height="30" fill="#012169"/>
+          <path d="M0,0 L60,30 M60,0 L0,30" stroke="#fff" stroke-width="6"/>
+          <path d="M0,0 L60,30 M60,0 L0,30" stroke="#c8102e" stroke-width="3"/>
+          <path d="M30,0 v30 M0,15 h60" stroke="#fff" stroke-width="10"/>
+          <path d="M30,0 v30 M0,15 h60" stroke="#c8102e" stroke-width="6"/>
+        </svg>
+        {% endif %}
+      </button>
+      {% endif %}
       <button class="btn-icon" onclick="toggleTheme()" id="themeBtn" title="Cambia tema">
         <svg id="themeIcon" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
           <path d="M21 12.79A9 9 0 1 1 11.21 3 7 7 0 0 0 21 12.79z"/>
@@ -218,7 +240,9 @@ function updateThemeIcon(t){
 // Il ricaricamento e' voluto: cosi' cambia davvero ovunque in un colpo solo, senza
 // meta' pagina in una lingua e meta' nell'altra.
 function toggleLingua(){
-  const attuale=document.getElementById('langBtn').textContent.trim().toLowerCase();
+  // La lingua attiva sta in data-lang: il pulsante ora mostra una bandiera, non
+  // due lettere, quindi non c'e' piu' testo da leggere.
+  const attuale=(document.getElementById('langBtn').dataset.lang||'it').toLowerCase();
   const nuova=attuale==='it'?'en':'it';
   document.cookie='hub_lang='+nuova+';path=/;max-age=31536000;samesite=lax';
   location.reload();

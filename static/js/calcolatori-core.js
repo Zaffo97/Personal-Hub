@@ -185,9 +185,19 @@ const _INDICI_NOMI = new WeakMap();
 function indiceNomi(db) {
   if (_INDICI_NOMI.has(db)) return _INDICI_NOMI.get(db);
   const idx = {};
+  const conEffetto = v => v && v.effect && v.effect.type && v.effect.type !== 'none';
   for (const [chiave, voce] of Object.entries(db)) {
     for (const n of [chiave, voce && voce.nome_it, voce && voce.nome_en]) {
-      if (n) idx[String(n).toLowerCase()] = chiave;
+      if (!n) continue;
+      const k = String(n).toLowerCase();
+      // Piu' chiavi possono condividere lo stesso nome: `Forza Bruta` e
+      // `Forzabruta` sono due voci distinte che si chiamano **entrambe**
+      // Sheer Force, e una sola delle due ha l'effetto. Vincendo l'ultima,
+      // Sheer Force risolveva sulla voce inerte e non applicava niente.
+      // A parita' di nome tiene quella che ha qualcosa da applicare; sulle
+      // mosse e sugli oggetti, che non hanno `effect`, non cambia nulla.
+      if (idx[k] && conEffetto(db[idx[k]]) && !conEffetto(voce)) continue;
+      idx[k] = chiave;
     }
   }
   _INDICI_NOMI.set(db, idx);

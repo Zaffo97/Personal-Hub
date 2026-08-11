@@ -219,7 +219,7 @@
       "bullet",
       "pulse"
     ],
-    "nome_it": "Sferapulsar",
+    "nome_it": "Forzasfera",
     "nome_en": "Aura Sphere"
   },
   "Aurora Beam": {
@@ -2078,7 +2078,7 @@
     "flags": [
       "pulse"
     ],
-    "nome_it": "Curapulsar",
+    "nome_it": "Ondasana",
     "nome_en": "Heal Pulse"
   },
   "Heart Stamp": {

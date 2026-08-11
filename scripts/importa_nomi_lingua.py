@@ -4,8 +4,8 @@
     python scripts/importa_nomi_lingua.py [--dry-run] [--solo moves,abilities,...]
 
 Le **chiavi del catalogo non vengono toccate**: sono referenziate dai filtri delle
-regulation, dal motore degli effetti, da `ABILITIES_CALC` e dai team salvati nel DB.
-Ogni voce riceve solo i due nomi da mostrare a schermo.
+regulation, dal motore degli effetti e dai team salvati nel DB. Ogni voce riceve solo
+i due nomi da mostrare a schermo.
 
 Come aggancia ogni base:
 

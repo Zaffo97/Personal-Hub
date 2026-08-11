@@ -111,8 +111,12 @@ Altre abitudini che in questo progetto hanno già ripagato:
 - il catalogo si scrive **solo** con `salva_catalogo()`, le abilità **solo** con
   `_save_abilities()`: è lì che vive la copia di sicurezza automatica
 - **le chiavi del catalogo non si rinominano.** Le usano i filtri delle regulation, il
-  motore degli effetti, `ABILITIES_CALC` e i team salvati nel DB. Per cambiare ciò che
-  si legge a schermo ci sono `nome_it` e `nome_en`
+  motore degli effetti e i team salvati nel DB. Per cambiare ciò che si legge a schermo
+  ci sono `nome_it` e `nome_en`
+- ⚠️ **due chiavi diverse possono avere lo stesso `nome_it`/`nome_en`**, quindi la
+  risoluzione per nome è ambigua: `Sheer Force` esiste come `Forza Bruta` e come
+  `Forzabruta`. `indiceNomi()` a parità di nome tiene la voce che ha un `effect`; i
+  doppioni veri sono elencati in `BACKLOG.md` e vanno fusi, non aggirati
 - gli script in `scripts/` sono **rieseguibili** e hanno `--dry-run`. Uno script che
   modifica dati curati deve rifiutarsi di farlo alla cieca e lasciare una copia in
   `data/archive/`

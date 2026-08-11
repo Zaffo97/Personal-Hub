@@ -243,9 +243,23 @@ da decidere a mano**, elencate dal rapporto dello script:
 | Exp. Share | Condividi esp. | **Condividi Esperienza** |
 | Expanding Force · Jaw Lock · Psycho Shift · Swallow · Shadow Wave · Shadow Panic | Vastenergia · Morsostretto · Psicotransfer · Introenergia · Ondascura · Ombrapanico | Vasterngia · Morostretto · Psicotrasfer · Intoenergia · Ondaoscura · Ombropanico |
 
-Da guardare anche `Mirror Herb` → **Foglia carbone**: è quello che scrive la wiki,
-scheda e infobox, ma è l'unico dei 20 che non somiglia né all'inglese né al giapponese
-(*Mimic Herb*).
+### ✅ Le 11 in disaccordo — decise l'11/08/2026
+
+Guardandole una per una si dividono in tre gruppi, non in uno. Applicate con
+`python scripts/applica_nomi_decisi.py [--dry-run]`, che verifica il valore di
+partenza di ogni voce e si ferma se non è quello atteso, quindi non può lavorare
+alla cieca né rifare il giro due volte.
+
+| Gruppo | Esito |
+|---|---|
+| **Due nomi davvero diversi** | Si passa alla wiki: `Aura Sphere` → **Sferapulsar**, `Heal Pulse` → **Curapulsar** |
+| **Tre abbreviazioni** | Forma estesa: `Max Revive` → **Revitalizzante Max**, `Exp. Share` → **Condividi Esperienza**. `Self-Destruct` era già «Autodistruzione». Nel gioco si abbrevia per stare nella casella di testo; qui lo spazio non manca |
+| **Sei refusi della wiki** | Nessuna modifica, e nessuna decisione da prendere: `Vasterngia`, `Morostretto`, `Psicotrasfer`, `Intoenergia`, `Ondaoscura`, `Ombropanico` sono errori di battitura contro le forme corrette già in uso |
+
+`Mirror Herb` → **Foglia carbone** resta com'è, **dichiarato sospetto**: è quello che
+la wiki scrive in scheda e infobox, ma è l'unico dei 20 che non somiglia né
+all'inglese né al giapponese (*Mimic Herb*). Meglio una lacuna nota di un nome
+inventato. Da ricontrollare sul gioco quando capita.
 
 ### ✅ Le abilità doppie — fuse l'11/08/2026
 
@@ -324,13 +338,14 @@ Intatte anche le **7** senza traduzione ma appese a un Pokémon (`Download`,
 `Eelevate`, `Fire Mane`, `Libero`, `Punk Rock`, `Teravolt`, `Transistor`): non sono
 doppioni di nessuno.
 
-### ⬜ Aperto dalla fusione
+### Aperto dalla fusione
 
 | | Voce | Note |
 |---|---|---|
-| ⬜ | **`Megasolar` ha `nome_en: "Mega Sol"`** | Un aggancio sbagliato dell'import: `Mega Sol` non è un nome inglese. Ora che la vecchia `Mega Sol` non c'è più, scrivere «Mega Sol» risolve su `Megasolar`, che è **inerte**, invece che su `Terra Estrema`. Nessun Pokémon usa quel nome, quindi non rompe niente oggi |
-| ⬜ | **`ABILITIES_CALC` non la usa nessuno** | Definita in `data.py:178`, **zero consumer** in tutto il progetto: il pallino ● sulle abilità che incidono lo calcola `abilityIncideSulDanno()` in JS. Contiene per giunta 19 nomi inglesi che non sono chiavi. Da togliere nell'inventario finale — e `CLAUDE.md` la cita fra le cose che dipendono dalle chiavi, il che non è più vero |
+| ✅ | **`Megasolar` aveva `nome_en: "Mega Sol"`** | Aggancio sbagliato dell'import — «Mega Sol» non è un nome inglese. Corretto l'11/08/2026 con `scripts/applica_nomi_decisi.py`: `nome_en` riportato a `Megasolar`, la convenzione delle voci senza traduzione ufficiale. Ora «Mega Sol» non risolve più su una voce inerte, e l'effetto vive dove deve, su `Terra Estrema` |
+| ✅ | **`ABILITIES_CALC` non la usava nessuno** | Rimossa da `data.py` l'11/08/2026 dopo aver verificato **zero consumer** in tutto il progetto: chi marca le abilità che incidono è `abilityIncideSulDanno()` in JS, che legge il blocco `effect`. L'elenco non era solo inerte, era destinato a divergere dai dati veri. Corretti anche i due documenti che lo citavano |
 | ⬜ | **Il fallback `data/abilities.json` ha ancora le 24 vecchie** | È il file legacy, letto solo se `data/catalog/abilities.json` manca. Se quel giorno arrivasse, si tornerebbe alla situazione di prima. Da dismettere con gli altri file storici |
+| ⬜ | **8 voci che condividono il nome con un'altra chiave** ⚠️ | Trovate verificando le bandierine: **due chiavi diverse possono avere gli stessi `nome_it` e `nome_en`**, e la risoluzione per nome deve sceglierne una. Il caso grave era **`Sheer Force`**, che esiste come `Forza Bruta` (con l'effetto) e `Forzabruta` (inerte): vincendo l'ultima, un Pokémon con Sheer Force **non applicava niente**. Tamponato in `indiceNomi()`, che a parità di nome tiene la voce con un effetto — misurato: il danno passa da 82 a **106**, il ×1.3 atteso. Restano i doppioni veri, da fondere come le 24: abilità `Forza Bruta`/`Forzabruta`, `Dragonize`/`Pelledrago`, `Mind's Eye` (dove la chiave `Occhio Interiore ` ha **uno spazio in fondo**), `Piercing Drill`/`Punta Perforante`, `Spicy Spray`/`Spargipiccante`; mosse `Freeze Dry`/`Freeze-Dry` e `Mud Slap`/`Mud-Slap`; oggetti `King's Rock`/`King’s Rock`, apostrofo dritto contro curvo. Gli altri sette sono innocui oggi perché nessuna delle due voci ha un effetto |
 
 ### ⬜ Com'era il problema, prima della fusione
 
@@ -379,8 +394,8 @@ abilità usati dal catalogo Pokémon risolvono tutti, e risolvono sulle ufficial
 | | Voce | Note |
 |---|---|---|
 | ⬜ | **Nomi e descrizioni tradotti anche negli editor** | Oggi `/pokemon/catalogo`, `/pokemon/mosse`, `/pokemon/oggetti` e `/pokemon/abilita` mostrano la **chiave**, e le descrizioni sono solo in italiano. Vanno tradotti sia i nomi sia i `desc` di mosse, abilità e oggetti. Serve un secondo giro di import per i testi inglesi — la chiave resta comunque l'identità della voce, quindi va deciso come mostrare entrambe |
-| ⬜ | **Lo switch riguarda solo la sezione Pokémon: dirlo, o nasconderlo altrove** | Il pulsante oggi compare su tutte le pagine ma traduce solo i dati Pokémon. A Davide non interessa tradurre Gaming, Arduino, PC Builder e Python: meglio **mostrare il pulsante solo sotto `/pokemon/*`**, così non promette quello che non fa |
-| ⬜ | **Bandierine al posto di `IT`/`EN`** | Bandiera italiana e bandiera del Regno Unito come pulsante, al posto delle due lettere |
+| ✅ | **Lo switch riguarda solo la sezione Pokémon** | Chiuso 11/08/2026: il pulsante compare **solo sotto `/pokemon/*`**, così non promette quello che non fa. Verificato pagina per pagina: assente su `/`, Gaming, Arduino, PC Builder e Python, presente sulle tre pagine Pokémon provate |
+| ✅ | **Bandierine al posto di `IT`/`EN`** | Chiuso 11/08/2026. Bandiera della lingua **attiva**, disegnata in **SVG inline** e non con le emoji bandiera: su Windows quelle non vengono renderizzate come tali e si sarebbero lette «IT» e «GB», cioè le stesse due lettere di prima. `toggleLingua()` legge ora `data-lang` invece del testo del pulsante, che non c'è più. Provato cliccandolo: il cookie passa a `en`, la bandiera diventa la Union Jack e le abilità nelle tendine passano all'inglese |
 
 ### Cosa NON copre ancora (stato tecnico)
 
@@ -462,7 +477,7 @@ leggere il filtro e ricade sul file vecchio solo se la regulation non è migrata
 |---|---|
 | ✅ `Mega Froslass` | Base Velocità riportata a **120** (→ **140** a Lv.50, il valore giusto secondo Davide). Quel singolo valore nel catalogo era **già una base**, non un dato convertito, e la deconversione l'aveva abbassato a 100 sottraendo 20 di troppo. Era l'unico caso del genere: con la correzione le Mega coperte da `MEGA_DATA` combaciano **57 su 58** |
 | ✅ `Mega Machamp` | **Non esiste**: forma rimossa dal catalogo. Aveva `base_stats: {}` e non era referenziata da nessuna regulation (né nei roster né nei `mega_map` di MA, MB e Pokedex) |
-| ⬜ `Mega Zygarde` | Davide deve controllare. HP **291** = Zygarde-Complete (216) convertito, ma le altre cinque non seguono nessuno schema: non sono deducibili |
+| ⬜ `Mega Zygarde` | **Lasciata ferma, per decisione dell'11/08/2026.** Correzione a quanto scritto qui prima: non è vero che «le altre cinque non seguono nessuno schema» — seguono **tutte e sei** la stessa firma delle altre 95 (−75 HP, −20 sul resto), e deconvertita darebbe `hp 216 · atk 70 · def 91 · spa 216 · spd 85 · spe 100`, BST 778. Il problema non è più l'aritmetica ma il risultato: **SpA 216 sarebbe il più alto del catalogo di 43 punti** (il massimo oggi è Xurkitree con 173) e un Attacco di 70 per una Mega di Zygarde, che ne ha 100, è strano. Che la sottrazione «torni» del resto è banale: si può sempre sottrarre. Serve sapere che valori si volevano, quindi resta com'è |
 
 > Lezione da tenere: la firma `+75 HP` individua le voci convertite **specie per specie**,
 > non stat per stat. Su Froslass cinque valori su sei erano convertiti e uno no, e la
@@ -702,7 +717,7 @@ Script rieseguibili: `scripts/build_catalog.py` (`--dry-run` per provare) e
 | ✅ | **19 Pokémon del roster MA assenti dal catalogo** | Chiuso 10/08/2026 dall'import Champions e dall'unificazione dei doppioni: **0 mancanti su 279**, verificato risolvendo l'intero roster MA contro l'indice del catalogo (top-level + `name` + forme annidate in `forms`). La voce era rimasta ⬜ per svista |
 | ✅ | Dividere / snellire `calcolatori.html` | Fatto 08/08/2026. Da **1885 righe / 222 KB a 685 righe / 147 KB**, con **zero JS inline**: CSS in `static/css/calcolatori.css` e JS in 6 file `static/js/calcolatori-*.js` (data · core · danno · speed · stat · ui). I dati di Flask passano da un blocco `<script type="application/json" id="calc-bootstrap">`, lo stesso schema di `items_editor.html` |
 | ✅ | Tabelle di riferimento duplicate in `calcolatori.html` | Fatto 08/08/2026. Le 4 righe da 108 KB sono ora 4 `<div>` vuoti riempiti da `calcolatori-ref.js` dagli **stessi dati del calcolo**: `TYPE_CHART` per l'efficacia, `NATURES` + `NM` per le nature. Template a **38 KB** |
-| ⬜ | DB ufficiale con TUTTI i Pokémon/abilità/mosse/oggetti di ogni generazione | Come regulation dedicata chiamata **Pokedex**. Selettore regulation in ogni sezione Pokémon, che pilota calcolatori, team ed editor. Stat sempre in formato Champions (66 totali, 32 per stat). Include tutti gli sprite |
+| ✅ | DB ufficiale con TUTTI i Pokémon/abilità/mosse/oggetti di ogni generazione | Chiuso 11/08/2026. La regulation **Pokedex** esiste, non filtra nulla e dall'11/08 è pure il **default del sito**: 1343 Pokémon, 921 mosse, 398 oggetti, 391 abilità. Il **selettore regulation** c'è ora in ogni sezione: calcolatore e team builder l'avevano già, e i tre editor — mosse, oggetti, roster — l'hanno ricevuto oggi. Prima lì si cambiava regulation solo scrivendo `?reg=` a mano nell'URL |
 | ⬜ | Creare i JSON di una nuova regulation dalla web app | Roster, mosse, oggetti e abilità generati in autonomia, magari agganciandosi a una fonte esterna. **Obiettivo di fondo: aggiungere una regulation senza IA, solo da interfaccia** |
 | ✅ | Testare Speed Tier | Fatto 08/08/2026. `loadRegSpeed()` **non funzionava**: leggeva `bst.spe` mentre la velocità sta in `base_stats.spe`, quindi tutti i 174 Pokémon venivano scartati e la funzione ricadeva in silenzio sulla lista statica da 158 nomi. Ora costruisce 189 righe dal roster MA (208 nomi, 19 assenti dal catalogo) |
 | ✅ | Weather Ball e mosse condizionate da meteo/abilità | Fatto 08/08/2026. Nuovo motore meteo in `calcolatori.html`: `meteoEffettivo()` (le abilità `weather_override` impongono il meteo, le `weather_setter` lo evocano se non è stato scelto nulla), `tipoPallaClima()` che usa `weather_ball_type` di `abilities.json` come override della mappa meteo→tipo, `applicaMeteoAllaMossa()` che riscrive BP e tipo nei campi visibili. Coperte **Weather Ball** (tipo dal meteo, BP 50→100), **Solar Beam** e **Solar Blade** (BP dimezzato con pioggia/sabbia/neve). Aggiunta la Pioggia forte alla tendina, con `fire_blocked` che porta le mosse Fuoco a 0 |
@@ -841,7 +856,7 @@ Dettagli che vale la pena ricordare:
 | ⬜ | Colonne tab Danno del calcolatore | 360/264/360 px, altezze 546/689/562: i tre riquadri chiudono a quote diverse. Non è un bug, è scelta di layout — da decidere se e come cambiarla |
 | ✅ | Nessun `.gitignore` | Fatto 10/08/2026. Creato `.gitignore` (`__pycache__/`, `*.py[cod]`, venv, `hub.db`, file di editor/OS) e tolti dall'indice `hub.db` + **13** `.pyc` con `git rm --cached`: i file restano su disco, git smette di seguirli. Gli archivi in `data/archive/` sono stati **lasciati tracciati** di proposito — sono la rete di sicurezza dei salvataggi, non scarto di build |
 | ⬜ | `main` diverge da `origin/main` | Locale avanti 2 / indietro 4. I commit remoti contengono un marker di conflitto e hanno perso `PROJECT_CONTEXT.md`. Riallineare richiede force-push |
-| ⬜ | `reference.html` è orfano | Nessuna route lo renderizza |
+| ✅ | `reference.html` era orfano | Rimosso l'11/08/2026: 70 righe che nessuna route renderizzava. Il tab Reference del calcolatore è un'altra cosa — vive dentro `calcolatori.html` ed è riempito da `calcolatori-ref.js` |
 | ✅ | 53 `onmouseout` morti in `templates/python.html:45` | Chiuso 11/08/2026. Il ramo `{% else %}` aggiungeva due apici dentro una stringa già quotata (`this.style.background=''''`, `SyntaxError`), quindi su ogni argomento **non** completato l'handler era `null`. Tolti i due apici: da **0 handler vivi su 53 a 53 su 53**, provato eseguendo mouseover/mouseout |
 | ✅ | `loadSpePkmn()` non ricalcola | Chiuso 11/08/2026: aggiunta la chiamata a `updateSpeed()`. Incineroar → base 60, Velocità **80**; Dragapult → base 142, Velocità **162** |
 | ⬜ | Speed Tier senza limite di righe | `renderSpeed()` stampa una `<div>` per ogni voce. Misurato l'11/08/2026 ora che `pokedex` è il default: **1343 righe, 714 KB di HTML** in un solo `innerHTML` — ma `loadRegSpeed()` impiega **14 ms**, quindi è peso nel DOM, non lentezza percepita. Le altre tabelle del progetto si fermano a 300 righe |

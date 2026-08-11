@@ -32,7 +32,13 @@ textarea.code-area{min-height:320px}
   <div class="flex items-center justify-between flex-wrap gap-2">
     <div class="flex items-center gap-2">
       <a href="/pokemon/calcolatori" class="btn btn-secondary btn-sm">← Calcolatori</a>
-      <div><h1>🎒 Oggetti — Editor</h1><p class="text-muted text-sm">{{ items|length }} oggetti · Regulation: <strong>{{ regulation }}</strong></p></div>
+      <div><h1>🎒 Oggetti — Editor</h1><p class="text-muted text-sm">{{ items|length }} oggetti</p></div>
+      <select onchange="location.href='/pokemon/oggetti?reg='+this.value"
+              class="form-control" style="max-width:200px;font-size:.82rem">
+        {% for r in regulations %}
+        <option value="{{ r.id }}" {% if r.id == current_reg.id %}selected{% endif %}>{{ r.label }}</option>
+        {% endfor %}
+      </select>
     </div>
   </div>
 </div>
