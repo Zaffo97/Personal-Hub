@@ -118,6 +118,34 @@
         </a>
         {% endfor %}
       </div>
+
+      {% set altre = regulations | rejectattr('id', 'equalto', reg.id) | list %}
+      {% if altre %}
+      <hr style="margin:1rem 0;border-color:var(--border)">
+      <div>
+        <p style="font-size:.78rem;color:var(--text-muted);margin-bottom:.5rem">
+          <strong>Copia da un'altra regulation.</strong> Sovrascrive gli elenchi di
+          <strong>{{ reg.label }}</strong> con quelli scelti: comodo per partire da una
+          simile e poi togliere il superfluo.
+        </p>
+        <div style="display:flex;gap:.5rem;flex-wrap:wrap;align-items:center">
+          <select id="copia_sorgente" class="form-control" style="max-width:210px;font-size:.8rem">
+            {% for a in altre %}<option value="{{ a.id }}">{{ a.label }}</option>{% endfor %}
+          </select>
+          <button class="btn btn-secondary btn-sm" onclick="copiaDa()">📋 Copia contenuti</button>
+        </div>
+        <div style="display:flex;gap:.75rem;flex-wrap:wrap;margin-top:.5rem;font-size:.75rem">
+          {% for campo, etichetta in [('pokemon','Pokémon'), ('moves','Mosse'),
+                                      ('items','Oggetti'), ('abilities','Abilità'),
+                                      ('mega_map','Mega map')] %}
+          <label style="display:flex;align-items:center;gap:.25rem">
+            <input type="checkbox" class="copia-campo" value="{{ campo }}" checked> {{ etichetta }}
+          </label>
+          {% endfor %}
+        </div>
+        <p id="copia_esito" style="font-size:.75rem;margin-top:.5rem;display:none"></p>
+      </div>
+      {% endif %}
       {% else %}
       <p style="font-size:.82rem;color:var(--text-muted);margin-bottom:1rem">
         Modifica direttamente roster, mosse e oggetti di questa regulation.
@@ -288,6 +316,48 @@ async function saveMeta() {
     }
   } catch(e) {
     showToast('Errore rete: ' + e, false);
+  }
+}
+
+// ── Copia contenuti da un'altra regulation ──────────────────────────────────
+async function copiaDa() {
+  const sel = document.getElementById('copia_sorgente');
+  if (!sel) return;
+  const sorgente = sel.value;
+  const campi = [...document.querySelectorAll('.copia-campo:checked')].map(c => c.value);
+  const esito = document.getElementById('copia_esito');
+
+  if (!campi.length) {
+    esito.style.display = 'block';
+    esito.style.color = 'var(--error,#e05555)';
+    esito.textContent = 'Scegli almeno un elemento da copiare.';
+    return;
+  }
+  const etichetta = sel.options[sel.selectedIndex].textContent.trim();
+  if (!confirm('Copiare ' + campi.join(', ') + ' da ' + etichetta
+               + '? Gli elenchi attuali di questa regulation verranno sostituiti.')) return;
+
+  esito.style.display = 'block';
+  esito.style.color = 'var(--text-muted)';
+  esito.textContent = 'Copia in corso...';
+  try {
+    const r = await fetch('/pokemon/api/regulation/{{ reg.id }}/copia-da', {
+      method: 'POST', headers: {'Content-Type':'application/json'},
+      body: JSON.stringify({ sorgente, campi })
+    });
+    const d = await r.json();
+    if (!d.ok) {
+      esito.style.color = 'var(--error,#e05555)';
+      esito.textContent = 'Errore: ' + d.error;
+      return;
+    }
+    const righe = Object.entries(d.copiati).map(([k, v]) => k + ': ' + v).join(' · ');
+    esito.style.color = 'var(--primary)';
+    esito.textContent = 'Copiato da ' + d.sorgente + ' — ' + righe + '. Ricarico...';
+    setTimeout(() => window.location.reload(), 900);
+  } catch(e) {
+    esito.style.color = 'var(--error,#e05555)';
+    esito.textContent = 'Errore rete: ' + e;
   }
 }
 </script>

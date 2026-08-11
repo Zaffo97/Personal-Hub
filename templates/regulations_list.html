@@ -81,9 +81,20 @@
         <label>Meccaniche (separato da virgola)</label>
         <input id="new_mechanics" class="form-control" placeholder="mega" value="mega">
       </div>
+      <div class="form-group">
+        <label>Parti da</label>
+        <select id="new_partenza" class="form-control">
+          <option value="vuota">Vuota — scegli tu cosa includere</option>
+          <option value="tutto">Tutto il catalogo, anche le voci future</option>
+          {% for r in regulations %}
+          <option value="{{ r.id }}">Copia da {{ r.label }}</option>
+          {% endfor %}
+        </select>
+      </div>
       <p style="font-size:.75rem;color:var(--text-muted);margin-bottom:.75rem">
-        I file JSON verranno creati automaticamente come
-        <code>roster_&lt;id&gt;.json</code>, <code>moves_&lt;id&gt;.json</code>, <code>items_&lt;id&gt;.json</code>.
+        La regulation è un <strong>filtro sul catalogo</strong>: conterrà solo elenchi
+        di nomi, non copie dei dati. Potrai cambiarli quando vuoi dalla schermata
+        contenuti.
       </p>
       <div style="display:flex;gap:.5rem;justify-content:flex-end">
         <button class="btn btn-secondary" onclick="document.getElementById('modal_new').style.display='none'">Annulla</button>
@@ -145,6 +156,7 @@ async function createRegulation() {
   const id        = document.getElementById('new_id').value.trim().toLowerCase().replace(/\s+/g,'_');
   const label     = document.getElementById('new_label').value.trim();
   const mechanics = document.getElementById('new_mechanics').value.split(',').map(m=>m.trim()).filter(Boolean);
+  const partenza  = document.getElementById('new_partenza').value;
   const errEl     = document.getElementById('new_error');
 
   if (!id || !label) {
@@ -155,7 +167,7 @@ async function createRegulation() {
   const res = await fetch('/pokemon/api/regulations/create', {
     method: 'POST',
     headers: {'Content-Type':'application/json'},
-    body: JSON.stringify({ id, label, mechanics })
+    body: JSON.stringify({ id, label, mechanics, partenza })
   });
   const data = await res.json();
   if (data.ok) {

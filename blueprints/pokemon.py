@@ -542,6 +542,48 @@ def regulation_content(reg_id):
     )
 
 
+@bp.route("/api/regulation/<reg_id>/copia-da", methods=["POST"])
+@login_required
+def api_regulation_copia_da(reg_id):
+    """Copia gli elenchi di un'altra regulation dentro questa.
+
+    Serve a non ricostruire a mano una regulation simile a una esistente: si parte
+    da una copia e si toglie quel che non serve dalla schermata contenuti.
+    """
+    regs = _list_regulation_files()
+    reg = next((r for r in regs if r["id"] == reg_id), None)
+    if not reg or _load_filtro(reg) is None:
+        return jsonify({"ok": False, "error": "regulation non trovata o non convertita"}), 404
+
+    payload = request.get_json(silent=True) or {}
+    sorgente_id = (payload.get("sorgente") or "").strip()
+    if sorgente_id == reg_id:
+        return jsonify({"ok": False, "error": "sorgente e destinazione coincidono"}), 400
+    sorgente = next((r for r in regs if r["id"] == sorgente_id), None)
+    filtro_sorgente = _load_filtro(sorgente) if sorgente else None
+    if filtro_sorgente is None:
+        return jsonify({"ok": False, "error": f"regulation sorgente non valida: {sorgente_id}"}), 404
+
+    # solo i campi scelti, così si può copiare per esempio le sole mosse
+    campi = payload.get("campi") or ["pokemon", "moves", "items", "abilities", "mega_map"]
+    percorso = os.path.join(DATA_DIR, reg["filter_file"])
+    with open(percorso, encoding="utf-8") as f:
+        filtro = json.load(f)
+
+    copiati = {}
+    for campo in campi:
+        if campo not in ("pokemon", "moves", "items", "abilities", "mega_map"):
+            continue
+        valore = filtro_sorgente.get(campo)
+        filtro[campo] = valore
+        copiati[campo] = "tutte" if valore is None else len(valore)
+    filtro["last_updated"] = datetime.now().strftime("%Y-%m-%d")
+    with open(percorso, "w", encoding="utf-8") as f:
+        json.dump(filtro, f, ensure_ascii=False, indent=2)
+
+    return jsonify({"ok": True, "sorgente": sorgente.get("label", sorgente_id), "copiati": copiati})
+
+
 @bp.route("/api/regulation/<reg_id>/contenuto/<db>", methods=["POST"])
 @login_required
 def api_regulation_content_save(reg_id, db):

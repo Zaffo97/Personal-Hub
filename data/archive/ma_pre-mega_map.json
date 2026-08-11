@@ -809,177 +809,165 @@
   ],
   "abilities": null,
   "mega_map": {
-    "Abomasnow": [
-      "Mega Abomasnow"
-    ],
-    "Absol": [
-      "Mega Absol"
-    ],
-    "Aerodactyl": [
-      "Mega Aerodactyl"
-    ],
-    "Aggron": [
-      "Mega Aggron"
-    ],
-    "Alakazam": [
-      "Mega Alakazam"
-    ],
-    "Altaria": [
-      "Mega Altaria"
-    ],
-    "Ampharos": [
-      "Mega Ampharos"
-    ],
-    "Audino": [
-      "Mega Audino"
-    ],
-    "Banette": [
-      "Mega Banette"
-    ],
-    "Beedrill": [
-      "Mega Beedrill"
-    ],
-    "Blastoise": [
-      "Mega Blastoise"
-    ],
-    "Camerupt": [
-      "Mega Camerupt"
-    ],
-    "Chandelure": [
-      "Mega Chandelure"
+    "Venusaur": [
+      "Mega Venusaur"
     ],
     "Charizard": [
       "Mega Charizard X",
       "Mega Charizard Y"
     ],
-    "Chesnaught": [
-      "Mega Chesnaught"
+    "Blastoise": [
+      "Mega Blastoise"
     ],
-    "Chimecho": [
-      "Mega Chimecho"
-    ],
-    "Clefable": [
-      "Mega Clefable"
-    ],
-    "Crabominable": [
-      "Mega Crabominable"
-    ],
-    "Delphox": [
-      "Mega Delphox"
-    ],
-    "Dragonite": [
-      "Mega Dragonite"
-    ],
-    "Drampa": [
-      "Mega Drampa"
-    ],
-    "Emboar": [
-      "Mega Emboar"
-    ],
-    "Eternal Flower Floette": [
-      "Mega Floette"
-    ],
-    "Excadrill": [
-      "Mega Excadrill"
-    ],
-    "Feraligatr": [
-      "Mega Feraligatr"
-    ],
-    "Froslass": [
-      "Mega Froslass"
-    ],
-    "Gallade": [
-      "Mega Gallade"
-    ],
-    "Garchomp": [
-      "Mega Garchomp"
-    ],
-    "Gardevoir": [
-      "Mega Gardevoir"
-    ],
-    "Gengar": [
-      "Mega Gengar"
-    ],
-    "Glalie": [
-      "Mega Glalie"
-    ],
-    "Glimmora": [
-      "Mega Glimmora"
-    ],
-    "Golurk": [
-      "Mega Golurk"
-    ],
-    "Greninja": [
-      "Mega Greninja"
-    ],
-    "Gyarados": [
-      "Mega Gyarados"
-    ],
-    "Hawlucha": [
-      "Mega Hawlucha"
-    ],
-    "Heracross": [
-      "Mega Heracross"
-    ],
-    "Houndoom": [
-      "Mega Houndoom"
-    ],
-    "Kangaskhan": [
-      "Mega Kangaskhan"
-    ],
-    "Lopunny": [
-      "Mega Lopunny"
-    ],
-    "Lucario": [
-      "Mega Lucario"
-    ],
-    "Manectric": [
-      "Mega Manectric"
-    ],
-    "Medicham": [
-      "Mega Medicham"
-    ],
-    "Meganium": [
-      "Mega Meganium"
+    "Beedrill": [
+      "Mega Beedrill"
     ],
     "Pidgeot": [
       "Mega Pidgeot"
     ],
-    "Pinsir": [
-      "Mega Pinsir"
+    "Clefable": [
+      "Mega Clefable"
     ],
-    "Sableye": [
-      "Mega Sableye"
+    "Alakazam": [
+      "Mega Alakazam"
     ],
-    "Scizor": [
-      "Mega Scizor"
+    "Machamp": [
+      "Mega Machamp"
     ],
-    "Scovillain": [
-      "Mega Scovillain"
-    ],
-    "Sharpedo": [
-      "Mega Sharpedo"
-    ],
-    "Skarmory": [
-      "Mega Skarmory"
+    "Victreebel": [
+      "Mega Victreebel"
     ],
     "Slowbro": [
       "Mega Slowbro"
     ],
+    "Gengar": [
+      "Mega Gengar"
+    ],
+    "Kangaskhan": [
+      "Mega Kangaskhan"
+    ],
     "Starmie": [
       "Mega Starmie"
+    ],
+    "Pinsir": [
+      "Mega Pinsir"
+    ],
+    "Gyarados": [
+      "Mega Gyarados"
+    ],
+    "Aerodactyl": [
+      "Mega Aerodactyl"
+    ],
+    "Dragonite": [
+      "Mega Dragonite"
+    ],
+    "Meganium": [
+      "Mega Meganium"
+    ],
+    "Feraligatr": [
+      "Mega Feraligatr"
+    ],
+    "Ampharos": [
+      "Mega Ampharos"
     ],
     "Steelix": [
       "Mega Steelix"
     ],
+    "Scizor": [
+      "Mega Scizor"
+    ],
+    "Heracross": [
+      "Mega Heracross"
+    ],
+    "Skarmory": [
+      "Mega Skarmory"
+    ],
+    "Houndoom": [
+      "Mega Houndoom"
+    ],
     "Tyranitar": [
       "Mega Tyranitar"
     ],
-    "Venusaur": [
-      "Mega Venusaur"
+    "Gardevoir": [
+      "Mega Gardevoir"
     ],
-    "Victreebel": [
-      "Mega Victreebel"
+    "Sableye": [
+      "Mega Sableye"
+    ],
+    "Aggron": [
+      "Mega Aggron"
+    ],
+    "Medicham": [
+      "Mega Medicham"
+    ],
+    "Manectric": [
+      "Mega Manectric"
+    ],
+    "Sharpedo": [
+      "Mega Sharpedo"
+    ],
+    "Camerupt": [
+      "Mega Camerupt"
+    ],
+    "Altaria": [
+      "Mega Altaria"
+    ],
+    "Banette": [
+      "Mega Banette"
+    ],
+    "Chimecho": [
+      "Mega Chimecho"
+    ],
+    "Absol": [
+      "Mega Absol"
+    ],
+    "Glalie": [
+      "Mega Glalie"
+    ],
+    "Lopunny": [
+      "Mega Lopunny"
+    ],
+    "Garchomp": [
+      "Mega Garchomp"
+    ],
+    "Lucario": [
+      "Mega Lucario"
+    ],
+    "Abomasnow": [
+      "Mega Abomasnow"
+    ],
+    "Gallade": [
+      "Mega Gallade"
+    ],
+    "Froslass": [
+      "Mega Froslass"
+    ],
+    "Audino": [
+      "Mega Audino"
+    ],
+    "Excadrill": [
+      "Mega Excadrill"
+    ],
+    "Chandelure": [
+      "Mega Chandelure"
+    ],
+    "Hawlucha": [
+      "Mega Hawlucha"
+    ],
+    "Crabominable": [
+      "Mega Crabominable"
+    ],
+    "Drampa": [
+      "Mega Drampa"
+    ],
+    "Scovillain": [
+      "Mega Scovillain"
+    ],
+    "Glimmora": [
+      "Mega Glimmora"
+    ],
+    "Eternal Flower Floette": [
+      "Mega Floette"
     ]
   },
   "overrides": {},

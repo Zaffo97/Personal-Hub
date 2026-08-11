@@ -17,5 +17,13 @@
     "mechanics": [
       "mega"
     ]
+  },
+  {
+    "id": "mb",
+    "label": "Regulation MB",
+    "filter_file": "regulations/mb.json",
+    "mechanics": [
+      "mega"
+    ]
   }
 ]
