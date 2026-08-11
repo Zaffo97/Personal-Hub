@@ -30,7 +30,7 @@ Oggi voglio fare: [obiettivo specifico]
 > 8. Ogni modifica ai calcolatori va testata con un caso noto prima di considerarla completa.
 > 9. Non usare `localStorage` o `sessionStorage` — non disponibili nel sandbox.
 > 10. Le stat in `CHAMPIONS_BST` sono **base stat grezze da `pokemon_catalog.json`** — la formula `calc_stat_champions` le converte a runtime.
-> 11. 🏆 **Regola d'oro**: dopo ogni blocco di lavoro completato e verificato, proponi il push. Zona test sul branch di lavoro, `main` solo per il verificato, un tag a ogni blocco chiuso. Per esteso in `CLAUDE.md`, che si carica da solo a ogni sessione.
+> 11. 🏆 **Regola d'oro**: dopo ogni blocco di lavoro completato e verificato, esegui `python scripts/esporta_dati.py` e proponi il push. Zona test sul branch di lavoro, `main` solo per il verificato, un tag a ogni blocco chiuso. Per esteso in `CLAUDE.md`, che si carica da solo a ogni sessione.
 
 ---
 

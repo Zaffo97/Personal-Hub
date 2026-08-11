@@ -13,6 +13,19 @@ Non aspettare che te lo dica lui: proponilo tu, subito dopo aver committato.
 
 Vale anche quando si sta chiudendo la sessione, o quando Davide dice che ha finito.
 
+**Prima di proporre il push, esporta i dati:**
+
+```bash
+python scripts/esporta_dati.py
+```
+
+`hub.db` è escluso da git — è un binario e dentro c'è l'hash della password — quindi
+la libreria giochi importata da Steam, i team, i progetti Arduino e le build del PC
+**non avrebbero nessuna copia su GitHub**. Lo script ne scrive una leggibile in
+`data/backup/hub_export.json`, che invece viene committata. Se non è cambiato niente
+lo dice e non tocca il file, quindi eseguirlo è sempre sicuro. Le password non
+finiscono nell'export, di proposito.
+
 > ⚠️ Nota onesta sul perché la regola è scritta così: **non ho modo di sapere quanti
 > token restano.** Non posso accorgermi di essere "verso la fine". L'unico innesco su
 > cui posso contare è **il commit**: se ho appena committato, propongo il push.
