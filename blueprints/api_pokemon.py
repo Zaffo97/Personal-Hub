@@ -311,6 +311,19 @@ def _slug_forma(nome: str) -> str:
 # indice sarebbero irraggiungibili e Mega/forme regionali darebbero 404.
 _INDICE = {}
 
+# Primi pezzi che NON devono diventare alias. La regola "prima parola della chiave"
+# serve a far risolvere il nome nudo di chi esiste solo con un suffisso di forma
+# ("palafin-zero-form" -> "Palafin"), ma su "mega-venusaur" registrava anche `mega`:
+# con il fallback di _find_in_catalog, un nome inesistente come "Mega Machamp"
+# rispondeva **Mega Venusaur** invece di 404 — risposta sbagliata invece di errore.
+# Qui stanno solo i qualificatori di forma e i primi pezzi che da soli non sono un
+# Pokémon (`Iron Hands` -> "Iron", `Tapu Koko` -> "Tapu"). Verificato l'11/08/2026:
+# nessuno dei 295 nomi usati da MA, MB e Pokedex dipende da questi alias.
+NON_ALIASABILI = {
+    "mega", "primal", "alolan", "galarian", "hisuian", "paldean",
+    "totem", "partner", "eternal", "original", "iron", "tapu",
+}
+
 
 def _costruisci_indice():
     _INDICE.clear()
@@ -337,7 +350,7 @@ def _costruisci_indice():
     # senza questi alias il nome nudo ("Palafin") darebbe 404.
     for chiave in list(_INDICE):
         parti = chiave.split("-")
-        if len(parti) > 1:
+        if len(parti) > 1 and parti[0] not in NON_ALIASABILI:
             _INDICE.setdefault(parti[0], _INDICE[chiave])
         # "meowstic-male" -> anche "meowstic-m" ; idem female/f
         for lungo, corto in (("male", "m"), ("female", "f")):
@@ -446,28 +459,27 @@ def api_pokemon(name):
 
 @bp.route('/regulation/<string:reg_id>/data')
 def api_regulation_data(reg_id):
-    """Restituisce il roster Pokémon della regulation richiesta con i base stat Speed.
+    """Restituisce il roster Pokémon della regulation richiesta.
     Usato dallo Speed Tier di calcolatori.html per mostrare solo i Pokémon della regulation attiva.
     Response: { ok: true, reg_id, roster: [name, ...], count: N }
-    """
-    reg_path = os.path.join(DATA_DIR, "regulations.json")
-    try:
-        with open(reg_path, encoding='utf-8') as f:
-            regs = json.load(f)
-    except Exception:
-        regs = [{"id": "ma", "roster_file": "roster_ma.json"}]
 
-    reg = next((r for r in regs if r['id'] == reg_id), None)
+    Legge il **filtro** della regulation, come ogni altro loader. Prima leggeva il
+    vecchio `roster_file`: stessa storia di /api/moves. Conseguenze misurate
+    l'11/08/2026 — su MA lo Speed Tier mostrava i **208** nomi ereditati invece dei
+    **279** veri, e nessuna delle 59 Mega; su `pokedex` e `mb`, che un `roster_file`
+    non ce l'hanno mai avuto, l'endpoint dava 404 e il tab ricadeva in silenzio sulla
+    lista statica da 158 nomi. L'import è dentro la funzione perché blueprints.pokemon
+    è il posto dove vive la logica di filtro del catalogo.
+    """
+    from blueprints.pokemon import _list_regulation_files, _load_roster
+
+    reg = next((r for r in _list_regulation_files() if r.get('id') == reg_id), None)
     if not reg:
         return jsonify({'ok': False, 'error': f'Regulation not found: {reg_id}'}), 404
 
-    roster_file = reg.get('roster_file', f'roster_{reg_id}.json')
-    try:
-        with open(os.path.join(DATA_DIR, roster_file), encoding='utf-8') as f:
-            data = json.load(f)
-        roster = sorted(data.get('pokemon', []))
-    except Exception:
-        return jsonify({'ok': False, 'error': f'Roster file not found: {roster_file}'}), 404
+    roster = _load_roster(reg)
+    if not roster:
+        return jsonify({'ok': False, 'error': f'Roster vuoto per la regulation {reg_id}'}), 404
 
     return jsonify({'ok': True, 'reg_id': reg_id, 'roster': roster, 'count': len(roster)})
 

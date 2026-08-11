@@ -208,13 +208,18 @@ _slug_forma(nome)      # "Mega Venusaur" -> "venusaur-mega"
                        # "Alolan Raichu" -> "raichu-alolan"   (aggettivo COMPLETO)
                        # "Heat Rotom"    -> "rotom-heat"
 _INDICE                # indice costruito all'avvio: chiavi top-level + campo `name`
-                       # + le 84 forme annidate in `forms` + alias dei nomi base
+                       # + le forme annidate in `forms` + alias dei nomi base
+NON_ALIASABILI         # primi pezzi che NON diventano alias: mega, alolan, galarian,
+                       # hisuian, paldean, totem, primal, partner, eternal, original,
+                       # iron, tapu
 SPRITE_SLUG_OVERRIDES  # 19 casi irregolari; HD None = artwork grande assente,
                        # si ricade sullo sprite normale
 ```
 
 > ⚠️ Il catalogo tiene **84 forme annidate** dentro `forms` di 72 Pokémon. Senza `_INDICE` sono irraggiungibili: prima del fix **96 nomi su 300 davano 404**, quindi Mega e forme regionali non avevano né stat né sprite.
 > Tutti gli sprite vengono da **pokemondb**. Il repo `pokesprite` non contiene forme regionali, Rotom né Pokémon recenti: era la causa di 38 sprite rotti.
+
+> ⚠️ L'alias sul **primo pezzo** della chiave (`palafin-zero-form` → `Palafin`) non va applicato ai qualificatori di forma: su `mega-venusaur` registrava `mega`, e insieme al fallback di `_find_in_catalog` faceva rispondere **Mega Venusaur** a un nome inesistente come `Mega Machamp`. Per questo esiste `NON_ALIASABILI`. Se aggiungi un qualificatore nuovo (una regione, un prefisso di forma), mettilo lì: la risposta giusta a un nome che non esiste è **404**, non un Pokémon a caso.
 
 ---
 
@@ -231,6 +236,28 @@ SPRITE_SLUG_OVERRIDES  # 19 casi irregolari; HD None = artwork grande assente,
 |-----|--------|-------------|
 | `/` | GET | Home con statistiche aggregate |
 | `/export` | GET | Export JSON dei dati |
+
+### Gaming — `blueprints/gaming.py`
+| URL | Metodo | Chiave? | Descrizione |
+|-----|--------|---------|-------------|
+| `/gaming/` | GET | — | Lista giochi (filtri stato + ricerca). ⚠️ `/gaming` senza slash dà 308 |
+| `/gaming/new` · `/gaming/<id>/edit` · `/gaming/<id>/delete` | GET/POST | — | CRUD |
+| `/gaming/api/steam/cerca?q=` | GET | ❌ no | Ricerca titoli su `storesearch`, max 12 |
+| `/gaming/api/steam/gioco/<appid>` | GET | ❌ no | Dettagli da `appdetails`: generi in italiano, copertina, uscita |
+| `/gaming/steam` | GET | — | Schermata import. Senza chiave mostra la **guida** invece del form |
+| `/gaming/api/steam/libreria?profilo=` | GET | ✅ **sì** | `GetOwnedGames`: posseduti + ore. Accetta steamID64, URL o vanity |
+| `/gaming/steam/importa` | POST | ❌ no | Importa gli appid scelti, deduplica sull'`appid` |
+| `/gaming/api/steam/da-arricchire` | GET | ❌ no | Quanti giochi Steam sono senza genere |
+| `/gaming/steam/arricchisci` | POST | ❌ no | Riempie i generi a lotti di 15, il client richiama fino a `rimasti: 0` |
+
+> ⚠️ La chiave si legge **solo** da `os.environ["STEAM_API_KEY"]` (`steam_key()`): nessun
+> campo nell'interfaccia, nessun file nel progetto. Su Windows un processo eredita una
+> *copia* dell'ambiente: se la app parte prima che la variabile esista non la vedrà mai,
+> e nessun riavvio del browser aiuta — va riavviata la app da un terminale nuovo.
+
+> ⚠️ Il **nome visualizzato** Steam non è risolvibile via API: `ResolveVanityURL` accetta
+> solo l'indirizzo personalizzato (`/id/<vanity>`), che molti profili non hanno. La strada
+> affidabile è incollare l'URL completo del profilo.
 
 ### Pokémon — `blueprints/pokemon.py`
 | URL | Metodo | Descrizione |
@@ -250,6 +277,7 @@ SPRITE_SLUG_OVERRIDES  # 19 casi irregolari; HD None = artwork grande assente,
 | `/pokemon/oggetti` · `/pokemon/oggetti/archive` | GET/POST · POST | Editor oggetti |
 | `/pokemon/regulation/<id>/contenuto` | GET | ⭐ **Contenuti della regulation** (`?db=…`) — sceglie **quali** voci ne fanno parte |
 | `/pokemon/api/regulation/<id>/contenuto/<db>` | POST | Salva l'elenco (o `tutto: true` per non filtrare) |
+| `/pokemon/api/regulation/<id>/copia-da` | POST | Clona gli elenchi da un'altra regulation (`sorgente`, `campi`) |
 | `/pokemon/catalogo` | GET | ⭐ **Editor del catalogo** (`?db=pokemon\|moves\|abilities\|items`) — modifica i **dati** |
 | `/pokemon/api/catalogo/<db>/voce` | GET | JSON di una singola voce (`?nome=`) |
 | `/pokemon/api/catalogo/<db>/salva` | POST | Crea, aggiorna o rinomina una voce |
@@ -273,7 +301,7 @@ SPRITE_SLUG_OVERRIDES  # 19 casi irregolari; HD None = artwork grande assente,
 | URL | Metodo | Descrizione |
 |-----|--------|-------------|
 | `/api/pokemon/<path:name>` | GET | Stats, tipi, abilità e sprite **dal catalogo locale** (nessuna chiamata a PokéAPI a runtime) |
-| `/api/regulation/<id>/data` | GET | Roster della regulation |
+| `/api/regulation/<id>/data` | GET | Roster della regulation — passa da `_load_roster()`, quindi legge il **filtro** (`data/regulations/<id>.json`) e ricade sul vecchio `roster_file` solo se la regulation non è migrata |
 | `/api/moves` | GET | Mosse Reg. MA |
 
 > ⚠️ **Non esistono** (erano documentate ma mai implementate): `/api/stat_champions`, `/api/regulations`, `/api/regulations/save`, `/api/team/<id>`.
@@ -287,7 +315,12 @@ Tutte create da `init_db()` in `extensions.py`.
 | Tabella | Colonne chiave |
 |---------|----------------|
 | `users` | id, username UNIQUE, password (hash), display_name, role DEFAULT 'user' |
-| `games` | id, title, platform, genre, status DEFAULT 'Wishlist', hours_hltb, cover_url, prog_story/side/collect (int), date_start/end, notes, created_at |
+| `games` | id, title, platform, genre, status DEFAULT 'Wishlist', hours_hltb, cover_url, prog_story/side/collect (int), date_start/end, notes, created_at, **steam_appid** INTEGER, **hours_played** REAL |
+
+> ⚠️ `hours_hltb` e `hours_played` sono due cose diverse: la prima è la **durata stimata**
+> (HowLongToBeat), la seconda le **ore effettivamente giocate** lette da Steam. L'import
+> Steam scrive solo la seconda. Entrambe le colonne arrivano da un `ALTER TABLE` in
+> `init_db()` con `except: pass`, come `teams.regulation_id`.
 | `teams` | id, name, format, record, description, notes, **regulation_id** DEFAULT 'ma', created_at |
 | `team_members` | id, team_id (FK → teams CASCADE), slot, pokemon, mega_stone, nature, ability, held_item, tera_type, move1-4, ev_hp/atk/def/spa/spd/spe, sprite_url |
 | `arduino_projects` | id, name, board, status, tinkercad_url, code, description |
@@ -311,6 +344,10 @@ Tutte create da `init_db()` in `extensions.py`.
 4. Sono classic script, non moduli: le funzioni sono globali e gli `onclick` del template le vedono. Non aggiungere `type="module"`, romperebbe ogni handler inline.
 5. Il CSS della pagina va in `static/css/calcolatori.css`.
 6. **Le tabelle di riferimento non sono HTML**: i quattro `<div>` `tab_tipi_box`, `tab_nature_box`, `ovl_tipi_box`, `ovl_nature_box` sono vuoti nel template e li riempie `calcolatori-ref.js` al primo accesso. Per cambiare l'efficacia di un tipo si tocca **`TYPE_CHART` e basta**: la stessa costante che usa `calcDamage()`, così tabella e calcolo non possono divergere.
+
+7. **Le Mega non hanno una tabella tutta loro.** `fetchPkmn()` le chiede a `/api/pokemon` come qualsiasi altra forma: le stat stanno in `data/catalog/pokemon.json`, annidate in `forms` della specie base. `isMega` e il BST li deriva `marcaMega()` — il BST è la somma delle base.
+
+> ⚠️ `MEGA_DATA` **non esiste più** (eliminata l'11/08/2026). Era la terza copia delle stat: il tab Danno leggeva lei e lo Speed Tier il catalogo, che per le Mega conteneva le stat di Lv.50 già calcolate — quindi la formula finiva applicata due volte e lo stesso Mega Venusaur valeva 80 di Velocità di qua e 100 di là. Non reintrodurla: per cambiare le stat di una Mega si usa `/pokemon/catalogo`.
 
 > ⚠️ `TYPE_CHART` sta in `calcolatori-data.js` ed è l'**unica** type chart. Non ricrearne una locale dentro `calcDamage()`: era così fino all'08/08/2026, e la tabella mostrata all'utente era un blocco di HTML scollegato, duplicato in due copie da 46 KB.
 
@@ -473,6 +510,8 @@ Di conseguenza tutto ciò che questa tabella dava per "funzionante" non era mai 
 
 | Data | Contenuto |
 |------|-----------|
+| 2026-08-11 | **Stat delle Mega riportate alle base.** Nel catalogo 95 Mega su 101 avevano le stat di Lv.50 già calcolate dentro `base_stats` (+75 HP e +20 sulle altre, l'aritmetica esatta della formula del progetto): deconvertite con `scripts/deconverti_mega_catalogo.py`. Prova che è la lettura giusta: 56 su 57 riproducono `MEGA_DATA` alla cifra, e **tutte** le Mega ufficiali che `MEGA_DATA` non copriva (Metagross, Mewtwo X/Y, Rayquaza, Salamence, Swampert, Sceptile, Latias, Latios, Mawile, Diancie, Blaziken) coincidono coi valori reali del gioco. Rimosse 3 chiavi top-level che erano **doppioni** della forma annidata (1029 → 1026 voci) ed eliminata `MEGA_DATA`, la terza copia delle stat: ora anche le Mega passano da `/api/pokemon`, quindi tab Danno e Speed Tier non possono più divergere. Restano tre casi da decidere a mano: `Mega Froslass` (Vel 100 o 120), `Mega Machamp` (nessuna stat) e `Mega Zygarde` (rotta a sé). Verificando è saltato fuori **`/api/regulation/<id>/data`**, che leggeva ancora il vecchio `roster_file` come faceva `/api/moves`: lo Speed Tier mostrava i 208 nomi ereditati di MA (**zero Mega**) invece dei 279 veri, e su `pokedex` e `mb` andava in 404 ricadendo muto sulla lista statica da 158. Corretto. Corretti poi, su indicazione di Davide, **Mega Froslass** (la Velocità nel catalogo era già una base, non un valore convertito: riportata a 120 → **140** a Lv.50) e **Mega Machamp**, che non esiste ed è stata rimossa. Rimuoverla ha scoperchiato un baco vecchio: `/api/pokemon/Mega Machamp` rispondeva **Mega Venusaur** invece di 404, perché `mega` era finito tra gli alias — di qui `NON_ALIASABILI`. Verifica finale: regola #8 esatta (A=183, D=122, HP=221, 85-102), Mega Venusaur **80 → 100** e Mega Froslass **120 → 140** identici nei tab Danno e Speed Tier, Speed Tier MA **279/279** con 59 Mega e 0 sprite mancanti, 24 pagine / 43 blocchi script / 929 handler inline senza errori tranne 53 `onmouseout` morti in `python.html:45`, preesistenti e lasciati a backlog |
+| 2026-08-10 | **Sezione Gaming agganciata a Steam.** Ricerca in inserimento (un clic compila titolo, genere, copertina, `appid`), import della libreria con le ore giocate, arricchimento dei generi a lotti. Solo `GetOwnedGames` richiede la chiave, tutto il resto usa endpoint pubblici. Nuove colonne `steam_appid` e `hours_played`, quest'ultima **distinta** da `hours_hltb`. 41 controlli end-to-end + 0 errori di sintassi JS su 4 rendering. Importati 34 giochi / 904.8 ore con generi al 100%. Due bug miei corretti in corsa: l'import metteva tutto su "In corso" rendendo inutile il filtro per stato, e un errore di rete durante l'arricchimento marcava il gioco come senza-genere per sempre |
 | 2026-05-02 | Setup Flask, DB, auth, sidebar base |
 | 2026-05-03 | Tutti i template, Pokémon VGC, PC Builder + DxDiag |
 | 2026-05-04 | Calcolatori VGC, 461 mosse, fix EV/IV, editor mosse/roster |

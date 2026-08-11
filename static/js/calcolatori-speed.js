@@ -34,7 +34,6 @@ async function loadSpePkmn(){
   clearTimeout(loadTimers.spe);
   loadTimers.spe=setTimeout(async()=>{
     const d=await fetchPkmn(name);
-    console.log('full d:', d);
     if(!d)return;
     const sp=document.getElementById('spe_spr');
     if(sp){

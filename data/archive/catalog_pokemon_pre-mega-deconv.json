@@ -23,12 +23,12 @@
           "Veleno"
         ],
         "base_stats": {
-          "hp": 80,
-          "atk": 100,
-          "def": 123,
-          "spa": 122,
-          "spd": 120,
-          "spe": 80
+          "hp": 155,
+          "atk": 120,
+          "def": 143,
+          "spa": 142,
+          "spd": 140,
+          "spe": 100
         },
         "abilities": [
           "Thick Fat"
@@ -81,12 +81,12 @@
           "Drago"
         ],
         "base_stats": {
-          "hp": 78,
-          "atk": 130,
-          "def": 111,
-          "spa": 130,
-          "spd": 85,
-          "spe": 100
+          "hp": 153,
+          "atk": 150,
+          "def": 131,
+          "spa": 150,
+          "spd": 105,
+          "spe": 120
         },
         "abilities": [
           "Tough Claws"
@@ -99,12 +99,12 @@
           "Volante"
         ],
         "base_stats": {
-          "hp": 78,
-          "atk": 104,
-          "def": 78,
-          "spa": 159,
-          "spd": 115,
-          "spe": 100
+          "hp": 153,
+          "atk": 124,
+          "def": 98,
+          "spa": 179,
+          "spd": 135,
+          "spe": 120
         },
         "abilities": [
           "Drought"
@@ -155,12 +155,12 @@
           "Acqua"
         ],
         "base_stats": {
-          "hp": 79,
-          "atk": 103,
-          "def": 120,
-          "spa": 135,
-          "spd": 115,
-          "spe": 78
+          "hp": 154,
+          "atk": 123,
+          "def": 140,
+          "spa": 155,
+          "spd": 135,
+          "spe": 98
         },
         "abilities": [
           "Mega Launcher"
@@ -212,12 +212,12 @@
           "Veleno"
         ],
         "base_stats": {
-          "hp": 65,
-          "atk": 150,
-          "def": 40,
-          "spa": 15,
-          "spd": 80,
-          "spe": 145
+          "hp": 140,
+          "atk": 170,
+          "def": 60,
+          "spa": 35,
+          "spd": 100,
+          "spe": 165
         },
         "abilities": [
           "Adaptability"
@@ -252,12 +252,12 @@
           "Volante"
         ],
         "base_stats": {
-          "hp": 83,
-          "atk": 80,
-          "def": 80,
-          "spa": 135,
-          "spd": 80,
-          "spe": 121
+          "hp": 158,
+          "atk": 100,
+          "def": 100,
+          "spa": 155,
+          "spd": 100,
+          "spe": 141
         },
         "abilities": [
           "No Guard"
@@ -634,12 +634,12 @@
           "Elettro"
         ],
         "base_stats": {
-          "hp": 60,
-          "atk": 135,
-          "def": 95,
-          "spa": 90,
-          "spd": 95,
-          "spe": 110
+          "hp": 135,
+          "atk": 155,
+          "def": 115,
+          "spa": 110,
+          "spd": 115,
+          "spe": 130
         },
         "abilities": [
           "Electric Surge"
@@ -651,12 +651,12 @@
           "Elettro"
         ],
         "base_stats": {
-          "hp": 60,
-          "atk": 100,
-          "def": 55,
-          "spa": 160,
-          "spd": 80,
-          "spe": 130
+          "hp": 135,
+          "atk": 120,
+          "def": 75,
+          "spa": 180,
+          "spd": 100,
+          "spe": 150
         },
         "abilities": [
           "No Guard"
@@ -689,12 +689,12 @@
           "Folletto"
         ],
         "base_stats": {
-          "hp": 95,
-          "atk": 80,
-          "def": 93,
-          "spa": 135,
-          "spd": 110,
-          "spe": 70
+          "hp": 170,
+          "atk": 100,
+          "def": 113,
+          "spa": 155,
+          "spd": 130,
+          "spe": 90
         },
         "abilities": [
           "Friend Guard"
@@ -807,12 +807,12 @@
           "Psico"
         ],
         "base_stats": {
-          "hp": 55,
-          "atk": 50,
-          "def": 65,
-          "spa": 175,
-          "spd": 105,
-          "spe": 150
+          "hp": 130,
+          "atk": 70,
+          "def": 85,
+          "spa": 195,
+          "spd": 125,
+          "spe": 170
         },
         "abilities": [
           "Trace"
@@ -840,6 +840,15 @@
       "spe": 55
     },
     "forms": {
+      "Mega Machamp": {
+        "types": [
+          "Lotta"
+        ],
+        "base_stats": {},
+        "abilities": [
+          "No Guard"
+        ]
+      },
       "Machamp (Gigantamax Form)": {
         "types": [
           "Lotta"
@@ -886,12 +895,12 @@
           "Veleno"
         ],
         "base_stats": {
-          "hp": 80,
-          "atk": 125,
-          "def": 85,
-          "spa": 135,
-          "spd": 95,
-          "spe": 70
+          "hp": 155,
+          "atk": 145,
+          "def": 105,
+          "spa": 155,
+          "spd": 115,
+          "spe": 90
         },
         "abilities": [
           "Chlorophyll"
@@ -926,12 +935,12 @@
           "Psico"
         ],
         "base_stats": {
-          "hp": 95,
-          "atk": 75,
-          "def": 180,
-          "spa": 130,
-          "spd": 80,
-          "spe": 30
+          "hp": 170,
+          "atk": 95,
+          "def": 200,
+          "spa": 150,
+          "spd": 100,
+          "spe": 50
         },
         "abilities": [
           "Shell Armor"
@@ -984,12 +993,12 @@
           "Veleno"
         ],
         "base_stats": {
-          "hp": 60,
-          "atk": 65,
-          "def": 80,
-          "spa": 170,
-          "spd": 95,
-          "spe": 130
+          "hp": 135,
+          "atk": 85,
+          "def": 100,
+          "spa": 190,
+          "spd": 115,
+          "spe": 150
         },
         "abilities": [
           "Shadow Tag"
@@ -1040,12 +1049,12 @@
           "Normale"
         ],
         "base_stats": {
-          "hp": 105,
-          "atk": 125,
-          "def": 100,
-          "spa": 60,
-          "spd": 100,
-          "spe": 100
+          "hp": 180,
+          "atk": 145,
+          "def": 120,
+          "spa": 80,
+          "spd": 120,
+          "spe": 120
         },
         "abilities": [
           "Parental Bond"
@@ -1080,12 +1089,12 @@
           "Psico"
         ],
         "base_stats": {
-          "hp": 60,
-          "atk": 100,
-          "def": 105,
-          "spa": 130,
-          "spd": 105,
-          "spe": 120
+          "hp": 135,
+          "atk": 120,
+          "def": 125,
+          "spa": 150,
+          "spd": 125,
+          "spe": 140
         },
         "abilities": [
           "Natural Cure"
@@ -1119,12 +1128,12 @@
           "Volante"
         ],
         "base_stats": {
-          "hp": 65,
-          "atk": 155,
-          "def": 120,
-          "spa": 65,
-          "spd": 90,
-          "spe": 105
+          "hp": 140,
+          "atk": 175,
+          "def": 140,
+          "spa": 85,
+          "spd": 110,
+          "spe": 125
         },
         "abilities": [
           "Aerilate"
@@ -1238,12 +1247,12 @@
           "Buio"
         ],
         "base_stats": {
-          "hp": 95,
-          "atk": 155,
-          "def": 109,
-          "spa": 70,
-          "spd": 130,
-          "spe": 81
+          "hp": 170,
+          "atk": 175,
+          "def": 129,
+          "spa": 90,
+          "spd": 150,
+          "spe": 101
         },
         "abilities": [
           "Mold Breaker"
@@ -1422,12 +1431,12 @@
           "Volante"
         ],
         "base_stats": {
-          "hp": 80,
-          "atk": 135,
-          "def": 85,
-          "spa": 70,
-          "spd": 95,
-          "spe": 150
+          "hp": 155,
+          "atk": 155,
+          "def": 105,
+          "spa": 90,
+          "spd": 115,
+          "spe": 170
         },
         "abilities": [
           "Tough Claws"
@@ -1501,12 +1510,12 @@
           "Volante"
         ],
         "base_stats": {
-          "hp": 91,
-          "atk": 124,
-          "def": 115,
-          "spa": 145,
-          "spd": 125,
-          "spe": 100
+          "hp": 166,
+          "atk": 144,
+          "def": 135,
+          "spa": 165,
+          "spd": 145,
+          "spe": 120
         },
         "abilities": [
           "Multiscale"
@@ -1538,12 +1547,12 @@
           "Erba"
         ],
         "base_stats": {
-          "hp": 80,
-          "atk": 92,
-          "def": 115,
-          "spa": 143,
-          "spd": 115,
-          "spe": 80
+          "hp": 155,
+          "atk": 112,
+          "def": 135,
+          "spa": 163,
+          "spd": 135,
+          "spe": 100
         },
         "abilities": [
           "Thick Fat"
@@ -1614,12 +1623,12 @@
           "Acqua"
         ],
         "base_stats": {
-          "hp": 85,
-          "atk": 160,
-          "def": 125,
-          "spa": 89,
-          "spd": 93,
-          "spe": 78
+          "hp": 160,
+          "atk": 180,
+          "def": 145,
+          "spa": 109,
+          "spd": 113,
+          "spe": 98
         },
         "abilities": [
           "Sheer Force"
@@ -1652,12 +1661,12 @@
           "Drago"
         ],
         "base_stats": {
-          "hp": 90,
-          "atk": 95,
-          "def": 105,
-          "spa": 165,
-          "spd": 110,
-          "spe": 45
+          "hp": 165,
+          "atk": 115,
+          "def": 125,
+          "spa": 185,
+          "spd": 130,
+          "spe": 65
         },
         "abilities": [
           "Mold Breaker"
@@ -1791,12 +1800,12 @@
           "Terra"
         ],
         "base_stats": {
-          "hp": 75,
-          "atk": 125,
-          "def": 230,
-          "spa": 55,
-          "spd": 95,
-          "spe": 30
+          "hp": 150,
+          "atk": 145,
+          "def": 250,
+          "spa": 75,
+          "spd": 115,
+          "spe": 50
         },
         "abilities": [
           "Sand Force"
@@ -1831,12 +1840,12 @@
           "Acciaio"
         ],
         "base_stats": {
-          "hp": 70,
-          "atk": 150,
-          "def": 140,
-          "spa": 65,
-          "spd": 100,
-          "spe": 75
+          "hp": 145,
+          "atk": 170,
+          "def": 160,
+          "spa": 85,
+          "spd": 120,
+          "spe": 95
         },
         "abilities": [
           "Technician"
@@ -1871,12 +1880,12 @@
           "Lotta"
         ],
         "base_stats": {
-          "hp": 80,
-          "atk": 185,
-          "def": 115,
-          "spa": 40,
-          "spd": 105,
-          "spe": 75
+          "hp": 155,
+          "atk": 205,
+          "def": 135,
+          "spa": 60,
+          "spd": 125,
+          "spe": 95
         },
         "abilities": [
           "Skill Link"
@@ -1911,12 +1920,12 @@
           "Volante"
         ],
         "base_stats": {
-          "hp": 65,
-          "atk": 140,
-          "def": 110,
-          "spa": 40,
-          "spd": 100,
-          "spe": 110
+          "hp": 140,
+          "atk": 160,
+          "def": 130,
+          "spa": 60,
+          "spd": 120,
+          "spe": 130
         },
         "abilities": [
           "Sturdy"
@@ -1951,12 +1960,12 @@
           "Fuoco"
         ],
         "base_stats": {
-          "hp": 75,
-          "atk": 90,
-          "def": 90,
-          "spa": 140,
-          "spd": 90,
-          "spe": 115
+          "hp": 150,
+          "atk": 110,
+          "def": 110,
+          "spa": 160,
+          "spd": 110,
+          "spe": 135
         },
         "abilities": [
           "Solar Power"
@@ -1990,12 +1999,12 @@
           "Buio"
         ],
         "base_stats": {
-          "hp": 100,
-          "atk": 164,
-          "def": 150,
-          "spa": 95,
-          "spd": 120,
-          "spe": 71
+          "hp": 175,
+          "atk": 184,
+          "def": 170,
+          "spa": 115,
+          "spd": 140,
+          "spe": 91
         },
         "abilities": [
           "Sand Stream"
@@ -2050,12 +2059,12 @@
           "Folletto"
         ],
         "base_stats": {
-          "hp": 68,
-          "atk": 85,
-          "def": 65,
-          "spa": 165,
-          "spd": 135,
-          "spe": 100
+          "hp": 143,
+          "atk": 105,
+          "def": 85,
+          "spa": 185,
+          "spd": 155,
+          "spe": 120
         },
         "abilities": [
           "Pixilate"
@@ -2090,12 +2099,12 @@
           "Spettro"
         ],
         "base_stats": {
-          "hp": 50,
-          "atk": 85,
-          "def": 125,
-          "spa": 85,
-          "spd": 115,
-          "spe": 20
+          "hp": 125,
+          "atk": 105,
+          "def": 145,
+          "spa": 105,
+          "spd": 135,
+          "spe": 40
         },
         "abilities": [
           "Magic Bounce"
@@ -2129,12 +2138,12 @@
           "Acciaio"
         ],
         "base_stats": {
-          "hp": 70,
-          "atk": 140,
-          "def": 230,
-          "spa": 60,
-          "spd": 80,
-          "spe": 50
+          "hp": 145,
+          "atk": 160,
+          "def": 250,
+          "spa": 80,
+          "spd": 100,
+          "spe": 70
         },
         "abilities": [
           "Filter"
@@ -2168,12 +2177,12 @@
           "Psico"
         ],
         "base_stats": {
-          "hp": 60,
-          "atk": 100,
-          "def": 85,
-          "spa": 80,
-          "spd": 85,
-          "spe": 100
+          "hp": 135,
+          "atk": 120,
+          "def": 105,
+          "spa": 100,
+          "spd": 105,
+          "spe": 120
         },
         "abilities": [
           "Pure Power"
@@ -2206,12 +2215,12 @@
           "Elettro"
         ],
         "base_stats": {
-          "hp": 70,
-          "atk": 75,
-          "def": 80,
-          "spa": 135,
-          "spd": 80,
-          "spe": 135
+          "hp": 145,
+          "atk": 95,
+          "def": 100,
+          "spa": 155,
+          "spd": 100,
+          "spe": 155
         },
         "abilities": [
           "Intimidate"
@@ -2245,12 +2254,12 @@
           "Buio"
         ],
         "base_stats": {
-          "hp": 70,
-          "atk": 140,
-          "def": 70,
-          "spa": 110,
-          "spd": 65,
-          "spe": 105
+          "hp": 145,
+          "atk": 160,
+          "def": 90,
+          "spa": 130,
+          "spd": 85,
+          "spe": 125
         },
         "abilities": [
           "Strong Jaw"
@@ -2285,12 +2294,12 @@
           "Terra"
         ],
         "base_stats": {
-          "hp": 70,
-          "atk": 120,
-          "def": 100,
-          "spa": 145,
-          "spd": 105,
-          "spe": 20
+          "hp": 145,
+          "atk": 140,
+          "def": 120,
+          "spa": 165,
+          "spd": 125,
+          "spe": 40
         },
         "abilities": [
           "Sheer Force"
@@ -2343,12 +2352,12 @@
           "Folletto"
         ],
         "base_stats": {
-          "hp": 75,
-          "atk": 110,
-          "def": 110,
-          "spa": 110,
-          "spd": 105,
-          "spe": 80
+          "hp": 150,
+          "atk": 130,
+          "def": 130,
+          "spa": 130,
+          "spd": 125,
+          "spe": 100
         },
         "abilities": [
           "Pixilate"
@@ -2400,12 +2409,12 @@
           "Buio"
         ],
         "base_stats": {
-          "hp": 65,
-          "atk": 150,
-          "def": 60,
-          "spa": 115,
-          "spd": 60,
-          "spe": 115
+          "hp": 140,
+          "atk": 170,
+          "def": 80,
+          "spa": 135,
+          "spd": 80,
+          "spe": 135
         },
         "abilities": [
           "Magic Bounce"
@@ -2418,12 +2427,12 @@
           "Spettro"
         ],
         "base_stats": {
-          "hp": 65,
-          "atk": 154,
-          "def": 60,
-          "spa": 75,
-          "spd": 60,
-          "spe": 151
+          "hp": 140,
+          "atk": 174,
+          "def": 80,
+          "spa": 95,
+          "spd": 80,
+          "spe": 171
         },
         "abilities": [],
         "slug": "absol-mega-z"
@@ -2454,12 +2463,12 @@
           "Ghiaccio"
         ],
         "base_stats": {
-          "hp": 80,
-          "atk": 120,
-          "def": 80,
-          "spa": 120,
-          "spd": 80,
-          "spe": 100
+          "hp": 155,
+          "atk": 140,
+          "def": 100,
+          "spa": 140,
+          "spd": 100,
+          "spe": 120
         },
         "abilities": [
           "Refrigerate"
@@ -2626,12 +2635,12 @@
           "Lotta"
         ],
         "base_stats": {
-          "hp": 65,
-          "atk": 136,
-          "def": 94,
-          "spa": 54,
-          "spd": 96,
-          "spe": 135
+          "hp": 140,
+          "atk": 156,
+          "def": 114,
+          "spa": 74,
+          "spd": 116,
+          "spe": 155
         },
         "abilities": [
           "Scrappy"
@@ -2684,12 +2693,12 @@
           "Terra"
         ],
         "base_stats": {
-          "hp": 108,
-          "atk": 170,
-          "def": 115,
-          "spa": 120,
-          "spd": 95,
-          "spe": 92
+          "hp": 183,
+          "atk": 190,
+          "def": 135,
+          "spa": 140,
+          "spd": 115,
+          "spe": 112
         },
         "abilities": [
           "Sand Force"
@@ -2701,12 +2710,12 @@
           "Drago"
         ],
         "base_stats": {
-          "hp": 108,
-          "atk": 130,
-          "def": 85,
-          "spa": 141,
-          "spd": 85,
-          "spe": 151
+          "hp": 183,
+          "atk": 150,
+          "def": 105,
+          "spa": 161,
+          "spd": 105,
+          "spe": 171
         },
         "abilities": [],
         "slug": "garchomp-mega-z"
@@ -2739,12 +2748,12 @@
           "Acciaio"
         ],
         "base_stats": {
-          "hp": 70,
-          "atk": 145,
-          "def": 88,
-          "spa": 140,
-          "spd": 70,
-          "spe": 112
+          "hp": 145,
+          "atk": 165,
+          "def": 108,
+          "spa": 160,
+          "spd": 90,
+          "spe": 132
         },
         "abilities": [
           "Adaptability"
@@ -2757,12 +2766,12 @@
           "Acciaio"
         ],
         "base_stats": {
-          "hp": 70,
-          "atk": 100,
-          "def": 70,
-          "spa": 164,
-          "spd": 70,
-          "spe": 151
+          "hp": 145,
+          "atk": 120,
+          "def": 90,
+          "spa": 184,
+          "spd": 90,
+          "spe": 171
         },
         "abilities": [],
         "slug": "lucario-mega-z"
@@ -2832,12 +2841,12 @@
           "Ghiaccio"
         ],
         "base_stats": {
-          "hp": 90,
-          "atk": 132,
-          "def": 105,
-          "spa": 132,
-          "spd": 105,
-          "spe": 30
+          "hp": 165,
+          "atk": 152,
+          "def": 125,
+          "spa": 152,
+          "spd": 125,
+          "spe": 50
         },
         "abilities": [
           "Snow Warning"
@@ -2951,12 +2960,12 @@
           "Lotta"
         ],
         "base_stats": {
-          "hp": 68,
-          "atk": 165,
-          "def": 95,
-          "spa": 65,
-          "spd": 115,
-          "spe": 110
+          "hp": 143,
+          "atk": 185,
+          "def": 115,
+          "spa": 85,
+          "spd": 135,
+          "spe": 130
         },
         "abilities": [
           "Inner Focus"
@@ -2990,11 +2999,11 @@
           "Spettro"
         ],
         "base_stats": {
-          "hp": 70,
-          "atk": 80,
-          "def": 70,
-          "spa": 140,
-          "spd": 100,
+          "hp": 145,
+          "atk": 100,
+          "def": 90,
+          "spa": 160,
+          "spd": 120,
           "spe": 120
         },
         "abilities": [
@@ -3158,12 +3167,12 @@
           "Lotta"
         ],
         "base_stats": {
-          "hp": 110,
-          "atk": 148,
-          "def": 75,
-          "spa": 110,
-          "spd": 110,
-          "spe": 75
+          "hp": 185,
+          "atk": 168,
+          "def": 95,
+          "spa": 130,
+          "spd": 130,
+          "spe": 95
         },
         "abilities": [
           "Reckless"
@@ -3237,12 +3246,12 @@
           "Acciaio"
         ],
         "base_stats": {
-          "hp": 110,
-          "atk": 165,
-          "def": 100,
-          "spa": 65,
-          "spd": 65,
-          "spe": 103
+          "hp": 185,
+          "atk": 185,
+          "def": 120,
+          "spa": 85,
+          "spd": 85,
+          "spe": 123
         },
         "abilities": [
           "Sand Rush"
@@ -3276,12 +3285,12 @@
           "Folletto"
         ],
         "base_stats": {
-          "hp": 103,
-          "atk": 60,
-          "def": 126,
-          "spa": 80,
-          "spd": 126,
-          "spe": 50
+          "hp": 178,
+          "atk": 80,
+          "def": 146,
+          "spa": 100,
+          "spd": 146,
+          "spe": 70
         },
         "abilities": [
           "Healer"
@@ -3509,12 +3518,12 @@
           "Fuoco"
         ],
         "base_stats": {
-          "hp": 60,
-          "atk": 75,
-          "def": 110,
-          "spa": 175,
-          "spd": 110,
-          "spe": 90
+          "hp": 135,
+          "atk": 95,
+          "def": 130,
+          "spa": 195,
+          "spd": 130,
+          "spe": 110
         },
         "abilities": [
           "Infiltrator"
@@ -3568,12 +3577,12 @@
           "Spettro"
         ],
         "base_stats": {
-          "hp": 89,
-          "atk": 159,
-          "def": 105,
-          "spa": 70,
-          "spd": 105,
-          "spe": 55
+          "hp": 164,
+          "atk": 179,
+          "def": 125,
+          "spa": 90,
+          "spd": 125,
+          "spe": 75
         },
         "abilities": [
           "No Guard"
@@ -3645,12 +3654,12 @@
           "Lotta"
         ],
         "base_stats": {
-          "hp": 88,
-          "atk": 137,
-          "def": 172,
-          "spa": 74,
-          "spd": 115,
-          "spe": 44
+          "hp": 163,
+          "atk": 157,
+          "def": 192,
+          "spa": 94,
+          "spd": 135,
+          "spe": 64
         },
         "abilities": [
           "Bulletproof"
@@ -3684,12 +3693,12 @@
           "Psico"
         ],
         "base_stats": {
-          "hp": 75,
-          "atk": 69,
-          "def": 72,
-          "spa": 159,
-          "spd": 125,
-          "spe": 134
+          "hp": 150,
+          "atk": 89,
+          "def": 92,
+          "spa": 179,
+          "spd": 145,
+          "spe": 154
         },
         "abilities": [
           "Magician"
@@ -3723,12 +3732,12 @@
           "Buio"
         ],
         "base_stats": {
-          "hp": 72,
-          "atk": 125,
-          "def": 77,
-          "spa": 133,
-          "spd": 81,
-          "spe": 142
+          "hp": 147,
+          "atk": 145,
+          "def": 97,
+          "spa": 153,
+          "spd": 101,
+          "spe": 162
         },
         "abilities": [
           "Protean"
@@ -4686,12 +4695,12 @@
           "Veleno"
         ],
         "base_stats": {
-          "hp": 83,
-          "atk": 90,
-          "def": 105,
-          "spa": 150,
-          "spd": 96,
-          "spe": 101
+          "hp": 158,
+          "atk": 110,
+          "def": 125,
+          "spa": 170,
+          "spd": 116,
+          "spe": 121
         },
         "abilities": [
           "Corrosion"
@@ -4865,12 +4874,12 @@
           "Fuoco"
         ],
         "base_stats": {
-          "hp": 65,
-          "atk": 138,
-          "def": 85,
-          "spa": 138,
-          "spd": 85,
-          "spe": 75
+          "hp": 140,
+          "atk": 158,
+          "def": 105,
+          "spa": 158,
+          "spd": 105,
+          "spe": 95
         },
         "abilities": [
           "Drought"
@@ -5062,12 +5071,12 @@
           "Volante"
         ],
         "base_stats": {
-          "hp": 78,
-          "atk": 137,
-          "def": 100,
-          "spa": 74,
-          "spd": 93,
-          "spe": 118
+          "hp": 153,
+          "atk": 157,
+          "def": 120,
+          "spa": 94,
+          "spd": 113,
+          "spe": 138
         },
         "abilities": [
           "Unburden"
@@ -5415,12 +5424,12 @@
           "Drago"
         ],
         "base_stats": {
-          "hp": 78,
-          "atk": 85,
-          "def": 110,
-          "spa": 160,
-          "spd": 116,
-          "spe": 36
+          "hp": 153,
+          "atk": 105,
+          "def": 130,
+          "spa": 180,
+          "spd": 136,
+          "spe": 56
         },
         "abilities": [
           "Cloud Nine"
@@ -5678,12 +5687,12 @@
           "Psico"
         ],
         "base_stats": {
-          "hp": 74,
-          "atk": 48,
-          "def": 76,
-          "spa": 143,
-          "spd": 101,
-          "spe": 124
+          "hp": 149,
+          "atk": 68,
+          "def": 96,
+          "spa": 163,
+          "spd": 121,
+          "spe": 144
         },
         "abilities": [
           "Prankster"
@@ -5694,12 +5703,12 @@
           "Psico"
         ],
         "base_stats": {
-          "hp": 74,
-          "atk": 48,
-          "def": 76,
-          "spa": 83,
-          "spd": 81,
-          "spe": 104
+          "hp": 149,
+          "atk": 68,
+          "def": 96,
+          "spa": 103,
+          "spd": 101,
+          "spe": 124
         },
         "abilities": [
           "Competitive"
@@ -5707,6 +5716,61 @@
       }
     },
     "slug": "meowstic-male"
+  },
+  "mega-banette": {
+    "name": "Mega Banette",
+    "types": [
+      "Spettro"
+    ],
+    "abilities": [
+      "Prankster"
+    ],
+    "base_stats": {
+      "hp": 64,
+      "atk": 165,
+      "def": 75,
+      "spa": 93,
+      "spd": 83,
+      "spe": 75
+    },
+    "slug": "banette-mega"
+  },
+  "mega-chimecho": {
+    "name": "Mega Chimecho",
+    "types": [
+      "Psico"
+    ],
+    "abilities": [
+      "Levitate"
+    ],
+    "base_stats": {
+      "hp": 75,
+      "atk": 50,
+      "def": 80,
+      "spa": 95,
+      "spd": 90,
+      "spe": 65
+    },
+    "slug": "chimecho-mega"
+  },
+  "mega-crabominable": {
+    "name": "Mega Crabominable",
+    "types": [
+      "Ghiaccio",
+      "Lotta"
+    ],
+    "abilities": [
+      "Iron Fist"
+    ],
+    "base_stats": {
+      "hp": 97,
+      "atk": 132,
+      "def": 85,
+      "spa": 55,
+      "spd": 85,
+      "spe": 43
+    },
+    "slug": "crabominable-mega"
   },
   "eternal-flower-floette": {
     "name": "Eternal Flower Floette",
@@ -8985,12 +9049,12 @@
           "Lotta"
         ],
         "base_stats": {
-          "hp": 106,
-          "atk": 190,
-          "def": 100,
-          "spa": 154,
-          "spd": 100,
-          "spe": 130
+          "hp": 181,
+          "atk": 210,
+          "def": 120,
+          "spa": 174,
+          "spd": 120,
+          "spe": 150
         },
         "abilities": [
           "Steadfast"
@@ -9002,12 +9066,12 @@
           "Psico"
         ],
         "base_stats": {
-          "hp": 106,
-          "atk": 150,
-          "def": 70,
-          "spa": 194,
-          "spd": 120,
-          "spe": 140
+          "hp": 181,
+          "atk": 170,
+          "def": 90,
+          "spa": 214,
+          "spd": 140,
+          "spe": 160
         },
         "abilities": [
           "Insomnia"
@@ -10872,12 +10936,12 @@
           "Drago"
         ],
         "base_stats": {
-          "hp": 70,
-          "atk": 110,
-          "def": 75,
-          "spa": 145,
-          "spd": 85,
-          "spe": 145
+          "hp": 145,
+          "atk": 130,
+          "def": 95,
+          "spa": 165,
+          "spd": 105,
+          "spe": 165
         },
         "abilities": [
           "Lightning Rod"
@@ -10951,12 +11015,12 @@
           "Lotta"
         ],
         "base_stats": {
-          "hp": 80,
-          "atk": 160,
-          "def": 80,
-          "spa": 130,
-          "spd": 80,
-          "spe": 100
+          "hp": 155,
+          "atk": 180,
+          "def": 100,
+          "spa": 150,
+          "spd": 100,
+          "spe": 120
         },
         "abilities": [
           "Speed Boost"
@@ -11030,12 +11094,12 @@
           "Terra"
         ],
         "base_stats": {
-          "hp": 100,
-          "atk": 150,
-          "def": 110,
-          "spa": 95,
-          "spd": 110,
-          "spe": 70
+          "hp": 175,
+          "atk": 170,
+          "def": 130,
+          "spa": 115,
+          "spd": 130,
+          "spe": 90
         },
         "abilities": [
           "Swift Swim"
@@ -11890,12 +11954,12 @@
           "Folletto"
         ],
         "base_stats": {
-          "hp": 50,
-          "atk": 105,
-          "def": 125,
-          "spa": 55,
-          "spd": 95,
-          "spe": 50
+          "hp": 125,
+          "atk": 125,
+          "def": 145,
+          "spa": 75,
+          "spd": 115,
+          "spe": 70
         },
         "abilities": [
           "Huge Power"
@@ -12815,12 +12879,12 @@
           "Spettro"
         ],
         "base_stats": {
-          "hp": 64,
-          "atk": 165,
-          "def": 75,
-          "spa": 93,
-          "spd": 83,
-          "spe": 75
+          "hp": 139,
+          "atk": 185,
+          "def": 95,
+          "spa": 113,
+          "spd": 103,
+          "spe": 95
         },
         "abilities": [
           "Prankster"
@@ -12912,12 +12976,12 @@
           "Acciaio"
         ],
         "base_stats": {
-          "hp": 75,
-          "atk": 50,
-          "def": 110,
-          "spa": 135,
-          "spd": 120,
-          "spe": 65
+          "hp": 150,
+          "atk": 70,
+          "def": 130,
+          "spa": 155,
+          "spd": 140,
+          "spe": 85
         },
         "abilities": [
           "Levitate"
@@ -13189,12 +13253,12 @@
           "Volante"
         ],
         "base_stats": {
-          "hp": 95,
-          "atk": 145,
-          "def": 130,
-          "spa": 120,
-          "spd": 90,
-          "spe": 120
+          "hp": 170,
+          "atk": 165,
+          "def": 150,
+          "spa": 140,
+          "spd": 110,
+          "spe": 140
         },
         "abilities": [
           "Aerilate"
@@ -13269,12 +13333,12 @@
           "Psico"
         ],
         "base_stats": {
-          "hp": 80,
-          "atk": 145,
-          "def": 150,
-          "spa": 105,
-          "spd": 110,
-          "spe": 110
+          "hp": 155,
+          "atk": 165,
+          "def": 170,
+          "spa": 125,
+          "spd": 130,
+          "spe": 130
         },
         "abilities": [
           "Tough Claws"
@@ -13365,12 +13429,12 @@
           "Psico"
         ],
         "base_stats": {
-          "hp": 80,
-          "atk": 100,
-          "def": 120,
-          "spa": 140,
-          "spd": 150,
-          "spe": 110
+          "hp": 155,
+          "atk": 120,
+          "def": 140,
+          "spa": 160,
+          "spd": 170,
+          "spe": 130
         },
         "abilities": [
           "Levitate"
@@ -13404,12 +13468,12 @@
           "Psico"
         ],
         "base_stats": {
-          "hp": 80,
-          "atk": 130,
-          "def": 100,
-          "spa": 160,
-          "spd": 120,
-          "spe": 110
+          "hp": 155,
+          "atk": 150,
+          "def": 120,
+          "spa": 180,
+          "spd": 140,
+          "spe": 130
         },
         "abilities": [
           "Levitate"
@@ -13518,12 +13582,12 @@
           "Volante"
         ],
         "base_stats": {
-          "hp": 105,
-          "atk": 180,
-          "def": 100,
-          "spa": 180,
-          "spd": 100,
-          "spe": 115
+          "hp": 180,
+          "atk": 200,
+          "def": 120,
+          "spa": 200,
+          "spd": 120,
+          "spe": 135
         },
         "abilities": [
           "Delta Stream"
@@ -13803,12 +13867,12 @@
           "Volante"
         ],
         "base_stats": {
-          "hp": 85,
-          "atk": 140,
-          "def": 100,
-          "spa": 60,
-          "spd": 90,
-          "spe": 110
+          "hp": 160,
+          "atk": 160,
+          "def": 120,
+          "spa": 80,
+          "spd": 110,
+          "spe": 130
         },
         "abilities": [
           "Contrary"
@@ -15239,12 +15303,12 @@
           "Acciaio"
         ],
         "base_stats": {
-          "hp": 91,
-          "atk": 120,
-          "def": 106,
-          "spa": 175,
-          "spd": 141,
-          "spe": 67
+          "hp": 166,
+          "atk": 140,
+          "def": 126,
+          "spa": 195,
+          "spd": 161,
+          "spe": 87
         },
         "abilities": [],
         "slug": "heatran-mega"
@@ -15386,12 +15450,12 @@
           "Buio"
         ],
         "base_stats": {
-          "hp": 70,
-          "atk": 120,
-          "def": 130,
-          "spa": 165,
-          "spd": 130,
-          "spe": 85
+          "hp": 145,
+          "atk": 140,
+          "def": 150,
+          "spa": 185,
+          "spd": 150,
+          "spe": 105
         },
         "abilities": [],
         "slug": "darkrai-mega"
@@ -16381,12 +16445,12 @@
           "Veleno"
         ],
         "base_stats": {
-          "hp": 60,
-          "atk": 140,
-          "def": 149,
-          "spa": 75,
-          "spd": 99,
-          "spe": 62
+          "hp": 135,
+          "atk": 160,
+          "def": 169,
+          "spa": 95,
+          "spd": 119,
+          "spe": 82
         },
         "abilities": [
           "Shell Armor"
@@ -16787,12 +16851,12 @@
           "Lotta"
         ],
         "base_stats": {
-          "hp": 65,
-          "atk": 130,
-          "def": 135,
-          "spa": 55,
-          "spd": 135,
-          "spe": 68
+          "hp": 140,
+          "atk": 150,
+          "def": 155,
+          "spa": 75,
+          "spd": 155,
+          "spe": 88
         },
         "abilities": [
           "Intimidate"
@@ -17605,12 +17669,12 @@
           "Elettro"
         ],
         "base_stats": {
-          "hp": 85,
-          "atk": 145,
-          "def": 80,
-          "spa": 135,
-          "spd": 90,
-          "spe": 80
+          "hp": 160,
+          "atk": 165,
+          "def": 100,
+          "spa": 155,
+          "spd": 110,
+          "spe": 100
         },
         "abilities": [
           "Eelevate"
@@ -18898,12 +18962,12 @@
           "Normale"
         ],
         "base_stats": {
-          "hp": 86,
-          "atk": 88,
-          "def": 92,
-          "spa": 129,
-          "spd": 86,
-          "spe": 126
+          "hp": 161,
+          "atk": 108,
+          "def": 112,
+          "spa": 149,
+          "spd": 106,
+          "spe": 146
         },
         "abilities": [
           "Fire Mane"
@@ -19191,12 +19255,12 @@
           "Psico"
         ],
         "base_stats": {
-          "hp": 86,
-          "atk": 102,
-          "def": 88,
-          "spa": 98,
-          "spd": 120,
-          "spe": 88
+          "hp": 161,
+          "atk": 122,
+          "def": 108,
+          "spa": 118,
+          "spd": 140,
+          "spe": 108
         },
         "abilities": [
           "Contrary"
@@ -19253,12 +19317,12 @@
           "Lotta"
         ],
         "base_stats": {
-          "hp": 72,
-          "atk": 140,
-          "def": 130,
-          "spa": 64,
-          "spd": 106,
-          "spe": 88
+          "hp": 147,
+          "atk": 160,
+          "def": 150,
+          "spa": 84,
+          "spd": 126,
+          "spe": 108
         },
         "abilities": [
           "Tough Claws"
@@ -19315,12 +19379,12 @@
           "Drago"
         ],
         "base_stats": {
-          "hp": 65,
-          "atk": 85,
-          "def": 105,
-          "spa": 132,
-          "spd": 163,
-          "spe": 44
+          "hp": 140,
+          "atk": 105,
+          "def": 125,
+          "spa": 152,
+          "spd": 183,
+          "spe": 64
         },
         "abilities": [
           "Regenerator"
@@ -19788,12 +19852,12 @@
           "Folletto"
         ],
         "base_stats": {
-          "hp": 50,
-          "atk": 160,
-          "def": 110,
-          "spa": 160,
-          "spd": 110,
-          "spe": 110
+          "hp": 125,
+          "atk": 180,
+          "def": 130,
+          "spa": 180,
+          "spd": 130,
+          "spe": 130
         },
         "abilities": [
           "Magic Bounce"
@@ -20223,12 +20287,12 @@
           "Ghiaccio"
         ],
         "base_stats": {
-          "hp": 97,
-          "atk": 157,
-          "def": 122,
-          "spa": 62,
-          "spd": 107,
-          "spe": 33
+          "hp": 172,
+          "atk": 177,
+          "def": 142,
+          "spa": 82,
+          "spd": 127,
+          "spe": 53
         },
         "abilities": [
           "Iron Fist"
@@ -20837,12 +20901,12 @@
           "Acciaio"
         ],
         "base_stats": {
-          "hp": 75,
-          "atk": 150,
-          "def": 175,
-          "spa": 70,
-          "spd": 120,
-          "spe": 40
+          "hp": 150,
+          "atk": 170,
+          "def": 195,
+          "spa": 90,
+          "spd": 140,
+          "spe": 60
         },
         "abilities": [],
         "slug": "golisopod-mega"
@@ -21673,12 +21737,12 @@
           "Folletto"
         ],
         "base_stats": {
-          "hp": 80,
-          "atk": 125,
-          "def": 115,
-          "spa": 170,
-          "spd": 115,
-          "spe": 95
+          "hp": 155,
+          "atk": 145,
+          "def": 135,
+          "spa": 190,
+          "spd": 135,
+          "spe": 115
         },
         "abilities": [],
         "slug": "magearna-mega"
@@ -21689,12 +21753,12 @@
           "Folletto"
         ],
         "base_stats": {
-          "hp": 80,
-          "atk": 125,
-          "def": 115,
-          "spa": 170,
-          "spd": 115,
-          "spe": 95
+          "hp": 155,
+          "atk": 145,
+          "def": 135,
+          "spa": 190,
+          "spd": 135,
+          "spe": 115
         },
         "abilities": [],
         "slug": "magearna-original-mega"
@@ -21818,12 +21882,12 @@
           "Elettro"
         ],
         "base_stats": {
-          "hp": 88,
-          "atk": 157,
-          "def": 75,
-          "spa": 147,
-          "spd": 80,
-          "spe": 153
+          "hp": 163,
+          "atk": 177,
+          "def": 95,
+          "spa": 167,
+          "spd": 100,
+          "spe": 173
         },
         "abilities": [],
         "slug": "zeraora-mega"
@@ -23128,12 +23192,12 @@
           "Lotta"
         ],
         "base_stats": {
-          "hp": 65,
-          "atk": 135,
-          "def": 135,
-          "spa": 70,
-          "spd": 65,
-          "spe": 100
+          "hp": 140,
+          "atk": 155,
+          "def": 155,
+          "spa": 90,
+          "spd": 85,
+          "spe": 120
         },
         "abilities": [
           "Defiant"
@@ -25306,12 +25370,12 @@
           "Acqua"
         ],
         "base_stats": {
-          "hp": 68,
-          "atk": 65,
-          "def": 90,
-          "spa": 135,
-          "spd": 125,
-          "spe": 92
+          "hp": 143,
+          "atk": 85,
+          "def": 110,
+          "spa": 155,
+          "spd": 145,
+          "spe": 112
         },
         "abilities": [],
         "slug": "tatsugiri-curly-mega"
@@ -25322,12 +25386,12 @@
           "Acqua"
         ],
         "base_stats": {
-          "hp": 68,
-          "atk": 65,
-          "def": 90,
-          "spa": 135,
-          "spd": 125,
-          "spe": 92
+          "hp": 143,
+          "atk": 85,
+          "def": 110,
+          "spa": 155,
+          "spd": 145,
+          "spe": 112
         },
         "abilities": [],
         "slug": "tatsugiri-droopy-mega"
@@ -25338,12 +25402,12 @@
           "Acqua"
         ],
         "base_stats": {
-          "hp": 68,
-          "atk": 65,
-          "def": 90,
-          "spa": 135,
-          "spd": 125,
-          "spe": 92
+          "hp": 143,
+          "atk": 85,
+          "def": 110,
+          "spa": 155,
+          "spd": 145,
+          "spe": 112
         },
         "abilities": [],
         "slug": "tatsugiri-stretchy-mega"
@@ -25727,12 +25791,12 @@
           "Ghiaccio"
         ],
         "base_stats": {
-          "hp": 115,
-          "atk": 175,
-          "def": 117,
-          "spa": 105,
-          "spd": 101,
-          "spe": 87
+          "hp": 190,
+          "atk": 195,
+          "def": 137,
+          "spa": 125,
+          "spd": 121,
+          "spe": 107
         },
         "abilities": [],
         "slug": "baxcalibur-mega"

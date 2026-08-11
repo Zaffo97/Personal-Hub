@@ -197,37 +197,28 @@ function catalogEntry(name){
   return idx[String(name).toLowerCase()] || idx[String(normalizeName(name)).toLowerCase()] || null;
 }
 
+// Marca una voce come Mega e ne calcola il BST. Prima queste due informazioni
+// arrivavano da MEGA_DATA, la terza copia delle stat: le Mega ora escono dal
+// catalogo come tutti gli altri, quindi il BST è la somma delle base.
+// "Meganium" non ha lo spazio dopo "Mega" e non entra qui.
+function marcaMega(nome, d){
+  if(!nome.startsWith('Mega ')) return d;
+  d.isMega = true;
+  d.megaName = d.name || nome;
+  d.megaBST = Object.values(d.stats || {}).reduce((s, v) => s + (parseInt(v, 10) || 0), 0);
+  return d;
+}
+
 async function fetchPkmn(name){
   if(pkCache[name]) return pkCache[name];
-  const key = normalizeName(name);
 
-  // ── MEGA ──
-  if(name.startsWith('Mega ')){
-    for(const [baseKey, megas] of Object.entries(MEGA_DATA)){
-      for(let i=0;i<megas.length;i++){
-        if(megas[i].name.toLowerCase()===name.toLowerCase()){
-          let megaSprite=null, megaHd=null;
-          try{
-            const rb=await fetch('/api/pokemon/'+encodeURIComponent(name));
-            const db=await rb.json();
-            if(db.ok){megaSprite=db.sprite; megaHd=db.sprite_hd;}
-          }catch(e){}
-          const d={
-            ok:true, stats:megas[i].stats, sprite:megaSprite, sprite_hd:megaHd,
-            types:megas[i].types, abilities:[megas[i].ability], moves:[],
-            isMega:true, megaName:megas[i].name, megaBST:megas[i].bst
-          };
-          pkCache[name]=d; return d;
-        }
-      }
-    }
-  }
-
-  // ── Fetch normale ──
+  // ── Fetch normale ── (Mega comprese: /api/pokemon risolve anche le forme
+  // annidate in `forms`, quindi il catalogo è l'unica fonte delle stat)
   try {
     const r = await fetch('/api/pokemon/' + encodeURIComponent(name));
     const d = await r.json();
     if (d.ok) {
+      marcaMega(name, d);
       pkCache[name] = d;
       return d;
     }
@@ -240,6 +231,7 @@ async function fetchPkmn(name){
       const r2 = await fetch('/api/pokemon/' + encodeURIComponent(baseName));
       const d2 = await r2.json();
       if (d2.ok) {
+        marcaMega(name, d2);
         pkCache[name] = d2;
         return d2;
       }

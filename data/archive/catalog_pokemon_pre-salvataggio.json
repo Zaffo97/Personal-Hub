@@ -840,6 +840,15 @@
       "spe": 55
     },
     "forms": {
+      "Mega Machamp": {
+        "types": [
+          "Lotta"
+        ],
+        "base_stats": {},
+        "abilities": [
+          "No Guard"
+        ]
+      },
       "Machamp (Gigantamax Form)": {
         "types": [
           "Lotta"
@@ -2995,7 +3004,7 @@
           "def": 70,
           "spa": 140,
           "spd": 100,
-          "spe": 120
+          "spe": 100
         },
         "abilities": [
           "Cursed Body"

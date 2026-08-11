@@ -3,24 +3,199 @@
 > Fonte: `Nuove implementazioni.docx` (verde = fatto).
 > Questo file è la versione tracciabile di quel documento: qui restano solo le voci
 > **non ancora chiuse**, più quelle chiuse di recente con la data.
-> Aggiornato: 08/08/2026
+> Aggiornato: 11/08/2026
 
 Legenda: ⬜ da fare · 🟨 parziale / da verificare · ✅ fatto
 
 ---
 
-## ⚠️ Regulation MA — da riallineare alla vera M-A
+## ✅ Stat delle Mega riportate alle base (11/08/2026)
 
-`ma` deve corrispondere alla **vera Regulation M-A di Pokémon Champions**. L'elenco
-attuale è ereditato dai file storici del progetto ed è **non verificato**: contiene
-208 Pokémon fra cui Alcremie, Appletun, Arbok, Ariados e Audino, ma **non** Amoonguss,
-Rillaboom, Urshifu, Flutter Mane e Chi-Yu. Non va preso come fonte di verità.
+Le Mega nel catalogo non avevano un bonus: avevano le **stat di Lv.50 già calcolate**
+(IV 31, 0 SP) salvate dentro `base_stats`, mentre tutto il resto del catalogo tiene le
+base vere. Con la formula del progetto la conversione vale esattamente **+75 HP e +20
+sulle altre**, ed è per questo che nel gioco una Mega non cambia mai gli HP ma qui 95
+su 101 avevano +75.
 
-Ora la struttura per riallinearla c'è: catalogo completo + schermata
-`/pokemon/regulation/ma/contenuto` per spuntare cosa ne fa parte. **Serve l'elenco
-reale di M-A**: non va dedotto né inventato. Stesso discorso per la **M-B**, che
-l'utente aggiungerà in seguito — la creazione di una regulation nuova produce già il
-formato a filtro, quindi basterà crearla e spuntarne i contenuti.
+```
+(2·base + 31) · 50 // 100  =  base + 15   →  HP: +60 → +75 · altre: +5 → +20
+```
+
+**Fatto:**
+
+- **95 Mega deconvertite** (`hp − 75`, `− 20` sulle altre) con
+  `python scripts/deconverti_mega_catalogo.py [--dry-run]`, rieseguibile e con copia
+  in `data/archive/catalog_pokemon_pre-mega-deconv.json`
+- **3 chiavi top-level rimosse** — `mega-banette`, `mega-chimecho`,
+  `mega-crabominable` erano **doppioni** della forma annidata nella specie base, non
+  anomalie: 1029 → 1026 voci. Chiude la vecchia voce *"chiavi mega incoerenti"*
+- **`MEGA_DATA` eliminata** da `calcolatori-data.js` (−35 KB): `fetchPkmn()` prende
+  anche le Mega da `/api/pokemon`, cioè dal catalogo. `isMega` e il BST sono ora
+  derivati (`marcaMega()`), il BST è la somma delle base
+- rimosso il `console.log('full d:', d)` di debug in `calcolatori-speed.js`
+
+**Perché la deconversione è quella giusta**, e non un'ipotesi:
+
+| Verifica | Esito |
+|---|---|
+| Mega coperte da `MEGA_DATA` | **56 su 57** identiche alla cifra dopo la deconversione |
+| Mega **assenti** da `MEGA_DATA` ma ufficiali del gioco — Metagross, Mewtwo X/Y, Rayquaza, Salamence, Swampert, Sceptile, Latias, Latios, Mawile, Diancie, Blaziken | **tutte** coincidono coi valori reali |
+
+La seconda riga è la conferma indipendente: la deconversione azzecca valori che
+`MEGA_DATA` non poteva suggerire.
+
+**Il bug che questo chiude.** `fetchPkmn()` leggeva `MEGA_DATA` per ogni nome che
+inizia con `"Mega "` e non consultava mai il catalogo, mentre `loadRegSpeed()` leggeva
+`catalogEntry(name).base_stats.spe` e ci riapplicava la formula Lv.50: sulle Mega la
+formula finiva **applicata due volte**. Mega Venusaur valeva 80 di Velocità nel tab
+Danno e 100 (→ 120 a Lv.50) nello Speed Tier. Ora entrambi partono da 80.
+
+### ✅ Il bug che è saltato fuori verificando — `/api/regulation/<id>/data`
+
+L'endpoint che alimenta lo Speed Tier leggeva ancora il vecchio `roster_file`.
+Stessa identica storia di `/api/moves` chiusa il 10/08. Conseguenze **misurate**:
+
+| Regulation | Prima | Ora |
+|---|---|---|
+| `ma` | **208** nomi ereditati, **0 Mega** | **279** nomi, **59 Mega** |
+| `pokedex` | **404** → caduta muta sulla lista statica da 158 | **1344** nomi |
+| `mb` | **404** → stessa caduta | **295** nomi |
+
+Il roster legacy non conteneva **nessuna** Mega: lo Speed Tier non ne aveva mai
+mostrata una, e il lavoro di oggi sarebbe rimasto invisibile lì dentro. Ora
+l'endpoint chiama `_load_roster()`, lo stesso loader di tutto il resto, che sa
+leggere il filtro e ricade sul file vecchio solo se la regulation non è migrata.
+
+### Le tre Mega rimaste fuori — due chiuse da Davide
+
+| Voce | Esito |
+|---|---|
+| ✅ `Mega Froslass` | Base Velocità riportata a **120** (→ **140** a Lv.50, il valore giusto secondo Davide). Quel singolo valore nel catalogo era **già una base**, non un dato convertito, e la deconversione l'aveva abbassato a 100 sottraendo 20 di troppo. Era l'unico caso del genere: con la correzione le Mega coperte da `MEGA_DATA` combaciano **57 su 58** |
+| ✅ `Mega Machamp` | **Non esiste**: forma rimossa dal catalogo. Aveva `base_stats: {}` e non era referenziata da nessuna regulation (né nei roster né nei `mega_map` di MA, MB e Pokedex) |
+| ⬜ `Mega Zygarde` | Davide deve controllare. HP **291** = Zygarde-Complete (216) convertito, ma le altre cinque non seguono nessuno schema: non sono deducibili |
+
+> Lezione da tenere: la firma `+75 HP` individua le voci convertite **specie per specie**,
+> non stat per stat. Su Froslass cinque valori su sei erano convertiti e uno no, e la
+> regola applicata in blocco ha rotto proprio quello. Se ne salta fuori un altro, il
+> segnale è il confronto con la Velocità della specie base.
+
+### Il resto del catalogo NON è convertito — verificato
+
+La domanda giusta di Davide: la conversione riguarda solo le Mega o tutto il catalogo?
+Solo le Mega. Prove:
+
+| Canarino | catalogo | se fosse convertito |
+|---|---|---|
+| Shedinja HP | **1** | 76 |
+| Chansey HP | **250** | 325 |
+| Magikarp | **20/10/55/15/20/80** | 95/30/75/35/40/100 |
+
+20 specie note su 20 esatte, **200 specie su 1026 con HP sotto 50** (una conversione le
+avrebbe messe tutte sopra 75), le uniche cinque stat sopra 200 in tutto il catalogo sono
+reali (Chansey 250, Blissey 255, Shuckle 230, Guzzlord 223, Stakataka 211), e **nessuna
+forma non-Mega** ha la firma +75 HP.
+
+> `Mega Floette` era l'unica **già corretta** ed è rimasta intatta: era `MEGA_DATA` ad
+> avere la versione convertita, e sparendo si è sistemata da sé. Stessa cosa per
+> `Mega Meowstic (M)` vs `(Male)`: la trappola dei nomi non combacianti non esiste più,
+> perché esiste una fonte sola.
+
+> ⚠️ Il vecchio `data/pokemon_catalog.json` **non è stato toccato**: contiene ancora le
+> Mega convertite, ma è solo il fallback di `data/catalog/pokemon.json` e viene letto
+> unicamente se quest'ultimo manca. Da dismettere insieme agli altri file storici.
+
+### ✅ L'alias che rispondeva con un Pokémon a caso
+
+Togliere `Mega Machamp` ha scoperchiato un baco che c'era da sempre:
+`/api/pokemon/Mega Machamp` non dava 404, rispondeva **Mega Venusaur** con le sue stat.
+
+`_costruisci_indice()` registrava come alias il **primo pezzo** di ogni chiave con un
+trattino. Serve a far risolvere `Palafin` quando in catalogo c'è solo
+`palafin-zero-form` — ma su `mega-venusaur` registrava anche **`mega`**, e il fallback
+di `_find_in_catalog` (prova la chiave senza l'ultimo pezzo) ci finiva dentro. Stessa
+cosa per `alolan` (18 voci), `galarian` (18), `hisuian` (16), `totem` (12), `iron` (20),
+`tapu` (8), `paldean` (4). **Qualsiasi nome inventato che iniziasse così riceveva le
+stat di un Pokémon estraneo invece di un errore.**
+
+Ora c'è `NON_ALIASABILI` in `api_pokemon.py`: quei primi pezzi non diventano alias.
+Verificato che non rompe niente — dei **295** nomi usati da MA, MB e Pokedex **zero**
+dipendevano da questi alias, e i nomi nudi che servono davvero (`Palafin`, `Aegislash`,
+`Gourgeist`, `Zygarde`, `Meowstic`, `Morpeko`, `Mr. Mime`, `Iron Hands`, `Tapu Koko`…)
+risolvono ancora tutti.
+
+> Effetto collaterale utile: `Galarian Darmanitan` ora dà 404, e ha ragione — in
+> catalogo si chiama **`Darmanitan (Galarian Form)`**, l'unica delle 19 voci Galarian
+> scritta così invece che `Galarian X`. Prima l'alias spurio nascondeva l'incoerenza
+> dietro una risposta sbagliata. ⬜ Da uniformare.
+
+## ✅ Già fatto il 10/08/2026: `mega_map` di MA e MB
+
+| | prima | dopo |
+|---|---|---|
+| basi nel `mega_map` | 53 | **57** |
+| Mega irraggiungibili in MA | 6 | **1** |
+| Mega mappati ma fuori roster | 1 | **0** |
+
+- **aggiunte** `Chesnaught`, `Delphox`, `Emboar`, `Golurk`, `Greninja` — base e mega
+  entrambe già nel roster verificato, quindi nessun dato inventato
+- **rimosso** `Mega Machamp`: mappato ma fuori dal roster M-A di Champions, il team builder
+  offriva una mega non legale
+- copia di sicurezza in `data/archive/ma_pre-mega_map.json` e `mb_pre-mega_map.json`
+
+Restano fuori di proposito, perché servirebbe sapere cosa Champions consenta davvero:
+- ⬜ **`Mega Meowstic (Male)`** è nel roster MA ma la base `Meowstic` **no**: non mappabile
+  senza aggiungere una specie al roster verificato
+- ⬜ **MB** ha ancora **17** Mega irraggiungibili, ma è tuttora il segnaposto: è MA + 16
+  Mega, con mosse (461), oggetti (58) e `mega_map` identici a MA
+
+---
+
+## ✅ Clonare una regulation (10/08/2026)
+
+Due modi, per non ricostruire a mano una regulation simile a una esistente:
+
+- **In creazione**: nella modale "Nuova Regulation" c'è **Parti da** — vuota, tutto il
+  catalogo, oppure copia da una regulation esistente
+- **Su una regulation già creata**: nella sua pagina c'è **📋 Copia contenuti**, con
+  il selettore della sorgente e le caselle per scegliere cosa copiare (Pokémon,
+  mosse, oggetti, abilità, mega map). Serve proprio nel caso di `mb`, creata vuota
+
+`id` e `label` della destinazione non vengono mai sovrascritti, la sorgente non può
+coincidere con la destinazione, e la conferma elenca cosa verrà sostituito.
+20 controlli end-to-end, con `mb.json` verificato identico dopo il ripristino.
+
+---
+
+## ✅ Regulation MA allineata a Pokémon Champions (10/08/2026)
+
+Roster preso da
+[wiki.pokemoncentral.it](https://wiki.pokemoncentral.it/Elenco_dei_Pokémon_di_Pokémon_Champions):
+**208 → 279 Pokémon**, Speed Tier a 279 su 279 senza nomi irrisolti.
+
+Rieseguibile con `python scripts/importa_roster_champions.py --dry-run` (scarica la
+pagina da solo). Per la futura **M-B** basterà crearla — la creazione produce già il
+formato a filtro — e spuntarne i contenuti da `/pokemon/regulation/<id>/contenuto`.
+
+> ⚠️ Nota per me stesso: in una sessione precedente avevo giudicato "sospetto" questo
+> roster perché mancavano Amoonguss, Rillaboom e Urshifu e c'erano Arbok, Ariados e
+> Audino. **Era sbagliato**: Champions ha un roster suo e quelle presenze/assenze sono
+> corrette. Non applicare assunzioni da VGC standard a Champions.
+
+Dettagli tecnici dell'import:
+- la wiki **non scrive il nome della forma**: la distingue solo per tipi e codice
+  sprite (`Minim0026A` = Raichu di Alola, `Minim0745C` = Lycanroc Crepuscolo). Lo
+  script mappa i suffissi e **si ferma** su ciò che non risolve, invece di indovinare
+- forme puramente estetiche (Vivillon, Florges, Furfrou, Alcremie: 40 righe)
+  collassate sulla forma base, perché per il calcolatore sono la stessa voce
+- i 29 nomi "rimossi" erano alias sostituiti dai nomi canonici del catalogo
+  (`Arcanine-Hisui` → `Hisuian Arcanine`, `Rotom-Wash` → `Wash Rotom`)
+- **3 doppioni di specie** rimasti dall'import PokéAPI uniti: `palafin-zero`,
+  `morpeko-full-belly` e `aegislash-shield` erano stati creati accanto alle voci
+  curate `palafin-zero-form`, `morpeko-full-belly-mode` e `aegislash-shield-forme`,
+  perché il nome curato non combaciava con quello ufficiale
+- un baco preso al volo: **"Meganium" inizia per "Mega"** e finiva nel ramo delle
+  Mega, risolto come "Mega Meganium". Ora il ramo Mega si attiva sul suffisso dello
+  sprite (`M`/`MX`/`MY`), che è il dato affidabile
 
 ---
 
@@ -101,11 +276,16 @@ regulation che contengono **solo elenchi di nomi** che puntano lì (`null` = tut
   mega_map, dati invariati. Pokedex vede tutto.
 
 **Da decidere, non urgente:**
-1. **Il roster di MA è ristretto**: non contiene Amoonguss, Rillaboom, Urshifu,
-   Flutter Mane, Chi-Yu. Prima il calcolatore li offriva lo stesso perché
-   `CHAMPIONS_BST` era globale; ora la regulation filtra davvero e in MA non
-   compaiono. Se li vuoi, vanno aggiunti al roster — è il comportamento richiesto,
-   ma è un cambiamento visibile
+1. **Il roster di MA non contiene** Amoonguss, Rillaboom, Urshifu, Flutter Mane,
+   Chi-Yu — riverificato 10/08/2026 sul roster ufficiale a 279. Non è un buco da
+   colmare: Champions ha un roster suo e quelle assenze sono corrette (vedi la nota
+   più sopra). Prima il calcolatore li offriva lo stesso perché `CHAMPIONS_BST` era
+   globale; ora la regulation filtra davvero.
+
+   ⚠️ **Conseguenza sulla regola #8**: il caso di prova canonico è Incineroar →
+   **Amoonguss**, e Amoonguss non è più selezionabile in MA (Incineroar sì). Il caso
+   va eseguito sulla regulation **`pokedex`**, che non filtra nulla. Da tenere a mente
+   ogni volta che si valida una modifica ai calcolatori.
 2. I file `data/roster_ma.json`, `moves_ma.json`, `items_ma.json`, `abilities.json` e
    `pokemon_catalog.json` restano come **fallback**: dismetterli solo a verifica finita
 
@@ -126,7 +306,7 @@ Script rieseguibili: `scripts/build_catalog.py` (`--dry-run` per provare) e
 | | Voce | Note |
 |---|---|---|
 | ✅ | Sprite mancanti | Fatto 07/08/2026. Erano 96 nomi su 300 irrisolti (Mega e forme regionali erano irraggiungibili nel catalogo) + 38 sprite rotti dal repo pokesprite. Ora 296/300 risolti, 0 immagini rotte |
-| ⬜ | **19 Pokémon del roster MA assenti dal catalogo** | Elenco esatto ottenuto 08/08/2026 facendo funzionare lo Speed Tier: `Ariados`, `Banette`, `Castform`, `Chimecho`, `Crabominable`, `Diggersby`, `Florges`, `Liepard`, `Lycanroc-Dusk`, `Lycanroc-Midday`, `Lycanroc-Midnight`, `Maushold`, `Stunfisk`, `Stunfisk-Galar`, `Tauros-Paldea-Aqua`, `Tauros-Paldea-Blaze`, `Tauros-Paldea-Combat`, `Toucannon`, `Vivillon`. Servono base stat, tipi e abilità. Nota: di `Banette`, `Chimecho` e `Crabominable` il catalogo ha **solo la Mega** come chiave di primo livello, non la forma base. `loadRegSpeed()` ora li elenca in `console.warn` invece di scartarli in silenzio |
+| ✅ | **19 Pokémon del roster MA assenti dal catalogo** | Chiuso 10/08/2026 dall'import Champions e dall'unificazione dei doppioni: **0 mancanti su 279**, verificato risolvendo l'intero roster MA contro l'indice del catalogo (top-level + `name` + forme annidate in `forms`). La voce era rimasta ⬜ per svista |
 | ✅ | Dividere / snellire `calcolatori.html` | Fatto 08/08/2026. Da **1885 righe / 222 KB a 685 righe / 147 KB**, con **zero JS inline**: CSS in `static/css/calcolatori.css` e JS in 6 file `static/js/calcolatori-*.js` (data · core · danno · speed · stat · ui). I dati di Flask passano da un blocco `<script type="application/json" id="calc-bootstrap">`, lo stesso schema di `items_editor.html` |
 | ✅ | Tabelle di riferimento duplicate in `calcolatori.html` | Fatto 08/08/2026. Le 4 righe da 108 KB sono ora 4 `<div>` vuoti riempiti da `calcolatori-ref.js` dagli **stessi dati del calcolo**: `TYPE_CHART` per l'efficacia, `NATURES` + `NM` per le nature. Template a **38 KB** |
 | ⬜ | DB ufficiale con TUTTI i Pokémon/abilità/mosse/oggetti di ogni generazione | Come regulation dedicata chiamata **Pokedex**. Selettore regulation in ogni sezione Pokémon, che pilota calcolatori, team ed editor. Stat sempre in formato Champions (66 totali, 32 per stat). Include tutti gli sprite |
@@ -201,10 +381,37 @@ scottatura + Reflect = ×0.25, terreno erboso + HH + spread = ×1.4625 — e lo 
 ---
 
 ## 🎮 GAMING
-| | Voce |
-|---|---|
-| ⬜ | Suggerimenti giochi in base a cosa si sta giocando |
-| ⬜ | Collegamento a una API Steam per tracciare i videogiochi |
+| | Voce | Note |
+|---|---|---|
+| ✅ | Collegamento a una API Steam per tracciare i videogiochi | Fatto 10/08/2026. Tre pezzi, vedi sotto |
+| ⬜ | Suggerimenti giochi in base a cosa si sta giocando | Ora c'è la materia prima: 34 giochi con generi e ore. Steam **non** espone "giochi simili", quindi serve decidere la fonte: suggerire dalla libreria stessa (per genere e ore), o agganciare un servizio esterno |
+
+### Steam — cosa è stato fatto (10/08/2026)
+
+**1. Ricerca in fase di inserimento** — su `/gaming/new` un campo cerca su Steam e un clic
+compila titolo, genere, copertina e piattaforma, collegando l'`appid`. Endpoint pubblici,
+**nessuna chiave**: `storesearch` e `appdetails` (generi già in italiano).
+
+**2. Import della libreria** — `/gaming/steam`: legge i giochi posseduti con le ore giocate.
+È l'unico pezzo che richiede una chiave (`GetOwnedGames` risponde 401 senza).
+Deduplica sull'`appid`, un reimport aggiorna le ore e non crea doppioni.
+
+**3. Arricchimento generi** — l'import di massa non porta i generi (sarebbero N chiamate
+in più): un pulsante li chiede a Steam a lotti di 15. Anche questo senza chiave.
+
+Dettagli che vale la pena ricordare:
+- **`hours_played` è una colonna nuova, distinta da `hours_hltb`**: le ore giocate non
+  sono la stima di durata HowLongToBeat. L'import non tocca mai `hours_hltb`
+- la chiave si legge **solo** da `os.environ["STEAM_API_KEY"]`: nessun campo
+  nell'interfaccia, nessun file nel progetto, niente in git
+- il **nome visualizzato Steam non è risolvibile**: l'API risolve solo l'indirizzo
+  personalizzato (`/id/<vanity>`), che molti profili non hanno. Il campo accetta URL
+  completo e steamID64, ed è la strada consigliata
+- ⚠️ **trappola d'ambiente**: un processo Windows eredita una *copia* dell'ambiente. Se la
+  app parte prima che `STEAM_API_KEY` esista, non la vedrà mai. La pagina lo rende
+  diagnosticabile: guida gialla = il processo non ha la chiave, form = ce l'ha
+- errore di mappatura corretto in corsa: l'import metteva `ore > 0 → In corso`, e con 33
+  giochi il filtro per stato diventava inutile. Ora tutto entra come **Pausa**
 
 ---
 
@@ -212,6 +419,7 @@ scottatura + Reflect = ×0.25, terreno erboso + HH + spread = ×1.4625 — e lo 
 | | Voce |
 |---|---|
 | ⬜ | Deploy da GitHub a Railway — c'è un errore da diagnosticare |
+| ⬜ | **Switch lingua italiano ⇄ inglese per tutta la web app.** Pulsante accanto a quello del tema in `base.html:184` (`toggleTheme()` / `themeBtn`), stessa forma e stesso posto. Deve cambiare lingua **all'istante e ovunque**: interfaccia, etichette, e nomi di Pokémon, mosse, abilità e oggetti. Va tenuto insieme alla voce 🟨 *"Traduzione di tutte le mosse/abilità/oggetti"* nella sezione Pokémon: è la stessa cosa vista dal lato dati. Nota utile: il catalogo ha già `nome_en` sulle abilità e `type_it` sulle mosse, e i dump di PokéAPI hanno i nomi italiani per 933 mosse su 937 e 311 abilità su 373 |
 
 ---
 
@@ -220,15 +428,18 @@ scottatura + Reflect = ×0.25, terreno erboso + HH + spread = ×1.4625 — e lo 
 | | Voce | Note |
 |---|---|---|
 | ✅ | Formattazione editor mosse/oggetti/roster | Fatto 07/08/2026. Il banner "Stai modificando" stava dentro la griglia e occupava la colonna larga: la tabella mosse aveva 373px su 838 necessari (465 tagliati). Ora a tutta larghezza |
-| ⬜ | `textarea.form-control` batte `.code-area` | Emerso 08/08/2026: in `base.html` la regola `textarea.form-control{min-height:70px}` ha specificità elemento+classe e vince su `.code-area{min-height:380px}` a prescindere dall'ordine. Le textarea JSON di abilità, mosse e oggetti sono alte **70px invece di 380**. Fix: usare `textarea.code-area` |
+| ✅ | `textarea.form-control` batte `.code-area` | Fatto 10/08/2026. In `base.html:95` la regola `textarea.form-control{min-height:70px}` ha specificità elemento+classe e vinceva su `.code-area` a prescindere dall'ordine. I template colpiti erano **5, non 3**: oltre a abilità, mosse e oggetti anche `roster_editor.html` e `arduino.html` (anche il campo codice Arduino era a 70px invece di 260). Aggiunta in ognuno la riga `textarea.code-area{min-height:…}` accanto alla regola esistente, lo stesso pattern già presente in `catalog_editor.html:16`. `base.html` non è stato toccato: la regola a 70px resta giusta per le textarea normali |
 | ✅ | Editor abilità senza archivio né backup | Fatto 08/08/2026. Archivio manuale, elenco, ripristino e **copia automatica prima di ogni salvataggio**. Ora l'editor abilità è il più protetto dei quattro |
 | ⬜ | Colonne tab Danno del calcolatore | 360/264/360 px, altezze 546/689/562: i tre riquadri chiudono a quote diverse. Non è un bug, è scelta di layout — da decidere se e come cambiarla |
-| ⬜ | Nessun `.gitignore` | `hub.db` e 11 `.pyc` sono tracciati in git; la doc dice esplicitamente di non committare `hub.db` |
+| ✅ | Nessun `.gitignore` | Fatto 10/08/2026. Creato `.gitignore` (`__pycache__/`, `*.py[cod]`, venv, `hub.db`, file di editor/OS) e tolti dall'indice `hub.db` + **13** `.pyc` con `git rm --cached`: i file restano su disco, git smette di seguirli. Gli archivi in `data/archive/` sono stati **lasciati tracciati** di proposito — sono la rete di sicurezza dei salvataggi, non scarto di build |
 | ⬜ | `main` diverge da `origin/main` | Locale avanti 2 / indietro 4. I commit remoti contengono un marker di conflitto e hanno perso `PROJECT_CONTEXT.md`. Riallineare richiede force-push |
 | ⬜ | `reference.html` è orfano | Nessuna route lo renderizza |
+| ⬜ | 53 `onmouseout` morti in `templates/python.html:45` | Trovato dallo sweep dell'11/08/2026. Il ramo `{% else %}` dell'`if` Jinja aggiunge due apici dentro una stringa già quotata: l'attributo esce come `this.style.background=''''`, che è un `SyntaxError`. Su ogni argomento **non** completato l'handler è `null` e lo sfondo dell'hover non si spegne più. Stessa classe del Ripristina roster: **HTML valido, JS morto**. Fix da un carattere, non applicato perché fuori dallo scope della sessione |
+| ⬜ | `loadSpePkmn()` non ricalcola | In `calcolatori-speed.js` riempie `spe_base` ma non chiama `updateSpeed()`: dopo aver scritto un nome nello Speed Tier il proprio valore resta `—` finché non si tocca un altro campo. Preesistente |
+| ⬜ | Speed Tier senza limite di righe | `renderSpeed()` stampa una `<div>` per ogni voce: su `pokedex` sono **1344** righe in un solo `innerHTML`. Le altre tabelle del progetto si fermano a 300 |
 | ⬜ | Nomi in `abilities.json` da rivedere | Alcuni non corrispondono all'abilità descritta (es. `Spettroguardia` descrive Multiscaglia; il vero Wonder Guard è `Magidifesa`). Convivono nomi ufficiali IT e nomi di altra fonte |
-| ⬜ | Catalogo con abilità incomplete | 84 Pokémon su 174 hanno una sola abilità; quasi tutti ne hanno 2-3 con la nascosta |
-| ⬜ | Chiavi mega incoerenti nel catalogo | 3 mega sono chiavi di primo livello (`mega-banette`, `mega-chimecho`, `mega-crabominable`), le altre 81 forme sono annidate in `forms` |
+| ⬜ | Catalogo con abilità incomplete | Ricontato 10/08/2026 sul catalogo unico: **243 specie su 1029** hanno una sola abilità (il vecchio "84 su 174" era sul catalogo pre-unificazione). Quasi tutti ne hanno 2-3 con la nascosta |
+| ✅ | Chiavi mega incoerenti nel catalogo | Chiuso 11/08/2026. Non erano anomalie ma **doppioni**: `mega-banette`, `mega-chimecho` e `mega-crabominable` esistevano sia come chiave top-level sia come forma annidata nella specie base. Le forme annidate, deconvertite, sono quelle giuste — le top-level sono state rimosse (1029 → 1026 voci). Gli override sprite in `api_pokemon.py:70-73` **restano**: sono indicizzati sul nome normalizzato, non sulla chiave, e servono ancora perché Mega Chimecho e Mega Crabominable sono inventate e non hanno uno sprite online |
 
 ---
 
