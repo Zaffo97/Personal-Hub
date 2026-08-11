@@ -256,10 +256,12 @@ alla cieca né rifare il giro due volte.
 | **Tre abbreviazioni** | Forma estesa: `Max Revive` → **Revitalizzante Max**, `Exp. Share` → **Condividi Esperienza**. `Self-Destruct` era già «Autodistruzione». Nel gioco si abbrevia per stare nella casella di testo; qui lo spazio non manca |
 | **Sei refusi della wiki** | Nessuna modifica, e nessuna decisione da prendere: `Vasterngia`, `Morostretto`, `Psicotrasfer`, `Intoenergia`, `Ondaoscura`, `Ombropanico` sono errori di battitura contro le forme corrette già in uso |
 
-`Mirror Herb` → **Foglia carbone** resta com'è, **dichiarato sospetto**: è quello che
-la wiki scrive in scheda e infobox, ma è l'unico dei 20 che non somiglia né
-all'inglese né al giapponese (*Mimic Herb*). Meglio una lacuna nota di un nome
-inventato. Da ricontrollare sul gioco quando capita.
+✅ **`Mirror Herb` → «Foglia carbone» è confermato**, e il sospetto è tolto.
+Controllato l'11/08/2026 su [Bulbapedia](https://bulbapedia.bulbagarden.net/wiki/Mirror_Herb),
+una fonte **indipendente** da quella che avevamo usato: dà lo stesso nome italiano.
+Il giapponese è ものまねハーブ (*erba imitatrice*) e lo spagnolo *Hierba Copia*, quindi
+è la localizzazione italiana ufficiale a essere strana, non il nostro dato. «Erba
+Speculare», che i motori di ricerca suggeriscono, **non esiste** sulla wiki (404).
 
 ### ✅ Le abilità doppie — fuse l'11/08/2026
 
@@ -579,7 +581,27 @@ esista nel catalogo** e la collega; si ferma su ciò che non risolve.
   script la fa solo per le regulation elencate in `AGGIUNGI_BASI`: il roster di **MA**,
   che viene dalla wiki di Pokémon Central, non si tocca
 
-⬜ Restano da decidere per MB: mosse (460) e oggetti (58) sono ancora identici a MA.
+✅ **Mosse e oggetti di MB restano quelli di MA** — 460 e 58 — per decisione dell'11/08/2026.
+MB è nata come MA più le Mega, e finché non c'è una fonte su cosa cambi davvero, copiare
+MA è l'ipotesi meno arbitraria: la differenza fra le due regulation resta il **roster**.
+Se un giorno salta fuori l'elenco vero, si passa dalla schermata contenuti o da uno
+script di import dedicato, come è stato fatto per il roster di MA con la wiki.
+
+> Volevo dirti quante mosse mancassero ai 29 Pokémon che MB ha in più, e non si può:
+> vedi la voce qui sotto.
+
+### ⬜ Il catalogo non sa quali mosse un Pokémon può imparare
+
+Misurato l'11/08/2026: **zero specie su 1026** hanno un elenco `moves` nel catalogo, e
+non ce l'aveva nemmeno il vecchio `data/pokemon_catalog.json` (0 su 174) — quindi non è
+una regressione dell'import, è un dato che **non è mai esistito**.
+
+Conseguenze concrete: non si può sapere se le 460 mosse di una regulation bastino ai
+suoi Pokémon, né quali manchino a chi viene aggiunto; e il calcolatore accetta qualunque
+mossa su qualunque Pokémon, senza poter segnalare che quel Pokémon non la impara.
+
+⚠️ `PROJECT_CONTEXT.md` documentava `CHAMPIONS_BST` con un campo `moves: [...]` nella
+struttura di ogni voce: **non c'è mai stato**. Corretto nella stessa sessione.
 
 ---
 
@@ -878,7 +900,7 @@ Dettagli che vale la pena ricordare:
 | ✅ | Formattazione editor mosse/oggetti/roster | Fatto 07/08/2026. Il banner "Stai modificando" stava dentro la griglia e occupava la colonna larga: la tabella mosse aveva 373px su 838 necessari (465 tagliati). Ora a tutta larghezza |
 | ✅ | `textarea.form-control` batte `.code-area` | Fatto 10/08/2026. In `base.html:95` la regola `textarea.form-control{min-height:70px}` ha specificità elemento+classe e vinceva su `.code-area` a prescindere dall'ordine. I template colpiti erano **5, non 3**: oltre a abilità, mosse e oggetti anche `roster_editor.html` e `arduino.html` (anche il campo codice Arduino era a 70px invece di 260). Aggiunta in ognuno la riga `textarea.code-area{min-height:…}` accanto alla regola esistente, lo stesso pattern già presente in `catalog_editor.html:16`. `base.html` non è stato toccato: la regola a 70px resta giusta per le textarea normali |
 | ✅ | Editor abilità senza archivio né backup | Fatto 08/08/2026. Archivio manuale, elenco, ripristino e **copia automatica prima di ogni salvataggio**. Ora l'editor abilità è il più protetto dei quattro |
-| ⬜ | Colonne tab Danno del calcolatore | 360/264/360 px, altezze 546/689/562: i tre riquadri chiudono a quote diverse. Non è un bug, è scelta di layout — da decidere se e come cambiarla |
+| ✅ | Colonne tab Danno del calcolatore | Chiuso 11/08/2026: `align-items` da `start` a `stretch`, una riga. I tre riquadri chiudevano a **548 / 699 / 564** px, ora tutti a **699**. Le larghezze non cambiano (360 · 265 · 360): il prezzo è un fondo vuoto di ~150 e ~135 px nei due laterali, perché la colonna Condizioni ha più campi delle altre. Deciso guardando il confronto misurato a 1280px |
 | ✅ | Nessun `.gitignore` | Fatto 10/08/2026. Creato `.gitignore` (`__pycache__/`, `*.py[cod]`, venv, `hub.db`, file di editor/OS) e tolti dall'indice `hub.db` + **13** `.pyc` con `git rm --cached`: i file restano su disco, git smette di seguirli. Gli archivi in `data/archive/` sono stati **lasciati tracciati** di proposito — sono la rete di sicurezza dei salvataggi, non scarto di build |
 | ⬜ | `main` diverge da `origin/main` | Locale avanti 2 / indietro 4. I commit remoti contengono un marker di conflitto e hanno perso `PROJECT_CONTEXT.md`. Riallineare richiede force-push |
 | ✅ | `reference.html` era orfano | Rimosso l'11/08/2026: 70 righe che nessuna route renderizzava. Il tab Reference del calcolatore è un'altra cosa — vive dentro `calcolatori.html` ed è riempito da `calcolatori-ref.js` |
