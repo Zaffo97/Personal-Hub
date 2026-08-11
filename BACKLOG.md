@@ -45,20 +45,106 @@ commutatore ha sempre qualcosa da mostrare.
 
 **Cosa c'è dietro ogni "senza":**
 
-- **mosse (22)** — le mosse Z (`Breakneck Blitz`…) e `Syrup Bomb`: PokéAPI non ha
-  l'italiano
-- **oggetti (20)** — roba recente: `Booster Energy`, `Clear Amulet`, `Covert Cloak`,
-  `Loaded Dice`, le maschere di Ogerpon. Buco a monte, non nostro
+- **mosse (22)** ✅ — le mosse Z (`Breakneck Blitz`…) e `Syrup Bomb`: PokéAPI non ha
+  l'italiano. **Chiuse dalla wiki l'11/08/2026**, vedi la sezione qui sotto
+- **oggetti (20)** ✅ — roba recente: `Booster Energy`, `Clear Amulet`, `Covert Cloak`,
+  `Loaded Dice`, le maschere di Ogerpon. Buco a monte, non nostro. **Chiusi dalla wiki**
 - **Pokémon (7)** — le sole voci il cui nome è una forma (`Palafin (Zero Form)`,
   `Meowstic (Male)`…). Giusto così: il nome italiano di una forma non è deducibile e
   non va inventato. I **21** diversi sono i Paradosso più `Type: Null` →
   `Crinealato`, `Manoferrea`, `Lunaruggente`, `Tipo Zero`…
-- **abilità (103)** ⬜ — questo è l'unico numero che vale la pena guardare. Una parte
-  sono le tue abilità inventate (`Black Hole`, `Aqua Boost`, `Bodyguard`, `Climber`…),
-  giustamente assenti. Le altre sono **nomi italiani non ufficiali**: il catalogo dice
-  `Combattività` dove il gioco dice `Cuortenace`, `Assorbiacqua` dove dice
-  `Assorbacqua`. È la vecchia voce *"Nomi in abilities.json da rivedere"*, ora
-  **quantificata**: **312 su 415 usano il nome ufficiale, 103 no**
+- **abilità (103)** ⬜ — questo è l'unico numero che vale la pena guardare, e la wiki
+  **non** lo chiude: ne recupera 5 e conferma che sono identiche nelle due lingue
+  (`Download`, `Libero`, `Punk Rock`, `Teravolt`, `Transistor`). Il motivo è che il
+  problema non è di traduzione, vedi qui sotto
+
+### ✅ Il secondo giro — `python scripts/importa_nomi_wiki.py [--dry-run] [--solo …]`
+
+Fonte: **wiki di Pokémon Central**, la stessa di `importa_roster_champions.py`. Cache
+in `data/cache/wiki/` (ignorata da git). Due fonti nell'ordine:
+
+1. le pagine **«… in altre lingue»** (mosse, strumenti, abilità), tabelle con una riga
+   *Italiano* e una *Inglese*: 950 mosse, 860 strumenti, 306 abilità
+2. per quello che quelle liste non coprono — **gli strumenti di nona generazione non ci
+   sono** — la **pagina singola**, trovata con la ricerca della wiki e accettata solo se
+   la sua riga *Inglese* combacia con la chiave del catalogo. Così un risultato di
+   ricerca sbagliato viene scartato invece di entrare nei dati
+
+| Database | Senza traduzione prima | Riempite | Di cui davvero diverse in italiano | Restano |
+|---|---|---|---|---|
+| Mosse | 32 | **32** | 22 | **0** |
+| Oggetti | 57 | **57** | 20 (tutti presi dalla pagina singola) | **0** |
+| Abilità | 108 | 5 | 0 | **103** |
+
+Le 22 mosse nuove sono le 18 mosse Z (`Gigavolt Havoc` → **Gigascarica Folgorante**,
+`Black Hole Eclipse` → **Buco Nero del Non Ritorno**) più `Syrup Bomb` → Bomba
+Sciroppata, `Blood Moon` → Luna Rossa, `Matcha Gotcha` → Spruzzatè, `Ivy Cudgel` →
+Clava di Liane. I 20 oggetti sono `Booster Energy` → **Capsula energetica**,
+`Covert Cloak` → Anonimanto, `Loaded Dice` → Dado truccato, le tre maschere di Ogerpon
+e i sette Mochi. Gli altri 47 "senza traduzione" non erano un buco: sono le Megapietre,
+i cristalli Z e le altre voci che in italiano **si scrivono uguale**, e ora è
+verificato invece che presunto.
+
+**Lo script non sovrascrive mai una traduzione già presa da PokéAPI**: tocca solo le
+voci con `nome_it == nome_en`. Dove le due fonti non concordano lo **segnala e basta**,
+perché nessuna delle due è sempre giusta — PokéAPI abbrevia (`Revitalizz. Max`,
+`Autodistruz.`) e la wiki ha i suoi refusi (`Vasterngia`, `Morostretto`). ⬜ **11 voci
+da decidere a mano**, elencate dal rapporto dello script:
+
+| Voce | PokéAPI (in uso) | wiki |
+|---|---|---|
+| Aura Sphere | Forzasfera | **Sferapulsar** |
+| Heal Pulse | Ondasana | **Curapulsar** |
+| Self-Destruct | Autodistruzione | Autodistruz. |
+| Max Revive | Revitalizz. Max | **Revitalizzante Max** |
+| Exp. Share | Condividi esp. | **Condividi Esperienza** |
+| Expanding Force · Jaw Lock · Psycho Shift · Swallow · Shadow Wave · Shadow Panic | Vastenergia · Morsostretto · Psicotransfer · Introenergia · Ondascura · Ombrapanico | Vasterngia · Morostretto · Psicotrasfer · Intoenergia · Ondaoscura · Ombropanico |
+
+Da guardare anche `Mirror Herb` → **Foglia carbone**: è quello che scrive la wiki,
+scheda e infobox, ma è l'unico dei 20 che non somiglia né all'inglese né al giapponese
+(*Mimic Herb*).
+
+### ⬜ Le 103 abilità: non è un problema di traduzione, è un doppione
+
+Il secondo giro l'ha chiarito. La wiki ha **306** abilità ufficiali con nome italiano e
+inglese, il catalogo ne ha **415**, e le 307 già tradotte usano tutte il nome ufficiale
+— **zero disaccordi tra PokéAPI e wiki sulle abilità**, il che dice che quella parte è
+solida. Le 103 che restano si dividono così:
+
+- **69** hanno `effect: {"type": "none"}` — sono le abilità inventate (`Black Hole`,
+  `Aqua Boost`, `Bodyguard`, `Climber`, `Eelevate`…) e i placeholder. Giusto che non
+  abbiano un nome ufficiale
+- **34** hanno un effetto vero e proprio, e **7 di queste hanno un blocco `effect`
+  identico a una voce ufficiale già presente nel catalogo**:
+
+  | Voce senza nome ufficiale | Voce ufficiale già in catalogo |
+  |---|---|
+  | `Erboristeria` | `Erbaiuto` (Overgrow) |
+  | `Torrente`, `Torrentismo` | `Acquaiuto` (Torrent) |
+  | `Vampirico` | `Aiutofuoco` (Blaze) |
+  | `Filtraggio`, `Prisma Armatura`, `Schermosaldo` | `Filtro` / `Scudoprisma` / `Solidroccia` (Filter, Prism Armor, Solid Rock) |
+
+  Le altre 27 (`Combattività`, `Assorbiacqua`, `Multiscaglia`, `Nuoto Veloce`,
+  `Voltassorbi`…) sono lo stesso caso, solo che la controparte ufficiale in catalogo ha
+  `effect: none` invece di un effetto uguale. Su undici controllate a campione la
+  controparte c'è **sempre**, e sempre inerte: `Dentistretti` (Guts), `Assorbacqua`
+  (Water Absorb), `Multisquame` (Multiscale), `Nuotovelox` (Swift Swim), `Assorbivolt`
+  (Volt Absorb), `Pelledura`, `Grassospesso`, `Foltopelo`, `Piovischio`, `Scendineve`,
+  `Sabbiafiume`
+
+Il conto complessivo dice la stessa cosa: gli effetti veri stanno **dalla parte
+sbagliata**. Delle 307 voci col nome ufficiale solo **22** hanno un effetto attivo,
+contro **34 su 108** fra quelle senza. A far funzionare il calcolatore è in buona parte
+la voce vecchia; a essere collegata ai Pokémon è quella ufficiale — i 307 nomi di
+abilità usati dal catalogo Pokémon risolvono tutti, e risolvono sulle ufficiali.
+
+> Quindi la voce da aprire non è "tradurre le 103": è **fondere ogni coppia**, tenendo
+> la chiave giusta e portandoci sopra il blocco `effect` che funziona. È un lavoro sui
+> dati, con conseguenze su `ABILITIES_CALC`, sui team salvati e sulle regulation, e va
+> deciso da Davide — non l'ho toccato.
+>
+> Correzione a quanto scritto prima in questo file: l'italiano ufficiale di **Guts non è
+> "Cuortenace" ma `Dentistretti`**, e quello di Water Absorb è `Assorbacqua`.
 
 ### ⬜ Cosa manca — deciso con Davide l'11/08/2026
 
@@ -390,7 +476,7 @@ Script rieseguibili: `scripts/build_catalog.py` (`--dry-run` per provare) e
 | ✅ | Testare Speed Tier | Fatto 08/08/2026. `loadRegSpeed()` **non funzionava**: leggeva `bst.spe` mentre la velocità sta in `base_stats.spe`, quindi tutti i 174 Pokémon venivano scartati e la funzione ricadeva in silenzio sulla lista statica da 158 nomi. Ora costruisce 189 righe dal roster MA (208 nomi, 19 assenti dal catalogo) |
 | ✅ | Weather Ball e mosse condizionate da meteo/abilità | Fatto 08/08/2026. Nuovo motore meteo in `calcolatori.html`: `meteoEffettivo()` (le abilità `weather_override` impongono il meteo, le `weather_setter` lo evocano se non è stato scelto nulla), `tipoPallaClima()` che usa `weather_ball_type` di `abilities.json` come override della mappa meteo→tipo, `applicaMeteoAllaMossa()` che riscrive BP e tipo nei campi visibili. Coperte **Weather Ball** (tipo dal meteo, BP 50→100), **Solar Beam** e **Solar Blade** (BP dimezzato con pioggia/sabbia/neve). Aggiunta la Pioggia forte alla tendina, con `fire_blocked` che porta le mosse Fuoco a 0 |
 
-| ✅ | Traduzione di tutte le mosse/abilità/oggetti | Fatto 11/08/2026 con `scripts/importa_nomi_lingua.py`: `nome_it` e `nome_en` su tutte le voci dei quattro database. Non serve una linguetta per scegliere la lingua dei database: la sceglie il pulsante `IT`/`EN` globale |
+| ✅ | Traduzione di tutte le mosse/abilità/oggetti | Fatto 11/08/2026 con `scripts/importa_nomi_lingua.py` (PokéAPI) e `scripts/importa_nomi_wiki.py` (wiki di Pokémon Central, per i buchi di PokéAPI): `nome_it` e `nome_en` su tutte le voci dei quattro database. **Mosse e oggetti sono a posto al 100%**; sulle abilità restano 103 voci che sono un problema di doppioni, non di traduzione. Non serve una linguetta per scegliere la lingua dei database: la sceglie il pulsante `IT`/`EN` globale |
 
 ### Calcolo danno — da verificare uno per uno
 Tutte queste voci sono **implementate nel codice**, ma nel docx erano segnate da testare.
@@ -528,7 +614,7 @@ Dettagli che vale la pena ricordare:
 | ⬜ | 53 `onmouseout` morti in `templates/python.html:45` | Trovato dallo sweep dell'11/08/2026. Il ramo `{% else %}` dell'`if` Jinja aggiunge due apici dentro una stringa già quotata: l'attributo esce come `this.style.background=''''`, che è un `SyntaxError`. Su ogni argomento **non** completato l'handler è `null` e lo sfondo dell'hover non si spegne più. Stessa classe del Ripristina roster: **HTML valido, JS morto**. Fix da un carattere, non applicato perché fuori dallo scope della sessione |
 | ⬜ | `loadSpePkmn()` non ricalcola | In `calcolatori-speed.js` riempie `spe_base` ma non chiama `updateSpeed()`: dopo aver scritto un nome nello Speed Tier il proprio valore resta `—` finché non si tocca un altro campo. Preesistente |
 | ⬜ | Speed Tier senza limite di righe | `renderSpeed()` stampa una `<div>` per ogni voce: su `pokedex` sono **1344** righe in un solo `innerHTML`. Le altre tabelle del progetto si fermano a 300 |
-| ⬜ | Nomi in `abilities.json` da rivedere | Alcuni non corrispondono all'abilità descritta (es. `Spettroguardia` descrive Multiscaglia; il vero Wonder Guard è `Magidifesa`). Convivono nomi ufficiali IT e nomi di altra fonte |
+| ⬜ | Nomi in `abilities.json` da rivedere → **fondere i doppioni** | Alcuni non corrispondono all'abilità descritta (es. `Spettroguardia` descrive Multiscaglia; il vero Wonder Guard è `Magidifesa`). Convivono nomi ufficiali IT e nomi di altra fonte. L'11/08/2026 il giro sulla wiki ha spiegato perché: **le due famiglie coesistono nello stesso file**, 307 voci col nome ufficiale (collegate ai Pokémon, ma solo 22 con un effetto attivo) e 108 vecchie (34 con l'effetto che il calcolatore usa davvero). Il lavoro non è tradurre, è fondere ogni coppia. Dettagli e tabella nella sezione dello switch lingua, in cima |
 | ⬜ | Catalogo con abilità incomplete | Ricontato 10/08/2026 sul catalogo unico: **243 specie su 1029** hanno una sola abilità (il vecchio "84 su 174" era sul catalogo pre-unificazione). Quasi tutti ne hanno 2-3 con la nascosta |
 | ✅ | Chiavi mega incoerenti nel catalogo | Chiuso 11/08/2026. Non erano anomalie ma **doppioni**: `mega-banette`, `mega-chimecho` e `mega-crabominable` esistevano sia come chiave top-level sia come forma annidata nella specie base. Le forme annidate, deconvertite, sono quelle giuste — le top-level sono state rimosse (1029 → 1026 voci). Gli override sprite in `api_pokemon.py:70-73` **restano**: sono indicizzati sul nome normalizzato, non sulla chiave, e servono ancora perché Mega Chimecho e Mega Crabominable sono inventate e non hanno uno sprite online |
 

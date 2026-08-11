@@ -4272,7 +4272,7 @@
     "desc": "The user sets off an explosion of sticky candy syrup, which coats the target and causes the target's Speed stat to drop each turn for three turns.",
     "effect_chance": 100,
     "accuracy": 85,
-    "nome_it": "Syrup Bomb",
+    "nome_it": "Bomba Sciroppata",
     "nome_en": "Syrup Bomb"
   },
   "Tackle": {
@@ -7945,7 +7945,7 @@
     "type": "normal",
     "desc": "Questa mossa non può essere usata. È consigliabile farla dimenticare al Pokémon. Tuttavia, una volta dimenticata, non potrà più essere ricordata.",
     "type_it": "Normale",
-    "nome_it": "Breakneck Blitz",
+    "nome_it": "Carica Travolgente",
     "nome_en": "Breakneck Blitz"
   },
   "All-Out Pummeling": {
@@ -7954,7 +7954,7 @@
     "type": "fighting",
     "desc": "Questa mossa non può essere usata. È consigliabile farla dimenticare al Pokémon. Tuttavia, una volta dimenticata, non potrà più essere ricordata.",
     "type_it": "Lotta",
-    "nome_it": "All-Out Pummeling",
+    "nome_it": "Iperscarica Furiosa",
     "nome_en": "All-Out Pummeling"
   },
   "Supersonic Skystrike": {
@@ -7963,7 +7963,7 @@
     "type": "flying",
     "desc": "Questa mossa non può essere usata. È consigliabile farla dimenticare al Pokémon. Tuttavia, una volta dimenticata, non potrà più essere ricordata.",
     "type_it": "Volante",
-    "nome_it": "Supersonic Skystrike",
+    "nome_it": "Picchiata Devastante",
     "nome_en": "Supersonic Skystrike"
   },
   "Acid Downpour": {
@@ -7972,7 +7972,7 @@
     "type": "poison",
     "desc": "Questa mossa non può essere usata. È consigliabile farla dimenticare al Pokémon. Tuttavia, una volta dimenticata, non potrà più essere ricordata.",
     "type_it": "Veleno",
-    "nome_it": "Acid Downpour",
+    "nome_it": "Acidiluvio Corrosivo",
     "nome_en": "Acid Downpour"
   },
   "Tectonic Rage": {
@@ -7981,7 +7981,7 @@
     "type": "ground",
     "desc": "Questa mossa non può essere usata. È consigliabile farla dimenticare al Pokémon. Tuttavia, una volta dimenticata, non potrà più essere ricordata.",
     "type_it": "Terra",
-    "nome_it": "Tectonic Rage",
+    "nome_it": "Furore della Terra",
     "nome_en": "Tectonic Rage"
   },
   "Continental Crush": {
@@ -7990,7 +7990,7 @@
     "type": "rock",
     "desc": "Questa mossa non può essere usata. È consigliabile farla dimenticare al Pokémon. Tuttavia, una volta dimenticata, non potrà più essere ricordata.",
     "type_it": "Roccia",
-    "nome_it": "Continental Crush",
+    "nome_it": "Gigamacigno Polverizzante",
     "nome_en": "Continental Crush"
   },
   "Savage Spin-Out": {
@@ -7999,7 +7999,7 @@
     "type": "bug",
     "desc": "Questa mossa non può essere usata. È consigliabile farla dimenticare al Pokémon. Tuttavia, una volta dimenticata, non potrà più essere ricordata.",
     "type_it": "Coleottero",
-    "nome_it": "Savage Spin-Out",
+    "nome_it": "Bozzolo Fatale",
     "nome_en": "Savage Spin-Out"
   },
   "Never-Ending Nightmare": {
@@ -8008,7 +8008,7 @@
     "type": "ghost",
     "desc": "Questa mossa non può essere usata. È consigliabile farla dimenticare al Pokémon. Tuttavia, una volta dimenticata, non potrà più essere ricordata.",
     "type_it": "Spettro",
-    "nome_it": "Never-Ending Nightmare",
+    "nome_it": "Abbraccio Spettrale",
     "nome_en": "Never-Ending Nightmare"
   },
   "Corkscrew Crash": {
@@ -8017,7 +8017,7 @@
     "type": "steel",
     "desc": "Questa mossa non può essere usata. È consigliabile farla dimenticare al Pokémon. Tuttavia, una volta dimenticata, non potrà più essere ricordata.",
     "type_it": "Acciaio",
-    "nome_it": "Corkscrew Crash",
+    "nome_it": "Spirale Perforante",
     "nome_en": "Corkscrew Crash"
   },
   "Inferno Overdrive": {
@@ -8026,7 +8026,7 @@
     "type": "fire",
     "desc": "Questa mossa non può essere usata. È consigliabile farla dimenticare al Pokémon. Tuttavia, una volta dimenticata, non potrà più essere ricordata.",
     "type_it": "Fuoco",
-    "nome_it": "Inferno Overdrive",
+    "nome_it": "Fiammobomba Detonante",
     "nome_en": "Inferno Overdrive"
   },
   "Hydro Vortex": {
@@ -8035,7 +8035,7 @@
     "type": "water",
     "desc": "Questa mossa non può essere usata. È consigliabile farla dimenticare al Pokémon. Tuttavia, una volta dimenticata, non potrà più essere ricordata.",
     "type_it": "Acqua",
-    "nome_it": "Hydro Vortex",
+    "nome_it": "Idrovortice Abissale",
     "nome_en": "Hydro Vortex"
   },
   "Bloom Doom": {
@@ -8044,7 +8044,7 @@
     "type": "grass",
     "desc": "Questa mossa non può essere usata. È consigliabile farla dimenticare al Pokémon. Tuttavia, una volta dimenticata, non potrà più essere ricordata.",
     "type_it": "Erba",
-    "nome_it": "Bloom Doom",
+    "nome_it": "Floriscoppio Sfolgorante",
     "nome_en": "Bloom Doom"
   },
   "Gigavolt Havoc": {
@@ -8053,7 +8053,7 @@
     "type": "electric",
     "desc": "Questa mossa non può essere usata. È consigliabile farla dimenticare al Pokémon. Tuttavia, una volta dimenticata, non potrà più essere ricordata.",
     "type_it": "Elettro",
-    "nome_it": "Gigavolt Havoc",
+    "nome_it": "Gigascarica Folgorante",
     "nome_en": "Gigavolt Havoc"
   },
   "Shattered Psyche": {
@@ -8062,7 +8062,7 @@
     "type": "psychic",
     "desc": "Questa mossa non può essere usata. È consigliabile farla dimenticare al Pokémon. Tuttavia, una volta dimenticata, non potrà più essere ricordata.",
     "type_it": "Psico",
-    "nome_it": "Shattered Psyche",
+    "nome_it": "Impatto Psicocinetico",
     "nome_en": "Shattered Psyche"
   },
   "Subzero Slammer": {
@@ -8071,7 +8071,7 @@
     "type": "ice",
     "desc": "Questa mossa non può essere usata. È consigliabile farla dimenticare al Pokémon. Tuttavia, una volta dimenticata, non potrà più essere ricordata.",
     "type_it": "Ghiaccio",
-    "nome_it": "Subzero Slammer",
+    "nome_it": "Criodistruzione Polare",
     "nome_en": "Subzero Slammer"
   },
   "Devastating Drake": {
@@ -8080,7 +8080,7 @@
     "type": "dragon",
     "desc": "Questa mossa non può essere usata. È consigliabile farla dimenticare al Pokémon. Tuttavia, una volta dimenticata, non potrà più essere ricordata.",
     "type_it": "Drago",
-    "nome_it": "Devastating Drake",
+    "nome_it": "Dragoschianto Finale",
     "nome_en": "Devastating Drake"
   },
   "Black Hole Eclipse": {
@@ -8089,7 +8089,7 @@
     "type": "dark",
     "desc": "Questa mossa non può essere usata. È consigliabile farla dimenticare al Pokémon. Tuttavia, una volta dimenticata, non potrà più essere ricordata.",
     "type_it": "Buio",
-    "nome_it": "Black Hole Eclipse",
+    "nome_it": "Buco Nero del Non Ritorno",
     "nome_en": "Black Hole Eclipse"
   },
   "Twinkle Tackle": {
@@ -8098,7 +8098,7 @@
     "type": "fairy",
     "desc": "Questa mossa non può essere usata. È consigliabile farla dimenticare al Pokémon. Tuttavia, una volta dimenticata, non potrà più essere ricordata.",
     "type_it": "Folletto",
-    "nome_it": "Twinkle Tackle",
+    "nome_it": "Astroimpatto Fatato",
     "nome_en": "Twinkle Tackle"
   },
   "Catastropika": {
@@ -10259,7 +10259,7 @@
     "desc": "",
     "accuracy": 100,
     "type_it": "Normale",
-    "nome_it": "Blood Moon",
+    "nome_it": "Luna Rossa",
     "nome_en": "Blood Moon"
   },
   "Matcha Gotcha": {
@@ -10269,7 +10269,7 @@
     "desc": "",
     "accuracy": 90,
     "type_it": "Erba",
-    "nome_it": "Matcha Gotcha",
+    "nome_it": "Spruzzatè",
     "nome_en": "Matcha Gotcha"
   },
   "Ivy Cudgel": {
@@ -10279,7 +10279,7 @@
     "desc": "",
     "accuracy": 100,
     "type_it": "Erba",
-    "nome_it": "Ivy Cudgel",
+    "nome_it": "Clava di Liane",
     "nome_en": "Ivy Cudgel"
   },
   "Electro Shot": {

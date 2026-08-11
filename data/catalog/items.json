@@ -36,7 +36,7 @@
     "modifier": 1.2,
     "desc": "Aumenta del 20% il danno delle mosse di tipo Folletto.",
     "effect": "boost_fairy",
-    "nome_it": "Fairy Feather",
+    "nome_it": "Piuma fatata",
     "nome_en": "Fairy Feather"
   },
   "Hard Stone": {
@@ -2714,133 +2714,133 @@
     "category": "other",
     "desc": "",
     "categoria_pokeapi": "plates",
-    "nome_it": "Blank Plate",
+    "nome_it": "Lastraripristino",
     "nome_en": "Blank Plate"
   },
   "Legend Plate": {
     "category": "other",
     "desc": "",
     "categoria_pokeapi": "plates",
-    "nome_it": "Legend Plate",
+    "nome_it": "Lastraleggenda",
     "nome_en": "Legend Plate"
   },
   "Booster Energy": {
     "category": "other",
     "desc": "",
     "categoria_pokeapi": "held-items",
-    "nome_it": "Booster Energy",
+    "nome_it": "Capsula energetica",
     "nome_en": "Booster Energy"
   },
   "Ability Shield": {
     "category": "other",
     "desc": "",
     "categoria_pokeapi": "held-items",
-    "nome_it": "Ability Shield",
+    "nome_it": "Scudo abilità",
     "nome_en": "Ability Shield"
   },
   "Clear Amulet": {
     "category": "other",
     "desc": "",
     "categoria_pokeapi": "held-items",
-    "nome_it": "Clear Amulet",
+    "nome_it": "Ciondolochiaro",
     "nome_en": "Clear Amulet"
   },
   "Mirror Herb": {
     "category": "other",
     "desc": "",
     "categoria_pokeapi": "held-items",
-    "nome_it": "Mirror Herb",
+    "nome_it": "Foglia carbone",
     "nome_en": "Mirror Herb"
   },
   "Punching Glove": {
     "category": "other",
     "desc": "",
     "categoria_pokeapi": "held-items",
-    "nome_it": "Punching Glove",
+    "nome_it": "Guantone",
     "nome_en": "Punching Glove"
   },
   "Covert Cloak": {
     "category": "other",
     "desc": "",
     "categoria_pokeapi": "held-items",
-    "nome_it": "Covert Cloak",
+    "nome_it": "Anonimanto",
     "nome_en": "Covert Cloak"
   },
   "Loaded Dice": {
     "category": "other",
     "desc": "",
     "categoria_pokeapi": "held-items",
-    "nome_it": "Loaded Dice",
+    "nome_it": "Dado truccato",
     "nome_en": "Loaded Dice"
   },
   "Wellspring Mask": {
     "category": "other",
     "desc": "",
     "categoria_pokeapi": "held-items",
-    "nome_it": "Wellspring Mask",
+    "nome_it": "Maschera Pozzo",
     "nome_en": "Wellspring Mask"
   },
   "Hearthflame Mask": {
     "category": "other",
     "desc": "",
     "categoria_pokeapi": "held-items",
-    "nome_it": "Hearthflame Mask",
+    "nome_it": "Maschera Focolare",
     "nome_en": "Hearthflame Mask"
   },
   "Cornerstone Mask": {
     "category": "other",
     "desc": "",
     "categoria_pokeapi": "held-items",
-    "nome_it": "Cornerstone Mask",
+    "nome_it": "Maschera Fondamenta",
     "nome_en": "Cornerstone Mask"
   },
   "Health Mochi": {
     "category": "other",
     "desc": "",
     "categoria_pokeapi": "vitamins",
-    "nome_it": "Health Mochi",
+    "nome_it": "Mochi della salute",
     "nome_en": "Health Mochi"
   },
   "Muscle Mochi": {
     "category": "other",
     "desc": "",
     "categoria_pokeapi": "vitamins",
-    "nome_it": "Muscle Mochi",
+    "nome_it": "Mochi della potenza",
     "nome_en": "Muscle Mochi"
   },
   "Resist Mochi": {
     "category": "other",
     "desc": "",
     "categoria_pokeapi": "vitamins",
-    "nome_it": "Resist Mochi",
+    "nome_it": "Mochi della tutela",
     "nome_en": "Resist Mochi"
   },
   "Genius Mochi": {
     "category": "other",
     "desc": "",
     "categoria_pokeapi": "vitamins",
-    "nome_it": "Genius Mochi",
+    "nome_it": "Mochi dell'ingegno",
     "nome_en": "Genius Mochi"
   },
   "Clever Mochi": {
     "category": "other",
     "desc": "",
     "categoria_pokeapi": "vitamins",
-    "nome_it": "Clever Mochi",
+    "nome_it": "Mochi dell'intuito",
     "nome_en": "Clever Mochi"
   },
   "Swift Mochi": {
     "category": "other",
     "desc": "",
     "categoria_pokeapi": "vitamins",
-    "nome_it": "Swift Mochi",
+    "nome_it": "Mochi della reazione",
     "nome_en": "Swift Mochi"
   },
   "Fresh Start Mochi": {
     "category": "other",
     "desc": "",
     "categoria_pokeapi": "vitamins",
-    "nome_it": "Fresh Start Mochi",
-    "nome_en": "Fresh Start Mochi"
+    "nome_it": "Mochi del ripristino",
+    "nome_en": "Fresh-Start Mochi"
   }
 }
