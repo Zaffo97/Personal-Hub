@@ -15,3 +15,6 @@ hub.db
 *.swp
 Thumbs.db
 desktop.ini
+
+# cache locale delle risposte PokeAPI (rigenerabile)
+data/cache/

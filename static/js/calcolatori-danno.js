@@ -7,11 +7,15 @@
 // sovrascritte con quelle di MA (su Pokedex: 921 -> 461).
 function loadMovesDB(){
   const dl = document.getElementById('mv_dl');
-  if (dl) dl.innerHTML = Object.keys(MOVES_DB).sort()
-    .map(m => '<option value="' + m + '">').join('');
+  // Nel datalist si mostra il nome nella lingua attiva; risolviChiave() lo riporta
+  // alla chiave quando l'utente lo sceglie.
+  if (dl) dl.innerHTML = Object.keys(MOVES_DB)
+    .map(m => nomeVis(MOVES_DB[m], m))
+    .sort((a, b) => a.localeCompare(b, LANG))
+    .map(m => '<option value="' + m.replace(/"/g, '&quot;') + '">').join('');
 }
 function onMoveSelect(){
-  const mv=document.getElementById('mv_name').value.trim();
+  const mv=risolviChiave(MOVES_DB, document.getElementById('mv_name').value);
   const data=MOVES_DB[mv];
   const badge=document.getElementById('mv_autofill');
   if(!data){if(badge)badge.style.display='none';return;}

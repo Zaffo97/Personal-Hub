@@ -1,10 +1,40 @@
 import sqlite3, os, hashlib
 from functools import wraps
-from flask import session, redirect, url_for
+from flask import session, redirect, url_for, request
 from data import PYTHON_TOPICS
 
 DB = os.path.join(os.path.dirname(__file__), "hub.db")
 DATA_DIR = os.path.join(os.path.dirname(__file__), "data")
+
+# ── Lingua ───────────────────────────────────────────────────────────────────
+# Sta in un cookie e non in localStorage perché la deve leggere anche Flask: le
+# tendine di Pokémon, mosse e oggetti sono renderizzate dal server, e senza il
+# cookie il server non saprebbe in che lingua scriverle.
+LINGUE = ("it", "en")
+COOKIE_LINGUA = "hub_lang"
+
+
+def lingua_attiva():
+    """'it' o 'en'. Fuori da una richiesta, o con un valore strano, torna 'it'."""
+    try:
+        scelta = request.cookies.get(COOKIE_LINGUA)
+    except RuntimeError:          # nessun contesto di richiesta
+        return "it"
+    return scelta if scelta in LINGUE else "it"
+
+
+def nome_vis(voce, chiave="", lingua=None):
+    """Il nome da mostrare per una voce del catalogo, nella lingua attiva.
+
+    Le **chiavi** del catalogo non cambiano mai: sono referenziate dai filtri delle
+    regulation, dal motore degli effetti e dai team salvati. Cambia solo ciò che si
+    legge a schermo. Se la traduzione manca si ricade sulla chiave, mai su una
+    stringa vuota.
+    """
+    lingua = lingua or lingua_attiva()
+    if isinstance(voce, dict):
+        return voce.get(f"nome_{lingua}") or voce.get("name") or chiave
+    return chiave or voce
 
 
 def get_db():

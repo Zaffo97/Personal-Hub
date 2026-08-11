@@ -4,7 +4,7 @@ Ogni area funzionale vive in blueprints/.
 """
 import os
 from flask import Flask
-from extensions import init_db
+from extensions import init_db, lingua_attiva, nome_vis
 
 def create_app():
     app = Flask(__name__, template_folder="templates", static_folder="static")
@@ -12,6 +12,12 @@ def create_app():
 
     with app.app_context():
         init_db()
+
+    # La lingua attiva serve a ogni pagina: il pulsante sta in base.html e le
+    # tendine di Pokémon, mosse e oggetti sono renderizzate dal server.
+    @app.context_processor
+    def _lingua():
+        return {"lang": lingua_attiva(), "nome_vis": nome_vis}
 
     from blueprints.auth           import bp as auth_bp
     from blueprints.dashboard      import bp as dashboard_bp

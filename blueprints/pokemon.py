@@ -2,7 +2,7 @@ import json
 import os
 from datetime import datetime
 from flask import Blueprint, render_template, request, redirect, url_for, flash, jsonify
-from extensions import get_db, login_required, _i
+from extensions import get_db, login_required, _i, nome_vis
 from data import (
     DATA_DIR,
     REG_MA_ROSTER,
@@ -268,6 +268,24 @@ def _pokemon_regulation(reg_id="ma"):
                 nuova["forms"] = forme
             fuori[chiave] = nuova
     return fuori or catalogo
+
+
+def _nomi_visualizzati(catalogo):
+    """{nome del catalogo: nome nella lingua attiva} per specie e forme annidate.
+
+    Serve alle tendine renderizzate dal server: la casella deve mostrare (e ricevere)
+    il nome tradotto, mentre a indicizzare i dati resta la chiave. `_INDICE` in
+    api_pokemon.py conosce entrambe le lingue, quindi il nome tradotto risolve.
+    """
+    nomi = {}
+    for chiave, voce in (catalogo or {}).items():
+        etichetta = voce.get("name") or chiave
+        visualizzato = nome_vis(voce, etichetta)
+        nomi[etichetta] = visualizzato
+        nomi[chiave] = visualizzato
+        for nome_forma, forma in (voce.get("forms") or {}).items():
+            nomi[nome_forma] = nome_vis(forma, nome_forma)
+    return nomi
 
 
 def _build_full_roster(roster, mega_map, catalogo=None):
@@ -1045,6 +1063,8 @@ def calcolatori():
         "calcolatori.html",
         roster=roster_calc,
         roster_calc=roster_calc,
+        # nome da mostrare nelle tendine, nella lingua attiva
+        nomi_vis=_nomi_visualizzati(catalogo_reg),
         natures=NATURES,
         nature_effects=NATURE_EFFECTS,
         # Catalogo ristretto alla regulation attiva: con MA la pagina resta piccola,

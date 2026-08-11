@@ -1,6 +1,7 @@
 from flask import Blueprint, jsonify, request
 import os, json, re
 from data import DATA_DIR
+from extensions import nome_vis
 
 bp = Blueprint('api_pokemon', __name__, url_prefix='/api')
 
@@ -330,8 +331,12 @@ def _costruisci_indice():
     for chiave, voce in POKEMON_CATALOG.items():
         record = {"data": voce, "slug": _slug_forma(chiave)}
         _INDICE.setdefault(_normalize_key(chiave), record)
-        if voce.get("name"):
-            _INDICE.setdefault(_normalize_key(voce["name"]), record)
+        # `nome_it` e `nome_en` fanno risolvere il Pokemon in tutte e due le lingue:
+        # nella casella del calcolatore l'utente scrive "Crinealato" o "Flutter Mane"
+        # a seconda della lingua attiva, ma la chiave del catalogo e' una sola.
+        for etichetta in (voce.get("name"), voce.get("nome_it"), voce.get("nome_en")):
+            if etichetta:
+                _INDICE.setdefault(_normalize_key(etichetta), record)
         for nome_forma, forma in (voce.get("forms") or {}).items():
             # la forma eredita dal base ciò che non ridefinisce
             unita = {
@@ -339,6 +344,8 @@ def _costruisci_indice():
                 "types": forma.get("types") or voce.get("types", []),
                 "base_stats": forma.get("base_stats") or voce.get("base_stats", {}),
                 "abilities": forma.get("abilities") or voce.get("abilities", []),
+                "nome_it": forma.get("nome_it") or nome_forma,
+                "nome_en": forma.get("nome_en") or nome_forma,
             }
             _INDICE.setdefault(
                 _normalize_key(nome_forma),
@@ -449,6 +456,11 @@ def api_pokemon(name):
     return jsonify({
         'ok':       True,
         'name':     data.get('name', name),
+        # `nome` e' il nome da mostrare nella lingua attiva; `name` resta la chiave
+        # con cui il resto del codice indicizza il catalogo.
+        'nome':     nome_vis(data, data.get('name', name)),
+        'nome_it':  data.get('nome_it') or data.get('name', name),
+        'nome_en':  data.get('nome_en') or data.get('name', name),
         'stats':    data.get('base_stats', {}),
         'types':    data.get('types', []),
         'abilities': data.get('abilities', []),

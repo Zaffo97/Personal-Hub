@@ -77,7 +77,7 @@
       <div class="form-group">
         <label>Pokémon</label>
         <input list="rl_atk" id="atk_name" class="form-control" placeholder="Cerca..." oninput="loadSide('atk')">
-        <datalist id="rl_atk">{% for pk in roster %}<option value="{{ pk }}">{% endfor %}{% for mk in mega_list %}<option value="{{ mk }}">{% endfor %}</datalist>
+        <datalist id="rl_atk">{% for pk in roster %}<option value="{{ nomi_vis.get(pk, pk) }}">{% endfor %}{% for mk in mega_list %}<option value="{{ nomi_vis.get(mk, mk) }}">{% endfor %}</datalist>
       </div>
       <div id="atk_form_wrap" style="display:none;margin-top:6px">
         <select id="atk_form_sel" class="form-control" style="font-size:.78rem" onchange="onFormChange('atk')"></select>
@@ -147,7 +147,7 @@
         <div class="form-group"><label style="font-size:.72rem">Item ATK</label>
           <select id="atk_item" class="form-control" style="font-size:.78rem" onchange="calcDamage()">
             <option value="1">— Nessun oggetto —</option>
-            {% for iname, idata in items_data["items"]|dictsort %}{% if idata.category in ["choice","damage","conditional","type_boost","orb","utility"] and idata.modifier %}<option value="{{ idata.modifier }}">{{ iname }} ×{{ idata.modifier }}</option>{% endif %}{% endfor %}
+            {% for iname, idata in items_data["items"]|dictsort %}{% if idata.category in ["choice","damage","conditional","type_boost","orb","utility"] and idata.modifier %}<option value="{{ idata.modifier }}">{{ nome_vis(idata, iname) }} ×{{ idata.modifier }}</option>{% endif %}{% endfor %}
           </select></div>
       </div>
       <div class="form-group">
@@ -265,7 +265,7 @@
       <div class="form-group">
         <label>Pokémon</label>
         <input list="rl_def" id="def_name" class="form-control" placeholder="Cerca..." oninput="loadSide('def')">
-        <datalist id="rl_def">{% for pk in roster %}<option value="{{ pk }}">{% endfor %}{% for mk in mega_list %}<option value="{{ mk }}">{% endfor %}</datalist>
+        <datalist id="rl_def">{% for pk in roster %}<option value="{{ nomi_vis.get(pk, pk) }}">{% endfor %}{% for mk in mega_list %}<option value="{{ nomi_vis.get(mk, mk) }}">{% endfor %}</datalist>
       </div>
       <div id="def_form_wrap" style="display:none;margin-top:6px">
         <select id="def_form_sel" class="form-control" style="font-size:.78rem" onchange="onFormChange('def')"></select>
@@ -381,7 +381,7 @@
         <div class="form-group"><label style="font-size:.72rem">Item DEF</label>
           <select id="def_item" class="form-control" style="font-size:.78rem" onchange="calcDamage()">
             <option value="1">— Nessun oggetto —</option>
-            {% for iname, idata in items_data["items"]|dictsort %}{% if idata.category in ["defensive","healing","berry","survival","support","weather","terrain"] and idata.modifier %}<option value="{{ idata.modifier }}">{{ iname }} ×{{ idata.modifier }}</option>{% endif %}{% endfor %}
+            {% for iname, idata in items_data["items"]|dictsort %}{% if idata.category in ["defensive","healing","berry","survival","support","weather","terrain"] and idata.modifier %}<option value="{{ idata.modifier }}">{{ nome_vis(idata, iname) }} ×{{ idata.modifier }}</option>{% endif %}{% endfor %}
           </select>
         </div>
         <!-- ABILITY DEF -->
@@ -410,7 +410,7 @@
       <div class="form-group">
         <label>Pokémon</label>
         <input list="rl_spe" id="spe_name" class="form-control" placeholder="Cerca..." oninput="loadSpePkmn()">
-        <datalist id="rl_spe">{% for pk in roster %}<option value="{{ pk }}">{% endfor %}{% for mk in mega_list %}<option value="{{ mk }}">{% endfor %}</datalist>
+        <datalist id="rl_spe">{% for pk in roster %}<option value="{{ nomi_vis.get(pk, pk) }}">{% endfor %}{% for mk in mega_list %}<option value="{{ nomi_vis.get(mk, mk) }}">{% endfor %}</datalist>
       </div>
       <div id="spe_spr" style="text-align:center;height:62px;display:flex;align-items:center;justify-content:center">
         <span style="font-size:2rem;opacity:.25">🏃</span>
@@ -501,7 +501,7 @@
       <div class="form-group">
         <label>Pokémon</label>
         <input list="rl_stat" id="stat_name" class="form-control" placeholder="Cerca nel Reg MA..." oninput="loadStatPkmn('a')">
-        <datalist id="rl_stat">{% for pk in roster_calc %}<option value="{{ pk }}">{% endfor %}{% for mk in mega_list %}<option value="{{ mk }}">{% endfor %}</datalist>
+        <datalist id="rl_stat">{% for pk in roster_calc %}<option value="{{ nomi_vis.get(pk, pk) }}">{% endfor %}{% for mk in mega_list %}<option value="{{ nomi_vis.get(mk, mk) }}">{% endfor %}</datalist>
       </div>
       <div style="display:flex;gap:.75rem;margin:.5rem 0;align-items:flex-start">
         <div id="stat_spr" style="width:80px;height:80px;flex-shrink:0;display:flex;align-items:center;
@@ -552,7 +552,7 @@
       <div class="form-group">
         <label>Pokémon</label>
         <input list="rl_stat_b" id="stat_name_b" class="form-control" placeholder="Cerca nel Reg MA..." oninput="loadStatPkmn('b')">
-        <datalist id="rl_stat_b">{% for pk in roster_calc %}<option value="{{ pk }}">{% endfor %}{% for mk in mega_list %}<option value="{{ mk }}">{% endfor %}</datalist>
+        <datalist id="rl_stat_b">{% for pk in roster_calc %}<option value="{{ nomi_vis.get(pk, pk) }}">{% endfor %}{% for mk in mega_list %}<option value="{{ nomi_vis.get(mk, mk) }}">{% endfor %}</datalist>
       </div>
       <div style="display:flex;gap:.75rem;margin:.5rem 0;align-items:flex-start">
         <div id="stat_spr_b" style="width:80px;height:80px;flex-shrink:0;display:flex;align-items:center;

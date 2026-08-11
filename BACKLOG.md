@@ -9,6 +9,74 @@ Legenda: ⬜ da fare · 🟨 parziale / da verificare · ✅ fatto
 
 ---
 
+## 🟨 Switch lingua IT ⇄ EN — primo blocco chiuso (11/08/2026)
+
+Pulsante **`IT`/`EN`** in `base.html`, accanto a quello del tema. Cambia lingua a
+**tutti i nomi dei dati**: Pokémon, mosse, abilità e oggetti.
+
+### Come è fatto
+
+- **Le chiavi del catalogo non cambiano mai.** Sono referenziate dai filtri delle
+  regulation, dal motore degli effetti, da `ABILITIES_CALC` e dai team salvati nel DB.
+  Ogni voce ha `nome_it` e `nome_en`, e cambia solo ciò che si legge
+- la lingua sta in un **cookie** (`hub_lang`), non in `localStorage`, perché la deve
+  leggere anche Flask: roster, mosse e oggetti nelle tendine li renderizza il server
+- il pulsante **ricarica** la pagina. È voluto: così cambia davvero tutto in un colpo
+  solo, senza metà pagina in una lingua e metà nell'altra. Il prezzo è che sul
+  calcolatore si perde quel che si stava scrivendo
+- si può **scrivere in entrambe le lingue**: `risolviChiave()` lato JS e `_INDICE`
+  lato Python accettano chiave, nome italiano e nome inglese. Scrivere `Privazione`
+  o `Knock Off` porta alla stessa mossa
+
+### L'import — `python scripts/importa_nomi_lingua.py [--dry-run] [--solo …]`
+
+Da PokéAPI, con cache in `data/cache/pokeapi/` (ignorata da git): la seconda
+esecuzione non ripassa dalla rete. ⚠️ PokéAPI risponde **403 senza `User-Agent`**.
+
+| Database | Con nome ufficiale nelle due lingue | Senza | Nomi davvero diversi tra IT ed EN |
+|---|---|---|---|
+| Mosse | **899 / 921** | 22 | 889 |
+| Oggetti | **378 / 398** | 20 | 341 |
+| Abilità | **312 / 415** | 103 | 307 |
+| Pokémon | **1019 / 1026** | 7 | **21** |
+
+Chi non si aggancia non resta a metà: prende `nome_it == nome_en == chiave`, così il
+commutatore ha sempre qualcosa da mostrare.
+
+**Cosa c'è dietro ogni "senza":**
+
+- **mosse (22)** — le mosse Z (`Breakneck Blitz`…) e `Syrup Bomb`: PokéAPI non ha
+  l'italiano
+- **oggetti (20)** — roba recente: `Booster Energy`, `Clear Amulet`, `Covert Cloak`,
+  `Loaded Dice`, le maschere di Ogerpon. Buco a monte, non nostro
+- **Pokémon (7)** — le sole voci il cui nome è una forma (`Palafin (Zero Form)`,
+  `Meowstic (Male)`…). Giusto così: il nome italiano di una forma non è deducibile e
+  non va inventato. I **21** diversi sono i Paradosso più `Type: Null` →
+  `Crinealato`, `Manoferrea`, `Lunaruggente`, `Tipo Zero`…
+- **abilità (103)** ⬜ — questo è l'unico numero che vale la pena guardare. Una parte
+  sono le tue abilità inventate (`Black Hole`, `Aqua Boost`, `Bodyguard`, `Climber`…),
+  giustamente assenti. Le altre sono **nomi italiani non ufficiali**: il catalogo dice
+  `Combattività` dove il gioco dice `Cuortenace`, `Assorbiacqua` dove dice
+  `Assorbacqua`. È la vecchia voce *"Nomi in abilities.json da rivedere"*, ora
+  **quantificata**: **312 su 415 usano il nome ufficiale, 103 no**
+
+### Cosa NON copre ancora
+
+- ⬜ **le stringhe dell'interfaccia** — etichette, pulsanti, titoli: italiano fisso in
+  ~19 template. È il secondo blocco
+- ⬜ **gli editor** (`/pokemon/catalogo`, roster, mosse, oggetti) mostrano ancora la
+  **chiave**, non il nome tradotto. Lì la chiave è l'identità della voce, quindi va
+  deciso se e come mostrarle entrambe
+- ⬜ **le descrizioni** sono solo in italiano: `desc` non è stato toccato. Serve un
+  secondo giro di import per i testi inglesi
+
+> ⚠️ Conseguenza visibile subito: **in italiano il calcolatore ora scrive
+> `Privazione`, non `Knock Off`**, e `Cinturanera` invece di `Black Belt`. È quello
+> che la voce di backlog chiedeva, ma se per abitudine VGC preferisci i nomi inglesi
+> anche in modalità italiana, si cambia in un punto solo (`nomeVis`).
+
+---
+
 ## ✅ Stat delle Mega riportate alle base (11/08/2026)
 
 Le Mega nel catalogo non avevano un bonus: avevano le **stat di Lv.50 già calcolate**
@@ -314,7 +382,7 @@ Script rieseguibili: `scripts/build_catalog.py` (`--dry-run` per provare) e
 | ✅ | Testare Speed Tier | Fatto 08/08/2026. `loadRegSpeed()` **non funzionava**: leggeva `bst.spe` mentre la velocità sta in `base_stats.spe`, quindi tutti i 174 Pokémon venivano scartati e la funzione ricadeva in silenzio sulla lista statica da 158 nomi. Ora costruisce 189 righe dal roster MA (208 nomi, 19 assenti dal catalogo) |
 | ✅ | Weather Ball e mosse condizionate da meteo/abilità | Fatto 08/08/2026. Nuovo motore meteo in `calcolatori.html`: `meteoEffettivo()` (le abilità `weather_override` impongono il meteo, le `weather_setter` lo evocano se non è stato scelto nulla), `tipoPallaClima()` che usa `weather_ball_type` di `abilities.json` come override della mappa meteo→tipo, `applicaMeteoAllaMossa()` che riscrive BP e tipo nei campi visibili. Coperte **Weather Ball** (tipo dal meteo, BP 50→100), **Solar Beam** e **Solar Blade** (BP dimezzato con pioggia/sabbia/neve). Aggiunta la Pioggia forte alla tendina, con `fire_blocked` che porta le mosse Fuoco a 0 |
 
-| 🟨 | Traduzione di tutte le mosse/abilità/oggetti | Linguetta per indicare in che lingua caricare i vari database |
+| ✅ | Traduzione di tutte le mosse/abilità/oggetti | Fatto 11/08/2026 con `scripts/importa_nomi_lingua.py`: `nome_it` e `nome_en` su tutte le voci dei quattro database. Non serve una linguetta per scegliere la lingua dei database: la sceglie il pulsante `IT`/`EN` globale |
 
 ### Calcolo danno — da verificare uno per uno
 Tutte queste voci sono **implementate nel codice**, ma nel docx erano segnate da testare.
@@ -419,7 +487,7 @@ Dettagli che vale la pena ricordare:
 | | Voce |
 |---|---|
 | ⬜ | Deploy da GitHub a Railway — c'è un errore da diagnosticare |
-| ⬜ | **Switch lingua italiano ⇄ inglese per tutta la web app.** Pulsante accanto a quello del tema in `base.html:184` (`toggleTheme()` / `themeBtn`), stessa forma e stesso posto. Deve cambiare lingua **all'istante e ovunque**: interfaccia, etichette, e nomi di Pokémon, mosse, abilità e oggetti. Va tenuto insieme alla voce 🟨 *"Traduzione di tutte le mosse/abilità/oggetti"* nella sezione Pokémon: è la stessa cosa vista dal lato dati. Nota utile: il catalogo ha già `nome_en` sulle abilità e `type_it` sulle mosse, e i dump di PokéAPI hanno i nomi italiani per 933 mosse su 937 e 311 abilità su 373 |
+| 🟨 | **Switch lingua italiano ⇄ inglese.** Pulsante `IT`/`EN` in `base.html` accanto al tema: fatto l'11/08/2026, **primo blocco chiuso** (i nomi dei dati). Resta da fare il **secondo blocco**: le stringhe dell'interfaccia, oggi italiano fisso in ~19 template. Vedi la sezione dedicata in cima al file |
 
 ---
 

@@ -89,7 +89,8 @@ function tipoPallaClima(weather, fonte) {
 // Aggiorna BP e tipo nei campi della mossa quando dipendono dal meteo, cosi' il
 // valore usato dal calcolo e' anche quello che l'utente vede.
 function applicaMeteoAllaMossa() {
-  const nome = document.getElementById('mv_name')?.value.trim() || '';
+  // MOSSE_METEO e' indicizzata per chiave, la casella contiene il nome tradotto.
+  const nome = risolviChiave(MOVES_DB, document.getElementById('mv_name')?.value || '');
   const regola = MOSSE_METEO[nome];
   const nota = document.getElementById('mv_weather_note');
   const { weather, fonte } = meteoEffettivo();
@@ -150,11 +151,16 @@ function popolaSelectAbilita(sel, ambito) {
   const vuota = document.createElement('option');
   vuota.value = ''; vuota.textContent = '— Nessuna —';
   frag.appendChild(vuota);
-  Object.keys(ABILITIES_DATA).sort((a, b) => a.localeCompare(b, 'it')).forEach(nome => {
+  // Il `value` resta la CHIAVE: e' quella che il motore degli effetti cerca dentro
+  // ABILITIES_DATA. Cambia solo il testo che si legge.
+  Object.keys(ABILITIES_DATA)
+    .sort((a, b) => nomeVis(ABILITIES_DATA[a], a)
+                      .localeCompare(nomeVis(ABILITIES_DATA[b], b), LANG))
+    .forEach(nome => {
     const o = document.createElement('option');
     o.value = nome;
     const attiva = rilevante(nome);
-    o.textContent = (attiva ? '● ' : '   ') + nome;
+    o.textContent = (attiva ? '● ' : '   ') + nomeVis(ABILITIES_DATA[nome], nome);
     if (attiva) o.style.fontWeight = '600';
     const desc = (ABILITIES_DATA[nome] || {}).desc;
     if (desc) o.title = desc;
@@ -163,6 +169,29 @@ function popolaSelectAbilita(sel, ambito) {
   sel.innerHTML = '';
   sel.appendChild(frag);
   if (precedente) sel.value = precedente;
+}
+
+// ── Nome visualizzato -> chiave ──────────────────────────────────────────────
+// Nelle caselle con datalist l'utente scrive il nome **tradotto**, mentre a
+// indicizzare i dati e' la chiave. Questo indice riporta indietro: accetta la
+// chiave, il nome italiano e quello inglese, senza distinzione di maiuscole.
+const _INDICI_NOMI = new WeakMap();
+function indiceNomi(db) {
+  if (_INDICI_NOMI.has(db)) return _INDICI_NOMI.get(db);
+  const idx = {};
+  for (const [chiave, voce] of Object.entries(db)) {
+    for (const n of [chiave, voce && voce.nome_it, voce && voce.nome_en]) {
+      if (n) idx[String(n).toLowerCase()] = chiave;
+    }
+  }
+  _INDICI_NOMI.set(db, idx);
+  return idx;
+}
+
+// La chiave corrispondente a quel che l'utente ha scritto, o la stringa stessa.
+function risolviChiave(db, nome) {
+  if (!nome) return '';
+  return indiceNomi(db)[String(nome).trim().toLowerCase()] || nome;
 }
 
 function normalizeName(name){

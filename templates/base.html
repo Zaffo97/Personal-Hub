@@ -181,6 +181,9 @@ textarea.form-control{resize:vertical;min-height:70px}
       <span class="topbar-title">{% block topbar_title %}{% endblock %}</span>
     </div>
     <div class="topbar-actions">
+      <button class="btn-icon" onclick="toggleLingua()" id="langBtn"
+              title="{% if lang == 'it' %}Switch to English{% else %}Passa all'italiano{% endif %}"
+              style="font-weight:700;font-size:.72rem;letter-spacing:.04em">{{ lang|upper }}</button>
       <button class="btn-icon" onclick="toggleTheme()" id="themeBtn" title="Cambia tema">
         <svg id="themeIcon" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
           <path d="M21 12.79A9 9 0 1 1 11.21 3 7 7 0 0 0 21 12.79z"/>
@@ -209,6 +212,16 @@ function updateThemeIcon(t){
   document.getElementById('themeIcon').innerHTML=t==='dark'
     ?'<path d="M21 12.79A9 9 0 1 1 11.21 3 7 7 0 0 0 21 12.79z"/>'
     :'<circle cx="12" cy="12" r="5"/><path d="M12 1v2M12 21v2M4.22 4.22l1.42 1.42M18.36 18.36l1.42 1.42M1 12h2M21 12h2M4.22 19.78l1.42-1.42M18.36 5.64l1.42-1.42"/>';
+}
+// La lingua sta in un cookie, non in localStorage, perche' la deve leggere anche
+// Flask: roster, mosse e oggetti nelle tendine sono renderizzati dal server.
+// Il ricaricamento e' voluto: cosi' cambia davvero ovunque in un colpo solo, senza
+// meta' pagina in una lingua e meta' nell'altra.
+function toggleLingua(){
+  const attuale=document.getElementById('langBtn').textContent.trim().toLowerCase();
+  const nuova=attuale==='it'?'en':'it';
+  document.cookie='hub_lang='+nuova+';path=/;max-age=31536000;samesite=lax';
+  location.reload();
 }
 function toggleSidebar(){
   document.getElementById('sidebar').classList.toggle('open');

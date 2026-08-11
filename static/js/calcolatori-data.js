@@ -12,6 +12,18 @@ const REG_ID            = CALC_BOOTSTRAP.reg_id;      // current_reg.id
 const CHAMPIONS_BST     = CALC_BOOTSTRAP.champions;   // pokemon_catalog.json, 174 voci
 const NATURES           = CALC_BOOTSTRAP.natures;     // NATURES di data.py, 25 in ordine
 
+// Lingua attiva, dallo stesso cookie che legge Flask (vedi extensions.lingua_attiva).
+// Le CHIAVI del catalogo non cambiano mai con la lingua: cambia solo cio' che si legge
+// a schermo. Ogni voce porta `nome_it` e `nome_en` dall'import di PokeAPI.
+const LANG = (document.cookie.match(/(?:^|;\s*)hub_lang=(it|en)/) || [])[1] || 'it';
+
+function nomeVis(voce, chiave) {
+  if (voce && typeof voce === 'object') {
+    return voce['nome_' + LANG] || voce.name || chiave || '';
+  }
+  return chiave || '';
+}
+
 const TYPE_EN_TO_IT = {
   "normal":"Normale","fire":"Fuoco","water":"Acqua","electric":"Elettro",
   "grass":"Erba","ice":"Ghiaccio","fighting":"Lotta","poison":"Veleno",

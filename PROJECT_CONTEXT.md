@@ -148,7 +148,17 @@ def init_db()      # → CREATE TABLE IF NOT EXISTS + ALTER TABLE teams ADD regu
 def login_required # → decorator, redirect a auth.login se "username" non in session
 def _i(v, d=0)     # → int(v) con fallback d
 def _f(v, d=0.0)   # → float(v) con fallback d
+
+LINGUE = ("it", "en")
+COOKIE_LINGUA = "hub_lang"
+def lingua_attiva()          # → 'it' | 'en' dal cookie; 'it' fuori da una richiesta
+def nome_vis(voce, chiave)   # → il nome da mostrare, `nome_it` o `nome_en`, con
+                             #   fallback sulla chiave: mai una stringa vuota
 ```
+
+> ⚠️ La lingua sta in un **cookie** e non in `localStorage` perché la deve leggere
+> anche Flask: roster, mosse e oggetti nelle tendine li renderizza il server.
+> `create_app()` espone `lang` e `nome_vis` a ogni template con un `context_processor`.
 
 > ⚠️ **`calc_stat_champions()` non esiste più** (rimossa 07/08/2026). Era definita ma **mai chiamata** da nessun file, e usava una terza convenzione SP (`base + sp`) diversa sia dal JS sia dalla documentazione. Il calcolo delle stat vive **solo** in `calcSt()` in `calcolatori.html`.
 
@@ -347,6 +357,8 @@ Tutte create da `init_db()` in `extensions.py`.
 
 7. **Le Mega non hanno una tabella tutta loro.** `fetchPkmn()` le chiede a `/api/pokemon` come qualsiasi altra forma: le stat stanno in `data/catalog/pokemon.json`, annidate in `forms` della specie base. `isMega` e il BST li deriva `marcaMega()` — il BST è la somma delle base.
 
+8. **I nomi mostrati non sono le chiavi.** `nomeVis(voce, chiave)` sceglie fra `nome_it` e `nome_en` in base a `LANG` (dal cookie `hub_lang`), e `risolviChiave(db, nome)` fa il percorso inverso quando l'utente scrive in una casella con datalist. Nelle `<select>` il `value` resta **sempre** la chiave.
+
 > ⚠️ `MEGA_DATA` **non esiste più** (eliminata l'11/08/2026). Era la terza copia delle stat: il tab Danno leggeva lei e lo Speed Tier il catalogo, che per le Mega conteneva le stat di Lv.50 già calcolate — quindi la formula finiva applicata due volte e lo stesso Mega Venusaur valeva 80 di Velocità di qua e 100 di là. Non reintrodurla: per cambiare le stat di una Mega si usa `/pokemon/catalogo`.
 
 > ⚠️ `TYPE_CHART` sta in `calcolatori-data.js` ed è l'**unica** type chart. Non ricrearne una locale dentro `calcDamage()`: era così fino all'08/08/2026, e la tabella mostrata all'utente era un blocco di HTML scollegato, duplicato in due copie da 46 KB.
@@ -510,6 +522,7 @@ Di conseguenza tutto ciò che questa tabella dava per "funzionante" non era mai 
 
 | Data | Contenuto |
 |------|-----------|
+| 2026-08-11 | **Switch lingua IT ⇄ EN, primo blocco: i nomi dei dati.** Pulsante `IT`/`EN` in `base.html` accanto al tema. Le **chiavi del catalogo non cambiano mai** — le usano i filtri delle regulation, il motore degli effetti e i team salvati — e ogni voce riceve `nome_it` e `nome_en` da `scripts/importa_nomi_lingua.py`: mosse 899/921, oggetti 378/398, abilità 312/415, Pokémon 1019/1026, con chi non si aggancia che tiene la chiave nelle due lingue. Si può scrivere in entrambe: `risolviChiave()` lato JS e `_INDICE` lato Python accettano chiave, italiano e inglese. La lingua sta in un **cookie**, non in localStorage, perché la legge anche Flask. Restano fuori le stringhe dell'interfaccia, gli editor (mostrano la chiave) e le descrizioni |
 | 2026-08-11 | **Stat delle Mega riportate alle base.** Nel catalogo 95 Mega su 101 avevano le stat di Lv.50 già calcolate dentro `base_stats` (+75 HP e +20 sulle altre, l'aritmetica esatta della formula del progetto): deconvertite con `scripts/deconverti_mega_catalogo.py`. Prova che è la lettura giusta: 56 su 57 riproducono `MEGA_DATA` alla cifra, e **tutte** le Mega ufficiali che `MEGA_DATA` non copriva (Metagross, Mewtwo X/Y, Rayquaza, Salamence, Swampert, Sceptile, Latias, Latios, Mawile, Diancie, Blaziken) coincidono coi valori reali del gioco. Rimosse 3 chiavi top-level che erano **doppioni** della forma annidata (1029 → 1026 voci) ed eliminata `MEGA_DATA`, la terza copia delle stat: ora anche le Mega passano da `/api/pokemon`, quindi tab Danno e Speed Tier non possono più divergere. Restano tre casi da decidere a mano: `Mega Froslass` (Vel 100 o 120), `Mega Machamp` (nessuna stat) e `Mega Zygarde` (rotta a sé). Verificando è saltato fuori **`/api/regulation/<id>/data`**, che leggeva ancora il vecchio `roster_file` come faceva `/api/moves`: lo Speed Tier mostrava i 208 nomi ereditati di MA (**zero Mega**) invece dei 279 veri, e su `pokedex` e `mb` andava in 404 ricadendo muto sulla lista statica da 158. Corretto. Corretti poi, su indicazione di Davide, **Mega Froslass** (la Velocità nel catalogo era già una base, non un valore convertito: riportata a 120 → **140** a Lv.50) e **Mega Machamp**, che non esiste ed è stata rimossa. Rimuoverla ha scoperchiato un baco vecchio: `/api/pokemon/Mega Machamp` rispondeva **Mega Venusaur** invece di 404, perché `mega` era finito tra gli alias — di qui `NON_ALIASABILI`. Verifica finale: regola #8 esatta (A=183, D=122, HP=221, 85-102), Mega Venusaur **80 → 100** e Mega Froslass **120 → 140** identici nei tab Danno e Speed Tier, Speed Tier MA **279/279** con 59 Mega e 0 sprite mancanti, 24 pagine / 43 blocchi script / 929 handler inline senza errori tranne 53 `onmouseout` morti in `python.html:45`, preesistenti e lasciati a backlog |
 | 2026-08-10 | **Sezione Gaming agganciata a Steam.** Ricerca in inserimento (un clic compila titolo, genere, copertina, `appid`), import della libreria con le ore giocate, arricchimento dei generi a lotti. Solo `GetOwnedGames` richiede la chiave, tutto il resto usa endpoint pubblici. Nuove colonne `steam_appid` e `hours_played`, quest'ultima **distinta** da `hours_hltb`. 41 controlli end-to-end + 0 errori di sintassi JS su 4 rendering. Importati 34 giochi / 904.8 ore con generi al 100%. Due bug miei corretti in corsa: l'import metteva tutto su "In corso" rendendo inutile il filtro per stato, e un errore di rete durante l'arricchimento marcava il gioco come senza-genere per sempre |
 | 2026-05-02 | Setup Flask, DB, auth, sidebar base |
