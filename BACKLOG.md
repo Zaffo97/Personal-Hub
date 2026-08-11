@@ -334,6 +334,11 @@ l'effetto attuale è sbagliato. Sono probabilmente abilità **di Champions**:
 | `Compressione` | `effect` dice `tinted_lens`, la desc dice «tutte le mosse +30%» |
 | `Vento Misterioso` | meteo `fog` perpetuo — la nebbia non è un meteo del gioco |
 
+✅ Dall'11/08/2026 ognuna delle 10 lo **dice nella propria descrizione** («— abilità di
+Champions, senza corrispondente ufficiale», aggiunta da `scripts/rifinisci_abilita.py`),
+così chi le trova nella tendina capisce perché esistono e non le scambia per un errore.
+Gli effetti non sono stati toccati, e nessun'altra voce ha ricevuto la nota.
+
 Intatte anche le **7** senza traduzione ma appese a un Pokémon (`Download`,
 `Eelevate`, `Fire Mane`, `Libero`, `Punk Rock`, `Teravolt`, `Transistor`): non sono
 doppioni di nessuno.
@@ -344,8 +349,8 @@ doppioni di nessuno.
 |---|---|---|
 | ✅ | **`Megasolar` aveva `nome_en: "Mega Sol"`** | Aggancio sbagliato dell'import — «Mega Sol» non è un nome inglese. Corretto l'11/08/2026 con `scripts/applica_nomi_decisi.py`: `nome_en` riportato a `Megasolar`, la convenzione delle voci senza traduzione ufficiale. Ora «Mega Sol» non risolve più su una voce inerte, e l'effetto vive dove deve, su `Terra Estrema` |
 | ✅ | **`ABILITIES_CALC` non la usava nessuno** | Rimossa da `data.py` l'11/08/2026 dopo aver verificato **zero consumer** in tutto il progetto: chi marca le abilità che incidono è `abilityIncideSulDanno()` in JS, che legge il blocco `effect`. L'elenco non era solo inerte, era destinato a divergere dai dati veri. Corretti anche i due documenti che lo citavano |
-| ⬜ | **Il fallback `data/abilities.json` ha ancora le 24 vecchie** | È il file legacy, letto solo se `data/catalog/abilities.json` manca. Se quel giorno arrivasse, si tornerebbe alla situazione di prima. Da dismettere con gli altri file storici |
-| ⬜ | **8 voci che condividono il nome con un'altra chiave** ⚠️ | Trovate verificando le bandierine: **due chiavi diverse possono avere gli stessi `nome_it` e `nome_en`**, e la risoluzione per nome deve sceglierne una. Il caso grave era **`Sheer Force`**, che esiste come `Forza Bruta` (con l'effetto) e `Forzabruta` (inerte): vincendo l'ultima, un Pokémon con Sheer Force **non applicava niente**. Tamponato in `indiceNomi()`, che a parità di nome tiene la voce con un effetto — misurato: il danno passa da 82 a **106**, il ×1.3 atteso. Restano i doppioni veri, da fondere come le 24: abilità `Forza Bruta`/`Forzabruta`, `Dragonize`/`Pelledrago`, `Mind's Eye` (dove la chiave `Occhio Interiore ` ha **uno spazio in fondo**), `Piercing Drill`/`Punta Perforante`, `Spicy Spray`/`Spargipiccante`; mosse `Freeze Dry`/`Freeze-Dry` e `Mud Slap`/`Mud-Slap`; oggetti `King's Rock`/`King’s Rock`, apostrofo dritto contro curvo. Gli altri sette sono innocui oggi perché nessuna delle due voci ha un effetto |
+| ✅ | **Il fallback `data/abilities.json` aveva ancora le 24 vecchie** | Riallineato al catalogo l'11/08/2026 con `scripts/rifinisci_abilita.py`: 408 → 386 voci. **Non è stato dismesso** — quello si fa al collaudo finale, con gli altri file storici — ma ha smesso di essere una macchina del tempo: se un giorno il fallback scattasse davvero, non riporterebbe indietro i doppioni appena chiusi, e in silenzio |
+| ✅ | **8 voci che condividevano il nome con un'altra chiave** ⚠️ | Trovate verificando le bandierine: **due chiavi diverse possono avere gli stessi `nome_it` e `nome_en`**, e la risoluzione per nome ne sceglie una sola. Il caso grave era **`Sheer Force`**, che esisteva come `Forza Bruta` (con l'effetto) e `Forzabruta` (inerte): vincendo l'ultima, un Pokémon con Sheer Force **non applicava niente**. Prima tamponato in `indiceNomi()` (a parità di nome tiene la voce con un effetto: danno da 82 a **106**, il ×1.3 atteso), poi **tolta la causa** con `scripts/fondi_doppioni_nome.py`. Il criterio non è «vince il nome ufficiale», che su `King's Rock` darebbe la voce sbagliata: resta la **chiave giusta** — quella che segue la convenzione del file e che i filtri già nominano — e i campi mancanti le arrivano dall'altra. Restano `Forzabruta` (con l'`effect` ereditato), `Pelledrago`, `Punta Perforante`, `Spargipiccante`, `Occhio Interiore` (senza lo spazio in fondo, con la desc ereditata), `Freeze-Dry`, `Mud Slap`, `King's Rock`. **I filtri sono stati aggiornati**: MA e MB contenevano entrambe le varianti di `Freeze Dry`, quindi le mosse scendono da 461 a **460** — la stessa mossa contata due volte, non una persa. Ora **zero** nomi condivisi e zero chiavi con spazi ai bordi in tutti e tre i database |
 
 ### ⬜ Com'era il problema, prima della fusione
 
@@ -550,11 +555,31 @@ risolvono ancora tutti.
   offriva una mega non legale
 - copia di sicurezza in `data/archive/ma_pre-mega_map.json` e `mb_pre-mega_map.json`
 
-Restano fuori di proposito, perché servirebbe sapere cosa Champions consenta davvero:
-- ⬜ **`Mega Meowstic (Male)`** è nel roster MA ma la base `Meowstic` **no**: non mappabile
-  senza aggiungere una specie al roster verificato
-- ⬜ **MB** ha ancora **17** Mega irraggiungibili, ma è tuttora il segnaposto: è MA + 16
-  Mega, con mosse (461), oggetti (58) e `mega_map` identici a MA
+### ✅ Chiuso l'11/08/2026 — ogni Mega nel roster è raggiungibile
+
+`python scripts/completa_mega_map.py [--dry-run]`. Per ogni Mega del roster non ancora
+mappata deduce la specie base dal nome (`Mega Raichu X` → `Raichu`), **verifica che
+esista nel catalogo** e la collega; si ferma su ciò che non risolve.
+
+| | prima | dopo |
+|---|---|---|
+| MA — Mega raggiungibili | 58 / 59 | **59 / 59** |
+| MB — Mega raggiungibili | 58 / 75 | **75 / 75** |
+| MB — roster | 295 | **308** |
+
+- **`Mega Meowstic (Male)`** era l'unica irraggiungibile di MA, e la voce di backlog era
+  **sbagliata**: diceva che la base `Meowstic` non è nel roster, ma cercava il nome
+  sbagliato — dentro ci sono `Meowstic (Male)` e `Meowstic (Female)`, con le rispettive
+  forme nel catalogo. Bastava collegarle: nessun dato inventato
+- **MB non è più un segnaposto.** Delle 17 Mega irraggiungibili, 4 avevano la base già
+  nel roster (Meowstic M/F, Raichu X/Y); per le altre 13 — Barbaracle, Blaziken,
+  Dragalge, Eelektross, Falinks, Malamar, Metagross, Pyroar, Sceptile, Scolipede,
+  Scrafty, Staraptor, Swampert — **Davide ha deciso di aggiungere la specie base al
+  roster**. È una scelta di contenuto, non un dato dedotto, ed è per questo che lo
+  script la fa solo per le regulation elencate in `AGGIUNGI_BASI`: il roster di **MA**,
+  che viene dalla wiki di Pokémon Central, non si tocca
+
+⬜ Restano da decidere per MB: mosse (460) e oggetti (58) sono ancora identici a MA.
 
 ---
 
@@ -859,7 +884,7 @@ Dettagli che vale la pena ricordare:
 | ✅ | `reference.html` era orfano | Rimosso l'11/08/2026: 70 righe che nessuna route renderizzava. Il tab Reference del calcolatore è un'altra cosa — vive dentro `calcolatori.html` ed è riempito da `calcolatori-ref.js` |
 | ✅ | 53 `onmouseout` morti in `templates/python.html:45` | Chiuso 11/08/2026. Il ramo `{% else %}` aggiungeva due apici dentro una stringa già quotata (`this.style.background=''''`, `SyntaxError`), quindi su ogni argomento **non** completato l'handler era `null`. Tolti i due apici: da **0 handler vivi su 53 a 53 su 53**, provato eseguendo mouseover/mouseout |
 | ✅ | `loadSpePkmn()` non ricalcola | Chiuso 11/08/2026: aggiunta la chiamata a `updateSpeed()`. Incineroar → base 60, Velocità **80**; Dragapult → base 142, Velocità **162** |
-| ⬜ | Speed Tier senza limite di righe | `renderSpeed()` stampa una `<div>` per ogni voce. Misurato l'11/08/2026 ora che `pokedex` è il default: **1343 righe, 714 KB di HTML** in un solo `innerHTML` — ma `loadRegSpeed()` impiega **14 ms**, quindi è peso nel DOM, non lentezza percepita. Le altre tabelle del progetto si fermano a 300 righe |
+| ✅ | Speed Tier senza limite di righe | Chiuso 11/08/2026 con un tetto a **300 righe**, come le altre tabelle del progetto: su `pokedex` erano **1343 righe / 714 KB** in un solo `innerHTML`, ora **300 / 159 KB**. Le righe tagliate sono le più **lontane** dalla propria Velocità, perché chi guarda uno Speed Tier guarda chi gli sta intorno: con Kingdra a 105 la tabella va da 95 a 115. Sopra la tabella resta scritto il conto pieno (`300 righe su 1343`), e la ricerca continua a pescare fuori dal taglio — provato con Regieleki, che sta a 200 |
 | ✅ | Nomi in `abilities.json` da rivedere → **fondere i doppioni** | Chiuso 11/08/2026: 24 coppie fuse, 415 → 391 voci, e `abilityEffect()` ora risolve anche per nome inglese. Dettagli nella sezione «Le abilità doppie», in cima. ⚠️ Restano le 10 voci il cui effetto non corrisponde a nessuna abilità reale, tenute apposta | Alcuni non corrispondono all'abilità descritta (es. `Spettroguardia` descrive Multiscaglia; il vero Wonder Guard è `Magidifesa`). Convivono nomi ufficiali IT e nomi di altra fonte. L'11/08/2026 il giro sulla wiki ha spiegato perché: **le due famiglie coesistono nello stesso file**, 307 voci col nome ufficiale (collegate ai Pokémon, ma solo 22 con un effetto attivo) e 108 vecchie (34 con l'effetto che il calcolatore usa davvero). Il lavoro non è tradurre, è fondere ogni coppia. Dettagli e tabella nella sezione dello switch lingua, in cima |
 | ⬜ | Catalogo con abilità incomplete | Ricontato 10/08/2026 sul catalogo unico: **243 specie su 1029** hanno una sola abilità (il vecchio "84 su 174" era sul catalogo pre-unificazione). Quasi tutti ne hanno 2-3 con la nascosta |
 | ✅ | Chiavi mega incoerenti nel catalogo | Chiuso 11/08/2026. Non erano anomalie ma **doppioni**: `mega-banette`, `mega-chimecho` e `mega-crabominable` esistevano sia come chiave top-level sia come forma annidata nella specie base. Le forme annidate, deconvertite, sono quelle giuste — le top-level sono state rimosse (1029 → 1026 voci). Gli override sprite in `api_pokemon.py:70-73` **restano**: sono indicizzati sul nome normalizzato, non sulla chiave, e servono ancora perché Mega Chimecho e Mega Crabominable sono inventate e non hanno uno sprite online |

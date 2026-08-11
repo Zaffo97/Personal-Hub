@@ -309,8 +309,7 @@
     "desc": "10% di probabilità di far arretrare il bersaglio dopo un attacco.",
     "effect": "flinch_chance",
     "nome_it": "Roccia di Re",
-    "nome_en": "King’s Rock",
-    "categoria_pokeapi": "held-items"
+    "nome_en": "King’s Rock"
   },
   "Quick Claw": {
     "category": "utility",
@@ -841,6 +840,13 @@
     "categoria_pokeapi": "choice",
     "nome_it": "Bendascelta",
     "nome_en": "Choice Band"
+  },
+  "King’s Rock": {
+    "category": "other",
+    "desc": "Strumento da dare a un Pokémon. Se chi lo usa arreca danni, può far tentennare il nemico.",
+    "categoria_pokeapi": "held-items",
+    "nome_it": "Roccia di Re",
+    "nome_en": "King’s Rock"
   },
   "Amulet Coin": {
     "category": "other",

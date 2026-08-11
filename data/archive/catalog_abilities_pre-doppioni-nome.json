@@ -307,7 +307,7 @@
       ]
     },
     "Assorbifuoco": {
-      "desc": "Immunità alle mosse Fuoco; se colpito ripristina i PS. — abilità di Champions, senza corrispondente ufficiale.",
+      "desc": "Immunità alle mosse Fuoco; se colpito ripristina i PS.",
       "category": "type_immunity",
       "immunity": [
         "Fuoco"
@@ -585,7 +585,7 @@
       "nome_en": "Harvest"
     },
     "Colpo Secco": {
-      "desc": "Le mosse Fuoco hanno potenza aumentata del 50% sotto il Sole. — abilità di Champions, senza corrispondente ufficiale.",
+      "desc": "Le mosse Fuoco hanno potenza aumentata del 50% sotto il Sole.",
       "category": "weather_boost",
       "effect": {
         "type": "type_boost_weather",
@@ -606,7 +606,7 @@
       "nome_en": "Quick Draw"
     },
     "Compressione": {
-      "desc": "Tutte le mosse hanno potenza aumentata del 30%. — abilità di Champions, senza corrispondente ufficiale.",
+      "desc": "Tutte le mosse hanno potenza aumentata del 30%.",
       "category": "power_boost",
       "bp_multiplier": 1.3,
       "effect": {
@@ -859,6 +859,15 @@
       "nome_it": "Dragomascelle",
       "nome_en": "Dragon’s Maw"
     },
+    "Dragonize": {
+      "desc": "The Pokémon's Normal-type moves become Dragon-type moves and their power is boosted by 20%.",
+      "category": "other",
+      "effect": {
+        "type": "none"
+      },
+      "nome_it": "Dragonize",
+      "nome_en": "Dragonize"
+    },
     "Elettrogenesi": {
       "desc": "Quando il Pokémon entra in campo, lo trasforma in un Campo Elettrico.",
       "category": "other",
@@ -1037,6 +1046,16 @@
       "nome_it": "Fortune",
       "nome_en": "Fortune"
     },
+    "Forza Bruta": {
+      "desc": "Mosse con effetto secondario hanno potenza aumentata del 30%.",
+      "category": "power_boost",
+      "sheer_force": true,
+      "effect": {
+        "type": "sheer_force"
+      },
+      "nome_it": "Forzabruta",
+      "nome_en": "Sheer Force"
+    },
     "Forza Chimica": {
       "desc": "Il Pokémon trasforma la propria abilità in quella di un alleato andato KO.",
       "category": "other",
@@ -1059,11 +1078,10 @@
       "desc": "Aumenta i danni annullando altri effetti delle mosse.",
       "category": "other",
       "effect": {
-        "type": "sheer_force"
+        "type": "none"
       },
       "nome_it": "Forzabruta",
-      "nome_en": "Sheer Force",
-      "sheer_force": true
+      "nome_en": "Sheer Force"
     },
     "Forzapura": {
       "desc": "Migliora la statistica Attacco del Pokémon.",
@@ -1691,7 +1709,7 @@
       "nome_en": "Snow Cloak"
     },
     "Manto Neve": {
-      "desc": "La Difesa è aumentata del 50% durante la Neve. — abilità di Champions, senza corrispondente ufficiale.",
+      "desc": "La Difesa è aumentata del 50% durante la Neve.",
       "category": "weather_boost",
       "effect": {
         "type": "weather_def_boost",
@@ -1972,7 +1990,7 @@
       "nome_en": "Scrappy"
     },
     "Nervosismo": {
-      "desc": "L'Attacco Speciale è aumentato del 50%. — abilità di Champions, senza corrispondente ufficiale.",
+      "desc": "L'Attacco Speciale è aumentato del 50%.",
       "category": "stat_modifier",
       "atk_stat_mult": {
         "stat": "spa",
@@ -2069,6 +2087,15 @@
       },
       "nome_it": "Nurse",
       "nome_en": "Nurse"
+    },
+    "Occhio Interiore ": {
+      "desc": "The Pokémon ignores changes to opponents' evasiveness, its accuracy can't be lowered, and it can hit Ghost types with Normal-type and Fighting-type moves",
+      "category": "other",
+      "effect": {
+        "type": "none"
+      },
+      "nome_it": "Occhio Interiore",
+      "nome_en": "Mind’s Eye"
     },
     "Odore Tenace": {
       "desc": "Contact with the Pokémon changes the attacker's Ability to Lingering Aroma.",
@@ -2272,6 +2299,15 @@
         "value": 1.5
       }
     },
+    "Piercing Drill": {
+      "desc": "When the Pokémon uses contact moves, it can hit even targets that are protecting themselves, dealing 1/4 of the damage that the move would otherwise deal. Everything aside from the target's protective effects is still triggered.",
+      "category": "other",
+      "effect": {
+        "type": "none"
+      },
+      "nome_it": "Piercing Drill",
+      "nome_en": "Piercing Drill"
+    },
     "Pigrone": {
       "desc": "Il Pokémon attacca un turno sì e uno no.",
       "category": "other",
@@ -2311,7 +2347,7 @@
       "nome_en": "Plus"
     },
     "Polifagia": {
-      "desc": "L'Attacco Speciale è aumentato del 50%. — abilità di Champions, senza corrispondente ufficiale.",
+      "desc": "L'Attacco Speciale è aumentato del 50%.",
       "category": "stat_modifier",
       "atk_stat_mult": {
         "stat": "spa",
@@ -2742,7 +2778,7 @@
       "nome_en": "Sequence"
     },
     "Sforzo": {
-      "desc": "L'Attacco fisico è aumentato del 50%. — abilità di Champions, senza corrispondente ufficiale.",
+      "desc": "L'Attacco fisico è aumentato del 50%.",
       "category": "stat_modifier",
       "atk_stat_mult": {
         "stat": "atk",
@@ -3012,6 +3048,15 @@
       "nome_en": "Shadow Shield",
       "multiscale": true
     },
+    "Spicy Spray": {
+      "desc": "When the Pokémon takes damage from a move, it burns the attacker.",
+      "category": "other",
+      "effect": {
+        "type": "none"
+      },
+      "nome_it": "Spicy Spray",
+      "nome_en": "Spicy Spray"
+    },
     "Spietatezza": {
       "desc": "Gli attacchi sferrati su un bersaglio avvelenato producono sempre brutti colpi.",
       "category": "other",
@@ -3194,7 +3239,7 @@
       "nome_en": "Reckless"
     },
     "Tempra": {
-      "desc": "La Difesa Speciale è aumentata del 50% durante la Tempesta di Sabbia. — abilità di Champions, senza corrispondente ufficiale.",
+      "desc": "La Difesa Speciale è aumentata del 50% durante la Tempesta di Sabbia.",
       "category": "weather_boost",
       "effect": {
         "type": "weather_spdef_boost",
@@ -3306,7 +3351,7 @@
       "nome_en": "Thrust"
     },
     "Tiratore": {
-      "desc": "Boost ×1.3 per mosse che colpiscono più bersagli. — abilità di Champions, senza corrispondente ufficiale.",
+      "desc": "Boost ×1.3 per mosse che colpiscono più bersagli.",
       "category": "power_boost",
       "spread_boost": 1.3,
       "effect": {
@@ -3462,7 +3507,7 @@
       "nome_en": "Poison Touch"
     },
     "Vento Misterioso": {
-      "desc": "Agisce come se ci fosse Nebbia perpetua indipendentemente dal meteo reale. — abilità di Champions, senza corrispondente ufficiale.",
+      "desc": "Agisce come se ci fosse Nebbia perpetua indipendentemente dal meteo reale.",
       "category": "weather_override",
       "weather_override": "fog",
       "weather_ball_type": "Normale",
@@ -3573,7 +3618,7 @@
       "nome_en": "Teraform Zero"
     },
     "Occhio Interiore": {
-      "desc": "The Pokémon ignores changes to opponents' evasiveness, its accuracy can't be lowered, and it can hit Ghost types with Normal-type and Fighting-type moves",
+      "desc": "",
       "category": "other",
       "effect": {
         "type": "none"
@@ -3582,7 +3627,7 @@
       "nome_it": "Occhio Interiore"
     },
     "Punta Perforante": {
-      "desc": "When the Pokémon uses contact moves, it can hit even targets that are protecting themselves, dealing 1/4 of the damage that the move would otherwise deal. Everything aside from the target's protective effects is still triggered.",
+      "desc": "",
       "category": "other",
       "effect": {
         "type": "none"
@@ -3591,7 +3636,7 @@
       "nome_it": "Punta Perforante"
     },
     "Pelledrago": {
-      "desc": "The Pokémon's Normal-type moves become Dragon-type moves and their power is boosted by 20%.",
+      "desc": "",
       "category": "other",
       "effect": {
         "type": "none"
@@ -3609,7 +3654,7 @@
       "nome_it": "Megasolar"
     },
     "Spargipiccante": {
-      "desc": "When the Pokémon takes damage from a move, it burns the attacker.",
+      "desc": "",
       "category": "other",
       "effect": {
         "type": "none"

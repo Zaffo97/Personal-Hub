@@ -1747,6 +1747,16 @@
     "nome_it": "Ripicca",
     "nome_en": "Foul Play"
   },
+  "Freeze Dry": {
+    "bp": 70,
+    "category": "special",
+    "type": "ice",
+    "effect_chance": 10,
+    "desc": "Chi la usa raffredda istantaneamente il bersaglio e può congelarlo. Risulta superefficace contro i Pokémon di tipo Acqua.",
+    "accuracy": 100,
+    "nome_it": "Liofilizzazione",
+    "nome_en": "Freeze-Dry"
+  },
   "Freeze-Dry": {
     "bp": 70,
     "category": "special",
@@ -2839,8 +2849,7 @@
     ],
     "accuracy": 100,
     "nome_it": "Fangosberla",
-    "nome_en": "Mud-Slap",
-    "type_it": "Terra"
+    "nome_en": "Mud-Slap"
   },
   "Muddy Water": {
     "bp": 90,
@@ -5492,6 +5501,20 @@
     "type_it": "Folletto",
     "nome_it": "Dolcebacio",
     "nome_en": "Sweet Kiss"
+  },
+  "Mud-Slap": {
+    "bp": 20,
+    "category": "special",
+    "type": "ground",
+    "desc": "Chi la usa butta fango in faccia al bersaglio per arrecargli danni e ridurne la precisione.",
+    "flags": [
+      "mirror",
+      "protect"
+    ],
+    "accuracy": 100,
+    "type_it": "Terra",
+    "nome_it": "Fangosberla",
+    "nome_en": "Mud-Slap"
   },
   "Octazooka": {
     "bp": 65,

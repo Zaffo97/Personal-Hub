@@ -307,7 +307,7 @@
       ]
     },
     "Assorbifuoco": {
-      "desc": "Immunità alle mosse Fuoco; se colpito ripristina i PS. — abilità di Champions, senza corrispondente ufficiale.",
+      "desc": "Immunità alle mosse Fuoco; se colpito ripristina i PS.",
       "category": "type_immunity",
       "immunity": [
         "Fuoco"
@@ -585,7 +585,7 @@
       "nome_en": "Harvest"
     },
     "Colpo Secco": {
-      "desc": "Le mosse Fuoco hanno potenza aumentata del 50% sotto il Sole. — abilità di Champions, senza corrispondente ufficiale.",
+      "desc": "Le mosse Fuoco hanno potenza aumentata del 50% sotto il Sole.",
       "category": "weather_boost",
       "effect": {
         "type": "type_boost_weather",
@@ -606,7 +606,7 @@
       "nome_en": "Quick Draw"
     },
     "Compressione": {
-      "desc": "Tutte le mosse hanno potenza aumentata del 30%. — abilità di Champions, senza corrispondente ufficiale.",
+      "desc": "Tutte le mosse hanno potenza aumentata del 30%.",
       "category": "power_boost",
       "bp_multiplier": 1.3,
       "effect": {
@@ -1691,7 +1691,7 @@
       "nome_en": "Snow Cloak"
     },
     "Manto Neve": {
-      "desc": "La Difesa è aumentata del 50% durante la Neve. — abilità di Champions, senza corrispondente ufficiale.",
+      "desc": "La Difesa è aumentata del 50% durante la Neve.",
       "category": "weather_boost",
       "effect": {
         "type": "weather_def_boost",
@@ -1972,7 +1972,7 @@
       "nome_en": "Scrappy"
     },
     "Nervosismo": {
-      "desc": "L'Attacco Speciale è aumentato del 50%. — abilità di Champions, senza corrispondente ufficiale.",
+      "desc": "L'Attacco Speciale è aumentato del 50%.",
       "category": "stat_modifier",
       "atk_stat_mult": {
         "stat": "spa",
@@ -2311,7 +2311,7 @@
       "nome_en": "Plus"
     },
     "Polifagia": {
-      "desc": "L'Attacco Speciale è aumentato del 50%. — abilità di Champions, senza corrispondente ufficiale.",
+      "desc": "L'Attacco Speciale è aumentato del 50%.",
       "category": "stat_modifier",
       "atk_stat_mult": {
         "stat": "spa",
@@ -2742,7 +2742,7 @@
       "nome_en": "Sequence"
     },
     "Sforzo": {
-      "desc": "L'Attacco fisico è aumentato del 50%. — abilità di Champions, senza corrispondente ufficiale.",
+      "desc": "L'Attacco fisico è aumentato del 50%.",
       "category": "stat_modifier",
       "atk_stat_mult": {
         "stat": "atk",
@@ -3194,7 +3194,7 @@
       "nome_en": "Reckless"
     },
     "Tempra": {
-      "desc": "La Difesa Speciale è aumentata del 50% durante la Tempesta di Sabbia. — abilità di Champions, senza corrispondente ufficiale.",
+      "desc": "La Difesa Speciale è aumentata del 50% durante la Tempesta di Sabbia.",
       "category": "weather_boost",
       "effect": {
         "type": "weather_spdef_boost",
@@ -3306,7 +3306,7 @@
       "nome_en": "Thrust"
     },
     "Tiratore": {
-      "desc": "Boost ×1.3 per mosse che colpiscono più bersagli. — abilità di Champions, senza corrispondente ufficiale.",
+      "desc": "Boost ×1.3 per mosse che colpiscono più bersagli.",
       "category": "power_boost",
       "spread_boost": 1.3,
       "effect": {
@@ -3462,7 +3462,7 @@
       "nome_en": "Poison Touch"
     },
     "Vento Misterioso": {
-      "desc": "Agisce come se ci fosse Nebbia perpetua indipendentemente dal meteo reale. — abilità di Champions, senza corrispondente ufficiale.",
+      "desc": "Agisce come se ci fosse Nebbia perpetua indipendentemente dal meteo reale.",
       "category": "weather_override",
       "weather_override": "fog",
       "weather_ball_type": "Normale",

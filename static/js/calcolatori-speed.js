@@ -125,7 +125,24 @@ function renderSpeed(){
     .sort((a,b)=>b.speed-a.speed);
   const list=document.getElementById('speed_list');
   if(!rows.length){list.innerHTML='<div style="text-align:center;padding:1rem;color:var(--text-muted);font-size:.8rem">Nessun Pokémon trovato</div>';return;}
-  list.innerHTML=rows.map(p=>{
+  // Tetto a 300 righe, come le altre tabelle del progetto: su `pokedex` il roster
+  // e' di 1343 nomi, cioe' 714 KB di HTML in un solo innerHTML. Le righe tagliate
+  // sono sempre le piu' lontane dalla propria Velocita', perche' l'elenco e'
+  // ordinato: chi guarda uno Speed Tier guarda chi gli sta intorno. Il conto
+  // completo resta scritto sopra la tabella.
+  const TETTO=300;
+  const totale=rows.length;
+  if(totale>TETTO){
+    // tiene le TETTO righe piu' vicine alla propria Velocita', poi riordina
+    rows=[...rows].sort((a,b)=>Math.abs(a.speed-mySpeed)-Math.abs(b.speed-mySpeed))
+                  .slice(0,TETTO).sort((a,b)=>b.speed-a.speed);
+  }
+  const avviso=totale>TETTO
+    ? `<div style="text-align:center;padding:.4rem;color:var(--text-muted);font-size:.72rem">
+         ${TETTO} righe su ${totale} — le piu' vicine alla tua Velocita'. Usa la ricerca o i filtri per le altre.
+       </div>`
+    : '';
+  list.innerHTML=avviso+rows.map(p=>{
     const cls=p.speed===mySpeed?'highlight':p.speed<mySpeed?'slower':'';
     const ico=p.speed>mySpeed?'▲':p.speed<mySpeed?'▼':'●';
     const scarfSpd=Math.floor(calcSt(p.base,0,31,50,1.0,false)*1.5);

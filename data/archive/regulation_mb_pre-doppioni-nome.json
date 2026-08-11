@@ -1,6 +1,6 @@
 {
-  "id": "ma",
-  "label": "Regulation MA",
+  "id": "mb",
+  "label": "Regulation MB",
   "_commento": "Solo elenchi di nomi: i dati stanno in data/catalog/. null significa 'tutte le voci del catalogo'.",
   "last_updated": "2026-08-11",
   "pokemon": [
@@ -29,6 +29,7 @@
     "Avalugg",
     "Azumarill",
     "Banette",
+    "Barbaracle",
     "Basculegion (Female)",
     "Basculegion (Male)",
     "Bastiodon",
@@ -36,6 +37,7 @@
     "Beedrill",
     "Bellibolt",
     "Blastoise",
+    "Blaziken",
     "Camerupt",
     "Castform",
     "Castform (Rainy Form)",
@@ -57,9 +59,11 @@
     "Delphox",
     "Diggersby",
     "Ditto",
+    "Dragalge",
     "Dragapult",
     "Dragonite",
     "Drampa",
+    "Eelektross",
     "Emboar",
     "Emolga",
     "Empoleon",
@@ -67,6 +71,7 @@
     "Espeon",
     "Eternal Flower Floette",
     "Excadrill",
+    "Falinks",
     "Fan Rotom",
     "Farigiraf",
     "Feraligatr",
@@ -131,6 +136,7 @@
     "Lycanroc (Dusk Form)",
     "Lycanroc (Midnight Form)",
     "Machamp",
+    "Malamar",
     "Mamoswine",
     "Manectric",
     "Maushold",
@@ -145,8 +151,10 @@
     "Mega Ampharos",
     "Mega Audino",
     "Mega Banette",
+    "Mega Barbaracle",
     "Mega Beedrill",
     "Mega Blastoise",
+    "Mega Blaziken",
     "Mega Camerupt",
     "Mega Chandelure",
     "Mega Charizard X",
@@ -156,10 +164,13 @@
     "Mega Clefable",
     "Mega Crabominable",
     "Mega Delphox",
+    "Mega Dragalge",
     "Mega Dragonite",
     "Mega Drampa",
+    "Mega Eelektross",
     "Mega Emboar",
     "Mega Excadrill",
+    "Mega Falinks",
     "Mega Feraligatr",
     "Mega Floette",
     "Mega Froslass",
@@ -178,20 +189,31 @@
     "Mega Kangaskhan",
     "Mega Lopunny",
     "Mega Lucario",
+    "Mega Malamar",
     "Mega Manectric",
     "Mega Medicham",
     "Mega Meganium",
+    "Mega Meowstic (Female)",
     "Mega Meowstic (Male)",
+    "Mega Metagross",
     "Mega Pidgeot",
     "Mega Pinsir",
+    "Mega Pyroar",
+    "Mega Raichu X",
+    "Mega Raichu Y",
     "Mega Sableye",
+    "Mega Sceptile",
     "Mega Scizor",
+    "Mega Scolipede",
     "Mega Scovillain",
+    "Mega Scrafty",
     "Mega Sharpedo",
     "Mega Skarmory",
     "Mega Slowbro",
+    "Mega Staraptor",
     "Mega Starmie",
     "Mega Steelix",
+    "Mega Swampert",
     "Mega Tyranitar",
     "Mega Venusaur",
     "Mega Victreebel",
@@ -199,6 +221,7 @@
     "Meowscarada",
     "Meowstic (Female)",
     "Meowstic (Male)",
+    "Metagross",
     "Milotic",
     "Mimikyu",
     "Morpeko (Full Belly Mode)",
@@ -225,6 +248,7 @@
     "Politoed",
     "Polteageist",
     "Primarina",
+    "Pyroar",
     "Quaquaval",
     "Raichu",
     "Rampardos",
@@ -237,8 +261,11 @@
     "Salazzle",
     "Samurott",
     "Sandaconda",
+    "Sceptile",
     "Scizor",
+    "Scolipede",
     "Scovillain",
+    "Scrafty",
     "Serperior",
     "Sharpedo",
     "Simipour",
@@ -253,9 +280,11 @@
     "Sneasler",
     "Snorlax",
     "Spiritomb",
+    "Staraptor",
     "Starmie",
     "Steelix",
     "Stunfisk",
+    "Swampert",
     "Sylveon",
     "Talonflame",
     "Tauros",
@@ -449,6 +478,7 @@
     "Focus Energy",
     "Force Palm",
     "Foul Play",
+    "Freeze Dry",
     "Freeze-Dry",
     "Frustration",
     "Fury Attack",
@@ -835,11 +865,17 @@
     "Banette": [
       "Mega Banette"
     ],
+    "Barbaracle": [
+      "Mega Barbaracle"
+    ],
     "Beedrill": [
       "Mega Beedrill"
     ],
     "Blastoise": [
       "Mega Blastoise"
+    ],
+    "Blaziken": [
+      "Mega Blaziken"
     ],
     "Camerupt": [
       "Mega Camerupt"
@@ -866,11 +902,17 @@
     "Delphox": [
       "Mega Delphox"
     ],
+    "Dragalge": [
+      "Mega Dragalge"
+    ],
     "Dragonite": [
       "Mega Dragonite"
     ],
     "Drampa": [
       "Mega Drampa"
+    ],
+    "Eelektross": [
+      "Mega Eelektross"
     ],
     "Emboar": [
       "Mega Emboar"
@@ -880,6 +922,9 @@
     ],
     "Excadrill": [
       "Mega Excadrill"
+    ],
+    "Falinks": [
+      "Mega Falinks"
     ],
     "Feraligatr": [
       "Mega Feraligatr"
@@ -932,6 +977,9 @@
     "Lucario": [
       "Mega Lucario"
     ],
+    "Malamar": [
+      "Mega Malamar"
+    ],
     "Manectric": [
       "Mega Manectric"
     ],
@@ -941,8 +989,14 @@
     "Meganium": [
       "Mega Meganium"
     ],
+    "Meowstic (Female)": [
+      "Mega Meowstic (Female)"
+    ],
     "Meowstic (Male)": [
       "Mega Meowstic (Male)"
+    ],
+    "Metagross": [
+      "Mega Metagross"
     ],
     "Pidgeot": [
       "Mega Pidgeot"
@@ -950,14 +1004,30 @@
     "Pinsir": [
       "Mega Pinsir"
     ],
+    "Pyroar": [
+      "Mega Pyroar"
+    ],
+    "Raichu": [
+      "Mega Raichu X",
+      "Mega Raichu Y"
+    ],
     "Sableye": [
       "Mega Sableye"
+    ],
+    "Sceptile": [
+      "Mega Sceptile"
     ],
     "Scizor": [
       "Mega Scizor"
     ],
+    "Scolipede": [
+      "Mega Scolipede"
+    ],
     "Scovillain": [
       "Mega Scovillain"
+    ],
+    "Scrafty": [
+      "Mega Scrafty"
     ],
     "Sharpedo": [
       "Mega Sharpedo"
@@ -968,11 +1038,17 @@
     "Slowbro": [
       "Mega Slowbro"
     ],
+    "Staraptor": [
+      "Mega Staraptor"
+    ],
     "Starmie": [
       "Mega Starmie"
     ],
     "Steelix": [
       "Mega Steelix"
+    ],
+    "Swampert": [
+      "Mega Swampert"
     ],
     "Tyranitar": [
       "Mega Tyranitar"
@@ -984,6 +1060,5 @@
       "Mega Victreebel"
     ]
   },
-  "overrides": {},
-  "_fonte_roster": "Elenco dei Pokémon di Pokémon Champions — wiki.pokemoncentral.it, versione 0.9.0-1.0.2"
+  "overrides": {}
 }

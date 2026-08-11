@@ -2,7 +2,7 @@
   "id": "mb",
   "label": "Regulation MB",
   "_commento": "Solo elenchi di nomi: i dati stanno in data/catalog/. null significa 'tutte le voci del catalogo'.",
-  "last_updated": "2026-08-10",
+  "last_updated": "2026-08-11",
   "pokemon": [
     "Abomasnow",
     "Absol",
@@ -29,6 +29,7 @@
     "Avalugg",
     "Azumarill",
     "Banette",
+    "Barbaracle",
     "Basculegion (Female)",
     "Basculegion (Male)",
     "Bastiodon",
@@ -36,6 +37,7 @@
     "Beedrill",
     "Bellibolt",
     "Blastoise",
+    "Blaziken",
     "Camerupt",
     "Castform",
     "Castform (Rainy Form)",
@@ -57,9 +59,11 @@
     "Delphox",
     "Diggersby",
     "Ditto",
+    "Dragalge",
     "Dragapult",
     "Dragonite",
     "Drampa",
+    "Eelektross",
     "Emboar",
     "Emolga",
     "Empoleon",
@@ -67,6 +71,7 @@
     "Espeon",
     "Eternal Flower Floette",
     "Excadrill",
+    "Falinks",
     "Fan Rotom",
     "Farigiraf",
     "Feraligatr",
@@ -131,6 +136,7 @@
     "Lycanroc (Dusk Form)",
     "Lycanroc (Midnight Form)",
     "Machamp",
+    "Malamar",
     "Mamoswine",
     "Manectric",
     "Maushold",
@@ -215,6 +221,7 @@
     "Meowscarada",
     "Meowstic (Female)",
     "Meowstic (Male)",
+    "Metagross",
     "Milotic",
     "Mimikyu",
     "Morpeko (Full Belly Mode)",
@@ -241,6 +248,7 @@
     "Politoed",
     "Polteageist",
     "Primarina",
+    "Pyroar",
     "Quaquaval",
     "Raichu",
     "Rampardos",
@@ -253,8 +261,11 @@
     "Salazzle",
     "Samurott",
     "Sandaconda",
+    "Sceptile",
     "Scizor",
+    "Scolipede",
     "Scovillain",
+    "Scrafty",
     "Serperior",
     "Sharpedo",
     "Simipour",
@@ -269,9 +280,11 @@
     "Sneasler",
     "Snorlax",
     "Spiritomb",
+    "Staraptor",
     "Starmie",
     "Steelix",
     "Stunfisk",
+    "Swampert",
     "Sylveon",
     "Talonflame",
     "Tauros",
@@ -465,7 +478,6 @@
     "Focus Energy",
     "Force Palm",
     "Foul Play",
-    "Freeze Dry",
     "Freeze-Dry",
     "Frustration",
     "Fury Attack",
@@ -852,11 +864,17 @@
     "Banette": [
       "Mega Banette"
     ],
+    "Barbaracle": [
+      "Mega Barbaracle"
+    ],
     "Beedrill": [
       "Mega Beedrill"
     ],
     "Blastoise": [
       "Mega Blastoise"
+    ],
+    "Blaziken": [
+      "Mega Blaziken"
     ],
     "Camerupt": [
       "Mega Camerupt"
@@ -883,11 +901,17 @@
     "Delphox": [
       "Mega Delphox"
     ],
+    "Dragalge": [
+      "Mega Dragalge"
+    ],
     "Dragonite": [
       "Mega Dragonite"
     ],
     "Drampa": [
       "Mega Drampa"
+    ],
+    "Eelektross": [
+      "Mega Eelektross"
     ],
     "Emboar": [
       "Mega Emboar"
@@ -897,6 +921,9 @@
     ],
     "Excadrill": [
       "Mega Excadrill"
+    ],
+    "Falinks": [
+      "Mega Falinks"
     ],
     "Feraligatr": [
       "Mega Feraligatr"
@@ -949,6 +976,9 @@
     "Lucario": [
       "Mega Lucario"
     ],
+    "Malamar": [
+      "Mega Malamar"
+    ],
     "Manectric": [
       "Mega Manectric"
     ],
@@ -958,20 +988,45 @@
     "Meganium": [
       "Mega Meganium"
     ],
+    "Meowstic (Female)": [
+      "Mega Meowstic (Female)"
+    ],
+    "Meowstic (Male)": [
+      "Mega Meowstic (Male)"
+    ],
+    "Metagross": [
+      "Mega Metagross"
+    ],
     "Pidgeot": [
       "Mega Pidgeot"
     ],
     "Pinsir": [
       "Mega Pinsir"
     ],
+    "Pyroar": [
+      "Mega Pyroar"
+    ],
+    "Raichu": [
+      "Mega Raichu X",
+      "Mega Raichu Y"
+    ],
     "Sableye": [
       "Mega Sableye"
+    ],
+    "Sceptile": [
+      "Mega Sceptile"
     ],
     "Scizor": [
       "Mega Scizor"
     ],
+    "Scolipede": [
+      "Mega Scolipede"
+    ],
     "Scovillain": [
       "Mega Scovillain"
+    ],
+    "Scrafty": [
+      "Mega Scrafty"
     ],
     "Sharpedo": [
       "Mega Sharpedo"
@@ -982,11 +1037,17 @@
     "Slowbro": [
       "Mega Slowbro"
     ],
+    "Staraptor": [
+      "Mega Staraptor"
+    ],
     "Starmie": [
       "Mega Starmie"
     ],
     "Steelix": [
       "Mega Steelix"
+    ],
+    "Swampert": [
+      "Mega Swampert"
     ],
     "Tyranitar": [
       "Mega Tyranitar"

@@ -1,8 +1,8 @@
 {
-  "id": "ma",
-  "label": "Regulation MA",
+  "id": "mb",
+  "label": "Regulation MB",
   "_commento": "Solo elenchi di nomi: i dati stanno in data/catalog/. null significa 'tutte le voci del catalogo'.",
-  "last_updated": "2026-08-11",
+  "last_updated": "2026-08-10",
   "pokemon": [
     "Abomasnow",
     "Absol",
@@ -145,8 +145,10 @@
     "Mega Ampharos",
     "Mega Audino",
     "Mega Banette",
+    "Mega Barbaracle",
     "Mega Beedrill",
     "Mega Blastoise",
+    "Mega Blaziken",
     "Mega Camerupt",
     "Mega Chandelure",
     "Mega Charizard X",
@@ -156,10 +158,13 @@
     "Mega Clefable",
     "Mega Crabominable",
     "Mega Delphox",
+    "Mega Dragalge",
     "Mega Dragonite",
     "Mega Drampa",
+    "Mega Eelektross",
     "Mega Emboar",
     "Mega Excadrill",
+    "Mega Falinks",
     "Mega Feraligatr",
     "Mega Floette",
     "Mega Froslass",
@@ -178,20 +183,31 @@
     "Mega Kangaskhan",
     "Mega Lopunny",
     "Mega Lucario",
+    "Mega Malamar",
     "Mega Manectric",
     "Mega Medicham",
     "Mega Meganium",
+    "Mega Meowstic (Female)",
     "Mega Meowstic (Male)",
+    "Mega Metagross",
     "Mega Pidgeot",
     "Mega Pinsir",
+    "Mega Pyroar",
+    "Mega Raichu X",
+    "Mega Raichu Y",
     "Mega Sableye",
+    "Mega Sceptile",
     "Mega Scizor",
+    "Mega Scolipede",
     "Mega Scovillain",
+    "Mega Scrafty",
     "Mega Sharpedo",
     "Mega Skarmory",
     "Mega Slowbro",
+    "Mega Staraptor",
     "Mega Starmie",
     "Mega Steelix",
+    "Mega Swampert",
     "Mega Tyranitar",
     "Mega Venusaur",
     "Mega Victreebel",
@@ -449,6 +465,7 @@
     "Focus Energy",
     "Force Palm",
     "Foul Play",
+    "Freeze Dry",
     "Freeze-Dry",
     "Frustration",
     "Fury Attack",
@@ -941,9 +958,6 @@
     "Meganium": [
       "Mega Meganium"
     ],
-    "Meowstic (Male)": [
-      "Mega Meowstic (Male)"
-    ],
     "Pidgeot": [
       "Mega Pidgeot"
     ],
@@ -984,6 +998,5 @@
       "Mega Victreebel"
     ]
   },
-  "overrides": {},
-  "_fonte_roster": "Elenco dei Pokémon di Pokémon Champions — wiki.pokemoncentral.it, versione 0.9.0-1.0.2"
+  "overrides": {}
 }
