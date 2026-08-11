@@ -1,6 +1,6 @@
 from flask import Blueprint, jsonify, request
 import os, json, re
-from data import DATA_DIR
+from data import DATA_DIR, regulation_default
 from extensions import nome_vis
 
 bp = Blueprint('api_pokemon', __name__, url_prefix='/api')
@@ -498,13 +498,13 @@ def api_regulation_data(reg_id):
 
 @bp.route('/moves')
 def api_moves():
-    """Mosse della regulation richiesta. Default: `ma`.
+    """Mosse della regulation richiesta. Default: la prima del registro.
 
     Prima leggeva moves_ma.json hardcoded e quindi rispondeva con le mosse di MA
     qualunque regulation fosse attiva. L'import è dentro la funzione perché
     blueprints.pokemon è il posto dove vive la logica di filtro del catalogo.
     """
-    reg_id = request.args.get('reg', 'ma')
+    reg_id = request.args.get('reg') or regulation_default()
     try:
         from blueprints.pokemon import load_moves
         dati = load_moves(reg_id)

@@ -331,6 +331,54 @@
       "done": 0
     }
   ],
-  "pc_builds": [],
-  "pc_components": []
+  "pc_builds": [
+    {
+      "id": 1,
+      "name": "ZAFFO-PC",
+      "notes": "",
+      "created_at": "2026-08-11 09:05:33"
+    }
+  ],
+  "pc_components": [
+    {
+      "id": 1,
+      "build_id": 1,
+      "category": "CPU",
+      "name": "AMD Ryzen 7 7800X3D 8-Core Processor            (16 CPUs), ~4.2GHz",
+      "price": 0.0,
+      "notes": ""
+    },
+    {
+      "id": 2,
+      "build_id": 1,
+      "category": "RAM",
+      "name": "32768MB RAM",
+      "price": 0.0,
+      "notes": ""
+    },
+    {
+      "id": 3,
+      "build_id": 1,
+      "category": "GPU",
+      "name": "NVIDIA GeForce RTX 4070 Ti",
+      "price": 0.0,
+      "notes": ""
+    },
+    {
+      "id": 4,
+      "build_id": 1,
+      "category": "GPU",
+      "name": "AMD Radeon(TM) Graphics",
+      "price": 0.0,
+      "notes": ""
+    },
+    {
+      "id": 5,
+      "build_id": 1,
+      "category": "Motherboard",
+      "name": "System Product Name",
+      "price": 0.0,
+      "notes": ""
+    }
+  ]
 }

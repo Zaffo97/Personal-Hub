@@ -126,6 +126,12 @@ app.run(host="0.0.0.0", debug=True, port=5000)
 ---
 
 ### `data.py`
+- `regulation_default()` → **id della regulation di partenza del sito**: la **prima**
+  di `data/regulations.json`. È lo stesso criterio del fallback `regs[0]` che le route
+  usano quando l'id richiesto non esiste, quindi il registro è l'unica fonte: per
+  cambiare default si sposta una voce in cima al file, non si tocca il codice. Dall'11/08/2026
+  la prima è **`pokedex`**. Se il registro non è leggibile ricade su
+  `REGULATION_DEFAULT_EMERGENZA = "ma"`, l'unica che `_list_regulation_files()` sa inventare
 - `_load_roster()` → legge `data/roster_ma.json`, popola `REG_MA_ROSTER` e `POKEMON_TO_MEGA`
 - `MEGA_EVOLUTIONS_MA` → set ordinato di tutte le Mega da `POKEMON_TO_MEGA`
 - `NATURES` → lista 25 nature
@@ -305,17 +311,26 @@ SPRITE_SLUG_OVERRIDES  # 19 casi irregolari; HD None = artwork grande assente,
 | `/pokemon/api/abilities` | GET | Elenco abilità |
 | `/pokemon/api/abilities/update` | POST | Aggiorna un'abilità |
 | `/pokemon/api/abilities/delete` | POST | Elimina un'abilità |
+| `/pokemon/api/regulations` | GET | Registro completo — lo usa la tendina Regulation del team builder |
+| `/pokemon/api/regulations/save` | POST | Riscrive `regulations.json`. Rifiuta registro vuoto, voci senza `id`/`label`, id duplicati e ogni salvataggio che **perderebbe** una regulation esistente: il file dice anche qual è il default del sito |
 | `/pokemon/api/regulations/create` | POST | Crea regulation |
-| `/pokemon/api/regulations/<id>/delete` | POST | Elimina regulation |
+| `/pokemon/api/regulations/<id>/delete` | POST | Elimina regulation. ⚠️ Cancella solo `roster_file`/`moves_file`/`items_file`: su una regulation a filtro il `data/regulations/<id>.json` **resta orfano** |
 
 ### API Pokémon — `blueprints/api_pokemon.py` (route `/api/*` dirette)
 | URL | Metodo | Descrizione |
 |-----|--------|-------------|
 | `/api/pokemon/<path:name>` | GET | Stats, tipi, abilità e sprite **dal catalogo locale** (nessuna chiamata a PokéAPI a runtime) |
 | `/api/regulation/<id>/data` | GET | Roster della regulation — passa da `_load_roster()`, quindi legge il **filtro** (`data/regulations/<id>.json`) e ricade sul vecchio `roster_file` solo se la regulation non è migrata |
-| `/api/moves` | GET | Mosse Reg. MA |
+| `/api/moves` | GET | Mosse della regulation richiesta (`?reg=`). Senza parametro: `regulation_default()`, cioè la prima del registro |
 
-> ⚠️ **Non esistono** (erano documentate ma mai implementate): `/api/stat_champions`, `/api/regulations`, `/api/regulations/save`, `/api/team/<id>`.
+> ⚠️ **Non esistono**: `/api/stat_champions`, `/api/team/<id>`.
+>
+> `/api/regulations` e `/api/regulations/save` erano nella stessa lista, ma **il JS le
+> chiamava davvero**: il Salva Metadati dell'editor regulation e la tendina Regulation
+> del team builder morivano su un 404, il primo con un toast "Errore rete", la seconda
+> in un `catch` muto. Dall'11/08/2026 esistono, sotto il blueprint `pokemon`
+> (`/pokemon/api/regulations` e `/pokemon/api/regulations/save`), ed è lì che i due
+> template puntano.
 
 ---
 
@@ -490,7 +505,7 @@ Usare `SLUG_OVERRIDES` da `data.py` per tutte le forme speciali (regionali, Roto
 | Sprite Mega e forme regionali | ✅ | 296/300 nomi risolti, **0 immagini rotte** |
 | Arduino Projects | ✅ | |
 | Python Tracker | ✅ | |
-| PC Builder + DxDiag import | ✅ | |
+| PC Builder + DxDiag import | ⚠️ | **`/pcbuilder/` risponde 500** dall'11/08/2026: `pcbuilder.html:63` passa una `sqlite3.Row` a `\|tojson`. Con zero build salvate la pagina si apre, con una o più no. Vedi `BACKLOG.md` |
 
 ---
 
@@ -523,6 +538,7 @@ Di conseguenza tutto ciò che questa tabella dava per "funzionante" non era mai 
 
 | Data | Contenuto |
 |------|-----------|
+| 2026-08-11 | **Le quattro voci su regulation e interfaccia, chiuse.** (1) I tre campi legacy `roster_file`/`moves_file`/`items_file` compaiono ora solo sulle regulation **non** migrate, e con loro spariscono dal salvataggio: `campiFile()` legge solo gli input presenti, quindi su una regulation a filtro non vengono più scritti, e su `ma` restano conservati — verificato salvando davvero dal browser. (2) Titolo della sezione Pokémon generico; nello stesso giro sono caduti gli altri "Reg MA" scritti a mano che il nuovo default avrebbe reso falsi (i tre editor ora dicono `current_reg.label`, che le route già passavano). (3) Catalogo prima di Calcolatori. (4) **`pokedex` è il default**: i 14 letterali `"ma"` sono sostituiti da **`regulation_default()` in `data.py`**, che restituisce la **prima** regulation del registro — lo stesso criterio del fallback `regs[0]` già in uso, così il default si cambia spostando una riga in `regulations.json`. Misurato: `/api/moves` senza `reg` da 461 a **921** mosse, oggetti da 58 a **398**, roster del team builder da 279 a **1343**. Verificando è saltato fuori che **tre endpoint chiamati dal JS non esistevano**: il Salva Metadati dell'editor regulation non aveva mai salvato nulla (404 → catch → "Errore rete") e la tendina Regulation del team builder restava con la **sola opzione stampata dal template**, cioè la regulation di un team non era mai stata scegliibile dall'interfaccia. Aggiunti `GET /pokemon/api/regulations` e `POST /pokemon/api/regulations/save`, quest'ultimo con i controlli prima della scrittura (5 payload rifiutati su 5, file intatto dopo) perché ora il registro dice anche qual è il default del sito. Verifica: **41 controlli su 41** sul test client, regola #8 esatta in browser su `pokedex` **senza `?reg=`** (A=183, D=122, HP=221, 85-102 = 38.5%–46.2%), tendina del team a 3 regulation con roster 1343 → 279 al cambio, sweep su **26 pagine / 44 script / 2197 handler inline** con due soli errori, entrambi preesistenti e segnalati a backlog: i 53 `onmouseout` di `python.html` e **`/pcbuilder/` che risponde 500** (`Row` non serializzabile in `pcbuilder.html:63`, sezione inaccessibile appena c'è una build salvata) |
 | 2026-08-11 | **Traduzioni mancanti chiuse con la wiki di Pokémon Central** — `scripts/importa_nomi_wiki.py`, il secondo giro dopo PokéAPI. Due fonti: le pagine «… in altre lingue» (950 mosse, 860 strumenti, 306 abilità) e, per ciò che quelle liste non coprono, la **pagina singola** dello strumento, accettata solo se la sua riga *Inglese* combacia con la chiave del catalogo — così un risultato di ricerca sbagliato viene scartato invece di entrare nei dati. Esito: **mosse 32/32** (22 traduzioni vere: le 18 mosse Z, `Syrup Bomb`, `Blood Moon`, `Matcha Gotcha`, `Ivy Cudgel`), **oggetti 57/57** (20 traduzioni vere, tutte dalla pagina singola perché gli strumenti di nona generazione non stanno nell'elenco: `Booster Energy` → Capsula energetica, le maschere di Ogerpon, i sette Mochi), **abilità 5 su 108**. Le altre 47 mosse/oggetti "senza traduzione" non erano un buco: Megapietre e cristalli Z in italiano si scrivono uguale, e ora è verificato invece che presunto. Lo script **non sovrascrive** una traduzione già presente: dove PokéAPI e wiki non concordano (11 voci) si limita a segnalarlo, perché nessuna delle due fonti è sempre giusta — PokéAPI abbrevia (`Autodistruz.`), la wiki ha refusi (`Vasterngia`). Le **103 abilità** che restano non sono un problema di traduzione: il file contiene **due famiglie di voci per la stessa abilità**, 307 col nome ufficiale (quelle a cui i Pokémon sono collegati, ma solo 22 con un effetto attivo) e 108 vecchie (34 con l'effetto che il calcolatore usa davvero) — 7 coppie hanno un blocco `effect` identico. Segnalato a backlog, non toccato. Verifica: 28 controlli sul test client e **regola #8 esatta in browser** su `pokedex` (A=183, D=122, HP=221, 85-102, 38.5%–46.2% con +STAB), con la tendina oggetti che mostra `Piuma fatata ×1.2` in italiano e `Fairy Feather ×1.2` in inglese |
 | 2026-08-11 | **Switch lingua IT ⇄ EN, primo blocco: i nomi dei dati.** Pulsante `IT`/`EN` in `base.html` accanto al tema. Le **chiavi del catalogo non cambiano mai** — le usano i filtri delle regulation, il motore degli effetti e i team salvati — e ogni voce riceve `nome_it` e `nome_en` da `scripts/importa_nomi_lingua.py`: mosse 899/921, oggetti 378/398, abilità 312/415, Pokémon 1019/1026, con chi non si aggancia che tiene la chiave nelle due lingue. Si può scrivere in entrambe: `risolviChiave()` lato JS e `_INDICE` lato Python accettano chiave, italiano e inglese. La lingua sta in un **cookie**, non in localStorage, perché la legge anche Flask. Restano fuori le stringhe dell'interfaccia, gli editor (mostrano la chiave) e le descrizioni |
 | 2026-08-11 | **Stat delle Mega riportate alle base.** Nel catalogo 95 Mega su 101 avevano le stat di Lv.50 già calcolate dentro `base_stats` (+75 HP e +20 sulle altre, l'aritmetica esatta della formula del progetto): deconvertite con `scripts/deconverti_mega_catalogo.py`. Prova che è la lettura giusta: 56 su 57 riproducono `MEGA_DATA` alla cifra, e **tutte** le Mega ufficiali che `MEGA_DATA` non copriva (Metagross, Mewtwo X/Y, Rayquaza, Salamence, Swampert, Sceptile, Latias, Latios, Mawile, Diancie, Blaziken) coincidono coi valori reali del gioco. Rimosse 3 chiavi top-level che erano **doppioni** della forma annidata (1029 → 1026 voci) ed eliminata `MEGA_DATA`, la terza copia delle stat: ora anche le Mega passano da `/api/pokemon`, quindi tab Danno e Speed Tier non possono più divergere. Restano tre casi da decidere a mano: `Mega Froslass` (Vel 100 o 120), `Mega Machamp` (nessuna stat) e `Mega Zygarde` (rotta a sé). Verificando è saltato fuori **`/api/regulation/<id>/data`**, che leggeva ancora il vecchio `roster_file` come faceva `/api/moves`: lo Speed Tier mostrava i 208 nomi ereditati di MA (**zero Mega**) invece dei 279 veri, e su `pokedex` e `mb` andava in 404 ricadendo muto sulla lista statica da 158. Corretto. Corretti poi, su indicazione di Davide, **Mega Froslass** (la Velocità nel catalogo era già una base, non un valore convertito: riportata a 120 → **140** a Lv.50) e **Mega Machamp**, che non esiste ed è stata rimossa. Rimuoverla ha scoperchiato un baco vecchio: `/api/pokemon/Mega Machamp` rispondeva **Mega Venusaur** invece di 404, perché `mega` era finito tra gli alias — di qui `NON_ALIASABILI`. Verifica finale: regola #8 esatta (A=183, D=122, HP=221, 85-102), Mega Venusaur **80 → 100** e Mega Froslass **120 → 140** identici nei tab Danno e Speed Tier, Speed Tier MA **279/279** con 59 Mega e 0 sprite mancanti, 24 pagine / 43 blocchi script / 929 handler inline senza errori tranne 53 `onmouseout` morti in `python.html:45`, preesistenti e lasciati a backlog |

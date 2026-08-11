@@ -1,5 +1,14 @@
 [
   {
+    "filter_file": "regulations/pokedex.json",
+    "id": "pokedex",
+    "label": "Pokedex — tutto il catalogo",
+    "mechanics": [
+      "mega"
+    ]
+  },
+  {
+    "filter_file": "regulations/ma.json",
     "id": "ma",
     "items_file": "items_ma.json",
     "label": "Regulation MA",
@@ -7,21 +16,12 @@
       "mega"
     ],
     "moves_file": "moves_ma.json",
-    "roster_file": "roster_ma.json",
-    "filter_file": "regulations/ma.json"
+    "roster_file": "roster_ma.json"
   },
   {
-    "id": "pokedex",
-    "label": "Pokedex — tutto il catalogo",
-    "filter_file": "regulations/pokedex.json",
-    "mechanics": [
-      "mega"
-    ]
-  },
-  {
+    "filter_file": "regulations/mb.json",
     "id": "mb",
     "label": "Regulation MB",
-    "filter_file": "regulations/mb.json",
     "mechanics": [
       "mega"
     ]

@@ -1,6 +1,6 @@
 {% extends "base.html" %}
 {% block title %}Roster Editor – Hub{% endblock %}
-{% block topbar_title %}📋 Roster Reg MA{% endblock %}
+{% block topbar_title %}📋 Roster — {{ current_reg.label }}{% endblock %}
 {% block extra_head %}
 <style>
 .tag-list{display:flex;flex-wrap:wrap;gap:.35rem;padding:.65rem;background:var(--surface-off);
@@ -20,8 +20,8 @@ textarea.code-area{min-height:300px}
   <div class="flex items-center gap-2">
     <a href="/pokemon" class="btn btn-secondary btn-sm">← Indietro</a>
     <div>
-      <h1>📋 Roster Reg MA — Editor</h1>
-      <p class="text-muted text-sm">Aggiorna la lista Pokémon e le Mega Evoluzioni senza toccare il codice</p>
+      <h1>📋 Roster — Editor</h1>
+      <p class="text-muted text-sm">Regulation: <strong>{{ current_reg.label }}</strong> · Aggiorna la lista Pokémon e le Mega Evoluzioni senza toccare il codice</p>
     </div>
   </div>
 </div>

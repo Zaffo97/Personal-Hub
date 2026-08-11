@@ -1,6 +1,6 @@
 {% extends "base.html" %}
 {% block title %}Mosse Editor – Hub{% endblock %}
-{% block topbar_title %}⚔️ Mosse Reg MA{% endblock %}
+{% block topbar_title %}⚔️ Mosse — {{ current_reg.label }}{% endblock %}
 {% block extra_head %}
 <style>
 .mv-table{width:100%;border-collapse:collapse;font-size:.78rem}
@@ -44,8 +44,8 @@ textarea.code-area{min-height:380px}
     <div class="flex items-center gap-2">
       <a href="/pokemon/calcolatori" class="btn btn-secondary btn-sm">← Calcolatori</a>
       <div>
-        <h1>⚔️ Mosse Reg MA — Editor</h1>
-        <p class="text-muted text-sm">{{ moves_data.moves|length }} mosse · BP e categoria auto-compilati nel calcolatore</p>
+        <h1>⚔️ Mosse — Editor</h1>
+        <p class="text-muted text-sm">{{ moves_data.moves|length }} mosse · Regulation: <strong>{{ current_reg.label }}</strong> · BP e categoria auto-compilati nel calcolatore</p>
       </div>
     </div>
   </div>

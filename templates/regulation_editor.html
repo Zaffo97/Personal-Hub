@@ -76,6 +76,7 @@
           <button class="btn btn-secondary btn-sm" onclick="addMech()">+ Aggiungi</button>
         </div>
       </div>
+      {% if not reg.filter_file %}
       <div class="meta-field">
         <label>File JSON Roster</label>
         <div class="file-row">
@@ -94,6 +95,7 @@
           <a id="link_items" href="/pokemon/oggetti?reg={{ reg.id }}" class="btn btn-secondary btn-sm">&#9998;</a>
         </div>
       </div>
+      {% endif %}
       <button class="btn btn-primary" style="width:100%" onclick="saveMeta()">&#128190; Salva Metadati</button>
     </div>
   </div>
@@ -272,12 +274,23 @@ function addMech() {
   document.getElementById('mech_list').appendChild(span);
 }
 
+// Sulle regulation a filtro i tre campi roster/moves/items non esistono più:
+// leggiamo solo quelli presenti, così il salvataggio non li azzera.
+function campiFile() {
+  const campi = {};
+  for (const [id, chiave] of [['meta_roster_file','roster_file'],
+                              ['meta_moves_file','moves_file'],
+                              ['meta_items_file','items_file']]) {
+    const el = document.getElementById(id);
+    if (el) campi[chiave] = el.value.trim();
+  }
+  return campi;
+}
+
 async function saveMeta() {
-  const label       = document.getElementById('meta_label').value.trim();
-  const roster_file = document.getElementById('meta_roster_file').value.trim();
-  const moves_file  = document.getElementById('meta_moves_file').value.trim();
-  const items_file  = document.getElementById('meta_items_file').value.trim();
-  const mechanics   = getMechs();
+  const label     = document.getElementById('meta_label').value.trim();
+  const file      = campiFile();
+  const mechanics = getMechs();
 
   if (!label) { showToast('Label obbligatoria', false); return; }
 
@@ -289,7 +302,7 @@ async function saveMeta() {
 
     const regs = d1.regulations.map(reg =>
       reg.id === REG_ID
-        ? { ...reg, label, roster_file, moves_file, items_file, mechanics }
+        ? { ...reg, label, ...file, mechanics }
         : reg
     );
 
@@ -307,10 +320,12 @@ async function saveMeta() {
         const updated = regs.find(r => r.id === REG_ID);
         rawEl.value = JSON.stringify(updated, null, 2);
       }
-      // Aggiorna link editor
-      document.getElementById('link_roster').href = `/pokemon/roster?reg=${REG_ID}`;
-      document.getElementById('link_moves').href  = `/pokemon/mosse?reg=${REG_ID}`;
-      document.getElementById('link_items').href  = `/pokemon/oggetti?reg=${REG_ID}`;
+      // Aggiorna link editor (presenti solo sulle regulation non migrate)
+      for (const [id, rotta] of [['link_roster','roster'], ['link_moves','mosse'],
+                                 ['link_items','oggetti']]) {
+        const el = document.getElementById(id);
+        if (el) el.href = `/pokemon/${rotta}?reg=${REG_ID}`;
+      }
     } else {
       showToast('Errore: ' + d2.error, false);
     }

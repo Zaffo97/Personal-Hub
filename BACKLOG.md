@@ -76,21 +76,69 @@ si sa quale dei due l'ha rotto.
 
 ---
 
-## ⬜ Regulation e interfaccia — quattro voci (11/08/2026)
+## ✅ Regulation e interfaccia — le quattro voci, chiuse (11/08/2026)
 
-Aperte da Davide. La prima è una domanda a cui rispondere prima di decidere come
-sistemarla; le altre tre sono lavori piccoli e delimitati.
+Tutte e quattro fatte e verificate: **41 controlli su 41** sul test client, regola #8
+esatta in browser (A=183, D=122, HP=221, 85-102 = 38.5%–46.2%) **su `pokedex` senza
+`?reg=`**, cioè proprio perché è il nuovo default, e sweep su **26 pagine, 44 blocchi
+`<script>` e 2197 handler inline**.
+
+| | Cosa è stato fatto |
+|---|---|
+| ✅ | **Niente più JSON per regulation.** I tre input `roster_file`/`moves_file`/`items_file` compaiono ora **solo** sulle regulation non migrate (`{% if not reg.filter_file %}`), e con loro spariscono da `saveMeta()`: `campiFile()` legge solo gli input presenti, quindi su una regulation a filtro quei campi non vengono più scritti. Su `ma`, che ha ancora i percorsi legacy nel registro, restano **conservati** — verificato salvando davvero dal browser: toast "✅ Metadati salvati!" e i tre file ancora nel JSON. Anche `regulations_list.html` non stampa più tre righe vuote: mostra `🔎 filtro sul catalogo — regulations/<id>.json` |
+| ✅ | **Titolo della sezione Pokémon** — `pokemon.html:24` è ora `🎮 Pokémon VGC`, senza regulation. Nello stesso giro sono caduti gli altri "Reg MA" scritti a mano che il cambio di default avrebbe reso **falsi a schermo**: i topbar e i titoli di `moves_editor`, `items_editor` e `roster_editor` ora dicono la regulation vera (`current_reg.label`, che le tre route già passavano), i due placeholder "Cerca nel Reg MA…" del calcolatore sono "Cerca un Pokémon…", e la card della dashboard dice "VGC". Resta di proposito il valore iniziale del campo **Formato** in `team_form.html:42` (`VGC Reg MA`): è testo libero del team, non un'etichetta di sistema |
+| ✅ | **Catalogo a sinistra del Calcolatore** — invertite le due righe in `pokemon.html:34-35` |
+| ✅ | **`pokedex` è il default del sito** — i 14 letterali `"ma"` sono spariti. Ora c'è **`regulation_default()` in `data.py`**, che restituisce **la prima regulation di `regulations.json`**: lo stesso criterio del fallback `regs[0]` che tutte le route già usavano quando l'id non esiste, quindi il file dice una cosa sola e la dice in un posto solo. Per cambiare default si sposta una voce in cima al registro, senza toccare il codice. In `regulations.json` l'ordine è ora `pokedex`, `ma`, `mb`. Misurato: `/api/moves` senza `reg` passa da 461 a **921** mosse, gli oggetti da 58 a **398**, il roster del team builder da 279 a **1343** |
+
+> ⚠️ **Una cosa che resta a `ma`**: `extensions.py:143` crea la colonna con
+> `regulation_id TEXT DEFAULT 'ma'`. Non è un doppione dei 14 — è il default del **DB**,
+> e cambiarlo richiede una migrazione. Oggi non fa danno perché `_team_upsert()` passa
+> sempre un valore esplicito, che ora è `regulation_default()`. I team già salvati
+> restano sulla loro regulation: nessuno è stato toccato.
+
+### ✅ Tre endpoint che il JS chiamava e che non esistevano
+
+Saltati fuori verificando la voce 1: `GET /pokemon/api/regulations` e
+`POST /pokemon/api/regulations/save` **non erano mai stati scritti**, e `team_form.html`
+chiamava `/api/regulations`, che pure non esiste. Conseguenze reali, non teoriche:
+
+- il pulsante **💾 Salva Metadati** dell'editor regulation non ha mai salvato niente:
+  404 → `r1.json()` lancia → `catch` → toast "Errore rete"
+- la tendina **Regulation** del team builder falliva dentro un `catch(e){}` muto e
+  restava con la **sola `<option>` stampata dal template**. Cioè: non si è mai potuta
+  scegliere la regulation di un team dall'interfaccia
+
+Sono stati aggiunti entrambi (`blueprints/pokemon.py`, accanto a create/delete) e
+`team_form.html` ora chiama quello giusto. Il salvataggio **rifiuta** un registro vuoto,
+non-lista, senza `id`/`label`, con id duplicati, o che **perderebbe una regulation**
+esistente — 5 payload rifiutati su 5, con il file verificato intatto dopo. Il motivo dei
+controlli: da oggi il registro dice anche **qual è il default del sito**, quindi un
+salvataggio sbagliato non toglierebbe solo un'etichetta.
+
+Verificato in browser: la tendina del team ora elenca **3** regulation e cambiandola il
+roster passa da **1343** (pokedex) a **279** (MA).
+
+### ⬜ Restano aperte, trovate strada facendo
+
+| | Voce | Note |
+|---|---|---|
+| ⬜ | **`/pcbuilder/` risponde 500** ⚠️ | `pcbuilder.html:63` fa `{{ b.data\|tojson }}` su una `sqlite3.Row`: `TypeError: Object of type Row is not JSON serializable`. **La sezione PC Builder è inaccessibile** appena c'è una build salvata (con zero build il ciclo non gira e la pagina si apre). Preesistente e **estraneo a questo lavoro** — il traceback sta tutto in `pcbuilder.py` / `pcbuilder.html`, file non toccati. Non corretto perché fuori scope: serve `dict(b.data)`, come già fa `pokemon()` per `teams_json` |
+| ⬜ | **L'eliminazione di una regulation non cancella il filtro** | `api_regulations_delete` rimuove solo `roster_file`, `moves_file` e `items_file`. Su una regulation a filtro — cioè tutte quelle nuove — non esistono, quindi non cancella nulla e **`data/regulations/<id>.json` resta orfano**. La modale continua a promettere "verranno eliminati anche i file roster, mosse e oggetti". Trovato guardando la voce 1, non corretto: è un'altra funzione |
+
+---
+
+## Le quattro voci — com'erano state aperte (11/08/2026)
 
 | | Voce | Cosa ho trovato guardando il codice |
 |---|---|---|
-| ⬜ | **Verifica creazione regulation — servono ancora i JSON?** | **No, e in parte è già così.** `api_regulations_create` (`blueprints/pokemon.py:829`) scrive **da sé** un solo file, `data/regulations/<id>.json`, e registra `filter_file` in `regulations.json`: elenchi di nomi che puntano al catalogo, nessuna copia dei dati. I campi vuoti che si vedono sono i **tre residui del vecchio modello** — `roster_file`, `moves_file`, `items_file` — ancora stampati da `regulation_editor.html:83,88,93` (input modificabili) e da `regulations_list.html:45-47`. Su una regulation nuova sono vuoti perché quei file **non esistono più e non devono esistere**. Delle tre in `regulations.json` solo `ma` ha ancora i percorsi legacy. La strada più semplice ed efficace è quindi la seconda che proponi: **non creare nulla**, e togliere quei tre campi dove c'è `filter_file` (l'editor ha già il ramo `{% if reg.filter_file %}` alla riga 105, basta estenderlo). ⚠️ Da verificare prima: quei tre input sono anche **scritti** al salvataggio (`regulation_editor.html:277-292`), quindi vanno tolti da lì insieme |
-| ⬜ | **Titolo della sezione Pokémon fisso su "Reg MA"** | `templates/pokemon.html:24` ha `<h1>🎮 Pokémon VGC — Reg MA</h1>` scritto a mano: resta "Reg MA" qualunque regulation sia attiva. Va reso generico — o senza regulation, o con la `label` di quella davvero in uso. La topbar (`pokemon.html:3`) e la sidebar (`base.html:152`) dicono già solo "Pokémon VGC" e vanno bene |
-| ⬜ | **Pulsante Catalogo a sinistra del Calcolatore** | `templates/pokemon.html:34-35`: oggi l'ordine è `📊 Calcolatori VGC` e poi `📚 Catalogo`. Vanno invertiti. È uno scambio di due righe |
-| ⬜ | **`pokedex` come default del sito** | Oggi il default è `ma`, **scritto a mano in 14 punti**: 11 in `blueprints/pokemon.py` (righe 181, 242, 330, 343, 365, 965, 1010, 1048, 1085, 1227, 1282), uno in `blueprints/api_pokemon.py:507` e due in `templates/team_form.html` (48 e 163). In `data/regulations.json` l'ordine è `ma`, `pokedex`, `mb`, e le tendine seguono quell'ordine. Serve **un punto solo** che dica qual è la regulation di partenza — costante o campo in `regulations.json` — invece di 12 letterali sparsi, e `pokedex` va messo per primo anche nell'elenco, così è il primo che si vede pure nell'editor. ⚠️ Attenzione a `_pokemon_regulation` (riga 252): se l'id non esiste ricade su `regs[0]`, quindi cambiare l'ordine del file **cambia già da solo** il comportamento di quel fallback |
+| ✅ | **Verifica creazione regulation — servono ancora i JSON?** | **No, e in parte è già così.** `api_regulations_create` (`blueprints/pokemon.py:829`) scrive **da sé** un solo file, `data/regulations/<id>.json`, e registra `filter_file` in `regulations.json`: elenchi di nomi che puntano al catalogo, nessuna copia dei dati. I campi vuoti che si vedono sono i **tre residui del vecchio modello** — `roster_file`, `moves_file`, `items_file` — ancora stampati da `regulation_editor.html:83,88,93` (input modificabili) e da `regulations_list.html:45-47`. Su una regulation nuova sono vuoti perché quei file **non esistono più e non devono esistere**. Delle tre in `regulations.json` solo `ma` ha ancora i percorsi legacy. La strada più semplice ed efficace è quindi la seconda che proponi: **non creare nulla**, e togliere quei tre campi dove c'è `filter_file` (l'editor ha già il ramo `{% if reg.filter_file %}` alla riga 105, basta estenderlo). ⚠️ Da verificare prima: quei tre input sono anche **scritti** al salvataggio (`regulation_editor.html:277-292`), quindi vanno tolti da lì insieme |
+| ✅ | **Titolo della sezione Pokémon fisso su "Reg MA"** | `templates/pokemon.html:24` ha `<h1>🎮 Pokémon VGC — Reg MA</h1>` scritto a mano: resta "Reg MA" qualunque regulation sia attiva. Va reso generico — o senza regulation, o con la `label` di quella davvero in uso. La topbar (`pokemon.html:3`) e la sidebar (`base.html:152`) dicono già solo "Pokémon VGC" e vanno bene |
+| ✅ | **Pulsante Catalogo a sinistra del Calcolatore** | `templates/pokemon.html:34-35`: oggi l'ordine è `📊 Calcolatori VGC` e poi `📚 Catalogo`. Vanno invertiti. È uno scambio di due righe |
+| ✅ | **`pokedex` come default del sito** | Oggi il default è `ma`, **scritto a mano in 14 punti**: 11 in `blueprints/pokemon.py` (righe 181, 242, 330, 343, 365, 965, 1010, 1048, 1085, 1227, 1282), uno in `blueprints/api_pokemon.py:507` e due in `templates/team_form.html` (48 e 163). In `data/regulations.json` l'ordine è `ma`, `pokedex`, `mb`, e le tendine seguono quell'ordine. Serve **un punto solo** che dica qual è la regulation di partenza — costante o campo in `regulations.json` — invece di 12 letterali sparsi, e `pokedex` va messo per primo anche nell'elenco, così è il primo che si vede pure nell'editor. ⚠️ Attenzione a `_pokemon_regulation` (riga 252): se l'id non esiste ricade su `regs[0]`, quindi cambiare l'ordine del file **cambia già da solo** il comportamento di quel fallback |
 
-> Nota di metodo per quando si toccherà: la regola #8 va rieseguita su **`pokedex`**
-> (Amoonguss non è nel roster di MA), ed è proprio la regulation che sta per diventare
-> il default — quindi il caso di prova e il default finalmente coincidono.
+> Nota di metodo, ora avverata: la regola #8 va eseguita su **`pokedex`** (Amoonguss non
+> è nel roster di MA), che da oggi **è** il default — quindi il caso di prova e il
+> default coincidono, e aprire il calcolatore senza `?reg=` basta a rieseguirlo.
 
 ---
 

@@ -42,9 +42,13 @@
         </div>
       </div>
       <div style="font-size:.72rem;color:var(--text-muted);margin-bottom:.75rem">
+        {% if reg.filter_file %}
+        <div>🔎 filtro sul catalogo — <code>{{ reg.filter_file }}</code></div>
+        {% else %}
         <div>🦢 <code>{{ reg.roster_file }}</code></div>
         <div>⚡ <code>{{ reg.moves_file }}</code></div>
         <div>🎒 <code>{{ reg.items_file }}</code></div>
+        {% endif %}
       </div>
       <div style="display:flex;gap:.5rem">
         <a href="/pokemon/regulation/{{ reg.id }}" class="btn btn-primary btn-sm" style="flex:1;text-align:center">🔍 Apri</a>

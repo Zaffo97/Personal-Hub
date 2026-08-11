@@ -500,7 +500,7 @@
     <div class="card-body">
       <div class="form-group">
         <label>Pokémon</label>
-        <input list="rl_stat" id="stat_name" class="form-control" placeholder="Cerca nel Reg MA..." oninput="loadStatPkmn('a')">
+        <input list="rl_stat" id="stat_name" class="form-control" placeholder="Cerca un Pokémon..." oninput="loadStatPkmn('a')">
         <datalist id="rl_stat">{% for pk in roster_calc %}<option value="{{ nomi_vis.get(pk, pk) }}">{% endfor %}{% for mk in mega_list %}<option value="{{ nomi_vis.get(mk, mk) }}">{% endfor %}</datalist>
       </div>
       <div style="display:flex;gap:.75rem;margin:.5rem 0;align-items:flex-start">
@@ -551,7 +551,7 @@
     <div class="card-body">
       <div class="form-group">
         <label>Pokémon</label>
-        <input list="rl_stat_b" id="stat_name_b" class="form-control" placeholder="Cerca nel Reg MA..." oninput="loadStatPkmn('b')">
+        <input list="rl_stat_b" id="stat_name_b" class="form-control" placeholder="Cerca un Pokémon..." oninput="loadStatPkmn('b')">
         <datalist id="rl_stat_b">{% for pk in roster_calc %}<option value="{{ nomi_vis.get(pk, pk) }}">{% endfor %}{% for mk in mega_list %}<option value="{{ nomi_vis.get(mk, mk) }}">{% endfor %}</datalist>
       </div>
       <div style="display:flex;gap:.75rem;margin:.5rem 0;align-items:flex-start">

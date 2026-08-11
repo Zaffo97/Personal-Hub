@@ -5,6 +5,7 @@ from flask import Blueprint, render_template, request, redirect, url_for, flash,
 from extensions import get_db, login_required, _i, nome_vis
 from data import (
     DATA_DIR,
+    regulation_default,
     REG_MA_ROSTER,
     MEGA_EVOLUTIONS_MA,
     NATURES,
@@ -239,7 +240,7 @@ def _salva_filtro(reg, campo, nomi):
     return True
 
 
-def _pokemon_regulation(reg_id="ma"):
+def _pokemon_regulation(reg_id=None):
     """Catalogo Pokémon ristretto alla regulation, per CHAMPIONS_BST del calcolatore.
 
     Serve a non iniettare 449 KB di catalogo in ogni pagina: con Regulation MA la
@@ -249,7 +250,7 @@ def _pokemon_regulation(reg_id="ma"):
     if not catalogo:
         return CHAMPIONS_BST
     regs = _list_regulation_files()
-    reg = next((r for r in regs if r["id"] == reg_id), regs[0])
+    reg = next((r for r in regs if r["id"] == (reg_id or regulation_default())), regs[0])
     filtro = _load_filtro(reg)
     if filtro is None or filtro.get("pokemon") is None:
         return catalogo
@@ -327,7 +328,8 @@ def _dal_catalogo(reg_id, tipo, chiave_uscita):
     }
 
 
-def load_moves(reg_id="ma"):
+def load_moves(reg_id=None):
+    reg_id = reg_id or regulation_default()
     dal_catalogo = _dal_catalogo(reg_id, "moves", "moves")
     if dal_catalogo is not None:
         return dal_catalogo
@@ -340,7 +342,8 @@ def load_moves(reg_id="ma"):
         return {"moves": {}, "regulation": reg["label"], "last_updated": ""}
 
 
-def load_items(reg_id="ma"):
+def load_items(reg_id=None):
+    reg_id = reg_id or regulation_default()
     dal_catalogo = _dal_catalogo(reg_id, "items", "items")
     if dal_catalogo is not None:
         return dal_catalogo
@@ -362,7 +365,7 @@ def _team_upsert(tid=None):
         f.get("team_record", ""),
         f.get("team_description", ""),
         f.get("team_notes", ""),
-        f.get("regulation_id", "ma"),
+        f.get("regulation_id") or regulation_default(),
     )
 
     if tid:
@@ -822,6 +825,53 @@ def api_abilities_list():
 
 
 # ---------------------------------------------------------------------------
+# API: elenco e salvataggio del registro delle regulation
+#
+# Le chiamava già il JS di regulation_editor.html (Salva Metadati) e la tendina
+# Regulation di team_form.html, ma le due rotte non esistevano: la prima dava
+# 404 e finiva nel catch, la seconda lasciava la tendina con la sola opzione
+# stampata dal template. Trovate verificando le quattro voci dell'11/08/2026.
+# ---------------------------------------------------------------------------
+@bp.route("/api/regulations", methods=["GET"])
+@login_required
+def api_regulations_list():
+    return jsonify({"ok": True, "regulations": _list_regulation_files()})
+
+
+@bp.route("/api/regulations/save", methods=["POST"])
+@login_required
+def api_regulations_save():
+    """Riscrive data/regulations.json. Rifiuta un registro vuoto o malformato.
+
+    Il file dice anche **qual è la regulation di partenza** (la prima), quindi un
+    salvataggio sbagliato non toglierebbe solo un'etichetta: cambierebbe il default
+    del sito. Per questo i controlli sono prima della scrittura, non dopo.
+    """
+    data = request.get_json(silent=True) or {}
+    regs = data.get("regulations")
+
+    if not isinstance(regs, list) or not regs:
+        return jsonify({"ok": False, "error": "Elenco regulation vuoto o non valido"}), 400
+    for r in regs:
+        if not isinstance(r, dict) or not (r.get("id") or "").strip() \
+                or not (r.get("label") or "").strip():
+            return jsonify({"ok": False, "error": "Ogni regulation deve avere id e label"}), 400
+    ids = [r["id"] for r in regs]
+    if len(ids) != len(set(ids)):
+        return jsonify({"ok": False, "error": "Ci sono id duplicati"}), 400
+
+    precedenti = {r["id"] for r in _list_regulation_files()}
+    perse = precedenti - set(ids)
+    if perse:
+        return jsonify({"ok": False,
+                        "error": "Il salvataggio perderebbe: " + ", ".join(sorted(perse))
+                                 + ". Per rimuoverne una usa l'eliminazione."}), 409
+
+    _save_regulations(regs)
+    return jsonify({"ok": True, "regulations": regs, "default": regs[0]["id"]})
+
+
+# ---------------------------------------------------------------------------
 # API: crea una nuova regulation
 # ---------------------------------------------------------------------------
 @bp.route("/api/regulations/create", methods=["POST"])
@@ -962,7 +1012,7 @@ def team_new():
         flash("Team creato!", "success")
         return redirect(url_for("pokemon.team_edit", tid=tid))
 
-    reg_id = request.args.get("regulation_id", "ma")
+    reg_id = request.args.get("regulation_id") or regulation_default()
     regs = _list_regulation_files()
     reg = next((r for r in regs if r["id"] == reg_id), regs[0])
 
@@ -1007,7 +1057,7 @@ def team_edit(tid):
         flash("Aggiornato!", "success")
         return redirect(url_for("pokemon.team_edit", tid=tid))
 
-    reg_id = dict(team).get("regulation_id", "ma") or "ma"
+    reg_id = dict(team).get("regulation_id") or regulation_default()
     regs = _list_regulation_files()
     reg = next((r for r in regs if r["id"] == reg_id), regs[0])
     roster = _load_roster(reg)
@@ -1045,7 +1095,7 @@ def team_delete(tid):
 @bp.route("/calcolatori")
 @login_required
 def calcolatori():
-    reg_id = request.args.get("reg", "ma")
+    reg_id = request.args.get("reg") or regulation_default()
     regs = _list_regulation_files()
     reg = next((r for r in regs if r["id"] == reg_id), regs[0])
 
@@ -1082,7 +1132,7 @@ def calcolatori():
 @bp.route("/roster", methods=["GET", "POST"])
 @login_required
 def roster_editor():
-    reg_id = request.args.get("reg", "ma")
+    reg_id = request.args.get("reg") or regulation_default()
     regs = _list_regulation_files()
     reg = next((r for r in regs if r["id"] == reg_id), regs[0])
     migrata = _load_filtro(reg) is not None
@@ -1224,7 +1274,7 @@ def moves_archive():
 @bp.route("/mosse", methods=["GET", "POST"])
 @login_required
 def moves_editor():
-    reg_id = request.args.get("reg", "ma")
+    reg_id = request.args.get("reg") or regulation_default()
     regs = _list_regulation_files()
     reg = next((r for r in regs if r["id"] == reg_id), regs[0])
     migrata = _load_filtro(reg) is not None
@@ -1279,7 +1329,7 @@ def items_archive():
 @bp.route("/oggetti", methods=["GET", "POST"])
 @login_required
 def items_editor():
-    reg_id = request.args.get("reg", "ma")
+    reg_id = request.args.get("reg") or regulation_default()
     regs = _list_regulation_files()
     reg = next((r for r in regs if r["id"] == reg_id), regs[0])
     migrata = _load_filtro(reg) is not None

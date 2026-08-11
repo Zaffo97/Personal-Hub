@@ -1,6 +1,6 @@
 {% extends "base.html" %}
 {% block title %}Oggetti Editor – Hub{% endblock %}
-{% block topbar_title %}🎒 Oggetti Reg MA{% endblock %}
+{% block topbar_title %}🎒 Oggetti — {{ current_reg.label }}{% endblock %}
 {% block extra_head %}
 <style>
 .it-table{width:100%;border-collapse:collapse;font-size:.78rem}
@@ -32,7 +32,7 @@ textarea.code-area{min-height:320px}
   <div class="flex items-center justify-between flex-wrap gap-2">
     <div class="flex items-center gap-2">
       <a href="/pokemon/calcolatori" class="btn btn-secondary btn-sm">← Calcolatori</a>
-      <div><h1>🎒 Oggetti Reg MA — Editor</h1><p class="text-muted text-sm">{{ items|length }} oggetti · Regulation: <strong>{{ regulation }}</strong></p></div>
+      <div><h1>🎒 Oggetti — Editor</h1><p class="text-muted text-sm">{{ items|length }} oggetti · Regulation: <strong>{{ regulation }}</strong></p></div>
     </div>
   </div>
 </div>

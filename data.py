@@ -3,6 +3,22 @@ import json
 
 DATA_DIR = os.path.join(os.path.dirname(__file__), "data")
 
+# Regulation di partenza del sito. Non è una costante scritta a mano: è **la prima**
+# di data/regulations.json, cioè lo stesso criterio del fallback `regs[0]` che tutte
+# le route usano già quando l'id richiesto non esiste. Per cambiare il default si
+# sposta una voce in cima al file, e non si tocca il codice.
+REGULATION_DEFAULT_EMERGENZA = "ma"   # se il registro non è leggibile esiste solo questa
+
+
+def regulation_default():
+    """Id della regulation di partenza: la prima del registro."""
+    try:
+        with open(os.path.join(DATA_DIR, "regulations.json"), encoding="utf-8") as f:
+            return json.load(f)[0]["id"]
+    except Exception:
+        return REGULATION_DEFAULT_EMERGENZA
+
+
 def _load_roster():
     """Carica roster e mega_map da data/roster_ma.json.
     Se il file non esiste, usa liste vuote come fallback."""

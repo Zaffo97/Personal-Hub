@@ -45,7 +45,7 @@
             value="{{ team.record if team else '' }}" placeholder="10-5"></div>
         <div class="form-group"><label>Regulation</label>
           <select name="regulation_id" id="regulation_id" class="form-control" onchange="loadRegulationData()">
-            <option value="ma">Regulation MA</option>
+            <option value="{{ current_reg.id }}">{{ current_reg.label }}</option>
           </select>
         </div>
       </div>
@@ -160,7 +160,7 @@
 
 <script>
 const MEGA_MAP = {{ mega_map|tojson }};
-const CURRENT_REG_ID = "{{ team.regulation_id if team and team.regulation_id else 'ma' }}";
+const CURRENT_REG_ID = "{{ team.regulation_id if team and team.regulation_id else current_reg.id }}";
 
 // Meccaniche disponibili per la regulation corrente (popolato da loadRegulationData)
 let CURRENT_MECHANICS = [];
@@ -201,7 +201,7 @@ function updEV(slot) {
 
 async function initRegulations() {
   try {
-    const r = await fetch('/api/regulations');
+    const r = await fetch('/pokemon/api/regulations');
     const d = await r.json();
     if (!d.ok) return;
     const sel = document.getElementById('regulation_id');
