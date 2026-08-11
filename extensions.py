@@ -116,6 +116,15 @@ def init_db():
         pass
     db.execute("UPDATE teams SET regulation_id='ma' WHERE regulation_id IS NULL")
     db.commit()
+    # Migrazione: appid Steam del gioco, NULL per le voci inserite a mano.
+    # hours_played sono le ore EFFETTIVAMENTE giocate lette da Steam:
+    # nulla a che vedere con hours_hltb, che e' la stima di durata HowLongToBeat.
+    for col, tipo in [("steam_appid", "INTEGER"), ("hours_played", "REAL")]:
+        try:
+            db.execute(f"ALTER TABLE games ADD COLUMN {col} {tipo}")
+            db.commit()
+        except Exception:
+            pass
     db.close()
 
 

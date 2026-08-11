@@ -1,8 +1,89 @@
-from flask import Blueprint, render_template, request, redirect, url_for, flash
+import json
+import os
+import re
+import socket
+import time
+import urllib.error
+import urllib.parse
+import urllib.request
+
+from flask import Blueprint, render_template, request, redirect, url_for, flash, jsonify
 from extensions import get_db, login_required, _i, _f
 from data import GAME_STATUSES, GAME_PLATFORMS
 
 bp = Blueprint("gaming", __name__, url_prefix="/gaming")
+
+# --- Steam ------------------------------------------------------------------
+# Ricerca e dettagli usano endpoint pubblici: NON richiedono chiave.
+# Solo la libreria posseduta con le ore (GetOwnedGames) richiede una chiave,
+# letta da STEAM_API_KEY: mai su file, mai in git, mai chiesta in un form.
+STEAM_UA      = "personal-hub/1.0"
+STEAM_TIMEOUT = 8
+
+
+def steam_key():
+    """Chiave Steam Web API, solo da variabile d'ambiente. Mai su file, mai in git."""
+    return os.environ.get("STEAM_API_KEY", "").strip()
+
+
+def steam_cover(appid):
+    """URL copertina 460x215 — deterministico, nessuna chiamata di rete."""
+    return f"https://cdn.cloudflare.steamstatic.com/steam/apps/{appid}/header.jpg"
+
+
+def _steam_json(url):
+    """GET su Steam. Ritorna (dati, None) oppure (None, messaggio_errore)."""
+    req = urllib.request.Request(url, headers={"User-Agent": STEAM_UA})
+    try:
+        with urllib.request.urlopen(req, timeout=STEAM_TIMEOUT) as r:
+            return json.loads(r.read()), None
+    except urllib.error.HTTPError as e:
+        return None, f"Steam ha risposto {e.code}"
+    except (urllib.error.URLError, socket.timeout):
+        return None, "Steam non raggiungibile"
+    except json.JSONDecodeError:
+        return None, "Risposta di Steam non leggibile"
+
+
+@bp.route("/api/steam/cerca")
+@login_required
+def steam_cerca():
+    q = request.args.get("q", "").strip()
+    if len(q) < 2:
+        return jsonify({"risultati": []})
+    url = ("https://store.steampowered.com/api/storesearch/"
+           f"?term={urllib.parse.quote(q)}&l=italian&cc=it")
+    dati, errore = _steam_json(url)
+    if errore:
+        return jsonify({"errore": errore}), 502
+    risultati = [
+        {"appid": it.get("id"), "nome": it.get("name", ""),
+         "miniatura": it.get("tiny_image", "")}
+        for it in (dati or {}).get("items", [])[:12]
+        if it.get("id")
+    ]
+    return jsonify({"risultati": risultati})
+
+
+@bp.route("/api/steam/gioco/<int:appid>")
+@login_required
+def steam_gioco(appid):
+    url = f"https://store.steampowered.com/api/appdetails?appids={appid}&l=italian&cc=it"
+    dati, errore = _steam_json(url)
+    if errore:
+        return jsonify({"errore": errore}), 502
+    voce = (dati or {}).get(str(appid)) or {}
+    if not voce.get("success"):
+        return jsonify({"errore": "Gioco non trovato su Steam"}), 404
+    d = voce.get("data") or {}
+    return jsonify({
+        "appid":   appid,
+        "titolo":  d.get("name", ""),
+        "genere":  ", ".join(g["description"] for g in (d.get("genres") or [])),
+        "cover":   d.get("header_image") or steam_cover(appid),
+        "uscita":  (d.get("release_date") or {}).get("date", ""),
+        "tipo":    d.get("type", ""),
+    })
 
 
 def _game_upsert(gid=None):
@@ -15,22 +96,201 @@ def _game_upsert(gid=None):
         _i(f.get("prog_story")), _i(f.get("prog_side")), _i(f.get("prog_collect")),
         f.get("date_start") or None, f.get("date_end") or None,
         f.get("notes", ""),
+        _i(f.get("steam_appid")) or None,
+        _f(f.get("hours_played")) or None,
     )
     if gid:
         db.execute(
             "UPDATE games SET title=?,platform=?,genre=?,status=?,"
             "hours_hltb=?,cover_url=?,prog_story=?,prog_side=?,prog_collect=?,"
-            "date_start=?,date_end=?,notes=? WHERE id=?",
+            "date_start=?,date_end=?,notes=?,steam_appid=?,hours_played=? WHERE id=?",
             vals + (gid,),
         )
     else:
         db.execute(
             "INSERT INTO games(title,platform,genre,status,hours_hltb,cover_url,"
-            "prog_story,prog_side,prog_collect,date_start,date_end,notes)"
-            " VALUES(?,?,?,?,?,?,?,?,?,?,?,?)",
+            "prog_story,prog_side,prog_collect,date_start,date_end,notes,steam_appid,"
+            "hours_played) VALUES(?,?,?,?,?,?,?,?,?,?,?,?,?,?)",
             vals,
         )
     db.commit(); db.close()
+
+
+def risolvi_profilo(testo):
+    """Da quello che l'utente incolla ricava uno steamID64.
+
+    Accetta: 17 cifre, /profiles/<id64>, /id/<nome>, o il nome vanity nudo.
+    Ritorna (steamid, None) oppure (None, messaggio_errore).
+    """
+    t = (testo or "").strip().rstrip("/")
+    if not t:
+        return None, "Indica il tuo profilo Steam"
+    if re.fullmatch(r"\d{17}", t):
+        return t, None
+    m = re.search(r"/profiles/(\d{17})", t)
+    if m:
+        return m.group(1), None
+    m = re.search(r"/id/([^/?#]+)", t)
+    vanity = m.group(1) if m else t
+    if not re.fullmatch(r"[A-Za-z0-9_.-]{2,64}", vanity):
+        return None, "Profilo non riconosciuto"
+    chiave = steam_key()
+    if not chiave:
+        return None, "Serve STEAM_API_KEY per risolvere un nome profilo"
+    dati, errore = _steam_json(
+        "https://api.steampowered.com/ISteamUser/ResolveVanityURL/v1/"
+        f"?key={urllib.parse.quote(chiave)}&vanityurl={urllib.parse.quote(vanity)}")
+    if errore:
+        return None, errore
+    r = (dati or {}).get("response") or {}
+    if r.get("success") != 1 or not r.get("steamid"):
+        return None, (
+            f"'{vanity}' non e' un indirizzo personalizzato Steam. Attenzione: NON e' il "
+            "nome che vedi sul profilo, ma la parte finale di steamcommunity.com/id/<...>, "
+            "e molti profili non ce l'hanno affatto. Su Steam apri il tuo profilo, tasto "
+            "destro sulla pagina, 'Copia URL pagina' e incolla qui l'indirizzo completo: "
+            "se contiene /profiles/ funziona subito, non serve nessun nome.")
+    return r["steamid"], None
+
+
+@bp.route("/steam")
+@login_required
+def steam_pagina():
+    return render_template("steam_import.html",
+                           chiave_presente=bool(steam_key()),
+                           profilo_default=os.environ.get("STEAM_ID", ""))
+
+
+@bp.route("/api/steam/libreria")
+@login_required
+def steam_libreria():
+    """Giochi posseduti + ore giocate. Unico endpoint che richiede la chiave."""
+    if not steam_key():
+        return jsonify({"errore": "STEAM_API_KEY non impostata",
+                        "manca_chiave": True}), 400
+    steamid, errore = risolvi_profilo(request.args.get("profilo", ""))
+    if errore:
+        return jsonify({"errore": errore}), 400
+
+    dati, errore = _steam_json(
+        "https://api.steampowered.com/IPlayerService/GetOwnedGames/v1/"
+        f"?key={urllib.parse.quote(steam_key())}&steamid={steamid}"
+        "&include_appinfo=1&include_played_free_games=1&format=json")
+    if errore:
+        return jsonify({"errore": errore}), 502
+    risposta = (dati or {}).get("response") or {}
+    if "games" not in risposta:
+        return jsonify({"errore": "Steam non restituisce la libreria: il profilo e' "
+                                  "privato oppure 'Dettagli sui giochi' non e' Pubblico",
+                        "profilo_privato": True}), 403
+
+    db = get_db()
+    gia = {r["steam_appid"]: r["id"] for r in
+           db.execute("SELECT id, steam_appid FROM games WHERE steam_appid IS NOT NULL")}
+    db.close()
+
+    giochi = [{
+        "appid":     g["appid"],
+        "titolo":    g.get("name", ""),
+        "ore":       round((g.get("playtime_forever") or 0) / 60, 1),
+        "cover":     steam_cover(g["appid"]),
+        "gia_in_db": g["appid"] in gia,
+    } for g in risposta["games"] if g.get("appid")]
+    giochi.sort(key=lambda g: (-g["ore"], g["titolo"].lower()))
+    return jsonify({"steamid": steamid, "totale": len(giochi), "giochi": giochi})
+
+
+@bp.route("/steam/importa", methods=["POST"])
+@login_required
+def steam_importa():
+    """Importa gli appid scelti. Aggiorna le ore se il gioco c'e' gia', non duplica."""
+    payload = request.get_json(silent=True) or {}
+    scelti  = payload.get("giochi") or []
+    if not scelti:
+        return jsonify({"errore": "Nessun gioco selezionato"}), 400
+
+    db = get_db()
+    esistenti = {r["steam_appid"]: r["id"] for r in
+                 db.execute("SELECT id, steam_appid FROM games WHERE steam_appid IS NOT NULL")}
+    nuovi = aggiornati = 0
+    for g in scelti:
+        appid = _i(g.get("appid"))
+        if not appid:
+            continue
+        ore = _f(g.get("ore"))
+        # Importare significa "ce l'ho in libreria", non "ci sto giocando": mettere
+        # tutto su "In corso" rende inutile il filtro per stato. Sta all'utente
+        # promuovere i pochi che sta davvero giocando.
+        stato = "Pausa"
+        if appid in esistenti:
+            db.execute("UPDATE games SET hours_played=? WHERE id=?", (ore, esistenti[appid]))
+            aggiornati += 1
+        else:
+            db.execute(
+                "INSERT INTO games(title,platform,status,cover_url,steam_appid,hours_played)"
+                " VALUES(?,?,?,?,?,?)",
+                (g.get("titolo", "")[:200], "PC", stato, steam_cover(appid), appid, ore))
+            nuovi += 1
+    db.commit(); db.close()
+    return jsonify({"nuovi": nuovi, "aggiornati": aggiornati})
+
+
+@bp.route("/api/steam/da-arricchire")
+@login_required
+def steam_da_arricchire():
+    """Quanti giochi Steam sono senza genere. Nessuna chiave richiesta."""
+    db = get_db()
+    n = db.execute("SELECT COUNT(*) FROM games WHERE steam_appid IS NOT NULL"
+                   " AND (genre IS NULL OR genre='')").fetchone()[0]
+    db.close()
+    return jsonify({"rimasti": n})
+
+
+@bp.route("/steam/arricchisci", methods=["POST"])
+@login_required
+def steam_arricchisci():
+    """Riempie il genere dei giochi importati leggendolo da appdetails.
+
+    Endpoint pubblico, nessuna chiave. Lavora a lotti per non tenere impegnata
+    la richiesta troppo a lungo: il client richiama finche' 'rimasti' non e' 0.
+    """
+    LOTTO = 15
+    db = get_db()
+    da_fare = db.execute(
+        "SELECT id, steam_appid FROM games WHERE steam_appid IS NOT NULL"
+        " AND (genre IS NULL OR genre='') ORDER BY id LIMIT ?", (LOTTO,)).fetchall()
+
+    fatti = falliti = 0
+    errore_rete = None
+    for r in da_fare:
+        dati, errore = _steam_json(
+            "https://store.steampowered.com/api/appdetails"
+            f"?appids={r['steam_appid']}&l=italian&cc=it&filters=basic,genres")
+        if errore:
+            # rete o rate limit: NON marcare il gioco, altrimenti un guasto
+            # temporaneo lo escluderebbe per sempre dai tentativi successivi
+            errore_rete = errore
+            break
+        voce   = (dati or {}).get(str(r["steam_appid"])) or {}
+        generi = ", ".join(g["description"] for g in
+                           ((voce.get("data") or {}).get("genres") or [])) if voce.get("success") else ""
+        if generi:
+            db.execute("UPDATE games SET genre=? WHERE id=?", (generi, r["id"]))
+            fatti += 1
+        else:
+            # Steam ha risposto ma non ha generi (DLC, software, voce ritirata):
+            # segno un trattino per non ripescarlo a ogni lotto
+            db.execute("UPDATE games SET genre='—' WHERE id=?", (r["id"],))
+            falliti += 1
+        time.sleep(0.2)                      # riguardo per il rate limit di Steam
+    db.commit()
+    rimasti = db.execute("SELECT COUNT(*) FROM games WHERE steam_appid IS NOT NULL"
+                         " AND (genre IS NULL OR genre='')").fetchone()[0]
+    db.close()
+    if errore_rete and not fatti:
+        return jsonify({"errore": errore_rete, "rimasti": rimasti}), 502
+    return jsonify({"fatti": fatti, "senza_genere": falliti,
+                    "rimasti": rimasti, "interrotto": errore_rete})
 
 
 @bp.route("/")

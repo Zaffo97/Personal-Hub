@@ -5,7 +5,10 @@
 <div class="page-header">
   <div class="flex items-center justify-between flex-wrap gap-2">
     <div><h1>&#127918; Gaming Tracker</h1><p class="text-muted text-sm">La tua libreria di giochi</p></div>
-    <a href="/gaming/new" class="btn btn-primary">+ Aggiungi gioco</a>
+    <div class="flex gap-2">
+      <a href="/gaming/steam" class="btn btn-secondary">&#11015; Importa da Steam</a>
+      <a href="/gaming/new" class="btn btn-primary">+ Aggiungi gioco</a>
+    </div>
   </div>
 </div>
 
@@ -43,7 +46,12 @@
     {% if g.status in ['In corso','Completato'] %}
     <div class="progress-bar mb-2"><div class="progress-fill" style="width:{{ g.prog_story }}%"></div></div>
     {% endif %}
-    {% if g.hours_hltb %}<div class="text-xs text-muted mb-2">&#9201; HLTB: {{ g.hours_hltb|int }}h</div>{% endif %}
+    {% if g.hours_played or g.hours_hltb %}
+    <div class="text-xs text-muted mb-2" style="display:flex;gap:.6rem;flex-wrap:wrap">
+      {% if g.hours_played %}<span title="Ore giocate su Steam">&#127918; {{ '%g'|format(g.hours_played) }}h giocate</span>{% endif %}
+      {% if g.hours_hltb %}<span title="Durata stimata HowLongToBeat">&#9201; HLTB {{ g.hours_hltb|int }}h</span>{% endif %}
+    </div>
+    {% endif %}
     <div class="flex gap-1">
       <a href="/gaming/{{ g.id }}/edit" class="btn btn-secondary btn-sm">&#9998;</a>
       <form method="POST" action="/gaming/{{ g.id }}/delete" onsubmit="return confirm('Eliminare?')">

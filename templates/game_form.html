@@ -10,7 +10,20 @@
 </div>
 <div class="card" style="max-width:680px">
   <div class="card-body">
+
+    <div id="steam_box" style="background:var(--surface-off);border-radius:var(--radius-md);padding:.85rem;margin-bottom:1rem">
+      <div class="text-xs font-700 text-muted mb-2" style="text-transform:uppercase;letter-spacing:.05em">
+        &#127918; Cerca su Steam <span class="text-muted" style="font-weight:400;text-transform:none;letter-spacing:0">&mdash; compila titolo, genere e copertina</span>
+      </div>
+      <input id="steam_q" class="form-control" autocomplete="off"
+             placeholder="Scrivi almeno 2 lettere del titolo...">
+      <div id="steam_stato" class="text-xs text-muted mt-1"></div>
+      <div id="steam_risultati" style="margin-top:.5rem"></div>
+    </div>
+
     <form method="POST">
+      <input type="hidden" name="steam_appid" id="steam_appid"
+             value="{{ game.steam_appid if game and game.steam_appid else '' }}">
       <div class="form-row">
         <div class="form-group"><label>Titolo *</label>
           <input name="title" class="form-control" required value="{{ game.title if game else '' }}" placeholder="Nome del gioco"></div>
@@ -28,9 +41,14 @@
           </select></div>
       </div>
       <div class="form-row">
+        <div class="form-group"><label>Ore giocate</label>
+          <input name="hours_played" type="number" step="0.1" class="form-control"
+            value="{{ game.hours_played if game and game.hours_played else '' }}" placeholder="da Steam"></div>
         <div class="form-group"><label>HLTB (ore)</label>
           <input name="hours_hltb" type="number" step="0.5" class="form-control"
             value="{{ game.hours_hltb if game and game.hours_hltb else '' }}" placeholder="40"></div>
+      </div>
+      <div class="form-row">
         <div class="form-group"><label>Cover URL</label>
           <input name="cover_url" class="form-control"
             value="{{ game.cover_url if game and game.cover_url else '' }}" placeholder="https://..."></div>
@@ -67,4 +85,123 @@
     </form>
   </div>
 </div>
+
+<script>
+(function () {
+  const q        = document.getElementById('steam_q');
+  const lista    = document.getElementById('steam_risultati');
+  const stato    = document.getElementById('steam_stato');
+  const campoApp = document.getElementById('steam_appid');
+  let timer = null, ultimaRicerca = 0;
+
+  function msg(t) { stato.textContent = t || ''; }
+
+  function collegato(appid, nome) {
+    lista.innerHTML = '';
+    const d = document.createElement('div');
+    d.className = 'text-xs';
+    d.style.cssText = 'display:flex;align-items:center;gap:.5rem;flex-wrap:wrap';
+    const b = document.createElement('span');
+    b.className = 'badge badge-success';
+    b.textContent = 'Steam #' + appid;
+    const n = document.createElement('span');
+    n.textContent = nome;
+    const x = document.createElement('button');
+    x.type = 'button';
+    x.className = 'btn btn-secondary btn-sm';
+    x.textContent = 'Scollega';
+    x.addEventListener('click', function () {
+      campoApp.value = '';
+      lista.innerHTML = '';
+      msg('Scollegato da Steam. I campi restano come sono.');
+    });
+    d.append(b, n, x);
+    lista.appendChild(d);
+  }
+
+  async function scegli(appid, nomeRicerca) {
+    msg('Carico i dettagli...');
+    let g;
+    try {
+      const r = await fetch('/gaming/api/steam/gioco/' + appid);
+      g = await r.json();
+      if (!r.ok) { msg('⚠️ ' + (g.errore || 'errore')); return; }
+    } catch (e) { msg('⚠️ Rete non disponibile'); return; }
+
+    document.querySelector('[name=title]').value = g.titolo || nomeRicerca;
+    if (g.genere) document.querySelector('[name=genre]').value = g.genere;
+    if (g.cover)  document.querySelector('[name=cover_url]').value = g.cover;
+    const pf = document.querySelector('[name=platform]');
+    if (pf) pf.value = 'PC';
+    campoApp.value = appid;
+
+    aggiornaAnteprima();
+    collegato(appid, g.titolo || nomeRicerca);
+    msg(g.uscita ? 'Uscita: ' + g.uscita : '');
+  }
+
+  async function cerca(testo) {
+    const mio = ++ultimaRicerca;
+    msg('Cerco...');
+    let d;
+    try {
+      const r = await fetch('/gaming/api/steam/cerca?q=' + encodeURIComponent(testo));
+      d = await r.json();
+      if (mio !== ultimaRicerca) return;          // risposta sorpassata
+      if (!r.ok) { msg('⚠️ ' + (d.errore || 'errore')); return; }
+    } catch (e) { msg('⚠️ Rete non disponibile'); return; }
+
+    lista.innerHTML = '';
+    if (!d.risultati.length) { msg('Nessun risultato'); return; }
+    msg('');
+    d.risultati.forEach(function (it) {
+      const b = document.createElement('button');
+      b.type = 'button';
+      b.style.cssText = 'display:flex;align-items:center;gap:.6rem;width:100%;text-align:left;' +
+        'background:var(--surface);border:1px solid var(--border);border-radius:var(--radius-md);' +
+        'padding:.35rem .5rem;margin-bottom:.3rem;cursor:pointer;color:var(--text)';
+      if (it.miniatura) {
+        const img = document.createElement('img');
+        img.src = it.miniatura; img.loading = 'lazy'; img.alt = '';
+        img.style.cssText = 'width:78px;height:30px;object-fit:cover;border-radius:3px;flex:none';
+        b.appendChild(img);
+      }
+      const t = document.createElement('span');
+      t.className = 'text-sm';
+      t.textContent = it.nome;
+      b.appendChild(t);
+      b.addEventListener('click', function () { scegli(it.appid, it.nome); });
+      lista.appendChild(b);
+    });
+  }
+
+  q.addEventListener('input', function () {
+    clearTimeout(timer);
+    const testo = q.value.trim();
+    if (testo.length < 2) { lista.innerHTML = ''; msg(''); return; }
+    timer = setTimeout(function () { cerca(testo); }, 350);
+  });
+  q.addEventListener('keydown', function (e) {
+    if (e.key === 'Enter') e.preventDefault();   // non inviare il form dalla ricerca
+  });
+
+  // anteprima copertina accanto al campo Cover URL
+  const cover = document.querySelector('[name=cover_url]');
+  const ant   = document.createElement('img');
+  ant.alt = '';
+  ant.style.cssText = 'display:none;margin-top:.4rem;width:100%;max-width:230px;' +
+                      'aspect-ratio:2/1;object-fit:cover;border-radius:var(--radius-md)';
+  cover.parentNode.appendChild(ant);
+  function aggiornaAnteprima() {
+    const u = cover.value.trim();
+    ant.style.display = u ? 'block' : 'none';
+    if (u) ant.src = u;
+  }
+  ant.addEventListener('error', function () { ant.style.display = 'none'; });
+  cover.addEventListener('input', aggiornaAnteprima);
+  aggiornaAnteprima();
+
+  if (campoApp.value) collegato(campoApp.value, document.querySelector('[name=title]').value);
+})();
+</script>
 {% endblock %}

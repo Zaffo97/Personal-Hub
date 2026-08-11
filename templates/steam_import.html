@@ -1,0 +1,255 @@
+{% extends "base.html" %}
+{% block title %}Importa da Steam – Hub{% endblock %}
+{% block topbar_title %}&#127918; Importa da Steam{% endblock %}
+{% block extra_head %}
+<style>
+.st-riga{display:flex;align-items:center;gap:.7rem;padding:.4rem .55rem;border-bottom:1px solid var(--border)}
+.st-riga:hover{background:var(--surface-off)}
+.st-riga img{width:92px;height:43px;object-fit:cover;border-radius:3px;flex:none;background:var(--surface-off)}
+.st-ore{margin-left:auto;font-variant-numeric:tabular-nums;font-size:.78rem;color:var(--text-muted);white-space:nowrap}
+.st-lista{max-height:60vh;overflow:auto;border:1px solid var(--border);border-radius:var(--radius-md)}
+.st-guida code{background:var(--surface-off);padding:.1rem .3rem;border-radius:3px;font-size:.78rem}
+.st-guida li{margin-bottom:.5rem;font-size:.83rem;line-height:1.5}
+</style>
+{% endblock %}
+{% block content %}
+<div class="page-header">
+  <div class="flex items-center gap-2">
+    <a href="/gaming/" class="btn btn-secondary btn-sm">&#8592; Gaming</a>
+    <div>
+      <h1>&#127918; Importa da Steam</h1>
+      <p class="text-muted text-sm">Libreria posseduta e ore giocate</p>
+    </div>
+  </div>
+</div>
+
+{% if not chiave_presente %}
+<div class="card" style="max-width:760px;border-color:var(--warning,#d97706)">
+  <div class="card-body st-guida">
+    <h3 style="margin-bottom:.6rem">&#9888;&#65039; Manca la chiave Steam</h3>
+    <p class="text-sm text-muted mb-3">
+      La ricerca dei giochi funziona senza chiave. Le <strong>ore giocate</strong> no:
+      Steam le espone solo a chi ha una Web API key. Si imposta una volta sola.
+    </p>
+    <ol style="padding-left:1.2rem">
+      <li>Vai su <code>https://steamcommunity.com/dev/apikey</code> ed entra col tuo account Steam.
+          Nel campo del dominio va bene <code>localhost</code>. Ottieni una stringa di 32 caratteri.</li>
+      <li>Su Steam apri <em>Profilo &rarr; Modifica profilo &rarr; Privacy</em> e metti
+          <strong>Dettagli sui giochi</strong> su <strong>Pubblico</strong>.
+          Senza questo Steam risponde vuoto anche con la chiave giusta.</li>
+      <li>Apri PowerShell e incolla, mettendo la tua chiave al posto di <code>LA_TUA_CHIAVE</code>:
+        <div style="margin:.35rem 0">
+          <code>[Environment]::SetEnvironmentVariable("STEAM_API_KEY","LA_TUA_CHIAVE","User")</code>
+        </div>
+      </li>
+      <li><strong>Chiudi e riapri</strong> il terminale, poi riavvia la web app: le variabili
+          d'ambiente vengono lette all'avvio.</li>
+    </ol>
+    <p class="text-xs text-muted mt-2" style="border-top:1px solid var(--border);padding-top:.6rem">
+      La chiave sta <strong>solo</strong> nella variabile d'ambiente: non finisce in un file del
+      progetto, non entra in git e questa pagina non te la chiede mai in un campo di testo.
+      Vale come una password del tuo account Steam &mdash; non incollarla in una chat.
+    </p>
+  </div>
+</div>
+{% else %}
+<div class="card" style="max-width:860px">
+  <div class="card-body">
+    <div class="flex gap-2 items-end flex-wrap mb-2">
+      <div class="form-group mb-0" style="flex:1;min-width:300px">
+        <label>Il tuo profilo Steam &mdash; incolla l'URL, non il nome</label>
+        <input id="profilo" class="form-control" value="{{ profilo_default }}"
+               placeholder="https://steamcommunity.com/profiles/7656119...">
+      </div>
+      <button id="btn_leggi" class="btn btn-primary">&#128260; Leggi libreria</button>
+    </div>
+    <p class="text-xs text-muted mb-2" style="line-height:1.5">
+      Su Steam apri il tuo profilo, <strong>tasto destro sulla pagina &rarr; Copia URL pagina</strong>,
+      e incolla qui. Il nome che vedi sul profilo <em>non</em> funziona: Steam sa risolvere solo
+      l'indirizzo personalizzato (la parte dopo <code>/id/</code>), che molti profili non hanno.
+    </p>
+    <div id="stato" class="text-sm text-muted mb-2">
+      <span class="badge badge-success">chiave configurata</span>
+    </div>
+
+    <div id="barra" class="flex gap-2 items-center flex-wrap mb-2" style="display:none">
+      <button id="btn_tutti"   class="btn btn-secondary btn-sm">Seleziona tutti</button>
+      <button id="btn_nessuno" class="btn btn-secondary btn-sm">Nessuno</button>
+      <button id="btn_giocati" class="btn btn-secondary btn-sm">Solo con ore &gt; 0</button>
+      <input id="filtro" class="form-control" style="max-width:220px" placeholder="Filtra per titolo...">
+      <button id="btn_importa" class="btn btn-primary" style="margin-left:auto">&#11015; Importa selezionati</button>
+    </div>
+
+    <div id="lista" class="st-lista" style="display:none"></div>
+  </div>
+</div>
+{% endif %}
+
+<div class="card" style="max-width:860px">
+  <div class="card-body">
+    <div class="flex items-center gap-2 flex-wrap">
+      <div style="flex:1;min-width:240px">
+        <div class="font-600 text-sm">&#127991;&#65039; Completa i generi</div>
+        <div class="text-xs text-muted" style="line-height:1.5">
+          L'import porta titolo, copertina e ore, ma non i generi. Questo li chiede a Steam
+          uno per uno &mdash; non serve la chiave. <span id="arr_conteggio"></span>
+        </div>
+      </div>
+      <button id="btn_arricchisci" class="btn btn-secondary">&#9881;&#65039; Completa</button>
+    </div>
+    <div id="arr_stato" class="text-xs text-muted mt-2"></div>
+  </div>
+</div>
+
+<script>
+(function () {
+  const btn  = document.getElementById('btn_arricchisci');
+  const cont = document.getElementById('arr_conteggio');
+  const st   = document.getElementById('arr_stato');
+  let fermato = false;
+
+  async function conta() {
+    try {
+      const r = await fetch('/gaming/api/steam/da-arricchire');
+      const d = await r.json();
+      cont.textContent = d.rimasti
+        ? d.rimasti + ' giochi senza genere.'
+        : 'Tutti i giochi importati hanno un genere.';
+      btn.disabled = !d.rimasti;
+      return d.rimasti;
+    } catch (e) { cont.textContent = ''; return 0; }
+  }
+
+  btn.addEventListener('click', async function () {
+    if (btn.dataset.attivo) { fermato = true; return; }
+    btn.dataset.attivo = '1'; fermato = false;
+    btn.textContent = '⏹ Ferma';
+    let fatti = 0, senza = 0;
+    while (!fermato) {
+      let d;
+      try {
+        const r = await fetch('/gaming/steam/arricchisci', { method: 'POST' });
+        d = await r.json();
+        if (!r.ok) { st.textContent = '⚠️ ' + (d.errore || 'errore'); break; }
+      } catch (e) { st.textContent = '⚠️ Rete non disponibile'; break; }
+      fatti += d.fatti; senza += d.senza_genere;
+      st.textContent = fatti + ' completati' + (senza ? ', ' + senza + ' senza genere su Steam' : '') +
+                       (d.rimasti ? ' — ne restano ' + d.rimasti + '...' : ' — finito.');
+      if (d.interrotto) {            // Steam ha smesso di rispondere: non insistere
+        st.textContent += ' ⚠️ interrotto (' + d.interrotto + '), riprova tra un minuto.';
+        break;
+      }
+      if (!d.rimasti) break;
+    }
+    if (fermato) st.textContent += ' (fermato)';
+    btn.dataset.attivo = ''; btn.textContent = '⚙️ Completa';
+    conta();
+  });
+
+  conta();
+})();
+</script>
+
+<script>
+(function () {
+  const btnLeggi = document.getElementById('btn_leggi');
+  if (!btnLeggi) return;                       // pagina in modalita' "manca la chiave"
+
+  const profilo = document.getElementById('profilo');
+  const stato   = document.getElementById('stato');
+  const lista   = document.getElementById('lista');
+  const barra   = document.getElementById('barra');
+  const filtro  = document.getElementById('filtro');
+  let giochi = [];
+
+  function msg(testo, tipo) {
+    stato.textContent = testo;
+    stato.className = 'text-sm mb-2 ' + (tipo === 'errore' ? 'text-danger' : 'text-muted');
+  }
+
+  function visibili() {
+    const f = filtro.value.trim().toLowerCase();
+    return giochi.filter(g => !f || g.titolo.toLowerCase().includes(f));
+  }
+
+  function disegna() {
+    lista.innerHTML = '';
+    const v = visibili();
+    if (!v.length) { lista.innerHTML = '<div class="text-sm text-muted" style="padding:.8rem">Nessun gioco.</div>'; return; }
+    v.forEach(function (g) {
+      const r = document.createElement('label');
+      r.className = 'st-riga';
+      const c = document.createElement('input');
+      c.type = 'checkbox'; c.checked = !!g.scelto;
+      c.addEventListener('change', function () { g.scelto = c.checked; });
+      const img = document.createElement('img');
+      img.src = g.cover; img.loading = 'lazy'; img.alt = '';
+      img.addEventListener('error', function () { img.style.visibility = 'hidden'; });
+      const t = document.createElement('span');
+      t.className = 'text-sm';
+      t.textContent = g.titolo;
+      if (g.gia_in_db) {
+        const b = document.createElement('span');
+        b.className = 'badge badge-neutral';
+        b.style.marginLeft = '.4rem';
+        b.textContent = 'già in libreria';
+        t.appendChild(b);
+      }
+      const o = document.createElement('span');
+      o.className = 'st-ore';
+      o.textContent = g.ore > 0 ? g.ore.toFixed(1) + ' h' : '—';
+      r.append(c, img, t, o);
+      lista.appendChild(r);
+    });
+  }
+
+  btnLeggi.addEventListener('click', async function () {
+    msg('Leggo la libreria...');
+    lista.style.display = 'none'; barra.style.display = 'none';
+    let d;
+    try {
+      const r = await fetch('/gaming/api/steam/libreria?profilo=' + encodeURIComponent(profilo.value));
+      d = await r.json();
+      if (!r.ok) { msg('⚠️ ' + (d.errore || 'errore'), 'errore'); return; }
+    } catch (e) { msg('⚠️ Rete non disponibile', 'errore'); return; }
+
+    giochi = d.giochi.map(g => Object.assign({}, g, { scelto: !g.gia_in_db && g.ore > 0 }));
+    const conOre = giochi.filter(g => g.ore > 0).length;
+    msg(d.totale + ' giochi trovati, ' + conOre + ' con ore giocate. Preselezionati i nuovi con ore > 0.');
+    lista.style.display = ''; barra.style.display = 'flex';
+    disegna();
+  });
+
+  document.getElementById('btn_tutti').addEventListener('click', function () {
+    visibili().forEach(g => g.scelto = true); disegna();
+  });
+  document.getElementById('btn_nessuno').addEventListener('click', function () {
+    visibili().forEach(g => g.scelto = false); disegna();
+  });
+  document.getElementById('btn_giocati').addEventListener('click', function () {
+    visibili().forEach(g => g.scelto = g.ore > 0); disegna();
+  });
+  filtro.addEventListener('input', disegna);
+
+  document.getElementById('btn_importa').addEventListener('click', async function () {
+    const scelti = giochi.filter(g => g.scelto);
+    if (!scelti.length) { msg('Non hai selezionato niente.', 'errore'); return; }
+    if (!confirm('Importare ' + scelti.length + ' giochi?')) return;
+    msg('Importo...');
+    let d;
+    try {
+      const r = await fetch('/gaming/steam/importa', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ giochi: scelti.map(g => ({ appid: g.appid, titolo: g.titolo, ore: g.ore })) })
+      });
+      d = await r.json();
+      if (!r.ok) { msg('⚠️ ' + (d.errore || 'errore'), 'errore'); return; }
+    } catch (e) { msg('⚠️ Rete non disponibile', 'errore'); return; }
+    msg(d.nuovi + ' aggiunti, ' + d.aggiornati + ' aggiornati. Vai su Gaming per vederli.');
+    giochi.forEach(g => { if (g.scelto) { g.gia_in_db = true; g.scelto = false; } });
+    disegna();
+  });
+})();
+</script>
+{% endblock %}
