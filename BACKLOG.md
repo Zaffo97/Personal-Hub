@@ -42,6 +42,38 @@ L'esito va scritto qui, con i numeri: quante pagine, quanti campi, quante anomal
 trovate e quali. Le anomalie che non rientrano nello scope del giro si segnalano, non
 si correggono al volo.
 
+### ⬜ Nello stesso giro — l'inventario di cosa non serve più
+
+Insieme al collaudo, un **censimento di tutto quello che sta nel progetto** per capire
+cosa non viene più usato e si può togliere. Va fatto **alla fine** per lo stesso motivo:
+finché i lavori sono in corso, un file che oggi sembra morto può servire domani.
+
+Cosa passare in rassegna, tutto quanto:
+
+- **template** — chi li renderizza? `reference.html` è già noto come orfano (nessuna
+  route lo chiama). Vanno cercati anche i blocchi Jinja, gli `{% include %}` e i
+  `{% block %}` che nessuno estende più
+- **script** `static/js/` e `static/css/` — chi li carica, e all'interno **quali
+  funzioni non chiama nessuno**. Qui sono già state trovate `MEGA_DATA`, `PKMN_DB`,
+  `calc_stat_champions()` e una `switchTab` duplicata: la classe esiste
+- **route Python** — quali non sono raggiunte da nessun `url_for()`, link o `fetch()`
+- **funzioni e helper** nei blueprint, in `data.py` e in `extensions.py` mai importati
+- **gli script di `scripts/`** — quali sono una-tantum già consumati e quali vanno
+  tenuti perché rieseguibili (`build_catalog.py`, `importa_*`, `esporta_dati.py` restano;
+  altri no)
+- **i file di dati storici**, la voce più concreta: `data/roster_ma.json`,
+  `moves_ma.json`, `items_ma.json`, `abilities.json` e `pokemon_catalog.json` sono
+  ancora lì come **fallback** del catalogo unico. `pokemon_catalog.json` contiene per
+  giunta le Mega nella vecchia forma convertita. Da dismettere **solo** a verifica
+  finita — cioè qui
+- **colonne e tabelle del DB** che nessuna query legge più
+- **immagini e asset** in `static/` non referenziati
+
+Il metodo: **prima si misura, poi si propone**. Per ogni candidato serve la prova che
+non è usato (la ricerca che non trova riferimenti), e la rimozione si fa in un blocco
+suo, dopo il via libera di Davide — non insieme al collaudo, così se qualcosa si rompe
+si sa quale dei due l'ha rotto.
+
 ---
 
 ## 🟨 Switch lingua IT ⇄ EN — primo blocco chiuso (11/08/2026)
