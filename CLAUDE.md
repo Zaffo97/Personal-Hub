@@ -34,8 +34,9 @@ finiscono nell'export, di proposito.
 
 | Branch | A cosa serve |
 |---|---|
-| `catalogo-unico` | **zona test** — ci finisce ogni blocco di lavoro, anche intermedio |
+| `sviluppo` | **zona test** — ci finisce ogni blocco di lavoro, anche intermedio |
 | `main` | **ufficiale** — solo roba verificata, e solo quando Davide lo dice |
+| `archivio/…` | fotografie da non toccare mai più, tenute per poter tornare indietro |
 
 Più un **tag** a ogni blocco chiuso (`git tag lavoro-2026-08-11-mega`), che è il modo
 per tornare a uno stato esatto senza dover cercare un hash.
@@ -44,9 +45,10 @@ Il push **lo autorizza Davide ogni volta**: tu lo proponi, dicendo cosa stai per
 spingere e su quale branch. Non spingere mai su `main` di tua iniziativa, e non usare
 `--force` senza un sì esplicito e specifico.
 
-⚠️ Stato noto da risolvere: `origin/main` ha **9 commit** che il `main` locale non ha,
-e contengono un marker di conflitto e la perdita di `PROJECT_CONTEXT.md`. Finché non
-è sbrogliata, "ufficiale" non ha una casa pulita: spingi solo il branch di lavoro.
+Sistemato l'11/08/2026: `main` era fermo a giugno (il `calcolatori.html` da 205 KB
+con il JS inline) e i suoi 9 commit non contenevano nessun sorgente che non fosse già
+nel lavoro. Ora `main` e `sviluppo` hanno lo stesso contenuto, e la fotografia di
+giugno vive su `archivio/main-giugno-2026`.
 
 ---
 
