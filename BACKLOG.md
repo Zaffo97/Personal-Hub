@@ -76,6 +76,24 @@ si sa quale dei due l'ha rotto.
 
 ---
 
+## ⬜ Regulation e interfaccia — quattro voci (11/08/2026)
+
+Aperte da Davide. La prima è una domanda a cui rispondere prima di decidere come
+sistemarla; le altre tre sono lavori piccoli e delimitati.
+
+| | Voce | Cosa ho trovato guardando il codice |
+|---|---|---|
+| ⬜ | **Verifica creazione regulation — servono ancora i JSON?** | **No, e in parte è già così.** `api_regulations_create` (`blueprints/pokemon.py:829`) scrive **da sé** un solo file, `data/regulations/<id>.json`, e registra `filter_file` in `regulations.json`: elenchi di nomi che puntano al catalogo, nessuna copia dei dati. I campi vuoti che si vedono sono i **tre residui del vecchio modello** — `roster_file`, `moves_file`, `items_file` — ancora stampati da `regulation_editor.html:83,88,93` (input modificabili) e da `regulations_list.html:45-47`. Su una regulation nuova sono vuoti perché quei file **non esistono più e non devono esistere**. Delle tre in `regulations.json` solo `ma` ha ancora i percorsi legacy. La strada più semplice ed efficace è quindi la seconda che proponi: **non creare nulla**, e togliere quei tre campi dove c'è `filter_file` (l'editor ha già il ramo `{% if reg.filter_file %}` alla riga 105, basta estenderlo). ⚠️ Da verificare prima: quei tre input sono anche **scritti** al salvataggio (`regulation_editor.html:277-292`), quindi vanno tolti da lì insieme |
+| ⬜ | **Titolo della sezione Pokémon fisso su "Reg MA"** | `templates/pokemon.html:24` ha `<h1>🎮 Pokémon VGC — Reg MA</h1>` scritto a mano: resta "Reg MA" qualunque regulation sia attiva. Va reso generico — o senza regulation, o con la `label` di quella davvero in uso. La topbar (`pokemon.html:3`) e la sidebar (`base.html:152`) dicono già solo "Pokémon VGC" e vanno bene |
+| ⬜ | **Pulsante Catalogo a sinistra del Calcolatore** | `templates/pokemon.html:34-35`: oggi l'ordine è `📊 Calcolatori VGC` e poi `📚 Catalogo`. Vanno invertiti. È uno scambio di due righe |
+| ⬜ | **`pokedex` come default del sito** | Oggi il default è `ma`, **scritto a mano in 14 punti**: 11 in `blueprints/pokemon.py` (righe 181, 242, 330, 343, 365, 965, 1010, 1048, 1085, 1227, 1282), uno in `blueprints/api_pokemon.py:507` e due in `templates/team_form.html` (48 e 163). In `data/regulations.json` l'ordine è `ma`, `pokedex`, `mb`, e le tendine seguono quell'ordine. Serve **un punto solo** che dica qual è la regulation di partenza — costante o campo in `regulations.json` — invece di 12 letterali sparsi, e `pokedex` va messo per primo anche nell'elenco, così è il primo che si vede pure nell'editor. ⚠️ Attenzione a `_pokemon_regulation` (riga 252): se l'id non esiste ricade su `regs[0]`, quindi cambiare l'ordine del file **cambia già da solo** il comportamento di quel fallback |
+
+> Nota di metodo per quando si toccherà: la regola #8 va rieseguita su **`pokedex`**
+> (Amoonguss non è nel roster di MA), ed è proprio la regulation che sta per diventare
+> il default — quindi il caso di prova e il default finalmente coincidono.
+
+---
+
 ## 🟨 Switch lingua IT ⇄ EN — primo blocco chiuso (11/08/2026)
 
 Pulsante **`IT`/`EN`** in `base.html`, accanto a quello del tema. Cambia lingua a
