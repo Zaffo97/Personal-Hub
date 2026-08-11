@@ -42,7 +42,7 @@
              border-bottom:1px solid color-mix(in oklch,var(--border) 35%,transparent);
              transition:.12s;{% if t.done %}background:var(--success-dim){% endif %}"
              onmouseover="this.style.background=this.style.background||'var(--surface-off)'"
-             onmouseout="this.style.background='{% if t.done %}var(--success-dim){% else %}''{% endif %}'">
+             onmouseout="this.style.background='{% if t.done %}var(--success-dim){% endif %}'">
         <input type="checkbox" {% if t.done %}checked{% endif %}
                onchange="this.form.submit()" style="accent-color:var(--success);width:15px;height:15px">
         <span class="text-sm {% if t.done %}font-600{% endif %}" style="{% if t.done %}color:var(--success){% endif %}">

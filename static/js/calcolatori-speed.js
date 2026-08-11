@@ -53,6 +53,10 @@ async function loadSpePkmn(){
       speAbilSel.appendChild(opt);
     });
 }
+    // Riempire spe_base non bastava: senza questa chiamata la propria Velocità
+    // restava a "—" finché non si toccava un altro campo, e la tabella restava
+    // confrontata con la velocità precedente.
+    updateSpeed();
   },500);
 }
 

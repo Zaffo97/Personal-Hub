@@ -118,12 +118,22 @@ salvataggio sbagliato non toglierebbe solo un'etichetta.
 Verificato in browser: la tendina del team ora elenca **3** regulation e cambiandola il
 roster passa da **1343** (pokedex) a **279** (MA).
 
-### ⬜ Restano aperte, trovate strada facendo
+### ✅ I cinque bachi piccoli — chiusi subito dopo (11/08/2026)
 
-| | Voce | Note |
+Erano tutti già localizzati, e due erano diventati più visibili col nuovo default.
+**22 controlli su 22** sul test client, più la prova in browser di ognuno.
+
+| | Voce | Come è stato chiuso |
 |---|---|---|
-| ⬜ | **`/pcbuilder/` risponde 500** ⚠️ | `pcbuilder.html:63` fa `{{ b.data\|tojson }}` su una `sqlite3.Row`: `TypeError: Object of type Row is not JSON serializable`. **La sezione PC Builder è inaccessibile** appena c'è una build salvata (con zero build il ciclo non gira e la pagina si apre). Preesistente e **estraneo a questo lavoro** — il traceback sta tutto in `pcbuilder.py` / `pcbuilder.html`, file non toccati. Non corretto perché fuori scope: serve `dict(b.data)`, come già fa `pokemon()` per `teams_json` |
-| ⬜ | **L'eliminazione di una regulation non cancella il filtro** | `api_regulations_delete` rimuove solo `roster_file`, `moves_file` e `items_file`. Su una regulation a filtro — cioè tutte quelle nuove — non esistono, quindi non cancella nulla e **`data/regulations/<id>.json` resta orfano**. La modale continua a promettere "verranno eliminati anche i file roster, mosse e oggetti". Trovato guardando la voce 1, non corretto: è un'altra funzione |
+| ✅ | **`/pcbuilder/` rispondeva 500** ⚠️ | `pcbuilder.py:16` metteva la `sqlite3.Row` grezza in `{"data": b}`, e il template la passa a `\|tojson` nell'`onclick` di Modifica: `TypeError: Object of type Row is not JSON serializable`. **La sezione era inaccessibile** appena c'era una build salvata — e nel DB ce n'è una, quindi lo era davvero. Ora `dict(b)`, lo stesso che `pokemon()` fa per `teams_json`. Verificato in browser: la pagina si apre e il modale Modifica carica `ZAFFO-PC` con i suoi **5 componenti**, il primo un Ryzen 7 7800X3D |
+| ✅ | **53 `onmouseout` morti in `python.html:45`** | Il ramo `{% else %}` aggiungeva due apici dentro una stringa già quotata: l'attributo usciva `this.style.background=''''`, un `SyntaxError`, quindi su ogni argomento **non** completato l'handler era `null` e lo sfondo dell'hover non si spegneva più. Tolti i due apici di troppo. Da **0 handler vivi su 53 a 53 su 53**, verificato eseguendo davvero mouseover/mouseout: lo sfondo passa a `var(--surface-off)` e torna a vuoto. Renderizzati entrambi i rami: da fare → `background=''`, completato → `background='var(--success-dim)'` |
+| ✅ | **`loadSpePkmn()` non ricalcolava** | Riempiva `spe_base` ma non chiamava `updateSpeed()`: dopo aver scritto un nome nello Speed Tier la propria Velocità restava `—` e la tabella continuava a confrontarsi con il valore precedente. Aggiunta la chiamata. Misurato: Incineroar → base **60**, Velocità **80**; poi Dragapult → base **142**, Velocità **162**, con 1321 righe su 1343 marcate più lente |
+| ✅ | **L'eliminazione di una regulation lasciava il filtro orfano** | `api_regulations_delete` cancellava solo `roster_file`, `moves_file` e `items_file` — che sulle regulation nuove **non esistono**: `data/regulations/<id>.json` restava sul disco mentre la modale prometteva di averlo cancellato. Ora `filter_file` è nell'elenco, e **prima di toglierlo se ne tiene una copia** in `data/archive/regulation_<id>_pre-eliminazione.json`: il filtro è l'elenco di nomi scelto a mano, ricostruirne 279 sarebbe la perdita che l'archivio esiste per evitare. Il testo della modale ora dice il vero. Provato sul ciclo completo con una regulation usa-e-getta: creata, filtro sul disco, eliminata, filtro sparito, copia in archivio, registro con le tre vere intatte |
+| ✅ | **`Galarian Darmanitan` dava 404** | Delle **57** voci con un qualificatore regionale, **56** usano il prefisso (`Galarian Zapdos`) e **una sola** la parentesi: `Darmanitan (Galarian Form)`. Il nome nel catalogo **non è stato toccato** — è l'identità della forma e la usano i filtri delle regulation: la differenza si colma nell'indice di `api_pokemon.py`, che per una forma `X (Y Form)` con `Y` regionale registra anche l'alias `Y X`. Verificato che risolva con le stesse stat del nome canonico, che `Galarian Zapdos`, `Alolan Raichu`, `Hisuian Arcanine` e `Paldean Tauros (Aqua Breed)` continuino a risolvere, e che `Galarian Machamp`, `Mega Machamp` e `Alolan Pippo` restino **404** invece di rispondere un Pokémon a caso |
+
+> Sweep dopo i fix: **26 pagine, 45 blocchi `<script>`, 2206 handler inline, zero errori.**
+> Prima erano 54: i 53 di `python.html` più il 500 del PC Builder, che non essendo
+> renderizzabile non entrava nemmeno nel conteggio.
 
 ---
 
@@ -421,7 +431,10 @@ risolvono ancora tutti.
 > Effetto collaterale utile: `Galarian Darmanitan` ora dà 404, e ha ragione — in
 > catalogo si chiama **`Darmanitan (Galarian Form)`**, l'unica delle 19 voci Galarian
 > scritta così invece che `Galarian X`. Prima l'alias spurio nascondeva l'incoerenza
-> dietro una risposta sbagliata. ⬜ Da uniformare.
+> dietro una risposta sbagliata. ✅ Colmato l'11/08/2026 con un alias nell'indice
+> (`X (Y Form)` con `Y` regionale → anche `Y X`): il nome nel catalogo non si tocca,
+> ma `Galarian Darmanitan` risolve. Le voci regionali sono **57**, e questa è l'unica
+> scritta con la parentesi.
 
 ## ✅ Già fatto il 10/08/2026: `mega_map` di MA e MB
 
@@ -744,9 +757,9 @@ Dettagli che vale la pena ricordare:
 | ✅ | Nessun `.gitignore` | Fatto 10/08/2026. Creato `.gitignore` (`__pycache__/`, `*.py[cod]`, venv, `hub.db`, file di editor/OS) e tolti dall'indice `hub.db` + **13** `.pyc` con `git rm --cached`: i file restano su disco, git smette di seguirli. Gli archivi in `data/archive/` sono stati **lasciati tracciati** di proposito — sono la rete di sicurezza dei salvataggi, non scarto di build |
 | ⬜ | `main` diverge da `origin/main` | Locale avanti 2 / indietro 4. I commit remoti contengono un marker di conflitto e hanno perso `PROJECT_CONTEXT.md`. Riallineare richiede force-push |
 | ⬜ | `reference.html` è orfano | Nessuna route lo renderizza |
-| ⬜ | 53 `onmouseout` morti in `templates/python.html:45` | Trovato dallo sweep dell'11/08/2026. Il ramo `{% else %}` dell'`if` Jinja aggiunge due apici dentro una stringa già quotata: l'attributo esce come `this.style.background=''''`, che è un `SyntaxError`. Su ogni argomento **non** completato l'handler è `null` e lo sfondo dell'hover non si spegne più. Stessa classe del Ripristina roster: **HTML valido, JS morto**. Fix da un carattere, non applicato perché fuori dallo scope della sessione |
-| ⬜ | `loadSpePkmn()` non ricalcola | In `calcolatori-speed.js` riempie `spe_base` ma non chiama `updateSpeed()`: dopo aver scritto un nome nello Speed Tier il proprio valore resta `—` finché non si tocca un altro campo. Preesistente |
-| ⬜ | Speed Tier senza limite di righe | `renderSpeed()` stampa una `<div>` per ogni voce: su `pokedex` sono **1344** righe in un solo `innerHTML`. Le altre tabelle del progetto si fermano a 300 |
+| ✅ | 53 `onmouseout` morti in `templates/python.html:45` | Chiuso 11/08/2026. Il ramo `{% else %}` aggiungeva due apici dentro una stringa già quotata (`this.style.background=''''`, `SyntaxError`), quindi su ogni argomento **non** completato l'handler era `null`. Tolti i due apici: da **0 handler vivi su 53 a 53 su 53**, provato eseguendo mouseover/mouseout |
+| ✅ | `loadSpePkmn()` non ricalcola | Chiuso 11/08/2026: aggiunta la chiamata a `updateSpeed()`. Incineroar → base 60, Velocità **80**; Dragapult → base 142, Velocità **162** |
+| ⬜ | Speed Tier senza limite di righe | `renderSpeed()` stampa una `<div>` per ogni voce. Misurato l'11/08/2026 ora che `pokedex` è il default: **1343 righe, 714 KB di HTML** in un solo `innerHTML` — ma `loadRegSpeed()` impiega **14 ms**, quindi è peso nel DOM, non lentezza percepita. Le altre tabelle del progetto si fermano a 300 righe |
 | ⬜ | Nomi in `abilities.json` da rivedere → **fondere i doppioni** | Alcuni non corrispondono all'abilità descritta (es. `Spettroguardia` descrive Multiscaglia; il vero Wonder Guard è `Magidifesa`). Convivono nomi ufficiali IT e nomi di altra fonte. L'11/08/2026 il giro sulla wiki ha spiegato perché: **le due famiglie coesistono nello stesso file**, 307 voci col nome ufficiale (collegate ai Pokémon, ma solo 22 con un effetto attivo) e 108 vecchie (34 con l'effetto che il calcolatore usa davvero). Il lavoro non è tradurre, è fondere ogni coppia. Dettagli e tabella nella sezione dello switch lingua, in cima |
 | ⬜ | Catalogo con abilità incomplete | Ricontato 10/08/2026 sul catalogo unico: **243 specie su 1029** hanno una sola abilità (il vecchio "84 su 174" era sul catalogo pre-unificazione). Quasi tutti ne hanno 2-3 con la nascosta |
 | ✅ | Chiavi mega incoerenti nel catalogo | Chiuso 11/08/2026. Non erano anomalie ma **doppioni**: `mega-banette`, `mega-chimecho` e `mega-crabominable` esistevano sia come chiave top-level sia come forma annidata nella specie base. Le forme annidate, deconvertite, sono quelle giuste — le top-level sono state rimosse (1029 → 1026 voci). Gli override sprite in `api_pokemon.py:70-73` **restano**: sono indicizzati sul nome normalizzato, non sulla chiave, e servono ancora perché Mega Chimecho e Mega Crabominable sono inventate e non hanno uno sprite online |

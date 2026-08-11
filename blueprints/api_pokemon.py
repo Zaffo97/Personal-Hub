@@ -325,6 +325,10 @@ NON_ALIASABILI = {
     "totem", "partner", "eternal", "original", "iron", "tapu",
 }
 
+# Qualificatori regionali, usati per riconoscere le forme scritte "X (Y Form)"
+# invece che "Y X" — vedi l'alias in fondo a _costruisci_indice().
+REGIONI = {"galarian", "alolan", "hisuian", "paldean", "kantonian"}
+
 
 def _costruisci_indice():
     _INDICE.clear()
@@ -363,6 +367,15 @@ def _costruisci_indice():
         for lungo, corto in (("male", "m"), ("female", "f")):
             if parti[-1] == lungo:
                 _INDICE.setdefault("-".join(parti[:-1] + [corto]), _INDICE[chiave])
+        # "darmanitan-galarian-form" -> anche "galarian-darmanitan".
+        # Delle 57 voci con un qualificatore regionale, 56 usano il prefisso
+        # ("Galarian Zapdos") e **una sola** la parentesi: `Darmanitan (Galarian
+        # Form)`. Finché c'era l'alias spurio `galarian` l'incoerenza era nascosta
+        # dietro una risposta sbagliata; tolto quello, `Galarian Darmanitan` dava
+        # 404. Il nome nel catalogo non si tocca — è l'identità della forma, la
+        # usano i filtri delle regulation — quindi la differenza si colma qui.
+        if len(parti) > 2 and parti[-1] == "form" and parti[-2] in REGIONI:
+            _INDICE.setdefault("-".join([parti[-2]] + parti[:-2]), _INDICE[chiave])
 
 
 _costruisci_indice()

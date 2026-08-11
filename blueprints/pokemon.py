@@ -959,12 +959,24 @@ def api_regulations_delete(reg_id):
     if count > 0:
         return jsonify({"ok": False, "error": f"Impossibile eliminare: {count} team attivi"}), 409
 
-    # Elimina i file JSON associati (roster, mosse, oggetti)
+    # Elimina i file JSON associati: i tre del vecchio modello e — dall'11/08/2026 —
+    # anche il filtro. Prima restava lì: le regulation nuove hanno solo quello, quindi
+    # eliminarne una lasciava `data/regulations/<id>.json` orfano sul disco mentre la
+    # modale prometteva di averlo cancellato.
     deleted_files = []
-    for key in ("roster_file", "moves_file", "items_file"):
+    for key in ("roster_file", "moves_file", "items_file", "filter_file"):
         fpath = os.path.join(DATA_DIR, reg.get(key, ""))
         if os.path.isfile(fpath):
             try:
+                # Il filtro è l'elenco di nomi scelto a mano: prima di toglierlo se ne
+                # tiene una copia, come per catalogo e abilità. Ricostruire 279 nomi a
+                # mano è esattamente la perdita che l'archivio esiste per evitare.
+                if key == "filter_file":
+                    with open(fpath, encoding="utf-8") as f:
+                        contenuto = f.read()
+                    copia = os.path.join(_archive_dir(), f"regulation_{reg_id}_pre-eliminazione.json")
+                    with open(copia, "w", encoding="utf-8") as f:
+                        f.write(contenuto)
                 os.remove(fpath)
                 deleted_files.append(reg[key])
             except Exception as e:

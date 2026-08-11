@@ -13,7 +13,11 @@ def pcbuilder():
     for b in db.execute("SELECT * FROM pc_builds ORDER BY created_at DESC").fetchall():
         comps = db.execute("SELECT * FROM pc_components WHERE build_id=? ORDER BY category",
                            (b["id"],)).fetchall()
-        builds.append({"data": b, "components": [dict(c) for c in comps],
+        # dict(b), non la Row: il template la passa a |tojson nell'onclick di
+        # "Modifica", e una sqlite3.Row non è serializzabile — con una build
+        # salvata la pagina rispondeva 500. Stesso motivo per cui pokemon()
+        # costruisce teams_json con dict().
+        builds.append({"data": dict(b), "components": [dict(c) for c in comps],
                         "total": sum(c["price"] for c in comps)})
     db.close()
     return render_template("pcbuilder.html", builds=builds, categories=PC_CATEGORIES)
