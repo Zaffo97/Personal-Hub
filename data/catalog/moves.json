@@ -19,7 +19,10 @@
     "desc": "Colpisce i nemici intorno spruzzando un acido corrosivo. Può anche ridurne la Difesa Speciale.",
     "accuracy": 100,
     "nome_it": "Acido",
-    "nome_en": "Acid"
+    "nome_en": "Acid",
+    "stat_changes": {
+      "spd": -1
+    }
   },
   "Acid Spray": {
     "bp": 40,
@@ -32,7 +35,10 @@
     ],
     "accuracy": 100,
     "nome_it": "Acidobomba",
-    "nome_en": "Acid Spray"
+    "nome_en": "Acid Spray",
+    "stat_changes": {
+      "spd": -2
+    }
   },
   "Acrobatics": {
     "bp": 55,
@@ -51,7 +57,10 @@
     "type": "psychic",
     "desc": "Chi la usa rilassa e alleggerisce il proprio corpo per far salire di molto la Velocità.",
     "nome_it": "Agilità",
-    "nome_en": "Agility"
+    "nome_en": "Agility",
+    "stat_changes": {
+      "spe": 2
+    }
   },
   "Air Cutter": {
     "bp": 60,
@@ -91,7 +100,10 @@
     "type": "psychic",
     "desc": "Chi la usa svuota per un po’ la mente per dimenticare i problemi. La Difesa Speciale aumenta di molto.",
     "nome_it": "Amnesia",
-    "nome_en": "Amnesia"
+    "nome_en": "Amnesia",
+    "stat_changes": {
+      "spd": 2
+    }
   },
   "Ancient Power": {
     "bp": 60,
@@ -101,7 +113,14 @@
     "desc": "Colpisce il bersaglio con una forza primordiale. Può aumentare tutte le statistiche.",
     "accuracy": 100,
     "nome_it": "Forzantica",
-    "nome_en": "Ancient Power"
+    "nome_en": "Ancient Power",
+    "stat_changes": {
+      "atk": 1,
+      "def": 1,
+      "spa": 1,
+      "spd": 1,
+      "spe": 1
+    }
   },
   "Apple Acid": {
     "bp": 90,
@@ -111,7 +130,10 @@
     "desc": "Chi la usa attacca il bersaglio con un liquido acido ricavato da mele aspre riducendone la Difesa Speciale.",
     "accuracy": 100,
     "nome_it": "Acido Malico",
-    "nome_en": "Apple Acid"
+    "nome_en": "Apple Acid",
+    "stat_changes": {
+      "spd": -1
+    }
   },
   "Aqua Cutter": {
     "bp": 70,
@@ -156,7 +178,10 @@
     ],
     "accuracy": 100,
     "nome_it": "Idroballetto",
-    "nome_en": "Aqua Step"
+    "nome_en": "Aqua Step",
+    "stat_changes": {
+      "spe": 1
+    }
   },
   "Aqua Tail": {
     "bp": 90,
@@ -230,7 +255,10 @@
     "desc": "Colpisce il bersaglio con un raggio dai colori dell’iride. Può anche ridurne l’Attacco.",
     "accuracy": 100,
     "nome_it": "Raggiaurora",
-    "nome_en": "Aurora Beam"
+    "nome_en": "Aurora Beam",
+    "stat_changes": {
+      "atk": -1
+    }
   },
   "Aurora Veil": {
     "category": "status",
@@ -244,7 +272,10 @@
     "type": "steel",
     "desc": "Chi la usa si libera di tutti i pesi in eccesso, alleggerendosi e aumentando di molto la propria Velocità.",
     "nome_it": "Sganciapesi",
-    "nome_en": "Autotomize"
+    "nome_en": "Autotomize",
+    "stat_changes": {
+      "spe": 2
+    }
   },
   "Avalanche": {
     "bp": 60,
@@ -266,7 +297,10 @@
     "desc": "Chi la usa rivolge i propri occhioni languidi al bersaglio, riducendone l’Attacco. Questa mossa ha priorità alta.",
     "accuracy": 100,
     "nome_it": "Occhioni Teneri",
-    "nome_en": "Baby-Doll Eyes"
+    "nome_en": "Baby-Doll Eyes",
+    "stat_changes": {
+      "atk": -1
+    }
   },
   "Barrage": {
     "bp": 15,
@@ -282,7 +316,10 @@
     "type": "psychic",
     "desc": "Questa mossa non può essere usata. È consigliabile farla dimenticare al Pokémon. Tuttavia, una volta dimenticata, non potrà più essere ricordata.",
     "nome_it": "Barriera",
-    "nome_en": "Barrier"
+    "nome_en": "Barrier",
+    "stat_changes": {
+      "def": 2
+    }
   },
   "Baton Pass": {
     "category": "status",
@@ -538,7 +575,10 @@
     "desc": "Colpisce il bersaglio con una forte scarica di bolle. Può anche ridurne la Velocità.",
     "accuracy": 100,
     "nome_it": "Bollaraggio",
-    "nome_en": "Bubble Beam"
+    "nome_en": "Bubble Beam",
+    "stat_changes": {
+      "spe": -1
+    }
   },
   "Bug Bite": {
     "bp": 60,
@@ -563,7 +603,10 @@
     ],
     "accuracy": 100,
     "nome_it": "Ronzio",
-    "nome_en": "Bug Buzz"
+    "nome_en": "Bug Buzz",
+    "stat_changes": {
+      "spd": -1
+    }
   },
   "Bulk Up": {
     "category": "status",
@@ -573,7 +616,11 @@
       "contact"
     ],
     "nome_it": "Granfisico",
-    "nome_en": "Bulk Up"
+    "nome_en": "Bulk Up",
+    "stat_changes": {
+      "atk": 1,
+      "def": 1
+    }
   },
   "Bulldoze": {
     "bp": 60,
@@ -583,7 +630,10 @@
     "desc": "Chi la usa calpesta il terreno e scatena un terremoto che danneggia i Pokémon nei paraggi, riducendone la Velocità.",
     "accuracy": 100,
     "nome_it": "Battiterra",
-    "nome_en": "Bulldoze"
+    "nome_en": "Bulldoze",
+    "stat_changes": {
+      "spe": -1
+    }
   },
   "Bullet Punch": {
     "bp": 40,
@@ -625,7 +675,11 @@
     "type": "psychic",
     "desc": "Chi la usa placa il proprio spirito meditando per aumentare l’Attacco Speciale e la Difesa Speciale.",
     "nome_it": "Calmamente",
-    "nome_en": "Calm Mind"
+    "nome_en": "Calm Mind",
+    "stat_changes": {
+      "spa": 1,
+      "spd": 1
+    }
   },
   "Camouflage": {
     "category": "status",
@@ -642,7 +696,10 @@
     "desc": "Chi la usa lancia un fascio di elettricità molto intensa. Può anche aumentare il suo Attacco Speciale.",
     "accuracy": 90,
     "nome_it": "Raggioscossa",
-    "nome_en": "Charge Beam"
+    "nome_en": "Charge Beam",
+    "stat_changes": {
+      "spa": 1
+    }
   },
   "Charm": {
     "category": "status",
@@ -650,7 +707,10 @@
     "desc": "Ammalia il bersaglio con lo sguardo per renderlo meno cauto. Ne riduce molto l’Attacco.",
     "accuracy": 100,
     "nome_it": "Fascino",
-    "nome_en": "Charm"
+    "nome_en": "Charm",
+    "stat_changes": {
+      "atk": -2
+    }
   },
   "Chilling Water": {
     "bp": 50,
@@ -659,7 +719,10 @@
     "desc": "The user attacks the target by showering it with water that's so cold it saps the target's power. This also lowers the target's Attack stat.",
     "accuracy": 100,
     "nome_it": "Doccia Fredda",
-    "nome_en": "Chilling Water"
+    "nome_en": "Chilling Water",
+    "stat_changes": {
+      "atk": -1
+    }
   },
   "Chilly Reception": {
     "category": "status",
@@ -705,7 +768,10 @@
     ],
     "accuracy": 100,
     "nome_it": "Clamorsquame",
-    "nome_en": "Clanging Scales"
+    "nome_en": "Clanging Scales",
+    "stat_changes": {
+      "def": -1
+    }
   },
   "Clangorous Soul": {
     "category": "status",
@@ -718,7 +784,14 @@
     ],
     "accuracy": 100,
     "nome_it": "Dracofonia",
-    "nome_en": "Clangorous Soul"
+    "nome_en": "Clangorous Soul",
+    "stat_changes": {
+      "atk": 1,
+      "def": 1,
+      "spa": 1,
+      "spd": 1,
+      "spe": 1
+    }
   },
   "Clear Smog": {
     "bp": 50,
@@ -739,14 +812,23 @@
     ],
     "accuracy": 100,
     "nome_it": "Zuffa",
-    "nome_en": "Close Combat"
+    "nome_en": "Close Combat",
+    "stat_changes": {
+      "def": -1,
+      "spd": -1
+    }
   },
   "Coil": {
     "category": "status",
     "type": "poison",
     "desc": "Chi la usa si concentra aumentando Attacco, Difesa e precisione.",
     "nome_it": "Arrotola",
-    "nome_en": "Coil"
+    "nome_en": "Coil",
+    "stat_changes": {
+      "atk": 1,
+      "def": 1,
+      "accuracy": 1
+    }
   },
   "Confuse Ray": {
     "category": "status",
@@ -777,21 +859,31 @@
       "contact"
     ],
     "nome_it": "Limitazione",
-    "nome_en": "Constrict"
+    "nome_en": "Constrict",
+    "stat_changes": {
+      "spe": -1
+    }
   },
   "Cosmic Power": {
     "category": "status",
     "type": "psychic",
     "desc": "Chi la usa assorbe una forza mistica dallo spazio che aumenta la Difesa e la Difesa Speciale.",
     "nome_it": "Cosmoforza",
-    "nome_en": "Cosmic Power"
+    "nome_en": "Cosmic Power",
+    "stat_changes": {
+      "def": 1,
+      "spd": 1
+    }
   },
   "Cotton Guard": {
     "category": "status",
     "type": "grass",
     "desc": "Chi la usa avvolge il proprio corpo con del cotone molto morbido, proteggendosi e aumentando moltissimo la propria Difesa.",
     "nome_it": "Cotonscudo",
-    "nome_en": "Cotton Guard"
+    "nome_en": "Cotton Guard",
+    "stat_changes": {
+      "def": 3
+    }
   },
   "Cotton Spore": {
     "category": "status",
@@ -802,7 +894,10 @@
     ],
     "accuracy": 100,
     "nome_it": "Cottonspora",
-    "nome_en": "Cotton Spore"
+    "nome_en": "Cotton Spore",
+    "stat_changes": {
+      "spe": -2
+    }
   },
   "Counter": {
     "category": "physical",
@@ -878,7 +973,10 @@
     ],
     "accuracy": 95,
     "nome_it": "Tritartigli",
-    "nome_en": "Crush Claw"
+    "nome_en": "Crush Claw",
+    "stat_changes": {
+      "def": -1
+    }
   },
   "Curse": {
     "category": "status",
@@ -939,14 +1037,21 @@
     "type": "bug",
     "desc": "Chi la usa raduna i suoi sgherri per creare uno scudo, aumentando Difesa e Difesa Speciale.",
     "nome_it": "Comandoscudo",
-    "nome_en": "Defend Order"
+    "nome_en": "Defend Order",
+    "stat_changes": {
+      "def": 1,
+      "spd": 1
+    }
   },
   "Defense Curl": {
     "category": "status",
     "type": "normal",
     "desc": "Chi la usa si raggomitola per nascondere i punti deboli e aumentare la propria Difesa.",
     "nome_it": "Ricciolscudo",
-    "nome_en": "Defense Curl"
+    "nome_en": "Defense Curl",
+    "stat_changes": {
+      "def": 1
+    }
   },
   "Destiny Bond": {
     "category": "status",
@@ -1065,7 +1170,10 @@
     "type": "normal",
     "desc": "Chi la usa si muove in fretta e crea copie illusorie di se stesso che aumentano la capacità di elusione.",
     "nome_it": "Doppioteam",
-    "nome_en": "Double Team"
+    "nome_en": "Double Team",
+    "stat_changes": {
+      "evasion": 1
+    }
   },
   "Double-Edge": {
     "bp": 120,
@@ -1121,7 +1229,11 @@
       "dance"
     ],
     "nome_it": "Dragodanza",
-    "nome_en": "Dragon Dance"
+    "nome_en": "Dragon Dance",
+    "stat_changes": {
+      "atk": 1,
+      "spe": 1
+    }
   },
   "Dragon Pulse": {
     "bp": 85,
@@ -1261,7 +1373,10 @@
     "desc": "Dal terreno sotto il bersaglio si sprigiona una forza devastante. Può anche ridurne la Difesa Speciale.",
     "accuracy": 100,
     "nome_it": "Geoforza",
-    "nome_en": "Earth Power"
+    "nome_en": "Earth Power",
+    "stat_changes": {
+      "spd": -1
+    }
   },
   "Earthquake": {
     "bp": 100,
@@ -1290,7 +1405,10 @@
     "desc": "Il corpo di chi la usa emette onde anomale che investono il bersaglio, riducendone di molto l’Attacco Speciale.",
     "accuracy": 100,
     "nome_it": "Elettromistero",
-    "nome_en": "Eerie Impulse"
+    "nome_en": "Eerie Impulse",
+    "stat_changes": {
+      "spa": -2
+    }
   },
   "Electro Ball": {
     "category": "special",
@@ -1317,7 +1435,10 @@
     "desc": "Chi la usa attacca i nemici intorno a sé catturandoli con una ragnatela elettrica e riducendone la Velocità.",
     "accuracy": 95,
     "nome_it": "Elettrotela",
-    "nome_en": "Electroweb"
+    "nome_en": "Electroweb",
+    "stat_changes": {
+      "spe": -1
+    }
   },
   "Embargo": {
     "category": "status",
@@ -1356,7 +1477,10 @@
     ],
     "accuracy": 100,
     "nome_it": "Energipalla",
-    "nome_en": "Energy Ball"
+    "nome_en": "Energy Ball",
+    "stat_changes": {
+      "spd": -1
+    }
   },
   "Entrainment": {
     "category": "status",
@@ -1438,7 +1562,10 @@
     "desc": "Chi la usa inscena un pianto teatrale per commuovere il bersaglio. Ne riduce di molto la Difesa Speciale.",
     "accuracy": 100,
     "nome_it": "Falselacrime",
-    "nome_en": "Fake Tears"
+    "nome_en": "Fake Tears",
+    "stat_changes": {
+      "spd": -2
+    }
   },
   "False Swipe": {
     "bp": 40,
@@ -1520,7 +1647,10 @@
     ],
     "accuracy": 100,
     "nome_it": "Frusta di Fuoco",
-    "nome_en": "Fire Lash"
+    "nome_en": "Fire Lash",
+    "stat_changes": {
+      "def": -1
+    }
   },
   "Fire Punch": {
     "bp": 75,
@@ -1598,7 +1728,10 @@
     ],
     "accuracy": 100,
     "nome_it": "Nitrocarica",
-    "nome_en": "Flame Charge"
+    "nome_en": "Flame Charge",
+    "stat_changes": {
+      "spe": 1
+    }
   },
   "Flame Wheel": {
     "bp": 60,
@@ -1642,7 +1775,10 @@
     "desc": "Questa mossa non può essere usata. È consigliabile farla dimenticare al Pokémon. Tuttavia, una volta dimenticata, non potrà più essere ricordata.",
     "accuracy": 100,
     "nome_it": "Flash",
-    "nome_en": "Flash"
+    "nome_en": "Flash",
+    "stat_changes": {
+      "accuracy": -1
+    }
   },
   "Flash Cannon": {
     "bp": 80,
@@ -1652,7 +1788,10 @@
     "desc": "Chi la usa attacca raccogliendo e rilasciando energia luminosa. Può ridurre la Difesa Speciale del bersaglio.",
     "accuracy": 100,
     "nome_it": "Cannonflash",
-    "nome_en": "Flash Cannon"
+    "nome_en": "Flash Cannon",
+    "stat_changes": {
+      "spd": -1
+    }
   },
   "Flatter": {
     "category": "status",
@@ -1660,7 +1799,10 @@
     "desc": "Adula il bersaglio e lo confonde, ma ne aumenta l’Attacco Speciale.",
     "accuracy": 100,
     "nome_it": "Adulazione",
-    "nome_en": "Flatter"
+    "nome_en": "Flatter",
+    "stat_changes": {
+      "spa": 1
+    }
   },
   "Fling": {
     "category": "physical",
@@ -1688,7 +1830,10 @@
     "effect_chance": 100,
     "desc": "Grazie a un misterioso potere, aumenta la Difesa di tutti i Pokémon di tipo Erba presenti in campo.",
     "nome_it": "Fiordifesa",
-    "nome_en": "Flower Shield"
+    "nome_en": "Flower Shield",
+    "stat_changes": {
+      "def": 1
+    }
   },
   "Fly": {
     "bp": 90,
@@ -1713,7 +1858,10 @@
     ],
     "accuracy": 70,
     "nome_it": "Focalcolpo",
-    "nome_en": "Focus Blast"
+    "nome_en": "Focus Blast",
+    "stat_changes": {
+      "spd": -1
+    }
   },
   "Focus Energy": {
     "category": "status",
@@ -1827,7 +1975,11 @@
     "type": "steel",
     "desc": "Dà una marcia in più agli alleati con le abilità Meno o Più aumentandone l’Attacco e l’Attacco Speciale.",
     "nome_it": "Marciainpiù",
-    "nome_en": "Gear Up"
+    "nome_en": "Gear Up",
+    "stat_changes": {
+      "atk": 1,
+      "spa": 1
+    }
   },
   "Giga Drain": {
     "bp": 75,
@@ -1941,14 +2093,21 @@
     ],
     "accuracy": 100,
     "nome_it": "Ruggito",
-    "nome_en": "Growl"
+    "nome_en": "Growl",
+    "stat_changes": {
+      "atk": -1
+    }
   },
   "Growth": {
     "category": "status",
     "type": "normal",
     "desc": "Provoca la crescita immediata del corpo e l’aumento dell’Attacco e dell’Attacco Speciale di chi la usa.",
     "nome_it": "Crescita",
-    "nome_en": "Growth"
+    "nome_en": "Growth",
+    "stat_changes": {
+      "atk": 1,
+      "spa": 1
+    }
   },
   "Grudge": {
     "category": "status",
@@ -2010,7 +2169,10 @@
     "type": "normal",
     "desc": "Tutti i muscoli del corpo si tonificano per aumentare la Difesa.",
     "nome_it": "Rafforzatore",
-    "nome_en": "Harden"
+    "nome_en": "Harden",
+    "stat_changes": {
+      "def": 1
+    }
   },
   "Haze": {
     "category": "status",
@@ -2291,7 +2453,10 @@
     ],
     "accuracy": 90,
     "nome_it": "Martelgelo",
-    "nome_en": "Ice Hammer"
+    "nome_en": "Ice Hammer",
+    "stat_changes": {
+      "spe": -1
+    }
   },
   "Ice Punch": {
     "bp": 75,
@@ -2356,7 +2521,10 @@
     "desc": "Chi la usa attacca i nemici intorno con una folata di aria gelida e ne riduce anche la Velocità.",
     "accuracy": 95,
     "nome_it": "Ventogelato",
-    "nome_en": "Icy Wind"
+    "nome_en": "Icy Wind",
+    "stat_changes": {
+      "spe": -1
+    }
   },
   "Infernal Parade": {
     "bp": 65,
@@ -2373,7 +2541,10 @@
     "type": "steel",
     "desc": "Il corpo di chi la usa si indurisce come il ferro, facendone salire di molto la Difesa.",
     "nome_it": "Ferroscudo",
-    "nome_en": "Iron Defense"
+    "nome_en": "Iron Defense",
+    "stat_changes": {
+      "def": 2
+    }
   },
   "Iron Head": {
     "bp": 80,
@@ -2399,7 +2570,10 @@
     ],
     "accuracy": 75,
     "nome_it": "Codacciaio",
-    "nome_en": "Iron Tail"
+    "nome_en": "Iron Tail",
+    "stat_changes": {
+      "def": -1
+    }
   },
   "Jaw Lock": {
     "bp": 80,
@@ -2502,7 +2676,10 @@
     "desc": "Si forma una tempesta di foglie affilate. Il contraccolpo riduce di molto l’Attacco Speciale di chi la usa.",
     "accuracy": 90,
     "nome_it": "Verdebufera",
-    "nome_en": "Leaf Storm"
+    "nome_en": "Leaf Storm",
+    "stat_changes": {
+      "spa": -2
+    }
   },
   "Leaf Tornado": {
     "bp": 65,
@@ -2512,7 +2689,10 @@
     "desc": "Chi la usa avvolge e attacca il bersaglio con foglie affilate che possono anche ridurne la precisione.",
     "accuracy": 90,
     "nome_it": "Vorticerba",
-    "nome_en": "Leaf Tornado"
+    "nome_en": "Leaf Tornado",
+    "stat_changes": {
+      "accuracy": -1
+    }
   },
   "Leech Life": {
     "bp": 80,
@@ -2541,7 +2721,10 @@
     "desc": "Terrorizza i nemici intorno con uno sguardo fulminante e intimidatorio, riducendone la Difesa.",
     "accuracy": 100,
     "nome_it": "Fulmisguardo",
-    "nome_en": "Leer"
+    "nome_en": "Leer",
+    "stat_changes": {
+      "def": -1
+    }
   },
   "Light Screen": {
     "category": "status",
@@ -2561,7 +2744,10 @@
       "contact"
     ],
     "nome_it": "Idrobreccia",
-    "nome_en": "Liquidation"
+    "nome_en": "Liquidation",
+    "stat_changes": {
+      "def": -1
+    }
   },
   "Lock-On": {
     "category": "status",
@@ -2592,7 +2778,10 @@
       "contact"
     ],
     "nome_it": "Calciobasso",
-    "nome_en": "Low Sweep"
+    "nome_en": "Low Sweep",
+    "stat_changes": {
+      "spe": -1
+    }
   },
   "Lucky Chant": {
     "category": "status",
@@ -2612,7 +2801,10 @@
     ],
     "accuracy": 100,
     "nome_it": "Assalto",
-    "nome_en": "Lunge"
+    "nome_en": "Lunge",
+    "stat_changes": {
+      "atk": -1
+    }
   },
   "Mach Punch": {
     "bp": 40,
@@ -2715,7 +2907,10 @@
     ],
     "accuracy": 95,
     "nome_it": "Ferrartigli",
-    "nome_en": "Metal Claw"
+    "nome_en": "Metal Claw",
+    "stat_changes": {
+      "atk": 1
+    }
   },
   "Metal Sound": {
     "category": "status",
@@ -2726,7 +2921,10 @@
     ],
     "accuracy": 85,
     "nome_it": "Ferrostrido",
-    "nome_en": "Metal Sound"
+    "nome_en": "Metal Sound",
+    "stat_changes": {
+      "spd": -2
+    }
   },
   "Meteor Beam": {
     "bp": 120,
@@ -2750,7 +2948,10 @@
     ],
     "accuracy": 90,
     "nome_it": "Meteorpugno",
-    "nome_en": "Meteor Mash"
+    "nome_en": "Meteor Mash",
+    "stat_changes": {
+      "atk": 1
+    }
   },
   "Misty Explosion": {
     "bp": 100,
@@ -2776,7 +2977,10 @@
     "desc": "Chi la usa sfrutta il potere della luna per attaccare il bersaglio. Può anche ridurne l’Attacco Speciale.",
     "accuracy": 100,
     "nome_it": "Forza Lunare",
-    "nome_en": "Moonblast"
+    "nome_en": "Moonblast",
+    "stat_changes": {
+      "spa": -1
+    }
   },
   "Moonlight": {
     "category": "status",
@@ -2816,7 +3020,10 @@
     ],
     "accuracy": 85,
     "nome_it": "Pantanobomba",
-    "nome_en": "Mud Bomb"
+    "nome_en": "Mud Bomb",
+    "stat_changes": {
+      "accuracy": -1
+    }
   },
   "Mud Shot": {
     "bp": 55,
@@ -2826,7 +3033,10 @@
     "desc": "Chi la usa attacca lanciando fango sul bersaglio, riducendone anche la Velocità.",
     "accuracy": 95,
     "nome_it": "Colpodifango",
-    "nome_en": "Mud Shot"
+    "nome_en": "Mud Shot",
+    "stat_changes": {
+      "spe": -1
+    }
   },
   "Mud Slap": {
     "bp": 20,
@@ -2840,7 +3050,10 @@
     "accuracy": 100,
     "nome_it": "Fangosberla",
     "nome_en": "Mud-Slap",
-    "type_it": "Terra"
+    "type_it": "Terra",
+    "stat_changes": {
+      "accuracy": -1
+    }
   },
   "Muddy Water": {
     "bp": 90,
@@ -2853,14 +3066,20 @@
     ],
     "accuracy": 85,
     "nome_it": "Fanghiglia",
-    "nome_en": "Muddy Water"
+    "nome_en": "Muddy Water",
+    "stat_changes": {
+      "accuracy": -1
+    }
   },
   "Nasty Plot": {
     "category": "status",
     "type": "dark",
     "desc": "Chi la usa stimola il cervello pensando a cose cattive. Aumenta di molto l’Attacco Speciale.",
     "nome_it": "Congiura",
-    "nome_en": "Nasty Plot"
+    "nome_en": "Nasty Plot",
+    "stat_changes": {
+      "spa": 2
+    }
   },
   "Night Daze": {
     "bp": 90,
@@ -2870,7 +3089,10 @@
     "desc": "Chi la usa attacca il bersaglio con un’onda d’urto oscura che può anche ridurne la precisione.",
     "accuracy": 95,
     "nome_it": "Urtoscuro",
-    "nome_en": "Night Daze"
+    "nome_en": "Night Daze",
+    "stat_changes": {
+      "accuracy": -1
+    }
   },
   "Night Shade": {
     "category": "special",
@@ -2903,7 +3125,11 @@
     ],
     "accuracy": 100,
     "nome_it": "Urlo",
-    "nome_en": "Noble Roar"
+    "nome_en": "Noble Roar",
+    "stat_changes": {
+      "atk": -1,
+      "spa": -1
+    }
   },
   "Nuzzle": {
     "bp": 20,
@@ -2935,7 +3161,14 @@
     "desc": "Questa mossa non può essere usata. È consigliabile farla dimenticare al Pokémon. Tuttavia, una volta dimenticata, non potrà più essere ricordata.",
     "accuracy": 100,
     "nome_it": "Funestovento",
-    "nome_en": "Ominous Wind"
+    "nome_en": "Ominous Wind",
+    "stat_changes": {
+      "atk": 1,
+      "def": 1,
+      "spa": 1,
+      "spd": 1,
+      "spe": 1
+    }
   },
   "Outrage": {
     "bp": 120,
@@ -2957,7 +3190,10 @@
     "desc": "Chi la usa sferra un potente attacco, ma il contraccolpo riduce di molto il suo Attacco Speciale.",
     "accuracy": 90,
     "nome_it": "Vampata",
-    "nome_en": "Overheat"
+    "nome_en": "Overheat",
+    "stat_changes": {
+      "spa": -2
+    }
   },
   "Pain Split": {
     "category": "status",
@@ -2976,7 +3212,11 @@
     ],
     "accuracy": 100,
     "nome_it": "Monito",
-    "nome_en": "Parting Shot"
+    "nome_en": "Parting Shot",
+    "stat_changes": {
+      "atk": -1,
+      "spa": -1
+    }
   },
   "Peck": {
     "bp": 35,
@@ -3035,7 +3275,10 @@
       "contact"
     ],
     "nome_it": "Carineria",
-    "nome_en": "Play Rough"
+    "nome_en": "Play Rough",
+    "stat_changes": {
+      "atk": -1
+    }
   },
   "Pluck": {
     "bp": 60,
@@ -3174,7 +3417,10 @@
     "desc": "Il bersaglio viene colpito da una potente forza telecinetica che può anche ridurne la Difesa Speciale.",
     "accuracy": 100,
     "nome_it": "Psichico",
-    "nome_en": "Psychic"
+    "nome_en": "Psychic",
+    "stat_changes": {
+      "spd": -1
+    }
   },
   "Psychic Fangs": {
     "bp": 85,
@@ -3267,7 +3513,12 @@
       "dance"
     ],
     "nome_it": "Eledanza",
-    "nome_en": "Quiver Dance"
+    "nome_en": "Quiver Dance",
+    "stat_changes": {
+      "spa": 1,
+      "spd": 1,
+      "spe": 1
+    }
   },
   "Rage Powder": {
     "category": "status",
@@ -3301,7 +3552,10 @@
       "contact"
     ],
     "nome_it": "Rapigiro",
-    "nome_en": "Rapid Spin"
+    "nome_en": "Rapid Spin",
+    "stat_changes": {
+      "spe": 1
+    }
   },
   "Razor Leaf": {
     "bp": 55,
@@ -3324,7 +3578,10 @@
     ],
     "accuracy": 95,
     "nome_it": "Conchilama",
-    "nome_en": "Razor Shell"
+    "nome_en": "Razor Shell",
+    "stat_changes": {
+      "def": -1
+    }
   },
   "Razor Wind": {
     "bp": 80,
@@ -3438,7 +3695,10 @@
     "type": "rock",
     "desc": "Chi la usa leviga il proprio corpo per ridurne l’attrito. Aumenta di molto la Velocità.",
     "nome_it": "Lucidatura",
-    "nome_en": "Rock Polish"
+    "nome_en": "Rock Polish",
+    "stat_changes": {
+      "spe": 2
+    }
   },
   "Rock Slide": {
     "bp": 75,
@@ -3461,7 +3721,10 @@
     ],
     "accuracy": 100,
     "nome_it": "Spaccaroccia",
-    "nome_en": "Rock Smash"
+    "nome_en": "Rock Smash",
+    "stat_changes": {
+      "def": -1
+    }
   },
   "Rock Throw": {
     "bp": 50,
@@ -3483,7 +3746,10 @@
     ],
     "accuracy": 95,
     "nome_it": "Rocciotomba",
-    "nome_en": "Rock Tomb"
+    "nome_en": "Rock Tomb",
+    "stat_changes": {
+      "spe": -1
+    }
   },
   "Rock Wrecker": {
     "bp": 150,
@@ -3577,7 +3843,10 @@
     "desc": "Getta sabbia in faccia al bersaglio e ne riduce la precisione.",
     "accuracy": 100,
     "nome_it": "Turbosabbia",
-    "nome_en": "Sand Attack"
+    "nome_en": "Sand Attack",
+    "stat_changes": {
+      "accuracy": -1
+    }
   },
   "Sand Tomb": {
     "bp": 35,
@@ -3612,7 +3881,10 @@
     "desc": "Chi la usa spaventa il bersaglio con una faccia terribile e ne riduce di molto la Velocità.",
     "accuracy": 100,
     "nome_it": "Visotruce",
-    "nome_en": "Scary Face"
+    "nome_en": "Scary Face",
+    "stat_changes": {
+      "spe": -2
+    }
   },
   "Scratch": {
     "bp": 40,
@@ -3635,7 +3907,10 @@
     ],
     "accuracy": 85,
     "nome_it": "Stridio",
-    "nome_en": "Screech"
+    "nome_en": "Screech",
+    "stat_changes": {
+      "def": -2
+    }
   },
   "Seed Bomb": {
     "bp": 80,
@@ -3658,7 +3933,10 @@
     "desc": "Lancia sul bersaglio una sfera nera. Può anche ridurne la Difesa Speciale.",
     "accuracy": 100,
     "nome_it": "Palla Ombra",
-    "nome_en": "Shadow Ball"
+    "nome_en": "Shadow Ball",
+    "stat_changes": {
+      "spd": -1
+    }
   },
   "Shadow Claw": {
     "bp": 70,
@@ -3691,21 +3969,35 @@
     "type": "normal",
     "desc": "Questa mossa non può essere usata. È consigliabile farla dimenticare al Pokémon. Tuttavia, una volta dimenticata, non potrà più essere ricordata.",
     "nome_it": "Affilatore",
-    "nome_en": "Sharpen"
+    "nome_en": "Sharpen",
+    "stat_changes": {
+      "atk": 1
+    }
   },
   "Shell Smash": {
     "category": "status",
     "type": "normal",
     "desc": "Chi la usa si disfa del guscio. Difesa e Difesa Speciale calano, ma aumentano di molto Attacco, Attacco Speciale e Velocità.",
     "nome_it": "Gettaguscio",
-    "nome_en": "Shell Smash"
+    "nome_en": "Shell Smash",
+    "stat_changes": {
+      "def": -1,
+      "spd": -1,
+      "atk": 2,
+      "spa": 2,
+      "spe": 2
+    }
   },
   "Shift Gear": {
     "category": "status",
     "type": "steel",
     "desc": "Facendo ruotare gli ingranaggi, chi la usa aumenta non solo il proprio Attacco, ma anche di molto la propria Velocità.",
     "nome_it": "Cambiomarcia",
-    "nome_en": "Shift Gear"
+    "nome_en": "Shift Gear",
+    "stat_changes": {
+      "atk": 1,
+      "spe": 2
+    }
   },
   "Signal Beam": {
     "bp": 75,
@@ -3725,7 +4017,14 @@
     "desc": "Questa mossa non può essere usata. È consigliabile farla dimenticare al Pokémon. Tuttavia, una volta dimenticata, non potrà più essere ricordata.",
     "accuracy": 100,
     "nome_it": "Ventargenteo",
-    "nome_en": "Silver Wind"
+    "nome_en": "Silver Wind",
+    "stat_changes": {
+      "atk": 1,
+      "def": 1,
+      "spa": 1,
+      "spd": 1,
+      "spe": 1
+    }
   },
   "Simple Beam": {
     "category": "status",
@@ -3901,7 +4200,10 @@
     "desc": "Nuvola di fumo o inchiostro che riduce la precisione del bersaglio.",
     "accuracy": 100,
     "nome_it": "Muro di Fumo",
-    "nome_en": "Smokescreen"
+    "nome_en": "Smokescreen",
+    "stat_changes": {
+      "accuracy": -1
+    }
   },
   "Snap Trap": {
     "bp": 35,
@@ -3928,7 +4230,10 @@
     ],
     "accuracy": 95,
     "nome_it": "Urlorabbia",
-    "nome_en": "Snarl"
+    "nome_en": "Snarl",
+    "stat_changes": {
+      "spa": -1
+    }
   },
   "Snatch": {
     "category": "status",
@@ -4021,7 +4326,10 @@
       "contact"
     ],
     "nome_it": "Frantumanima",
-    "nome_en": "Spirit Break"
+    "nome_en": "Spirit Break",
+    "stat_changes": {
+      "spa": -1
+    }
   },
   "Spirit Shackle": {
     "bp": 90,
@@ -4160,7 +4468,10 @@
     "desc": "Chi la usa produce della seta che avvolge i nemici intorno e ne riduce di molto la Velocità.",
     "accuracy": 95,
     "nome_it": "Millebave",
-    "nome_en": "String Shot"
+    "nome_en": "String Shot",
+    "stat_changes": {
+      "spe": -2
+    }
   },
   "Struggle Bug": {
     "bp": 50,
@@ -4170,7 +4481,10 @@
     "desc": "Colpisce i nemici intorno opponendo resistenza e riducendo il loro Attacco Speciale.",
     "accuracy": 100,
     "nome_it": "Entomoblocco",
-    "nome_en": "Struggle Bug"
+    "nome_en": "Struggle Bug",
+    "stat_changes": {
+      "spa": -1
+    }
   },
   "Stun Spore": {
     "category": "status",
@@ -4237,7 +4551,11 @@
     ],
     "accuracy": 100,
     "nome_it": "Troppoforte",
-    "nome_en": "Superpower"
+    "nome_en": "Superpower",
+    "stat_changes": {
+      "atk": -1,
+      "def": -1
+    }
   },
   "Surf": {
     "bp": 90,
@@ -4254,7 +4572,10 @@
     "desc": "Chi la usa provoca il bersaglio e lo confonde, facendo aumentare però di molto il suo Attacco.",
     "accuracy": 85,
     "nome_it": "Bullo",
-    "nome_en": "Swagger"
+    "nome_en": "Swagger",
+    "stat_changes": {
+      "atk": 2
+    }
   },
   "Syrup Bomb": {
     "bp": 60,
@@ -4264,7 +4585,10 @@
     "effect_chance": 100,
     "accuracy": 85,
     "nome_it": "Bomba Sciroppata",
-    "nome_en": "Syrup Bomb"
+    "nome_en": "Syrup Bomb",
+    "stat_changes": {
+      "spe": -1
+    }
   },
   "Tackle": {
     "bp": 40,
@@ -4311,7 +4635,11 @@
     "effect_chance": 100,
     "desc": "Chi la usa guarda il bersaglio con gli occhi pieni di lacrime e gli fa perdere lo spirito combattivo, riducendone l’Attacco e l’Attacco Speciale.",
     "nome_it": "Occhionilucidi",
-    "nome_en": "Tearful Look"
+    "nome_en": "Tearful Look",
+    "stat_changes": {
+      "atk": -1,
+      "spa": -1
+    }
   },
   "Terrain Pulse": {
     "bp": 50,
@@ -4410,7 +4738,11 @@
     "desc": "Chi la usa solletica il bersaglio e lo fa ridere, riducendo il suo Attacco e la sua Difesa.",
     "accuracy": 100,
     "nome_it": "Solletico",
-    "nome_en": "Tickle"
+    "nome_en": "Tickle",
+    "stat_changes": {
+      "atk": -1,
+      "def": -1
+    }
   },
   "Toxic": {
     "category": "status",
@@ -4434,7 +4766,10 @@
     "desc": "Avvelena il bersaglio avvolgendolo con filamenti tossici e ne riduce la Velocità.",
     "accuracy": 100,
     "nome_it": "Velenotela",
-    "nome_en": "Toxic Thread"
+    "nome_en": "Toxic Thread",
+    "stat_changes": {
+      "spe": -1
+    }
   },
   "Trailblaze": {
     "bp": 50,
@@ -4443,7 +4778,10 @@
     "desc": "The user attacks suddenly as if leaping out from tall grass. The user's nimble footwork boosts its Speed stat.",
     "accuracy": 100,
     "nome_it": "Apripista",
-    "nome_en": "Trailblaze"
+    "nome_en": "Trailblaze",
+    "stat_changes": {
+      "spe": 1
+    }
   },
   "Tri Attack": {
     "bp": 80,
@@ -4494,7 +4832,10 @@
     ],
     "accuracy": 100,
     "nome_it": "Tropicalcio",
-    "nome_en": "Trop Kick"
+    "nome_en": "Trop Kick",
+    "stat_changes": {
+      "atk": -1
+    }
   },
   "Twineedle": {
     "bp": 25,
@@ -4761,7 +5102,11 @@
     "type": "normal",
     "desc": "Chi la usa si tira su di morale, aumentando il proprio Attacco e l’Attacco Speciale.",
     "nome_it": "Cuordileone",
-    "nome_en": "Work Up"
+    "nome_en": "Work Up",
+    "stat_changes": {
+      "atk": 1,
+      "spa": 1
+    }
   },
   "Wring Out": {
     "category": "special",
@@ -4891,7 +5236,10 @@
     ],
     "type_it": "Normale",
     "nome_it": "Danzaspada",
-    "nome_en": "Swords Dance"
+    "nome_en": "Swords Dance",
+    "stat_changes": {
+      "atk": 2
+    }
   },
   "Bind": {
     "bp": 15,
@@ -4967,7 +5315,10 @@
     "accuracy": 100,
     "type_it": "Normale",
     "nome_it": "Colpocoda",
-    "nome_en": "Tail Whip"
+    "nome_en": "Tail Whip",
+    "stat_changes": {
+      "def": -1
+    }
   },
   "Poison Sting": {
     "bp": 15,
@@ -5054,7 +5405,10 @@
     ],
     "type_it": "Psico",
     "nome_it": "Meditazione",
-    "nome_en": "Meditate"
+    "nome_en": "Meditate",
+    "stat_changes": {
+      "atk": 1
+    }
   },
   "Rage": {
     "bp": 20,
@@ -5103,7 +5457,10 @@
     ],
     "type_it": "Normale",
     "nome_it": "Minimizzato",
-    "nome_en": "Minimize"
+    "nome_en": "Minimize",
+    "stat_changes": {
+      "evasion": 2
+    }
   },
   "Withdraw": {
     "bp": 0,
@@ -5115,7 +5472,10 @@
     ],
     "type_it": "Acqua",
     "nome_it": "Ritirata",
-    "nome_en": "Withdraw"
+    "nome_en": "Withdraw",
+    "stat_changes": {
+      "def": 1
+    }
   },
   "Bide": {
     "bp": 0,
@@ -5246,7 +5606,10 @@
     "accuracy": 80,
     "type_it": "Psico",
     "nome_it": "Cinèsi",
-    "nome_en": "Kinesis"
+    "nome_en": "Kinesis",
+    "stat_changes": {
+      "accuracy": -1
+    }
   },
   "Lovely Kiss": {
     "bp": 0,
@@ -5284,7 +5647,10 @@
     "accuracy": 100,
     "type_it": "Acqua",
     "nome_it": "Bolla",
-    "nome_en": "Bubble"
+    "nome_en": "Bubble",
+    "stat_changes": {
+      "spe": -1
+    }
   },
   "Psywave": {
     "bp": 0,
@@ -5310,7 +5676,10 @@
     ],
     "type_it": "Veleno",
     "nome_it": "Scudo Acido",
-    "nome_en": "Acid Armor"
+    "nome_en": "Acid Armor",
+    "stat_changes": {
+      "def": 2
+    }
   },
   "Conversion": {
     "bp": 0,
@@ -5506,7 +5875,10 @@
     "accuracy": 85,
     "type_it": "Acqua",
     "nome_it": "Octazooka",
-    "nome_en": "Octazooka"
+    "nome_en": "Octazooka",
+    "stat_changes": {
+      "accuracy": -1
+    }
   },
   "Zap Cannon": {
     "bp": 120,
@@ -5582,7 +5954,10 @@
     "accuracy": 90,
     "type_it": "Acciaio",
     "nome_it": "Alacciaio",
-    "nome_en": "Steel Wing"
+    "nome_en": "Steel Wing",
+    "stat_changes": {
+      "def": 1
+    }
   },
   "Mean Look": {
     "bp": 0,
@@ -5666,7 +6041,10 @@
     "accuracy": 100,
     "type_it": "Normale",
     "nome_it": "Profumino",
-    "nome_en": "Sweet Scent"
+    "nome_en": "Sweet Scent",
+    "stat_changes": {
+      "evasion": -2
+    }
   },
   "Synthesis": {
     "bp": 0,
@@ -5723,7 +6101,10 @@
     "accuracy": 100,
     "type_it": "Buio",
     "nome_it": "Sgranocchio",
-    "nome_en": "Crunch"
+    "nome_en": "Crunch",
+    "stat_changes": {
+      "def": -1
+    }
   },
   "Mirror Coat": {
     "bp": 0,
@@ -5748,7 +6129,11 @@
     ],
     "type_it": "Normale",
     "nome_it": "Accumulo",
-    "nome_en": "Stockpile"
+    "nome_en": "Stockpile",
+    "stat_changes": {
+      "def": 1,
+      "spd": 1
+    }
   },
   "Spit Up": {
     "bp": 0,
@@ -5814,7 +6199,11 @@
     "accuracy": 100,
     "type_it": "Buio",
     "nome_it": "Memento",
-    "nome_en": "Memento"
+    "nome_en": "Memento",
+    "stat_changes": {
+      "atk": -2,
+      "spa": -2
+    }
   },
   "Focus Punch": {
     "bp": 150,
@@ -5874,7 +6263,10 @@
     ],
     "type_it": "Elettro",
     "nome_it": "Sottocarica",
-    "nome_en": "Charge"
+    "nome_en": "Charge",
+    "stat_changes": {
+      "spd": 1
+    }
   },
   "Assist": {
     "bp": 0,
@@ -5962,7 +6354,10 @@
     ],
     "type_it": "Coleottero",
     "nome_it": "Codadiluce",
-    "nome_en": "Tail Glow"
+    "nome_en": "Tail Glow",
+    "stat_changes": {
+      "spa": 3
+    }
   },
   "Luster Purge": {
     "bp": 95,
@@ -5976,7 +6371,10 @@
     "accuracy": 100,
     "type_it": "Psico",
     "nome_it": "Abbagliante",
-    "nome_en": "Luster Purge"
+    "nome_en": "Luster Purge",
+    "stat_changes": {
+      "spd": -1
+    }
   },
   "Mist Ball": {
     "bp": 95,
@@ -5991,7 +6389,10 @@
     "accuracy": 100,
     "type_it": "Psico",
     "nome_it": "Foschisfera",
-    "nome_en": "Mist Ball"
+    "nome_en": "Mist Ball",
+    "stat_changes": {
+      "spa": -1
+    }
   },
   "Feather Dance": {
     "bp": 0,
@@ -6007,7 +6408,10 @@
     "accuracy": 100,
     "type_it": "Volante",
     "nome_it": "Danzadipiume",
-    "nome_en": "Feather Dance"
+    "nome_en": "Feather Dance",
+    "stat_changes": {
+      "atk": -2
+    }
   },
   "Teeter Dance": {
     "bp": 0,
@@ -6240,7 +6644,10 @@
     ],
     "type_it": "Normale",
     "nome_it": "Gridodilotta",
-    "nome_en": "Howl"
+    "nome_en": "Howl",
+    "stat_changes": {
+      "atk": 1
+    }
   },
   "Frenzy Plant": {
     "bp": 150,
@@ -6323,7 +6730,10 @@
     "accuracy": 90,
     "type_it": "Psico",
     "nome_it": "Psicoslancio",
-    "nome_en": "Psycho Boost"
+    "nome_en": "Psycho Boost",
+    "stat_changes": {
+      "spa": -2
+    }
   },
   "Miracle Eye": {
     "bp": 0,
@@ -6354,7 +6764,10 @@
     "accuracy": 90,
     "type_it": "Lotta",
     "nome_it": "Martelpugno",
-    "nome_en": "Hammer Arm"
+    "nome_en": "Hammer Arm",
+    "stat_changes": {
+      "spe": -1
+    }
   },
   "Healing Wish": {
     "bp": 0,
@@ -6597,7 +7010,10 @@
     "accuracy": 85,
     "type_it": "Acciaio",
     "nome_it": "Cristalcolpo",
-    "nome_en": "Mirror Shot"
+    "nome_en": "Mirror Shot",
+    "stat_changes": {
+      "accuracy": -1
+    }
   },
   "Rock Climb": {
     "bp": 90,
@@ -6627,7 +7043,10 @@
     ],
     "type_it": "Volante",
     "nome_it": "Scacciabruma",
-    "nome_en": "Defog"
+    "nome_en": "Defog",
+    "stat_changes": {
+      "evasion": -1
+    }
   },
   "Draco Meteor": {
     "bp": 130,
@@ -6641,7 +7060,10 @@
     "accuracy": 90,
     "type_it": "Drago",
     "nome_it": "Dragobolide",
-    "nome_en": "Draco Meteor"
+    "nome_en": "Draco Meteor",
+    "stat_changes": {
+      "spa": -2
+    }
   },
   "Magnet Bomb": {
     "bp": 60,
@@ -6670,7 +7092,10 @@
     "accuracy": 100,
     "type_it": "Normale",
     "nome_it": "Incanto",
-    "nome_en": "Captivate"
+    "nome_en": "Captivate",
+    "stat_changes": {
+      "spa": -2
+    }
   },
   "Chatter": {
     "bp": 65,
@@ -6802,7 +7227,10 @@
     "accuracy": 85,
     "type_it": "Erba",
     "nome_it": "Infuriaseme",
-    "nome_en": "Seed Flare"
+    "nome_en": "Seed Flare",
+    "stat_changes": {
+      "spd": -2
+    }
   },
   "Shadow Force": {
     "bp": 120,
@@ -6829,7 +7257,11 @@
     ],
     "type_it": "Buio",
     "nome_it": "Unghiaguzze",
-    "nome_en": "Hone Claws"
+    "nome_en": "Hone Claws",
+    "stat_changes": {
+      "atk": 1,
+      "accuracy": 1
+    }
   },
   "Wide Guard": {
     "bp": 0,
@@ -7221,7 +7653,10 @@
     "accuracy": 95,
     "type_it": "Ghiaccio",
     "nome_it": "Gelamondo",
-    "nome_en": "Glaciate"
+    "nome_en": "Glaciate",
+    "stat_changes": {
+      "spe": -1
+    }
   },
   "Blue Flare": {
     "bp": 130,
@@ -7250,7 +7685,10 @@
     "accuracy": 100,
     "type_it": "Fuoco",
     "nome_it": "Voldifuoco",
-    "nome_en": "Fiery Dance"
+    "nome_en": "Fiery Dance",
+    "stat_changes": {
+      "spa": 1
+    }
   },
   "Freeze Shock": {
     "bp": 140,
@@ -7295,7 +7733,12 @@
     "accuracy": 95,
     "type_it": "Fuoco",
     "nome_it": "Generatore V",
-    "nome_en": "V-create"
+    "nome_en": "V-create",
+    "stat_changes": {
+      "def": -1,
+      "spd": -1,
+      "spe": -1
+    }
   },
   "Fusion Flare": {
     "bp": 100,
@@ -7368,7 +7811,11 @@
     ],
     "type_it": "Terra",
     "nome_it": "Aracampo",
-    "nome_en": "Rototiller"
+    "nome_en": "Rototiller",
+    "stat_changes": {
+      "atk": 1,
+      "spa": 1
+    }
   },
   "Trick-or-Treat": {
     "bp": 0,
@@ -7553,7 +8000,10 @@
     ],
     "type_it": "Normale",
     "nome_it": "Simpatia",
-    "nome_en": "Play Nice"
+    "nome_en": "Play Nice",
+    "stat_changes": {
+      "atk": -1
+    }
   },
   "Confide": {
     "bp": 0,
@@ -7568,7 +8018,10 @@
     ],
     "type_it": "Normale",
     "nome_it": "Confidenza",
-    "nome_en": "Confide"
+    "nome_en": "Confide",
+    "stat_changes": {
+      "spa": -1
+    }
   },
   "Diamond Storm": {
     "bp": 100,
@@ -7582,7 +8035,10 @@
     "accuracy": 95,
     "type_it": "Roccia",
     "nome_it": "Diamantempesta",
-    "nome_en": "Diamond Storm"
+    "nome_en": "Diamond Storm",
+    "stat_changes": {
+      "def": 2
+    }
   },
   "Steam Eruption": {
     "bp": 110,
@@ -7624,7 +8080,10 @@
     "accuracy": 100,
     "type_it": "Fuoco",
     "nome_it": "Magifiamma",
-    "nome_en": "Mystical Fire"
+    "nome_en": "Mystical Fire",
+    "stat_changes": {
+      "spa": -1
+    }
   },
   "Spiky Shield": {
     "bp": 0,
@@ -7645,7 +8104,10 @@
     ],
     "type_it": "Folletto",
     "nome_it": "Nebularoma",
-    "nome_en": "Aromatic Mist"
+    "nome_en": "Aromatic Mist",
+    "stat_changes": {
+      "spd": 1
+    }
   },
   "Venom Drench": {
     "bp": 0,
@@ -7660,7 +8122,12 @@
     "accuracy": 100,
     "type_it": "Veleno",
     "nome_it": "Velenotrappola",
-    "nome_en": "Venom Drench"
+    "nome_en": "Venom Drench",
+    "stat_changes": {
+      "atk": -1,
+      "spa": -1,
+      "spe": -1
+    }
   },
   "Powder": {
     "bp": 0,
@@ -7690,7 +8157,12 @@
     ],
     "type_it": "Folletto",
     "nome_it": "Geocontrollo",
-    "nome_en": "Geomancy"
+    "nome_en": "Geomancy",
+    "stat_changes": {
+      "spa": 2,
+      "spd": 2,
+      "spe": 2
+    }
   },
   "Magnetic Flux": {
     "bp": 0,
@@ -7704,7 +8176,11 @@
     ],
     "type_it": "Elettro",
     "nome_it": "Controllo Polare",
-    "nome_en": "Magnetic Flux"
+    "nome_en": "Magnetic Flux",
+    "stat_changes": {
+      "def": 1,
+      "spd": 1
+    }
   },
   "Happy Hour": {
     "bp": 0,
@@ -7780,7 +8256,10 @@
     "accuracy": 100,
     "type_it": "Lotta",
     "nome_it": "Crescipugno",
-    "nome_en": "Power-Up Punch"
+    "nome_en": "Power-Up Punch",
+    "stat_changes": {
+      "atk": 1
+    }
   },
   "Oblivion Wing": {
     "bp": 80,
@@ -7901,7 +8380,11 @@
     "accuracy": 100,
     "type_it": "Volante",
     "nome_it": "Ascesa del Drago",
-    "nome_en": "Dragon Ascent"
+    "nome_en": "Dragon Ascent",
+    "stat_changes": {
+      "def": -1,
+      "spd": -1
+    }
   },
   "Hyperspace Fury": {
     "bp": 100,
@@ -7914,7 +8397,10 @@
     ],
     "type_it": "Buio",
     "nome_it": "Urtodimensionale",
-    "nome_en": "Hyperspace Fury"
+    "nome_en": "Hyperspace Fury",
+    "stat_changes": {
+      "def": -1
+    }
   },
   "Breakneck Blitz": {
     "bp": 0,
@@ -8156,7 +8642,10 @@
     "accuracy": 100,
     "type_it": "Erba",
     "nome_it": "Assorbiforza",
-    "nome_en": "Strength Sap"
+    "nome_en": "Strength Sap",
+    "stat_changes": {
+      "atk": -1
+    }
   },
   "Leafage": {
     "bp": 40,
@@ -8377,7 +8866,14 @@
     "desc": "Questa mossa non può essere usata. È consigliabile farla dimenticare al Pokémon. Tuttavia, una volta dimenticata, non potrà più essere ricordata.",
     "type_it": "Normale",
     "nome_it": "Potenziamento Eevolutivo",
-    "nome_en": "Extreme Evoboost"
+    "nome_en": "Extreme Evoboost",
+    "stat_changes": {
+      "atk": 2,
+      "def": 2,
+      "spa": 2,
+      "spd": 2,
+      "spe": 2
+    }
   },
   "Genesis Supernova": {
     "bp": 185,
@@ -8413,7 +8909,10 @@
     "accuracy": 90,
     "type_it": "Folletto",
     "nome_it": "Cannonfiore",
-    "nome_en": "Fleur Cannon"
+    "nome_en": "Fleur Cannon",
+    "stat_changes": {
+      "spa": -2
+    }
   },
   "Shadow Bone": {
     "bp": 85,
@@ -8427,7 +8926,10 @@
     "accuracy": 100,
     "type_it": "Spettro",
     "nome_it": "Ossotetro",
-    "nome_en": "Shadow Bone"
+    "nome_en": "Shadow Bone",
+    "stat_changes": {
+      "def": -1
+    }
   },
   "Accelerock": {
     "bp": 40,
@@ -8648,7 +9150,14 @@
     ],
     "type_it": "Drago",
     "nome_it": "Dracofonia Divampante",
-    "nome_en": "Clangorous Soulblaze"
+    "nome_en": "Clangorous Soulblaze",
+    "stat_changes": {
+      "atk": 1,
+      "def": 1,
+      "spa": 1,
+      "spd": 1,
+      "spe": 1
+    }
   },
   "Zippy Zap": {
     "bp": 80,
@@ -8663,7 +9172,10 @@
     "accuracy": 100,
     "type_it": "Elettro",
     "nome_it": "Sprintaboom",
-    "nome_en": "Zippy Zap"
+    "nome_en": "Zippy Zap",
+    "stat_changes": {
+      "evasion": 1
+    }
   },
   "Splishy Splash": {
     "bp": 90,
@@ -8900,7 +9412,10 @@
     ],
     "type_it": "Normale",
     "nome_it": "Riempiguance",
-    "nome_en": "Stuff Cheeks"
+    "nome_en": "Stuff Cheeks",
+    "stat_changes": {
+      "def": 2
+    }
   },
   "No Retreat": {
     "bp": 0,
@@ -8912,7 +9427,14 @@
     ],
     "type_it": "Lotta",
     "nome_it": "Spalle al Muro",
-    "nome_en": "No Retreat"
+    "nome_en": "No Retreat",
+    "stat_changes": {
+      "atk": 1,
+      "def": 1,
+      "spa": 1,
+      "spd": 1,
+      "spe": 1
+    }
   },
   "Tar Shot": {
     "bp": 0,
@@ -8927,7 +9449,10 @@
     "accuracy": 100,
     "type_it": "Roccia",
     "nome_it": "Colpocatrame",
-    "nome_en": "Tar Shot"
+    "nome_en": "Tar Shot",
+    "stat_changes": {
+      "spe": -1
+    }
   },
   "Magic Powder": {
     "bp": 0,
@@ -9183,7 +9708,11 @@
     "desc": "Chi la usa agghinda il bersaglio con delle decorazioni aumentandone di molto l’Attacco e l’Attacco Speciale.",
     "type_it": "Folletto",
     "nome_it": "Decorazione",
-    "nome_en": "Decorate"
+    "nome_en": "Decorate",
+    "stat_changes": {
+      "atk": 2,
+      "spa": 2
+    }
   },
   "Drum Beating": {
     "bp": 80,
@@ -9197,7 +9726,10 @@
     "accuracy": 100,
     "type_it": "Erba",
     "nome_it": "Tamburattacco",
-    "nome_en": "Drum Beating"
+    "nome_en": "Drum Beating",
+    "stat_changes": {
+      "spe": -1
+    }
   },
   "Pyro Ball": {
     "bp": 120,
@@ -9227,7 +9759,10 @@
     "accuracy": 100,
     "type_it": "Elettro",
     "nome_it": "Ruota d’Aura",
-    "nome_en": "Aura Wheel"
+    "nome_en": "Aura Wheel",
+    "stat_changes": {
+      "spe": 1
+    }
   },
   "Breaking Swipe": {
     "bp": 60,
@@ -9242,7 +9777,10 @@
     "accuracy": 100,
     "type_it": "Drago",
     "nome_it": "Vastoimpatto",
-    "nome_en": "Breaking Swipe"
+    "nome_en": "Breaking Swipe",
+    "stat_changes": {
+      "atk": -1
+    }
   },
   "Branch Poke": {
     "bp": 40,
@@ -9287,7 +9825,10 @@
     "accuracy": 100,
     "type_it": "Erba",
     "nome_it": "Forza G",
-    "nome_en": "Grav Apple"
+    "nome_en": "Grav Apple",
+    "stat_changes": {
+      "def": -1
+    }
   },
   "Strange Steam": {
     "bp": 90,
@@ -9416,7 +9957,10 @@
     "accuracy": 90,
     "type_it": "Coleottero",
     "nome_it": "Strisciacolpo",
-    "nome_en": "Skitter Smack"
+    "nome_en": "Skitter Smack",
+    "stat_changes": {
+      "spa": -1
+    }
   },
   "Burning Jealousy": {
     "bp": 70,
@@ -9486,7 +10030,11 @@
     ],
     "type_it": "Lotta",
     "nome_it": "Coaching",
-    "nome_en": "Coaching"
+    "nome_en": "Coaching",
+    "stat_changes": {
+      "atk": 1,
+      "def": 1
+    }
   },
   "Scorching Sands": {
     "bp": 70,
@@ -9601,7 +10149,10 @@
     "accuracy": 100,
     "type_it": "Lotta",
     "nome_it": "Calcio Tonante",
-    "nome_en": "Thunderous Kick"
+    "nome_en": "Thunderous Kick",
+    "stat_changes": {
+      "def": -1
+    }
   },
   "Astral Barrage": {
     "bp": 120,
@@ -9836,7 +10387,11 @@
     "accuracy": 100,
     "type_it": "Normale",
     "nome_it": "Terascoppio",
-    "nome_en": "Tera Blast"
+    "nome_en": "Tera Blast",
+    "stat_changes": {
+      "atk": -1,
+      "spa": -1
+    }
   },
   "Silk Trap": {
     "bp": 0,
@@ -9845,7 +10400,10 @@
     "desc": "",
     "type_it": "Coleottero",
     "nome_it": "Telatrappola",
-    "nome_en": "Silk Trap"
+    "nome_en": "Silk Trap",
+    "stat_changes": {
+      "spe": -1
+    }
   },
   "Axe Kick": {
     "bp": 120,
@@ -9875,7 +10433,10 @@
     "accuracy": 100,
     "type_it": "Psico",
     "nome_it": "Fotocollisione",
-    "nome_en": "Lumina Crash"
+    "nome_en": "Lumina Crash",
+    "stat_changes": {
+      "spd": -2
+    }
   },
   "Order Up": {
     "bp": 80,
@@ -9904,7 +10465,11 @@
     "desc": "",
     "type_it": "Erba",
     "nome_it": "Essenza Piccante",
-    "nome_en": "Spicy Extract"
+    "nome_en": "Spicy Extract",
+    "stat_changes": {
+      "atk": 2,
+      "def": -2
+    }
   },
   "Spin Out": {
     "bp": 100,
@@ -9914,7 +10479,10 @@
     "accuracy": 100,
     "type_it": "Acciaio",
     "nome_it": "Slittaruote",
-    "nome_en": "Spin Out"
+    "nome_en": "Spin Out",
+    "stat_changes": {
+      "spe": -2
+    }
   },
   "Population Bomb": {
     "bp": 20,
@@ -9982,7 +10550,12 @@
     "desc": "",
     "type_it": "Normale",
     "nome_it": "Alleggerimento",
-    "nome_en": "Fillet Away"
+    "nome_en": "Fillet Away",
+    "stat_changes": {
+      "atk": 2,
+      "spa": 2,
+      "spe": 2
+    }
   },
   "Kowtow Cleave": {
     "bp": 85,
@@ -10010,7 +10583,10 @@
     "accuracy": 100,
     "type_it": "Fuoco",
     "nome_it": "Canzone Ardente",
-    "nome_en": "Torch Song"
+    "nome_en": "Torch Song",
+    "stat_changes": {
+      "spa": 1
+    }
   },
   "Raging Bull": {
     "bp": 90,
@@ -10030,7 +10606,10 @@
     "accuracy": 100,
     "type_it": "Acciaio",
     "nome_it": "Corsa all’Oro",
-    "nome_en": "Make It Rain"
+    "nome_en": "Make It Rain",
+    "stat_changes": {
+      "spa": -1
+    }
   },
   "Psyblade": {
     "bp": 80,
@@ -10088,7 +10667,11 @@
     "desc": "",
     "type_it": "Normale",
     "nome_it": "Pulizie",
-    "nome_en": "Tidy Up"
+    "nome_en": "Tidy Up",
+    "stat_changes": {
+      "atk": 1,
+      "spe": 1
+    }
   },
   "Snowscape": {
     "bp": 0,
@@ -10107,7 +10690,10 @@
     "accuracy": 100,
     "type_it": "Coleottero",
     "nome_it": "Balzo",
-    "nome_en": "Pounce"
+    "nome_en": "Pounce",
+    "stat_changes": {
+      "spe": -1
+    }
   },
   "Hyper Drill": {
     "bp": 100,
@@ -10147,7 +10733,11 @@
     "accuracy": 100,
     "type_it": "Fuoco",
     "nome_it": "Corazza Cannone",
-    "nome_en": "Armor Cannon"
+    "nome_en": "Armor Cannon",
+    "stat_changes": {
+      "def": -1,
+      "spd": -1
+    }
   },
   "Bitter Blade": {
     "bp": 90,
@@ -10267,7 +10857,10 @@
     "accuracy": 100,
     "type_it": "Elettro",
     "nome_it": "Elettroraggio",
-    "nome_en": "Electro Shot"
+    "nome_en": "Electro Shot",
+    "stat_changes": {
+      "spa": 1
+    }
   },
   "Tera Starstorm": {
     "bp": 120,

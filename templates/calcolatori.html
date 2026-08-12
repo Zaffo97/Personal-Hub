@@ -438,6 +438,25 @@
           <option value="">— Nessuna —</option>
         </select>
         </div>
+        <div class="form-group">
+          <label style="font-size:.78rem">Mossa di potenziamento</label>
+          <select id="spe_boost" class="form-control" style="font-size:.78rem" onchange="onBoostSelect()">
+            <option value="">— Nessuna —</option>
+          </select>
+          <div id="spe_boost_nota" style="display:none;margin-top:.25rem;font-size:.68rem"></div>
+        </div>
+        <div class="form-group">
+          <label style="font-size:.78rem">Stage Velocità</label>
+          <select id="spe_stage" class="form-control" style="font-size:.78rem" onchange="updateSpeed()">
+            <option value="-6">-6 ×0.25</option><option value="-5">-5 ×0.286</option>
+            <option value="-4">-4 ×0.333</option><option value="-3">-3 ×0.4</option>
+            <option value="-2">-2 ×0.5</option><option value="-1">-1 ×0.667</option>
+            <option value="0" selected>0 —</option>
+            <option value="1">+1 ×1.5</option><option value="2">+2 ×2</option>
+            <option value="3">+3 ×2.5</option><option value="4">+4 ×3</option>
+            <option value="5">+5 ×3.5</option><option value="6">+6 ×4</option>
+          </select>
+        </div>
     <div class="form-group mb-0">
       <label style="font-size:.78rem">Condizioni</label>
       <div class="flex flex-wrap gap-1" style="font-size:.75rem;margin-top:.25rem">

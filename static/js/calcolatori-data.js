@@ -24,6 +24,14 @@ function nomeVis(voce, chiave) {
   return chiave || '';
 }
 
+// Moltiplicatori degli stage, gli stessi per Attacco, Difesa e Velocita'. Stavano
+// dentro calcDamage() come funzione annidata: ricopiarli nello Speed Tier avrebbe
+// creato la seconda copia di una tabella che deve restare unica, che e' lo stesso
+// motivo per cui TYPE_CHART e' stata deduplicata l'08/08. Valori invariati.
+const STAGE_MULT = {'-6':0.25,'-5':0.286,'-4':0.333,'-3':0.4,'-2':0.5,'-1':0.667,
+                    '0':1,'1':1.5,'2':2,'3':2.5,'4':3,'5':3.5,'6':4};
+function stageMult(stage){ return STAGE_MULT[String(stage)] ?? 1; }
+
 const TYPE_EN_TO_IT = {
   "normal":"Normale","fire":"Fuoco","water":"Acqua","electric":"Elettro",
   "grass":"Erba","ice":"Ghiaccio","fighting":"Lotta","poison":"Veleno",

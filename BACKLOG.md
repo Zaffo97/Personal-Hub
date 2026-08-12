@@ -782,9 +782,57 @@ I valori del datalist sono le **chiavi del catalogo**, non i nomi tradotti: è l
 convenzione del datalist Held Item qui accanto, ed è ciò che finisce nel DB quando il
 team viene salvato. Cambiarla avrebbe cambiato i dati salvati.
 
-### ⬜ Cosa resta
+### ✅ Speed Tier — chiuso il 12/08/2026
 
-- ⬜ lo **Speed Tier**, dove le mosse non entrano ma lo schema sarebbe lo stesso
+La voce era scritta male: dicevo «lo schema sarebbe lo stesso», ma nello Speed Tier
+**non c'era nessun campo mossa e nemmeno un selettore di stage**. La Velocità si muoveva
+solo con le cinque caselle fisse (Tailwind, Scarf, Paralisi, Icy Wind, Trick Room), il
+meteo e l'abilità. Non c'era niente da riagganciare: c'era da aggiungere.
+
+Aggiunti due campi, che lavorano insieme:
+
+- **Mossa di potenziamento** — le mosse che alzano la Velocità e che **quel Pokémon può
+  davvero imparare nella regulation attiva**. Stesso doppio filtro del tab Danno:
+  `MOVES_DB` ∩ `d.moves`
+- **Stage Velocità**, da −6 a +6. Scegliere la mossa lo imposta, ma **non lo blocca**:
+  uno stage può arrivare da fuori — il Coaching di un alleato, un debuff avversario —
+  e nelle doppie VGC è metà dei casi
+
+**Di quanto alza non è indovinato.** Serviva un dato che il catalogo non aveva: delle
+919 mosse, **zero** dicevano quanti stage muovono. Importato con
+`python scripts/importa_variazioni_stat.py [--dry-run]` da
+`move_meta_stat_changes.csv` del dump PokéAPI — **174 mosse arricchite**, di cui **22
+alzano la Velocità**. È una proprietà oggettiva della mossa, non una scelta di
+bilanciamento: vale la stessa eccezione che `build_catalog.py` documenta per il flag
+`contact`. Solo in aggiunta, mai in sovrascrittura, e rieseguendolo dice «niente da
+aggiungere».
+
+Misurato in browser su `ma`:
+
+| | |
+|---|---|
+| Dragapult, tendina | **+2 Agilità**, **+1 Dragodanza** — solo le sue |
+| Dragapult 162 → Dragodanza | **243** (×1.5 esatto) |
+| Dragapult 162 → Agilità | **324** (×2 esatto), e i Pokémon più veloci passano da 3 a **0** |
+| Torkoal | +2 Gettaguscio, +1 Forzantica, +1 Nitrocarica, +1 Rapigiro |
+| Torkoal 40, stage −1 a mano | **26** (×0.667) |
+| `Mega Meowstic (Male)` | avviso giallo, tendina con tutte quelle della regulation |
+
+⚠️ **Un baco trovato dalla prova, non dalla lettura**: cambiando Pokémon lo stage
+restava applicato, e **Incineroar mostrava 160 invece di 80** perché teneva il +2 di
+Dragapult. Muto, come al solito. Ora cambiare Pokémon azzera mossa e stage: venivano da
+una mossa che il nuovo Pokémon può benissimo non avere.
+
+**`stageMult()` è stata spostata** da dentro `calcDamage()` a `calcolatori-data.js`:
+ricopiarla nello Speed Tier avrebbe creato la seconda copia di una tabella che deve
+restare unica, che è lo stesso motivo per cui `TYPE_CHART` è stata deduplicata l'08/08.
+Valori invariati, e riverificato che il tab Danno non si sia mosso: regola #8 esatta
+(A=183, D=122, HP=221, 85-102), ATK +2 → **×1.97**, ATK −2 → ×0.50, DEF +2 → ×0.51,
+DEF −2 → ×1.97, e il **critico continua a ignorare lo stage negativo dell'attaccante**
+(153 con −2 e 153 a zero, cioè il ×1.5 del critico).
+
+Sweep: **21 pagine, 34 blocchi `<script>`, 1992 handler inline, zero errori**, più i 7
+moduli `calcolatori-*.js` passati a `new Function()`.
 - ⬜ il calcolatore **non impedisce** di scrivere una mossa illegale: la segnala e basta.
   È voluto per ora — un blocco duro sulle voci senza elenco sarebbe un falso divieto
 

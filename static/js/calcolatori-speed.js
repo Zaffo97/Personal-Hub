@@ -61,11 +61,61 @@ async function loadSpePkmn(){
       speAbilSel.appendChild(opt);
     });
 }
+    popolaBoost(d, name);
     // Riempire spe_base non bastava: senza questa chiamata la propria Velocità
     // restava a "—" finché non si toccava un altro campo, e la tabella restava
     // confrontata con la velocità precedente.
     updateSpeed();
   },500);
+}
+
+// ── Mosse che alzano la Velocità ──────────────────────────────────────────────
+// Il quanto non è indovinato: viene da `stat_changes` nel catalogo mosse, importato
+// da `move_meta_stat_changes.csv` del dump PokéAPI (Agilità +2, Dragodanza +1).
+// L'elenco è filtrato due volte, come nel tab Danno: le mosse della regulation
+// (MOVES_DB) e quelle che quel Pokémon può davvero imparare (d.moves).
+function popolaBoost(d, nome){
+  const sel = document.getElementById('spe_boost');
+  const nota = document.getElementById('spe_boost_nota');
+  if (!sel) return;
+  // Cambiando Pokémon lo stage torna a zero: veniva da una mossa che il nuovo
+  // Pokémon puo' benissimo non avere, e lasciarlo applicato mostrava un numero
+  // gonfiato senza dirlo — Incineroar dava 160 invece di 80 perche' teneva il +2 di
+  // Dragapult. E' la classe di baco muto su cui questo progetto e' gia' inciampato.
+  sel.value = '';
+  const stage = document.getElementById('spe_stage');
+  if (stage) stage.value = '0';
+  const legali = (d && Array.isArray(d.moves)) ? new Set(d.moves) : null;
+  const chiavi = Object.keys(MOVES_DB).filter(m =>
+    (MOVES_DB[m].stat_changes?.spe || 0) > 0 && (!legali || legali.has(m)));
+  chiavi.sort((a, b) =>
+    (MOVES_DB[b].stat_changes.spe - MOVES_DB[a].stat_changes.spe)
+    || nomeVis(MOVES_DB[a], a).localeCompare(nomeVis(MOVES_DB[b], b), LANG));
+  sel.innerHTML = '<option value="">— Nessuna —</option>' + chiavi.map(m =>
+    `<option value="${m.replace(/"/g,'&quot;')}">+${MOVES_DB[m].stat_changes.spe} ${nomeVis(MOVES_DB[m], m)}</option>`
+  ).join('');
+  if (!nota) return;
+  if (!legali) {
+    nota.style.display = 'block';
+    nota.style.color = 'var(--warning, #d90)';
+    nota.textContent = `⚠️ Nessun elenco mosse per ${nome} in ${REG_ID}: mostrate tutte quelle della regulation`;
+  } else if (!chiavi.length) {
+    nota.style.display = 'block';
+    nota.style.color = 'var(--text-muted, #888)';
+    nota.textContent = `${nome} non ha mosse che alzano la Velocità in ${REG_ID}`;
+  } else {
+    nota.style.display = 'none';
+  }
+}
+
+// Scegliere la mossa imposta lo stage, ma non lo blocca: lo stage può arrivare anche
+// da fuori — il Coaching di un alleato, un debuff avversario — quindi resta
+// modificabile a mano dopo.
+function onBoostSelect(){
+  const mv = document.getElementById('spe_boost').value;
+  const stage = document.getElementById('spe_stage');
+  if (mv && stage && MOVES_DB[mv]) stage.value = String(MOVES_DB[mv].stat_changes.spe);
+  updateSpeed();
 }
 
 function updateSpeed() {
@@ -92,6 +142,10 @@ function updateSpeed() {
   if (fx.type === 'speed_status'  && para)                   abilMult = fx.value || 1.5;
   spd = Math.floor(spd * abilMult);
   const quickFeet = (fx.type === 'speed_status');
+
+  // Stage: stessa tabella del tab Danno, condivisa in calcolatori-data.js.
+  const stage = parseInt(document.getElementById('spe_stage')?.value) || 0;
+  if (stage) spd = Math.floor(spd * stageMult(stage));
 
   // Item
   if (scarf) spd = Math.floor(spd * 1.5);

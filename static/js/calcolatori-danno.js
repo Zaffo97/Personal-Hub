@@ -262,12 +262,8 @@ function calcDamage(){
         const hasStab = effectiveAtkTypes.includes(mvType);
         stab = hasStab ? 1.5 : 1.0;
       }
-  // ── Stage moltiplicatori ─────────────────────────────────────────────────────
-  function stageMult(stage){
-    const tbl={'-6':0.25,'-5':0.286,'-4':0.333,'-3':0.4,'-2':0.5,'-1':0.667,
-               '0':1,'1':1.5,'2':2,'3':2.5,'4':3,'5':3.5,'6':4};
-    return tbl[String(stage)]??1;
-  }
+  // `stageMult()` sta ora in calcolatori-data.js: la usa anche lo Speed Tier, e due
+  // copie della stessa tabella sono esattamente ciò che qui è già andato storto.
 
   // ── Stat effettive ────────────────────────────────────────────────────────────
   const aStat = cat==='physical'?'atk':'spa';
