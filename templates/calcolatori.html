@@ -163,10 +163,15 @@
       <!-- ABILITY ATK -->
       <div class="form-group" style="margin-top:.35rem">
         <label style="font-size:.72rem">Ability ATK</label>
-        <!-- Popolata da popolaSelectAbilita() con tutte le abilità di abilities.json -->
+        <!-- Popolata da popolaSelectAbilita(): solo le abilità del Pokémon scelto,
+             salvo la spunta "mostra tutte" qui sotto. -->
         <select id="atk_ability" class="form-control" style="font-size:.78rem" onchange="calcDamage()">
       <option value="">— Nessuna —</option>
       </select>
+      <label style="display:flex;align-items:center;gap:.3rem;cursor:pointer;font-size:.68rem;margin-top:.25rem;font-weight:400">
+        <input type="checkbox" id="abil_tutte_dmg" style="accent-color:var(--primary)" onchange="ripopolaAbilita()">
+        mostra tutte le abilità del catalogo
+      </label>
       </div>
     </div>
   </div>
@@ -551,6 +556,10 @@
         <select id="stat_abil" class="form-control" onchange="updateStatPreview()">
           <option value="">— Nessuna —</option>
         </select>
+        <label style="display:flex;align-items:center;gap:.3rem;cursor:pointer;font-size:.68rem;margin-top:.25rem;font-weight:400">
+          <input type="checkbox" id="abil_tutte_stat" style="accent-color:var(--primary)" onchange="ripopolaAbilita()">
+          mostra tutte le abilità del catalogo
+        </label>
       </div>
       <div class="stat-grid">
         {% for s,l in [("hp","HP"),("atk","ATK"),("def","DEF"),("spa","SpA"),("spd","SpD"),("spe","SPE")] %}

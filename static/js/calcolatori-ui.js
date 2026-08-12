@@ -53,7 +53,9 @@ async function loadTeamPkmn(idx,side,ev){
 }
 
 // Sposta overlay al body per evitare problemi con overflow-x:hidden
-// Riempie le tre select abilità con l'elenco completo, marcando le attive
+// Al caricamento le select abilità mostrano l'elenco completo, marcando le attive:
+// nessun Pokémon è ancora scelto, quindi non c'è niente su cui stringerle. Si
+// restringono da sole quando un Pokémon viene caricato (loadSide / loadStatPkmn).
 document.addEventListener('DOMContentLoaded', function(){
   popolaSelectAbilita(document.getElementById('atk_ability'));
   popolaSelectAbilita(document.getElementById('def_ability'));

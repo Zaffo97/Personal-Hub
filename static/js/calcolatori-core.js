@@ -146,9 +146,37 @@ function aggiornaNotaMeteo() {
 // Riempie una select con TUTTE le abilità (408), marcando con ● quelle che
 // incidono sul calcolo. Le altre restano selezionabili come pura informazione.
 // `ambito`: 'danno' (default) | 'velocita' | 'stat' — cambia solo quali marcare.
-function popolaSelectAbilita(sel, ambito) {
+// Abilita' del Pokemon scelto, per ogni tendina che ne ha una. Serve a ripopolare
+// quando si spunta "mostra tutte" senza dover rifare la fetch.
+const ABILITA_POKEMON = {};
+
+// `true` se la spunta "mostra tutte" del riquadro e' attiva. Esiste perche' il
+// catalogo abilita' contiene anche le voci **inventate** di Champions, che nessun
+// Pokemon ha in catalogo: senza una via d'uscita, stringere le tendine le renderebbe
+// inutilizzabili.
+function mostraTutteAbilita(chiave) {
+  const box = document.getElementById(chiave === 'stat' ? 'abil_tutte_stat' : 'abil_tutte_dmg');
+  return !!(box && box.checked);
+}
+
+// Ripopola le quattro tendine con le abilita' gia' note, senza rifare la rete.
+function ripopolaAbilita() {
+  popolaSelectAbilita(document.getElementById('atk_ability'), undefined, ABILITA_POKEMON.atk, 'dmg');
+  popolaSelectAbilita(document.getElementById('def_ability'), undefined, ABILITA_POKEMON.def, 'dmg');
+  popolaSelectAbilita(document.getElementById('stat_abil'), 'stat', ABILITA_POKEMON.stat, 'stat');
+  popolaSelectAbilita(document.getElementById('stat_abil_b'), 'stat', ABILITA_POKEMON.stat_b, 'stat');
+}
+
+// `soloQueste` = le abilita' di quel Pokemon. Se e' nulla o vuota si mostrano tutte:
+// e' il caso delle forme inventate, che in catalogo di abilita' non ne hanno, e
+// lasciarle senza scelte sarebbe peggio del rumore che il filtro toglie.
+function popolaSelectAbilita(sel, ambito, soloQueste, riquadro) {
   if (!sel || typeof ABILITIES_DATA !== 'object') return;
   const precedente = sel.value;
+  let chiavi = Object.keys(ABILITIES_DATA);
+  const proprie = (soloQueste || []).map(a => risolviChiave(ABILITIES_DATA, a)).filter(Boolean);
+  const ristretto = proprie.length && !mostraTutteAbilita(riquadro);
+  if (ristretto) chiavi = chiavi.filter(k => proprie.includes(k));
   const rilevante = ambito === 'velocita'
     ? (n => ['speed_weather','speed_status'].includes(abilityEffect(n).type))
     : ambito === 'stat' ? abilityIncideSulleStat
@@ -159,7 +187,7 @@ function popolaSelectAbilita(sel, ambito) {
   frag.appendChild(vuota);
   // Il `value` resta la CHIAVE: e' quella che il motore degli effetti cerca dentro
   // ABILITIES_DATA. Cambia solo il testo che si legge.
-  Object.keys(ABILITIES_DATA)
+  chiavi
     .sort((a, b) => nomeVis(ABILITIES_DATA[a], a)
                       .localeCompare(nomeVis(ABILITIES_DATA[b], b), LANG))
     .forEach(nome => {
@@ -174,7 +202,11 @@ function popolaSelectAbilita(sel, ambito) {
   });
   sel.innerHTML = '';
   sel.appendChild(frag);
-  if (precedente) sel.value = precedente;
+  // L'abilita' scelta prima puo' non essere piu' in elenco (Pokemon cambiato, o
+  // filtro appena stretto): rimetterla alla cieca lascerebbe un `value` che la
+  // tendina non mostra piu', cioe' un calcolo con un'abilita' invisibile.
+  if (precedente && chiavi.includes(precedente)) sel.value = precedente;
+  else if (precedente) sel.value = '';
 }
 
 // ── Nome visualizzato -> chiave ──────────────────────────────────────────────

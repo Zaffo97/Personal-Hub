@@ -38,6 +38,10 @@ async function loadStatPkmn(side){
     if(d.isMega) abilHtml += ' <span style="background:var(--primary);color:#fff;font-size:.6rem;padding:.1rem .4rem;border-radius:10px;font-weight:700">MEGA</span>';
     if(d.megaBST) abilHtml += ' <span style="color:var(--text-muted);font-size:.65rem">BST '+d.megaBST+'</span>';
     document.getElementById('stat_abils'+sfx).innerHTML=abilHtml;
+    // Le abilita' erano qui solo come testo: ora popolano anche la tendina, che
+    // prima elencava tutte e 391 le voci del catalogo.
+    ABILITA_POKEMON[sfx==='_b'?'stat_b':'stat']=abils;
+    popolaSelectAbilita(document.getElementById('stat_abil'+sfx), 'stat', abils, 'stat');
     updateStatPreview();
   },300);
 }

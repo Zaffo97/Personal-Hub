@@ -118,6 +118,10 @@ function loadSide(side){
       if(url) sp.innerHTML='<img src="'+url+'" style="height:66px;object-fit:contain" loading="lazy">';
       else sp.innerHTML='<span style="font-size:2.5rem;opacity:.25">🧬</span>';
     }
+    // La tendina abilità si stringe a quelle di questo Pokémon (con la via d'uscita
+    // "mostra tutte", che serve alle abilità inventate di Champions).
+    ABILITA_POKEMON[side] = d.abilities || [];
+    popolaSelectAbilita(document.getElementById(side + '_ability'), undefined, d.abilities, 'dmg');
     recalcSide(side);
     checkFormToggle(side, name);
     // Le mosse sono quelle di chi attacca: il difensore non le cambia.

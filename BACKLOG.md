@@ -863,7 +863,76 @@ separate perché richiedono fonti diverse:
 
 ---
 
-## ⬜ DA FARE — ogni Pokémon deve mostrare solo le **sue** abilità (aperta l'11/08/2026)
+## ✅ Ogni Pokémon mostra solo le **sue** abilità — chiuso il 12/08/2026
+
+### Prima il prerequisito, e il backlog aveva torto a metà
+
+Diceva che «le 238 specie con una sola abilità sono quasi certamente incomplete».
+`python scripts/completa_abilita_pokemon.py [--dry-run]` lo ha **misurato invece di
+presumerlo**, riempiendo il catalogo da `pokemon_abilities.csv` del dump PokéAPI, che
+include le **abilità nascoste** — è lì che stava quasi tutto il buco.
+
+| | |
+|---|---|
+| voci completate | **182**, con **+184 abilità** |
+| abilità per voce, prima | `0:16 · 1:411 · 2:396 · 3:520` |
+| abilità per voce, dopo | `0:15 · 1:325 · 2:389 · 3:612 · 4:2` |
+| restano con **una sola** | 325 — ma **323 ne hanno davvero una sola** anche per PokéAPI |
+| casi ancora dubbi | **2**, e sono `Mega Meowstic (M)` e `(F)`, inventate |
+
+Le 323 sono **Mega e forme regionali**, che di abilità ne hanno una sola per davvero:
+Mega Venusaur ha solo Thick Fat. Il buco vero era un altro — a Venusaur mancava
+Chlorophyll, a Charizard Solar Power, a Pikachu Lightning Rod: le nascoste.
+
+Lo script è **solo in aggiunta, mai in rimozione**: le 21 abilità che PokéAPI non
+conosce restano dove sono, sono le voci di Champions e toglierle vorrebbe dire decidere
+che sono sbagliate. Rieseguendolo dice «niente da aggiungere».
+
+### Poi le tendine
+
+| Punto | Prima | Ora |
+|---|---|---|
+| **Tab Danno** (`atk_ability`/`def_ability`) | tutte e 386 | **solo le sue** |
+| **Stat Preview** (`stat_abil`/`stat_abil_b`) | tutte e 386, con le sue solo come testo | **solo le sue** |
+| **Speed Tier** | già corretto, era il modello | invariato |
+
+Misurato in browser: da **387** voci a **2** per Venusaur (Clorofilla, ● Erbaiuto), 2 per
+Pikachu (Parafulmine, Statico), 2 per Incineroar (● Aiutofuoco, Prepotenza), **3** per
+Amoonguss e **4** per Torkoal nello Stat Preview.
+
+**La via d'uscita c'è, ed è quella che il backlog stesso proponeva**: una spunta
+*«mostra tutte le abilità del catalogo»* per riquadro — una nel tab Danno, una nello
+Stat Preview, indipendenti. Serve perché il catalogo contiene anche le **abilità
+inventate di Champions**, che nessun Pokémon ha in catalogo: senza, sarebbero
+inutilizzabili. Provata: 387 ⇄ 2.
+
+⚠️ **Due comportamenti che valeva la pena decidere invece di lasciar succedere:**
+
+- se un Pokémon **non ha abilità** in catalogo, la tendina resta **completa**: sono le
+  forme inventate, e lasciarle senza scelte sarebbe peggio del rumore che il filtro
+  toglie. In pratica quasi non capita, perché `/api/pokemon` fa già ereditare alla forma
+  le abilità della specie base quando le sue sono vuote — `Mega Darkrai` riceve
+  `Bad Dreams` da Darkrai
+- l'abilità **già scelta** che sparisce dall'elenco (Pokémon cambiato, o filtro appena
+  stretto) viene **azzerata**, non lasciata come `value` invisibile: provato scegliendo
+  Prepotenza su Incineroar e passando a Venusaur, la tendina torna a «— Nessuna —».
+  Rimetterla alla cieca avrebbe significato calcolare con un'abilità che non si vede
+
+Verifica: regola #8 esatta (A=183, D=122, HP=221, 85-102 = 38.5%–46.2%) e sweep su
+**21 pagine, 34 blocchi `<script>`, 1998 handler inline, zero errori**, più i 7 moduli
+`calcolatori-*.js`.
+
+> ✅ **Correzione a quanto questo file diceva**: `Zero To Hero`, l'abilità di Palafin,
+> era segnata come «l'unico dei 307 nomi che non risolve». **Risolve**, su `Supercambio`
+> (`nome_en: "Zero to Hero"`), e la tendina di Palafin la mostra. La voce era stale.
+>
+> ⚠️ **Un difetto introdotto dall'import e corretto nella stessa sessione**: il catalogo
+> scrive `Zero To Hero` e PokéAPI `Zero to Hero`, che alla lettera sono due stringhe
+> diverse, quindi la prima esecuzione le ha aggiunte **entrambe** a Palafin. Ora il
+> confronto ignora le maiuscole e lo script **ripara** il doppione se lo trova: era
+> l'unico caso su tutto il catalogo, verificato.
+
+### Com'era la voce, prima (aperta l'11/08/2026)
 
 Oggi selezionando un Pokémon nel calcolatore la tendina Abilità elenca **tutte e 386**
 le voci del catalogo, con un ● su quelle che incidono sul calcolo. Devono comparire
@@ -1211,7 +1280,7 @@ Dettagli che vale la pena ricordare:
 | ✅ | **Le meccaniche del team builder erano morte** ⚠️ | Trovato e chiuso il 12/08/2026. `loadRegulationData()` faceva `CURRENT_MECHANICS = (d.regulation && d.regulation.mechanics) ? … : []`, ma **`/api/regulation/<id>/data` non restituiva `regulation`**: la risposta aveva solo `ok`, `reg_id`, `roster`, `count`. Quindi `CURRENT_MECHANICS` era **sempre vuoto**, il selettore stampava la sola voce «— nessuna —» e **la Mega non era selezionabile per nessun membro del team**, su nessuna regulation, benché tutte e tre abbiano `"mechanics": ["mega"]` nel registro. Stessa famiglia dei tre endpoint fantasma dell'11/08. Due righe soffrivano dello stesso buco: anche `d.items` non esisteva, ma lì il danno era nullo perché il datalist oggetti lo stampa già Jinja. **Non bastava aggiungere `regulation`**: `MEGA_MAP` era una `const` stampata da Jinja al caricamento, quindi restava quella della regulation iniziale — e il default del sito è `pokedex`, che una mega_map non ce l'ha. Ora l'endpoint restituisce anche `mega_map` e la costante è diventata `let`, aggiornata a ogni cambio di regulation. Verificato in browser: da `pokedex` a `ma` la mega_map passa da **0 a 58** voci, gli oggetti da 397 a 58, e Charizard offre **Mega Charizard X** e **Mega Charizard Y** |
 | ⬜ | **`build_catalog.py` oggi distruggerebbe il catalogo** ⚠️ | Trovato il 12/08/2026 preparando l'import delle mosse, **non corretto** perché fuori scope e perché non è più servito eseguirlo. Lo script legge come base i **file storici** (`data/pokemon_catalog.json`, `moves_ma.json`, …) e scrive il risultato in `data/catalog/`. Quella base ha **174 voci** contro le 1026 di oggi, non ha nessun `nome_it`/`nome_en` (il catalogo attuale li ha su 1026 su 1026) e ha ancora le **Mega convertite**: `Mega Venusaur` vale `hp 155` lì e `hp 80` qui. Peggio, `MEGA_BONUS` riapplicherebbe `+75 HP / +20` alle Mega nuove, cioè esattamente la conversione che la deconversione dell'11/08 ha tolto. Rieseguirlo oggi **riporterebbe indietro il catalogo di quattro giorni di lavoro, in silenzio**. Va fatto leggere `data/catalog/` quando esiste, e `MEGA_BONUS` va tolto. Fino ad allora, **non eseguirlo** |
 | ⬜ | **`pokedex` non ha una `mega_map`** | Emerso il 12/08/2026 riparando le meccaniche del team builder: `data/regulations/pokedex.json` ha `mega_map` **vuota** (0 voci, contro 58 di MA e 73 di MB). Il codice ora funziona, ma sulla regulation **di default del sito** il selettore Mega resta comunque vuoto — non per un baco, per un dato che non c'è. È una scelta di contenuto, quindi la decide Davide: o `pokedex` riceve l'unione delle mega_map esistenti (più le Mega del catalogo non ancora mappate), o si accetta che la Mega si scelga solo sulle regulation che la disciplinano. `scripts/completa_mega_map.py` è già lo strumento giusto e sa fermarsi su ciò che non risolve |
-| ⬜ | Catalogo con abilità incomplete | Ricontato 11/08/2026 sul catalogo di oggi: **238 specie su 1026** hanno una sola abilità e 2 nessuna, più **173 forme annidate su 317** con una sola. Quasi tutti ne hanno 2-3 con la nascosta. ⚠️ È il **prerequisito** della voce «ogni Pokémon deve mostrare solo le sue abilità», in cima: stringere le tendine prima di colmare questo buco toglierebbe scelte legittime |
+| ✅ | Catalogo con abilità incomplete | Chiuso 12/08/2026 con `scripts/completa_abilita_pokemon.py`: **182 voci completate, +184 abilità**, quasi tutte **nascoste** (a Venusaur mancava Chlorophyll, a Pikachu Lightning Rod). Le voci con una sola abilità scendono da 411 a **325**, e di quelle **323 ne hanno davvero una sola** anche per PokéAPI — sono Mega e forme regionali. La voce diceva che erano «quasi certamente incomplete»: era vero solo per 182 su 411. Restano 2 casi dubbi, le due Mega Meowstic inventate |
 | ✅ | Chiavi mega incoerenti nel catalogo | Chiuso 11/08/2026. Non erano anomalie ma **doppioni**: `mega-banette`, `mega-chimecho` e `mega-crabominable` esistevano sia come chiave top-level sia come forma annidata nella specie base. Le forme annidate, deconvertite, sono quelle giuste — le top-level sono state rimosse (1029 → 1026 voci). Gli override sprite in `api_pokemon.py:70-73` **restano**: sono indicizzati sul nome normalizzato, non sulla chiave, e servono ancora perché Mega Chimecho e Mega Crabominable sono inventate e non hanno uno sprite online |
 
 ---
