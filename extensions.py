@@ -149,7 +149,11 @@ def init_db():
     # Migrazione: appid Steam del gioco, NULL per le voci inserite a mano.
     # hours_played sono le ore EFFETTIVAMENTE giocate lette da Steam:
     # nulla a che vedere con hours_hltb, che e' la stima di durata HowLongToBeat.
-    for col, tipo in [("steam_appid", "INTEGER"), ("hours_played", "REAL")]:
+    # steam_tags sono i tag della community, molto piu' fini dei generi: un gioco che
+    # per `genre` e' solo "Azione" qui puo' essere "Souls-like, Open World, Difficult".
+    # Elenco separato da virgole, gia' ordinato dal piu' votato.
+    for col, tipo in [("steam_appid", "INTEGER"), ("hours_played", "REAL"),
+                      ("steam_tags", "TEXT")]:
         try:
             db.execute(f"ALTER TABLE games ADD COLUMN {col} {tipo}")
             db.commit()

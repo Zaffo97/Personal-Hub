@@ -318,9 +318,110 @@ def steam_arricchisci():
                     "rimasti": rimasti, "interrotto": errore_rete})
 
 
-def _generi(riga):
-    """I generi di un gioco, come insieme. `genre` è un elenco separato da virgole."""
-    return {g.strip() for g in (riga["genre"] or "").split(",") if g.strip()}
+# --- Tag della community ----------------------------------------------------
+# I `genres` di Steam sono pochi e grossi ("Azione" ce l'hanno 23 giochi su 33 di
+# questa libreria); i **tag** sono quelli che distinguono davvero — "Souls-like",
+# "Open World", "Coop". Valve pero' non li espone in `appdetails`, e la pagina del
+# negozio e' dietro il controllo dell'eta': su Elden Ring restituisce il solo
+# "Violenza". La fonte che li da' in modo programmatico e' **SteamSpy**, pubblica e
+# senza chiave, che li restituisce gia' con i voti.
+#
+# ⚠️ I tag sono **solo in inglese**: SteamSpy non ha una versione localizzata. I
+# generi restano in italiano perche' vengono da Steam con `l=italian`.
+STEAMSPY_URL = "https://steamspy.com/api.php?request=appdetails&appid={}"
+STEAMSPY_PAUSA = 1.0        # SteamSpy chiede al massimo una richiesta al secondo
+MAX_TAG = 12                # oltre i primi tag i voti crollano e diventano rumore
+
+
+def _steamspy_tag(appid):
+    """`(elenco_tag_ordinati_per_voti, errore)`. Elenco vuoto = risposta senza tag."""
+    dati, errore = _steam_json(STEAMSPY_URL.format(appid))
+    if errore:
+        return [], errore
+    tag = (dati or {}).get("tags") or {}
+    if isinstance(tag, list):        # SteamSpy manda [] invece di {} quando non ne ha
+        return [], None
+    ordinati = sorted(tag.items(), key=lambda kv: kv[1], reverse=True)
+    return [nome for nome, _ in ordinati[:MAX_TAG]], None
+
+
+@bp.route("/api/steam/tag-da-arricchire")
+@login_required
+def steam_tag_da_arricchire():
+    """Quanti giochi Steam sono ancora senza tag."""
+    db = get_db()
+    n = db.execute("SELECT COUNT(*) FROM games WHERE steam_appid IS NOT NULL"
+                   " AND (steam_tags IS NULL OR steam_tags='')").fetchone()[0]
+    db.close()
+    return jsonify({"rimasti": n})
+
+
+@bp.route("/steam/arricchisci-tag", methods=["POST"])
+@login_required
+def steam_arricchisci_tag():
+    """Riempie i tag leggendoli da SteamSpy, a lotti come per i generi.
+
+    Lotto piu' piccolo del giro dei generi perche' SteamSpy vuole una richiesta al
+    secondo: 6 giochi sono ~6 secondi, che una richiesta HTTP regge senza problemi.
+    """
+    LOTTO = 6
+    db = get_db()
+    da_fare = db.execute(
+        "SELECT id, steam_appid FROM games WHERE steam_appid IS NOT NULL"
+        " AND (steam_tags IS NULL OR steam_tags='') ORDER BY id LIMIT ?", (LOTTO,)).fetchall()
+
+    fatti = senza = 0
+    errore_rete = None
+    for r in da_fare:
+        tag, errore = _steamspy_tag(r["steam_appid"])
+        if errore:
+            # Come per i generi: un guasto di rete NON deve marcare il gioco, o un
+            # errore temporaneo lo escluderebbe per sempre dai tentativi successivi.
+            errore_rete = errore
+            break
+        if tag:
+            db.execute("UPDATE games SET steam_tags=? WHERE id=?", (", ".join(tag), r["id"]))
+            fatti += 1
+        else:
+            db.execute("UPDATE games SET steam_tags='—' WHERE id=?", (r["id"],))
+            senza += 1
+        time.sleep(STEAMSPY_PAUSA)
+    db.commit()
+    rimasti = db.execute("SELECT COUNT(*) FROM games WHERE steam_appid IS NOT NULL"
+                         " AND (steam_tags IS NULL OR steam_tags='')").fetchone()[0]
+    db.close()
+    if errore_rete and not fatti:
+        return jsonify({"errore": errore_rete, "rimasti": rimasti}), 502
+    return jsonify({"fatti": fatti, "senza_tag": senza,
+                    "rimasti": rimasti, "interrotto": errore_rete})
+
+
+def _campi(riga, colonna):
+    return {v.strip() for v in ((riga[colonna] if colonna in riga.keys() else "") or "").split(",")
+            if v.strip() and v.strip() != "—"}
+
+
+def _segnali(riga):
+    """Su cosa si misura la somiglianza: tag **e** generi, tenuti separati.
+
+    I tag sono molto piu' fini dei generi — un gioco che per `genre` e' solo "Azione"
+    puo' essere "Souls-like, Open World, Difficult" — ma non tutti ce l'hanno: le voci
+    senza pagina SteamSpy prendono `—`.
+
+    ⚠️ Usare **o** i tag **o** i generi, il migliore disponibile, sembra sensato ed e'
+    sbagliato: un gioco con tag e uno senza non condividerebbero mai niente, e i
+    secondi sparirebbero dai suggerimenti senza che nessuno se ne accorga. Si usano
+    quindi entrambi, con un prefisso che tiene i due vocabolari **separati**, cosi'
+    ogni termine pesa rispetto ai suoi simili e un tag non viene mai confrontato con
+    un genere.
+    """
+    return ({"tag:" + t for t in _campi(riga, "steam_tags")}
+            | {"gen:" + g for g in _campi(riga, "genre")})
+
+
+def _etichetta(termine):
+    """`tag:Souls-like` -> `Souls-like`: il prefisso è interno, non si mostra."""
+    return termine.split(":", 1)[1] if ":" in termine else termine
 
 
 # Un genere condiviso conta come segnale solo se **meno di metà libreria** ce l'ha:
@@ -370,14 +471,14 @@ def suggerimenti(giochi, quanti=4, id_ancora=None):
             ancora = max(con_ore, key=lambda g: g["hours_played"] or 0)
             motivo = "il più giocato — nessun gioco è «In corso»"
 
-    generi_ancora = _generi(ancora)
+    generi_ancora = _segnali(ancora)
     if not generi_ancora:
         return ancora, motivo, [], f"{ancora['title']} non ha generi in catalogo: non c'è su cosa confrontarlo."
 
     # Quanti giochi hanno ciascun genere: è il denominatore della rarità.
     quanti_hanno = {}
     for g in giochi:
-        for nome in _generi(g):
+        for nome in _segnali(g):
             quanti_hanno[nome] = quanti_hanno.get(nome, 0) + 1
     totale = len(giochi)
 
@@ -385,7 +486,7 @@ def suggerimenti(giochi, quanti=4, id_ancora=None):
     for g in giochi:
         if g["id"] == ancora["id"] or g["status"] in ("Completato", "Abbandonato"):
             continue
-        comuni = generi_ancora & _generi(g)
+        comuni = generi_ancora & _segnali(g)
         if not comuni:
             continue
         punti = sum(math.log(totale / quanti_hanno[nome]) for nome in comuni)
@@ -393,13 +494,14 @@ def suggerimenti(giochi, quanti=4, id_ancora=None):
             continue
         # A parità di somiglianza vengono prima quelli su cui hai speso meno ore:
         # suggerire il gioco che hai già consumato non serve a niente.
-        classifica.append((g, punti, sorted(comuni, key=lambda n: quanti_hanno[n])))
+        classifica.append((g, punti,
+                           [_etichetta(n) for n in sorted(comuni, key=lambda n: quanti_hanno[n])]))
     classifica.sort(key=lambda r: (-r[1], r[0]["hours_played"] or 0))
 
     if not classifica:
         return ancora, motivo, [], f"Nessun altro gioco condivide un genere con {ancora['title']}."
     if classifica[0][1] < SOGLIA_SEGNALE:
-        comuni_deboli = ", ".join(f"«{n}»" for n in generi_ancora)
+        comuni_deboli = ", ".join(f"«{_etichetta(n)}»" for n in sorted(generi_ancora))
         return ancora, motivo, [], (
             f"{ancora['title']} ha solo {comuni_deboli}, che in libreria "
             f"{'hanno' if len(generi_ancora) > 1 else 'ha'} "

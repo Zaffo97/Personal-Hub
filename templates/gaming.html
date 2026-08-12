@@ -54,7 +54,7 @@
           <div style="min-width:0">
             <div class="text-sm font-600" style="white-space:nowrap;overflow:hidden;text-overflow:ellipsis">{{ g.title }}</div>
             <div class="text-xs text-muted" style="white-space:nowrap;overflow:hidden;text-overflow:ellipsis"
-                 title="Generi in comune, dal più raro in libreria">{{ comuni|join(' · ') }}</div>
+                 title="In comune: {{ comuni|join(', ') }}">{{ comuni[:4]|join(' · ') }}{% if comuni|length > 4 %} +{{ comuni|length - 4 }}{% endif %}</div>
           </div>
         </div>
       </a>
@@ -62,8 +62,9 @@
     </div>
     {% if suggeriti %}
     <div class="text-xs text-muted" style="margin-top:.5rem">
-      Dalla tua libreria, per generi in comune &mdash; i generi rari pesano più di quelli
-      che hanno quasi tutti. Completati e abbandonati restano fuori.
+      Dalla tua libreria, per <strong>tag</strong> e generi in comune &mdash; quelli rari
+      pesano più di quelli che hanno quasi tutti. I tag vengono da SteamSpy e sono in
+      inglese; chi non ne ha viene confrontato sui generi. Completati e abbandonati restano fuori.
     </div>
     {% endif %}
   </div>

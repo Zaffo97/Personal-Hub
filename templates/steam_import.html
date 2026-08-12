@@ -101,6 +101,26 @@
   </div>
 </div>
 
+<div class="card" style="max-width:860px">
+  <div class="card-body">
+    <div class="flex items-center gap-2 flex-wrap">
+      <div style="flex:1;min-width:240px">
+        <div class="font-600 text-sm">&#127915;&#65039; Completa i tag</div>
+        <div class="text-xs text-muted" style="line-height:1.5">
+          I generi di Steam sono pochi e grossi &mdash; met&agrave; libreria &egrave; &laquo;Azione&raquo;.
+          I <strong>tag</strong> distinguono davvero (&laquo;Souls-like&raquo;, &laquo;Open World&raquo;) e
+          sono quelli che i suggerimenti usano. Valve non li espone, quindi vengono da
+          <strong>SteamSpy</strong>: pubblico, nessuna chiave, ma <strong>solo in inglese</strong>
+          e una richiesta al secondo, quindi &egrave; pi&ugrave; lento.
+          <span id="tag_conteggio"></span>
+        </div>
+      </div>
+      <button id="btn_tag" class="btn btn-secondary">&#9881;&#65039; Completa</button>
+    </div>
+    <div id="tag_stato" class="text-xs text-muted mt-2"></div>
+  </div>
+</div>
+
 <script>
 (function () {
   const btn  = document.getElementById('btn_arricchisci');
@@ -136,6 +156,56 @@
       st.textContent = fatti + ' completati' + (senza ? ', ' + senza + ' senza genere su Steam' : '') +
                        (d.rimasti ? ' — ne restano ' + d.rimasti + '...' : ' — finito.');
       if (d.interrotto) {            // Steam ha smesso di rispondere: non insistere
+        st.textContent += ' ⚠️ interrotto (' + d.interrotto + '), riprova tra un minuto.';
+        break;
+      }
+      if (!d.rimasti) break;
+    }
+    if (fermato) st.textContent += ' (fermato)';
+    btn.dataset.attivo = ''; btn.textContent = '⚙️ Completa';
+    conta();
+  });
+
+  conta();
+})();
+
+// Stesso schema del blocco generi, su un'altra fonte: SteamSpy invece di Steam.
+// Tenuti separati di proposito — sono due fonti diverse, con limiti diversi, e una
+// che smette di rispondere non deve fermare l'altra.
+(function () {
+  const btn  = document.getElementById('btn_tag');
+  const cont = document.getElementById('tag_conteggio');
+  const st   = document.getElementById('tag_stato');
+  let fermato = false;
+
+  async function conta() {
+    try {
+      const r = await fetch('/gaming/api/steam/tag-da-arricchire');
+      const d = await r.json();
+      cont.textContent = d.rimasti
+        ? d.rimasti + ' giochi senza tag.'
+        : 'Tutti i giochi importati hanno i tag.';
+      btn.disabled = !d.rimasti;
+      return d.rimasti;
+    } catch (e) { cont.textContent = ''; return 0; }
+  }
+
+  btn.addEventListener('click', async function () {
+    if (btn.dataset.attivo) { fermato = true; return; }
+    btn.dataset.attivo = '1'; fermato = false;
+    btn.textContent = '⏹ Ferma';
+    let fatti = 0, senza = 0;
+    while (!fermato) {
+      let d;
+      try {
+        const r = await fetch('/gaming/steam/arricchisci-tag', { method: 'POST' });
+        d = await r.json();
+        if (!r.ok) { st.textContent = '⚠️ ' + (d.errore || 'errore'); break; }
+      } catch (e) { st.textContent = '⚠️ Rete non disponibile'; break; }
+      fatti += d.fatti; senza += d.senza_tag;
+      st.textContent = fatti + ' completati' + (senza ? ', ' + senza + ' senza tag su SteamSpy' : '') +
+                       (d.rimasti ? ' — ne restano ' + d.rimasti + '...' : ' — finito.');
+      if (d.interrotto) {
         st.textContent += ' ⚠️ interrotto (' + d.interrotto + '), riprova tra un minuto.';
         break;
       }

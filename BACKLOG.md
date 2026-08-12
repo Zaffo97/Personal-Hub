@@ -1225,7 +1225,7 @@ schermata di amministrazione per gestirli.
 | ✅ | Collegamento a una API Steam per tracciare i videogiochi | Fatto 10/08/2026. Tre pezzi, vedi sotto |
 | ✅ | Filtri e ordinamento nell'elenco | Fatto 12/08/2026. Prima si filtrava **solo per stato** e si cercava solo per titolo, con l'ordine fisso sulla data di inserimento. Ora ci sono **genere**, **piattaforma** e cinque ordinamenti (recenti, titolo A→Z, ore giocate ↓ e ↑, durata stimata ↓), un contatore «N su M», e i pulsanti di stato **portano con sé** ricerca, filtri e ordinamento invece di azzerarli. Le tendine elencano solo i valori **presenti in libreria**, così non offrono filtri che non danno risultati. Tre dettagli che valeva la pena curare: `genre` è un elenco separato da virgole, quindi il confronto è per sottostringa **con le virgole ai bordi** (`RPG` non deve pescare un ipotetico `JRPG`); `NULLS LAST` non esiste in SQLite, quindi i giochi **senza ore** finiscono in fondo e non in cima all'ordinamento per ore; e il frammento `ORDER BY` viene da un dizionario del codice, mai dalla richiesta — provato che `?sort=pippo'--` ricada sul default senza errori. Aggiunto anche `id DESC` come spareggio: l'import di massa da Steam scrive decine di righe nello stesso secondo, e «aggiunti di recente» mostrava il più vecchio per primo |
 | ✅ | Suggerimenti giochi in base a cosa si sta giocando | Fatto 12/08/2026, **dalla libreria stessa**: Steam non espone «giochi simili» e inventare una somiglianza sarebbe un dato finto, quindi l'unica fonte onesta è la tua libreria. Riquadro «🎯 Se ti è piaciuto …» in cima a `/gaming`, con l'ancora **scegliibile** da una tendina (`?simile_a=<id>`); il default è il gioco «In corso», e non essendocene nessuno ripiega sul più giocato **dicendolo a schermo**. ⚠️ **I generi non pesano uguale**: «Azione» ce l'hanno 23 giochi su 33, «Corse» 2. Il punteggio di un genere condiviso è `log(N/quanti_ce_l_hanno)`, così i generi rari contano e quelli comuni no — senza, il suggeritore direbbe solo «ti piace l'azione». A parità di punteggio vengono prima i giochi con **meno ore**: consigliare quello che hai già consumato non serve. Completati e abbandonati restano fuori. ⚠️ **Quando il segnale è debole non suggerisce lo stesso**: sotto `log(2)` — cioè quando i generi condivisi ce li ha più di metà libreria — mostra il perché invece di riempire la fila. È il caso del default: «Call of Duty® ha solo «Azione», che in libreria ha 23 giochi su 33: troppo comune per distinguere qualcosa» |
-| ⬜ | Suggerimenti giochi — cosa manca | Il consiglio guarda **solo i generi**, perché è l'unico segnale nel DB: `hours_hltb` è vuota su tutti e 33 e le piattaforme sono tutte `PC`. Con i tag di Steam (che sono molto più fini dei generi: «Soulslike», «Coop», «Roguelite») i suggerimenti diventerebbero molto più precisi, ma vanno importati — `appdetails` non li espone, servono `store.steampowered.com/apptags` o lo scraping della pagina | Ora c'è la materia prima: 34 giochi con generi e ore. Steam **non** espone "giochi simili", quindi serve decidere la fonte: suggerire dalla libreria stessa (per genere e ore), o agganciare un servizio esterno |
+| ✅ | Tag di Steam importati | Fatto 12/08/2026. I generi sono pochi e grossi — «Azione» ce l'hanno 23 giochi su 33 — e da soli non bastavano: col solo genere il suggeritore **non riusciva a consigliare niente** partendo da `Call of Duty®`. **Fonte: SteamSpy**, pubblica e senza chiave, che restituisce i tag già coi voti. ⚠️ Le altre due strade non reggono, provate: `appdetails` di Valve **non espone i tag**, e la pagina del negozio è dietro il **controllo dell'età** — su Elden Ring restituisce il solo «Violenza». Nuova colonna `steam_tags` e pulsante **«🎧 Completa i tag»** su `/gaming/steam`, accanto a quello dei generi ma **separato**: sono due fonti diverse con limiti diversi, e una che smette di rispondere non deve fermare l'altra. Lotti da 6 con una pausa di 1 secondo, che è il limite chiesto da SteamSpy. Misurato sulla libreria vera: **33 giochi in 35 secondi, 24 con tag e 9 senza** (i più recenti — ARC Raiders, Battlefield™ 6, Crimson Desert — che SteamSpy non ha ancora). Da 17 generi a **108 tag distinti**, 56 dei quali su un solo gioco. ⚠️ I tag sono **solo in inglese**: SteamSpy non ha una versione localizzata, mentre i generi restano in italiano perché vengono da Steam con `l=italian` | Ora c'è la materia prima: 34 giochi con generi e ore. Steam **non** espone "giochi simili", quindi serve decidere la fonte: suggerire dalla libreria stessa (per genere e ore), o agganciare un servizio esterno |
 
 ### ⚠️ I 33 giochi persi, e la guardia che ora c'è (12/08/2026)
 
@@ -1261,6 +1261,25 @@ perché ci si è fermati non sarebbe mai arrivato a schermo. Aggiunto.
 
 Provati tutti e tre i percorsi: interruzione con `exit 1` e file **intatto**,
 `--anche-se-vuoto` che scrive, e la corsa normale che non si lamenta più.
+
+### ✅ «Non trovo GTA VI» — la ricerca funziona (12/08/2026)
+
+Verificato interrogando davvero l'endpoint, non leggendo il codice. **Il catalogo di
+inserimento è collegato a Steam e funziona**: `storesearch` risponde per Elden Ring (5
+risultati), Hollow Knight: Silksong (2), Grand Theft Auto (7, da GTA V a Vice City).
+
+**GTA VI non c'è perché non ce l'ha Steam**: non ha una pagina sul negozio. Escluse le
+due spiegazioni alternative, misurandole:
+
+| Ipotesi | Prova |
+|---|---|
+| è il negozio italiano a filtrarlo | no: `total=0` anche con `l=english&cc=us` |
+| l'API esclude i giochi non ancora usciti | no: Silksong, non uscito, **compare** |
+
+Quindi finché Rockstar non apre la pagina Steam non c'è endpoint che lo restituisca, e
+va aggiunto a mano da **+ Aggiungi gioco**. Nota di contorno: la ricerca **non capisce
+le abbreviazioni** — `GTA VI` dà 0 risultati mentre `Grand Theft Auto` ne dà 7, ed è
+Steam a comportarsi così, non il nostro codice.
 
 ### Due cose nel dato della libreria, viste il 12/08/2026
 

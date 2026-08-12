@@ -24,7 +24,8 @@
       "notes": null,
       "created_at": "2026-08-12 09:18:33",
       "steam_appid": 1938090,
-      "hours_played": 104.1
+      "hours_played": 104.1,
+      "steam_tags": "FPS, Multiplayer, Shooter, Singleplayer, Action, Military, First-Person, War, Modern, Tactical, Violent, Co-op"
     },
     {
       "id": 2,
@@ -42,7 +43,8 @@
       "notes": null,
       "created_at": "2026-08-12 09:18:33",
       "steam_appid": 440,
-      "hours_played": 87.0
+      "hours_played": 87.0,
+      "steam_tags": "Free to Play, Hero Shooter, Multiplayer, FPS, Shooter, Action, Class-Based, Team-Based, Funny, First-Person, Online Co-Op, Competitive"
     },
     {
       "id": 3,
@@ -60,7 +62,8 @@
       "notes": null,
       "created_at": "2026-08-12 09:18:33",
       "steam_appid": 2246340,
-      "hours_played": 68.7
+      "hours_played": 68.7,
+      "steam_tags": "Hunting, Action, Multiplayer, Online Co-Op, Co-op, Dating Sim, Character Customization, Dragons, Open World, Third Person, Action RPG, Adventure"
     },
     {
       "id": 4,
@@ -78,7 +81,8 @@
       "notes": null,
       "created_at": "2026-08-12 09:18:33",
       "steam_appid": 2358720,
-      "hours_played": 63.2
+      "hours_played": 63.2,
+      "steam_tags": "Mythology, Action RPG, Action, Souls-like, RPG, Combat, Story Rich, Singleplayer, Action-Adventure, Drama, Dark Fantasy, Atmospheric"
     },
     {
       "id": 5,
@@ -96,7 +100,8 @@
       "notes": null,
       "created_at": "2026-08-12 09:18:33",
       "steam_appid": 2807960,
-      "hours_played": 56.8
+      "hours_played": 56.8,
+      "steam_tags": "—"
     },
     {
       "id": 6,
@@ -114,7 +119,8 @@
       "notes": null,
       "created_at": "2026-08-12 09:18:33",
       "steam_appid": 3321460,
-      "hours_played": 56.6
+      "hours_played": 56.6,
+      "steam_tags": "—"
     },
     {
       "id": 7,
@@ -132,7 +138,8 @@
       "notes": null,
       "created_at": "2026-08-12 09:18:33",
       "steam_appid": 2515020,
-      "hours_played": 55.0
+      "hours_played": 55.0,
+      "steam_tags": "Action RPG, Spectacle fighter, Story Rich, Action, Fantasy, JRPG, RPG, Dark Fantasy, Singleplayer, Cinematic, Third Person, 3D"
     },
     {
       "id": 8,
@@ -150,7 +157,8 @@
       "notes": null,
       "created_at": "2026-08-12 09:18:33",
       "steam_appid": 2680010,
-      "hours_played": 54.2
+      "hours_played": 54.2,
+      "steam_tags": "Souls-like, Difficult, Hack and Slash, Action RPG, Anime, Action-Adventure, Third Person, RPG, Action, 3D, Dark Fantasy, Cartoony"
     },
     {
       "id": 9,
@@ -168,7 +176,8 @@
       "notes": null,
       "created_at": "2026-08-12 09:18:33",
       "steam_appid": 553850,
-      "hours_played": 51.8
+      "hours_played": 51.8,
+      "steam_tags": "Online Co-Op, PvE, Third-Person Shooter, Multiplayer, Action, Shooter, Co-op, Sci-fi, Capitalism, Space, Extraction Shooter, Third Person"
     },
     {
       "id": 10,
@@ -186,7 +195,8 @@
       "notes": null,
       "created_at": "2026-08-12 09:18:33",
       "steam_appid": 2909400,
-      "hours_played": 49.8
+      "hours_played": 49.8,
+      "steam_tags": "RPG, Adventure, Action, Singleplayer, JRPG, Open World, Action RPG, Action-Adventure, Party-Based RPG, Story Rich, Spectacle fighter, Third Person"
     },
     {
       "id": 11,
@@ -204,7 +214,8 @@
       "notes": null,
       "created_at": "2026-08-12 09:18:33",
       "steam_appid": 1808500,
-      "hours_played": 42.9
+      "hours_played": 42.9,
+      "steam_tags": "—"
     },
     {
       "id": 12,
@@ -222,7 +233,8 @@
       "notes": null,
       "created_at": "2026-08-12 09:18:33",
       "steam_appid": 1446780,
-      "hours_played": 36.8
+      "hours_played": 36.8,
+      "steam_tags": "Action, Hunting, Online Co-Op, Character Customization, RPG, Multiplayer, Action RPG, Co-op, Singleplayer, Third Person, JRPG, PvE"
     },
     {
       "id": 13,
@@ -240,7 +252,8 @@
       "notes": null,
       "created_at": "2026-08-12 09:18:33",
       "steam_appid": 2694490,
-      "hours_played": 31.6
+      "hours_played": 31.6,
+      "steam_tags": "Action RPG, Hack and Slash, RPG, Souls-like, MMORPG, Dark Fantasy, Isometric, Action, Loot, Dungeon Crawler, Adventure, Multiplayer"
     },
     {
       "id": 14,
@@ -258,7 +271,8 @@
       "notes": null,
       "created_at": "2026-08-12 09:18:33",
       "steam_appid": 881020,
-      "hours_played": 30.8
+      "hours_played": 30.8,
+      "steam_tags": "Anime, JRPG, Action RPG, Action, Online Co-Op, Multiplayer, Fantasy, RPG, Singleplayer, Female Protagonist, Third Person, Spectacle fighter"
     },
     {
       "id": 15,
@@ -276,7 +290,8 @@
       "notes": null,
       "created_at": "2026-08-12 09:18:33",
       "steam_appid": 1790600,
-      "hours_played": 26.0
+      "hours_played": 26.0,
+      "steam_tags": "Anime, Action, Multiplayer, 3D Fighter, Local Multiplayer, Fighting, PvP, Combat, Martial Arts, Singleplayer, Competitive, 3D"
     },
     {
       "id": 16,
@@ -294,7 +309,8 @@
       "notes": null,
       "created_at": "2026-08-12 09:18:33",
       "steam_appid": 2183900,
-      "hours_played": 25.3
+      "hours_played": 25.3,
+      "steam_tags": "Warhammer 40K, Action, Third-Person Shooter, Multiplayer, Co-op, PvE, Adventure, Action-Adventure, Third Person, Sci-fi, Wargame, 3D"
     },
     {
       "id": 17,
@@ -312,7 +328,8 @@
       "notes": null,
       "created_at": "2026-08-12 09:18:33",
       "steam_appid": 745920,
-      "hours_played": 25.1
+      "hours_played": 25.1,
+      "steam_tags": "Co-op, Multiplayer, Creature Collector, RPG, Turn-Based Combat, Story Rich, Adventure, PvE, PvP, Turn-Based Tactics, MMORPG, Character Customization"
     },
     {
       "id": 18,
@@ -330,7 +347,8 @@
       "notes": null,
       "created_at": "2026-08-12 09:18:33",
       "steam_appid": 2074920,
-      "hours_played": 9.7
+      "hours_played": 9.7,
+      "steam_tags": "—"
     },
     {
       "id": 19,
@@ -348,7 +366,8 @@
       "notes": null,
       "created_at": "2026-08-12 09:18:33",
       "steam_appid": 945360,
-      "hours_played": 9.3
+      "hours_played": 9.3,
+      "steam_tags": "Multiplayer, Social Deduction, Online Co-Op, Space, Survival, 2D, Funny, Psychological, Party Game, Co-op, Cartoony, Local Multiplayer"
     },
     {
       "id": 20,
@@ -366,7 +385,8 @@
       "notes": null,
       "created_at": "2026-08-12 09:18:33",
       "steam_appid": 3065170,
-      "hours_played": 5.4
+      "hours_played": 5.4,
+      "steam_tags": "—"
     },
     {
       "id": 21,
@@ -384,7 +404,8 @@
       "notes": null,
       "created_at": "2026-08-12 09:18:33",
       "steam_appid": 2072560,
-      "hours_played": 3.8
+      "hours_played": 3.8,
+      "steam_tags": "—"
     },
     {
       "id": 22,
@@ -402,7 +423,8 @@
       "notes": null,
       "created_at": "2026-08-12 09:18:33",
       "steam_appid": 3097560,
-      "hours_played": 3.6
+      "hours_played": 3.6,
+      "steam_tags": "Multiplayer, Casual, PvP, Co-op, Online Co-Op, Gambling, Indie, FPS, Funny, 3D, First-Person, Dark"
     },
     {
       "id": 23,
@@ -420,7 +442,8 @@
       "notes": null,
       "created_at": "2026-08-12 09:18:33",
       "steam_appid": 431960,
-      "hours_played": 2.4
+      "hours_played": 2.4,
+      "steam_tags": "Mature, Utilities, Anime, Software, Design & Illustration, Animation & Modeling, First-Person, NSFW, Indie, Memes, Cute, Action"
     },
     {
       "id": 24,
@@ -438,7 +461,8 @@
       "notes": null,
       "created_at": "2026-08-12 09:18:33",
       "steam_appid": 341800,
-      "hours_played": 1.8
+      "hours_played": 1.8,
+      "steam_tags": "Co-op, Local Multiplayer, Puzzle, Party Game, Board Game, Local Co-Op, Multiplayer, Party, VR, Casual, Indie, Difficult"
     },
     {
       "id": 25,
@@ -456,7 +480,8 @@
       "notes": null,
       "created_at": "2026-08-12 09:18:33",
       "steam_appid": 273350,
-      "hours_played": 1.7
+      "hours_played": 1.7,
+      "steam_tags": "Action, Multiplayer, Co-op, FPS, Online Co-Op, Shooter, Team-Based, Survival, Sci-fi, Aliens, PvP, First-Person"
     },
     {
       "id": 26,
@@ -474,7 +499,8 @@
       "notes": null,
       "created_at": "2026-08-12 09:18:33",
       "steam_appid": 2139460,
-      "hours_played": 1.4
+      "hours_played": 1.4,
+      "steam_tags": "—"
     },
     {
       "id": 27,
@@ -492,7 +518,8 @@
       "notes": null,
       "created_at": "2026-08-12 09:18:33",
       "steam_appid": 2753000,
-      "hours_played": 0.8
+      "hours_played": 0.8,
+      "steam_tags": "—"
     },
     {
       "id": 28,
@@ -510,7 +537,8 @@
       "notes": null,
       "created_at": "2026-08-12 09:18:33",
       "steam_appid": 3480,
-      "hours_played": 0.7
+      "hours_played": 0.7,
+      "steam_tags": "Casual, Puzzle, Arcade, Singleplayer, Addictive, 2D, Physics, Family Friendly, Multiplayer, Classic, Pinball, Mouse only"
     },
     {
       "id": 29,
@@ -528,7 +556,8 @@
       "notes": null,
       "created_at": "2026-08-12 09:18:33",
       "steam_appid": 2225070,
-      "hours_played": 0.6
+      "hours_played": 0.6,
+      "steam_tags": "—"
     },
     {
       "id": 30,
@@ -546,7 +575,8 @@
       "notes": null,
       "created_at": "2026-08-12 09:18:33",
       "steam_appid": 286940,
-      "hours_played": 0.4
+      "hours_played": 0.4,
+      "steam_tags": "Free to Play, Shooter, Action, Multiplayer, FPS, First-Person, War, Co-op, Zombies, Singleplayer, Military, Massively Multiplayer"
     },
     {
       "id": 31,
@@ -564,7 +594,8 @@
       "notes": null,
       "created_at": "2026-08-12 09:18:33",
       "steam_appid": 570,
-      "hours_played": 0.2
+      "hours_played": 0.2,
+      "steam_tags": "Free to Play, MOBA, Multiplayer, Strategy, e-sports, Team-Based, Competitive, Action, Online Co-Op, PvP, Difficult, Co-op"
     },
     {
       "id": 32,
@@ -582,7 +613,8 @@
       "notes": null,
       "created_at": "2026-08-12 09:18:33",
       "steam_appid": 4000,
-      "hours_played": 0.2
+      "hours_played": 0.2,
+      "steam_tags": "Sandbox, Moddable, Multiplayer, Physics, Building, Casual, Funny, First-Person, Singleplayer, FPS, Simulation, Comedy"
     },
     {
       "id": 33,
@@ -600,7 +632,8 @@
       "notes": null,
       "created_at": "2026-08-12 09:18:33",
       "steam_appid": 438100,
-      "hours_played": 0.1
+      "hours_played": 0.1,
+      "steam_tags": "VR, Free to Play, Multiplayer, Anime, Memes, Funny, Massively Multiplayer, First-Person, Open World, Early Access, Simulation, Casual"
     }
   ],
   "teams": [],
