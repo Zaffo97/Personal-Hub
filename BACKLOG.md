@@ -658,25 +658,74 @@ caso che il backlog citava come impossibile da rifiutare.
 
 ---
 
-## ⬜ DA FARE — le mosse giuste per ogni regulation (aperta il 12/08/2026)
+## 🟨 Le mosse giuste per ogni regulation — calcolatore fatto il 12/08/2026
 
-Chiesta da Davide il 12/08. Il dato ora c'è; manca l'uso.
+Chiesta da Davide il 12/08, e chiusa **per il tab Danno** lo stesso giorno.
 
-Quando si cambia regulation, **le mosse mostrate per un Pokémon devono cambiare con
-lei**. Su `pokedex` si vedono tutte quelle che quel Pokémon può imparare; su `ma` e
-`mb` solo quelle legali lì. L'esempio di Davide, che è anche il caso di prova già
-verificato nei dati: **Incineroar in M-A e M-B non può più imparare Knock Off**.
+Quando si cambia regulation, **le mosse mostrate per un Pokémon cambiano con lei**. Su
+`pokedex` si vedono tutte quelle che quel Pokémon può imparare; su `ma` e `mb` solo
+quelle legali lì. L'esempio di Davide, verificato in browser: **Incineroar in M-A non
+può più imparare Knock Off**.
 
-Dove va agganciato:
+### Com'è fatto
 
-- il **calcolatore**, tab Danno: la casella mossa oggi accetta qualunque nome
-- il **team builder**, che è il punto dove serve di più
-- lo **Speed Tier**, dove le mosse non entrano ma le abilità sì (stesso schema)
+Quale dei due elenchi usare **lo dice la regulation**, non il codice: campo `moveset` in
+`data/regulations.json` (`main` su `pokedex`, `champions` su `ma` e `mb`). Una
+regulation nuova senza quel campo ricade su `main`, che è il default onesto.
 
-Da decidere quando ci si arriva: se un Pokémon **non ha** un elenco per la regulation
-attiva (le 20 forme inventate, `Pawmot` su Champions), si mostra tutto o niente.
-Mostrare niente renderebbe inutilizzabili proprio le forme inventate di Davide, quindi
-il default sensato è **tutto, con un avviso** — ma è una scelta sua.
+- `load_moveset()` e `mosse_legali(nome, reg)` in `blueprints/pokemon.py`. La cache è
+  sull'**mtime** del file: dopo un import il processo se ne accorge da sé, senza riavvio
+- `/api/pokemon/<nome>` accetta `?reg=` e aggiunge `moves` e `moves_source`. Nessun
+  secondo giro di rete: il calcolatore chiama già quell'endpoint a ogni cambio di
+  Pokémon
+- lato JS, il datalist è l'**intersezione** fra le mosse della regulation (`MOVES_DB`,
+  già filtrato dal bootstrap) e quelle dell'attaccante
+
+⚠️ **`moves: null` non vuol dire «nessuna mossa», vuol dire «non lo sappiamo»**, ed è la
+distinzione su cui regge tutto il comportamento nei casi limite. Le forme inventate non
+stanno su PokéAPI: se `null` valesse zero, proprio le forme di Davide diventerebbero
+inutilizzabili. Con `null` si mostrano **tutte** le mosse e si dice perché.
+
+### Misurato in browser
+
+| regulation | mosse della regulation | datalist con Incineroar | Knock Off |
+|---|---|---|---|
+| `pokedex` | 919 | **80** | ✅ c'è |
+| `ma` | 460 | **61** | ❌ sparito |
+| `mb` | 460 | **61** | ❌ sparito |
+
+In italiano l'elenco di Incineroar contiene **Braccioteso** (Darkest Lariat) e **non**
+**Privazione** (Knock Off). `Mega Venusaur` su `ma` ha 45 mosse e Knock Off **ce l'ha**:
+il filtro è per Pokémon, non un divieto generale.
+
+Tre stati sotto la casella mossa, tutti provati:
+
+| Caso | Cosa si vede |
+|---|---|
+| elenco noto | grigio, «61 mosse di Incineroar in ma» |
+| mossa già scritta diventata illegale | rosso, «⚠️ Privazione non è fra le mosse di Incineroar in ma». **La mossa non viene cancellata** sotto le dita di chi sta scrivendo |
+| nessun elenco (forme inventate) | giallo, «⚠️ Nessun elenco mosse per Mega Meowstic (Male) in ma: sono mostrate tutte», e le opzioni restano 460 |
+
+Verifica: **regola #8 esatta in browser** su `pokedex` — A=183, D=122, HP=221, roll
+85-102 = 38.5%–46.2% — e sweep su **20 pagine, 32 blocchi `<script>`, 1933 handler
+inline, zero errori**, più i **7 moduli `calcolatori-*.js`** passati a `new Function()`
+uno per uno. (Meno pagine dei giri precedenti perché l'elenco copre solo le route senza
+parametri: le schermate `/regulation/<id>/...` non ci sono.)
+
+### ⚠️ Un baco intercettato prima che mordesse
+
+Il confronto fra le due liste è **per nome**, e `Mud-Slap` di PokéAPI non esisteva nel
+catalogo, dove dalla fusione dei doppioni dell'11/08 si chiama `Mud Slap`. Sarebbe
+sparita dalla tendina **in silenzio** — la classe di baco su cui questo progetto è già
+inciampato più volte. L'import ora riallinea i nomi accettando solo le corrispondenze
+non ambigue e le **stampa**: 1 su 807, e ora **zero** nomi di mossa fuori dal catalogo.
+
+### ⬜ Cosa resta
+
+- ⬜ **il team builder**, che è il punto dove servirebbe di più
+- ⬜ lo **Speed Tier**, dove le mosse non entrano ma lo schema sarebbe lo stesso
+- ⬜ il calcolatore **non impedisce** di scrivere una mossa illegale: la segnala e basta.
+  È voluto per ora — un blocco duro sulle voci senza elenco sarebbe un falso divieto
 
 ### Serve una fonte in più? — chiesto da Davide il 12/08/2026
 

@@ -466,6 +466,17 @@ def api_pokemon(name):
         sprite    = f"{PDB_SPRITE}/{slug}.png"
         sprite_hd = f"{PDB_ART}/{slug}.jpg"
 
+    # Mosse che questa voce puo' imparare nella regulation richiesta. `moves: null`
+    # non e' "nessuna mossa" ma "non lo sappiamo": succede sulle forme inventate, che
+    # PokeAPI non conosce. Chi legge deve mostrare tutte le mosse in quel caso, non
+    # zero — altrimenti proprio le forme di Davide diventerebbero inutilizzabili.
+    from blueprints.pokemon import _list_regulation_files, mosse_legali
+    reg_id = request.args.get('reg') or regulation_default()
+    reg = next((r for r in _list_regulation_files() if r.get('id') == reg_id), None)
+    mosse, sorgente = mosse_legali(data.get('name') or key, reg)
+    if mosse is None and (data.get('name') or '') != key:
+        mosse, sorgente = mosse_legali(key, reg)
+
     return jsonify({
         'ok':       True,
         'name':     data.get('name', name),
@@ -479,6 +490,8 @@ def api_pokemon(name):
         'abilities': data.get('abilities', []),
         'sprite':   sprite,
         'sprite_hd': sprite_hd,
+        'moves':        mosse,
+        'moves_source': sorgente,
     })
 
 

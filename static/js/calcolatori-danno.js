@@ -5,14 +5,58 @@
 // Prima questa funzione rifaceva fetch su /api/moves, che legge moves_ma.json
 // hardcoded: su qualunque regulation diversa da MA le mosse corrette venivano
 // sovrascritte con quelle di MA (su Pokedex: 921 -> 461).
+// Mosse che l'attaccante puo' imparare nella regulation attiva, da /api/pokemon.
+// `null` non vuol dire "nessuna": vuol dire **non lo sappiamo** — le forme inventate
+// non stanno su PokeAPI, e chi non e' in Champions non ha l'elenco su M-A/M-B. In quel
+// caso si mostrano tutte le mosse con un avviso, perche' mostrarne zero renderebbe
+// inutilizzabili proprio le forme inventate.
+let MOSSE_LEGALI = null;
+
 function loadMovesDB(){
   const dl = document.getElementById('mv_dl');
+  if (!dl) return 0;
+  // Intersezione dei due filtri: le mosse della regulation (MOVES_DB, gia' filtrato
+  // dal bootstrap) e quelle che il Pokemon puo' imparare.
+  const legali = MOSSE_LEGALI ? new Set(MOSSE_LEGALI) : null;
+  const chiavi = Object.keys(MOVES_DB).filter(m => !legali || legali.has(m));
   // Nel datalist si mostra il nome nella lingua attiva; risolviChiave() lo riporta
   // alla chiave quando l'utente lo sceglie.
-  if (dl) dl.innerHTML = Object.keys(MOVES_DB)
+  dl.innerHTML = chiavi
     .map(m => nomeVis(MOVES_DB[m], m))
     .sort((a, b) => a.localeCompare(b, LANG))
     .map(m => '<option value="' + m.replace(/"/g, '&quot;') + '">').join('');
+  return chiavi.length;
+}
+
+// Chiamata quando cambia l'attaccante. `d` e' la risposta di /api/pokemon.
+function applicaMosseLegali(d){
+  MOSSE_LEGALI = (d && Array.isArray(d.moves)) ? d.moves : null;
+  const quante = loadMovesDB();
+  const nota = document.getElementById('mv_legali');
+  if (!nota) return;
+  const nome = (d && (d.nome || d.name)) || '';
+  if (MOSSE_LEGALI) {
+    nota.style.display = 'block';
+    nota.style.color = 'var(--text-muted, #888)';
+    nota.textContent = `${quante} mosse di ${nome} in ${REG_ID}`;
+  } else if (nome) {
+    nota.style.display = 'block';
+    nota.style.color = 'var(--warning, #d90)';
+    nota.textContent = `⚠️ Nessun elenco mosse per ${nome} in ${REG_ID}: sono mostrate tutte`;
+  } else {
+    nota.style.display = 'none';
+  }
+  // La mossa gia' scritta puo' essere diventata illegale col nuovo attaccante: si
+  // lascia scritta ma si dice che non e' nell'elenco, invece di cancellarla sotto le
+  // dita di chi sta digitando.
+  const scritta = document.getElementById('mv_name').value.trim();
+  if (scritta && MOSSE_LEGALI) {
+    const chiave = risolviChiave(MOVES_DB, scritta);
+    if (chiave && !MOSSE_LEGALI.includes(chiave)) {
+      nota.style.color = 'var(--danger, #c33)';
+      nota.textContent = `⚠️ ${nomeVis(MOVES_DB[chiave], chiave)} non è fra le mosse di ${nome} in ${REG_ID}`;
+    }
+  }
 }
 function onMoveSelect(){
   const mv=risolviChiave(MOVES_DB, document.getElementById('mv_name').value);
@@ -76,6 +120,8 @@ function loadSide(side){
     }
     recalcSide(side);
     checkFormToggle(side, name);
+    // Le mosse sono quelle di chi attacca: il difensore non le cambia.
+    if (side === 'atk') applicaMosseLegali(d);
     // Autofill tipi difensore — reset esplicito, gestisce mono-tipo correttamente
     // Autofill tipi difensore — IDs corretti: def_type1 / def_type2
 if (side === 'def' && d.types && d.types.length) {

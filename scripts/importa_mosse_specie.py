@@ -131,11 +131,50 @@ def indice_catalogo():
 
 
 # ── moveset ──────────────────────────────────────────────────────────────────
+def riconcilia_coi_nomi_del_catalogo(mosse_en):
+    """PokéAPI e il catalogo scrivono lo stesso nome in due modi: li riallinea.
+
+    Serve perché a valle il confronto è **per nome**: una mossa che il catalogo non
+    riconosce sparirebbe in silenzio dalla tendina invece di dare errore, che è la
+    classe di baco su cui questo progetto è già inciampato più volte.
+
+    Il criterio non indovina: si accetta solo quando, ignorando trattini e spazi, il
+    nome corrisponde a **una sola** chiave del catalogo. Oggi ne cade esattamente
+    una — `Mud-Slap` di PokéAPI contro `Mud Slap` del catalogo, che ha quella forma
+    dalla fusione dei doppioni dell'11/08 — e il rapporto la stampa.
+    """
+    catalogo = carica_json(os.path.join(CATALOGO, "moves.json"), {}) or {}
+    if not catalogo:
+        return mosse_en, []
+
+    def piatto(s):
+        return s.replace("-", " ").replace("  ", " ").strip().lower()
+
+    per_forma = collections.defaultdict(list)
+    for chiave in catalogo:
+        per_forma[piatto(chiave)].append(chiave)
+
+    riallineate = []
+    fuori = {}
+    for mid, nome in mosse_en.items():
+        if nome in catalogo:
+            fuori[mid] = nome
+            continue
+        candidati = per_forma.get(piatto(nome)) or []
+        if len(candidati) == 1:
+            fuori[mid] = candidati[0]
+            riallineate.append((nome, candidati[0]))
+        else:
+            fuori[mid] = nome          # sconosciuta al catalogo: si tiene com'è
+    return fuori, sorted(set(riallineate))
+
+
 def costruisci_moveset(quali):
     pokemon = {r["id"]: r["identifier"] for r in leggi("pokemon.csv")}
     metodi = {r["id"]: r["identifier"] for r in leggi("pokemon_move_methods.csv")}
     mosse_en = {r["move_id"]: r["name"] for r in leggi("move_names.csv")
                 if r["local_language_id"] == EN}
+    mosse_en, riallineate = riconcilia_coi_nomi_del_catalogo(mosse_en)
     gruppi = {r["id"]: (r["identifier"], int(r["order"])) for r in leggi("version_groups.csv")}
     id_champions = next((i for i, (nome, _) in gruppi.items() if nome == VG_CHAMPIONS), None)
 
@@ -192,7 +231,7 @@ def costruisci_moveset(quali):
 
     return fuori, dict(senza_slug=senza_slug, senza_righe=sorted(senza_righe),
                        usati_vg=usati_vg, righe_ignorate=righe_ignorate,
-                       voci_catalogo=len(voci_catalogo))
+                       voci_catalogo=len(voci_catalogo), riallineate=riallineate)
 
 
 # ── scrittura ────────────────────────────────────────────────────────────────
@@ -255,6 +294,11 @@ def main():
           f"   ({tot_main // max(con_main, 1)} in media)")
     print(f"    di cui `champions`      {con_ch:5d}   {tot_ch} mosse in tutto"
           f"   ({tot_ch // max(con_ch, 1)} in media)")
+
+    if s["riallineate"]:
+        print(f"\n  nomi riallineati al catalogo: {len(s['riallineate'])}")
+        for da, a in s["riallineate"]:
+            print(f"    {da}  ->  {a}")
 
     if s["usati_vg"]:
         print("\n  version group usati per `main`:")

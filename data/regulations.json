@@ -5,7 +5,8 @@
     "label": "Pokedex — tutto il catalogo",
     "mechanics": [
       "mega"
-    ]
+    ],
+    "moveset": "main"
   },
   {
     "filter_file": "regulations/ma.json",
@@ -16,7 +17,8 @@
       "mega"
     ],
     "moves_file": "moves_ma.json",
-    "roster_file": "roster_ma.json"
+    "roster_file": "roster_ma.json",
+    "moveset": "champions"
   },
   {
     "filter_file": "regulations/mb.json",
@@ -24,6 +26,7 @@
     "label": "Regulation MB",
     "mechanics": [
       "mega"
-    ]
+    ],
+    "moveset": "champions"
   }
 ]

@@ -91,6 +91,79 @@ def voci_catalogo(db):
     return dati.get(chiave, {}) if chiave else dati
 
 
+# ---------------------------------------------------------------------------
+# MOVESET: quali mosse ogni voce può imparare (data/catalog/pokemon_moves.json,
+# scritto da scripts/importa_mosse_specie.py). Sta fuori dal catalogo perché
+# pesa 2,7 MB e il catalogo finisce nel payload del browser.
+#
+# Ogni voce ha DUE elenchi, e non coincidono: `main` sono i giochi principali,
+# `champions` è il moveset di Pokémon Champions — Incineroar lì non ha Knock Off.
+# Quale dei due usare lo dice la regulation, col campo `moveset` in regulations.json.
+# ---------------------------------------------------------------------------
+MOVESET_FILE = os.path.join(CATALOG_DIR, "pokemon_moves.json")
+MOVESET_DEFAULT = "main"
+
+# Cache in memoria con l'mtime del file: 2,7 MB riletti a ogni richiesta sarebbero
+# sprecati, ma il file lo riscrive uno script fuori dal processo, quindi rileggerlo
+# quando cambia evita di dover riavviare l'app dopo un import.
+_MOVESET = {"mtime": None, "voci": {}, "indice": {}}
+
+
+def load_moveset():
+    """`(voci, indice)` del moveset. L'indice risolve i nomi visualizzati."""
+    try:
+        mtime = os.path.getmtime(MOVESET_FILE)
+    except OSError:
+        return {}, {}
+    if _MOVESET["mtime"] != mtime:
+        try:
+            with open(MOVESET_FILE, encoding="utf-8") as f:
+                voci = (json.load(f) or {}).get("voci") or {}
+        except Exception:
+            return {}, {}
+        # Le chiavi del moveset sono quelle del catalogo (chiave per le specie, nome
+        # della forma per le forme annidate): l'indice aggiunge i nomi visualizzati,
+        # perché roster e team parlano di "Incineroar", non di "incineroar".
+        indice = {}
+        catalogo = load_catalog("pokemon")
+        for chiave, voce in catalogo.items():
+            if chiave in voci:
+                for n in (chiave, voce.get("name"), voce.get("nome_it"), voce.get("nome_en")):
+                    if n:
+                        indice.setdefault(n.lower(), chiave)
+            for nome_forma, forma in (voce.get("forms") or {}).items():
+                if nome_forma in voci:
+                    for n in (nome_forma, forma.get("nome_it"), forma.get("nome_en")):
+                        if n:
+                            indice.setdefault(n.lower(), nome_forma)
+        _MOVESET.update(mtime=mtime, voci=voci, indice=indice)
+    return _MOVESET["voci"], _MOVESET["indice"]
+
+
+def sorgente_moveset(reg):
+    """Quale dei due elenchi usa la regulation: `main` o `champions`."""
+    return (reg or {}).get("moveset") or MOVESET_DEFAULT
+
+
+def mosse_legali(nome, reg):
+    """Mosse che `nome` può imparare nella regulation.
+
+    Restituisce `(elenco, sorgente)`. **`elenco` è `None` quando non lo sappiamo** —
+    le forme inventate non stanno su PokéAPI, e `Pawmot` è nel roster di MA ma non
+    nel moveset di Champions. `None` e lista vuota sono due cose diverse: chi chiama
+    deve poter mostrare tutte le mosse invece di non mostrarne nessuna.
+    """
+    voci, indice = load_moveset()
+    sorgente = sorgente_moveset(reg)
+    chiave = indice.get((nome or "").lower())
+    if not chiave:
+        return None, sorgente
+    elenco = (voci.get(chiave) or {}).get(sorgente)
+    if not elenco:
+        return None, sorgente
+    return sorted(elenco.get("moves") or {}), sorgente
+
+
 def salva_catalogo(db, voci):
     """Scrive un database del catalogo, tenendo da parte la versione precedente.
 

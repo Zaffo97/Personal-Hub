@@ -260,7 +260,9 @@ async function fetchPkmn(name){
   // ── Fetch normale ── (Mega comprese: /api/pokemon risolve anche le forme
   // annidate in `forms`, quindi il catalogo è l'unica fonte delle stat)
   try {
-    const r = await fetch('/api/pokemon/' + encodeURIComponent(name));
+    // `?reg=` serve alle mosse legali: l'elenco di Champions non e' quello dei
+    // giochi principali (Incineroar in M-A non ha Knock Off). Le stat non cambiano.
+    const r = await fetch('/api/pokemon/' + encodeURIComponent(name) + '?reg=' + encodeURIComponent(REG_ID));
     const d = await r.json();
     if (d.ok) {
       marcaMega(name, d);
@@ -273,7 +275,7 @@ async function fetchPkmn(name){
   const baseName = name.replace(/\s*\(.*?\)/g, '').trim();
   if (baseName !== name) {
     try {
-      const r2 = await fetch('/api/pokemon/' + encodeURIComponent(baseName));
+      const r2 = await fetch('/api/pokemon/' + encodeURIComponent(baseName) + '?reg=' + encodeURIComponent(REG_ID));
       const d2 = await r2.json();
       if (d2.ok) {
         marcaMega(name, d2);
