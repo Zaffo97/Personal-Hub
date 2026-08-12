@@ -4641,8 +4641,7 @@
       "Acqua"
     ],
     "abilities": [
-      "Zero To Hero",
-      "Zero to Hero"
+      "Zero To Hero"
     ],
     "base_stats": {
       "hp": 100,
@@ -21932,12 +21931,12 @@
           "Terra"
         ],
         "base_stats": {
-          "hp": 291,
-          "atk": 90,
-          "def": 111,
-          "spa": 236,
-          "spd": 105,
-          "spe": 120
+          "hp": 216,
+          "atk": 70,
+          "def": 91,
+          "spa": 216,
+          "spd": 85,
+          "spe": 100
         },
         "abilities": [],
         "slug": "zygarde-mega",

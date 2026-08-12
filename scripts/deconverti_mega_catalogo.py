@@ -87,8 +87,20 @@ def main():
             if not all(s in bs for s in STAT) or "hp" not in base:
                 saltate.append((nome_forma, "stat incomplete"))
                 continue
-            if bs["hp"] != base["hp"] + DELTA_HP:
-                saltate.append((nome_forma, f"hp {bs['hp']} vs base {base['hp']}: non convertita"))
+            # La firma `+75 HP` va cercata contro **tutte le forme della specie**, non
+            # solo contro la voce di testa. `Mega Zygarde` sembrava «rotta a sé» per
+            # questo: ha 291 HP e Zygarde 50% ne ha 108, ma la `Zygarde (Complete
+            # Forme)` ne ha **216**, e 216 + 75 = 291. Era convertita a partire da
+            # quella, non dal 50% — nessuna anomalia, solo il confronto sbagliato.
+            candidate = [base["hp"]] + [
+                (f.get("base_stats") or {}).get("hp")
+                for n, f in (voce.get("forms") or {}).items()
+                if not e_mega(n) and (f.get("base_stats") or {}).get("hp") is not None
+            ]
+            if bs["hp"] - DELTA_HP not in candidate:
+                saltate.append((nome_forma,
+                                f"hp {bs['hp']} non è +{DELTA_HP} su nessuna forma "
+                                f"della specie {sorted(set(candidate))}: non convertita"))
                 continue
             nuovo = deconverti(bs)
             if any(v < 1 for v in nuovo.values()):
