@@ -1,0 +1,12 @@
+{
+  "id": "pokedex",
+  "label": "Pokedex — tutto il catalogo",
+  "_commento": "Nessun filtro: null ovunque significa tutte le voci del catalogo.",
+  "last_updated": "2026-08-11",
+  "pokemon": null,
+  "moves": null,
+  "items": null,
+  "abilities": null,
+  "mega_map": {},
+  "overrides": {}
+}

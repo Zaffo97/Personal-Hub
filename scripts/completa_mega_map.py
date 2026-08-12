@@ -40,7 +40,7 @@ ARCHIVIO = os.path.join(RADICE, "data", "archive")
 
 # regulation dove è consentito **aggiungere al roster** la specie base mancante
 AGGIUNGI_BASI = {"mb"}
-REGULATION = ("ma", "mb")
+REGULATION = ("ma", "mb", "pokedex")
 
 
 def nomi_catalogo():
@@ -53,10 +53,27 @@ def nomi_catalogo():
     return nomi
 
 
+# Le Mega inventate che non seguono la regola del nome. Il catalogo scrive la forma
+# come `<Specie> (<Forma> Form)`, queste come `Mega <Forma> <Specie>`: nessuna regola
+# generale le lega, quindi stanno qui una per una invece di essere indovinate.
+# Verificate contro i nomi veri del catalogo il 12/08/2026.
+BASE_A_MANO = {
+    # Curly e' la forma predefinita di Tatsugiri: nel catalogo e' la voce nuda.
+    "Mega Curly Tatsugiri":    "Tatsugiri",
+    "Mega Droopy Tatsugiri":   "Tatsugiri (Droopy Form)",
+    "Mega Stretchy Tatsugiri": "Tatsugiri (Stretchy Form)",
+    "Mega Original Magearna":  "Magearna (Original Color)",
+}
+
+
 def base_attesa(mega):
     """`Mega Raichu X` → `Raichu`; `Mega Meowstic (Male)` → `Meowstic (Male)`."""
+    if mega in BASE_A_MANO:
+        return BASE_A_MANO[mega]
     base = re.sub(r"^Mega ", "", mega)
-    return re.sub(r" [XY]$", "", base)
+    # `Z` insieme a X e Y: `Mega Absol Z` sta a `Absol` come `Mega Charizard X` sta a
+    # `Charizard`. E' la stessa convenzione, non un caso nuovo.
+    return re.sub(r" [XYZ]$", "", base)
 
 
 def main():
@@ -73,7 +90,13 @@ def main():
         percorso = os.path.join(FILTRI, f"{reg_id}.json")
         with open(percorso, encoding="utf-8") as f:
             filtro = json.load(f)
-        roster = list(filtro.get("pokemon") or [])
+        # `pokemon: null` vuol dire "tutto il catalogo" — è la stessa convenzione che
+        # `_load_roster()` usa nell'app. Senza questa riga `pokedex` risultava un
+        # roster vuoto, quindi lo script non ci trovava nessuna Mega da collegare e
+        # la sua `mega_map` restava a zero: il selettore Mega del team builder era
+        # vuoto proprio sulla regulation di default del sito.
+        roster = (list(filtro["pokemon"]) if filtro.get("pokemon") is not None
+                  else sorted(catalogo))
         mega_map = filtro.get("mega_map") or {}
         mappate = {m for v in mega_map.values() for m in v}
         irraggiungibili = sorted(n for n in roster
@@ -140,8 +163,14 @@ def main():
             json.dump(filtro, f, ensure_ascii=False, indent=2)
 
         mappate = {m for v in filtro["mega_map"].values() for m in v}
-        mega_roster = {n for n in filtro["pokemon"] if n.startswith("Mega ")}
-        print(f"{reg_id}: roster {len(filtro['pokemon'])} Pokémon, "
+        # Su `pokedex` il roster e' `null`, cioe' tutto il catalogo: qui va riusato
+        # `roster`, che quel caso l'ha gia' risolto sopra. Leggere di nuovo
+        # `filtro["pokemon"]` faceva `TypeError: 'NoneType' object is not iterable`
+        # — e dopo che il file era gia' stato scritto, quindi il lavoro era fatto ma
+        # la riga di riepilogo non arrivava mai.
+        roster_finale = filtro["pokemon"] if filtro.get("pokemon") is not None else roster
+        mega_roster = {n for n in roster_finale if n.startswith("Mega ")}
+        print(f"{reg_id}: roster {len(roster_finale)} Pokémon, "
               f"Mega raggiungibili {len(mega_roster & mappate)}/{len(mega_roster)}, "
               f"copia in {os.path.relpath(copia, RADICE)}")
     return 0

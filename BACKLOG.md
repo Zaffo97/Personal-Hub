@@ -664,7 +664,7 @@ dire «all'evoluzione o dal ricordamosse», che è un'informazione, non un buco.
 |---|---|---|---|---|
 | `ma` | 279 | **0** | **274** | **273** |
 | `mb` | 308 | **0** | **302** | **301** |
-| `pokedex` | 1343 | **0** | **1291** | 314 |
+| `pokedex` | 1343 | **0** | **1323** | 314 |
 
 66 033 mosse in `main` (52 per voce in media) e 19 515 in `champions` (62). Canarini:
 **Magikarp ha 3 mosse** (Splash, Tackle, Flail) e **Fulmine non è fra queste** — è il
@@ -677,10 +677,19 @@ caso che il backlog citava come impossibile da rifiutare.
   `Eternal Flower Floette`. **Non ereditano il moveset della specie base**, per
   decisione di Davide del 12/08: sono escluse e dichiarate, non riempite a caso.
   Quando ci sarà la fonte si riaprono da lì
-- ⬜ **32 forme Gigantamax** — nel dump non hanno un moveset proprio, condividono
-  quello della forma base. **Da decidere**: farle ereditare (non sarebbe un'invenzione,
-  è come PokéAPI le modella) o lasciarle vuote. Non toccano il VGC, quindi non urge
-- ⬜ **`Pawmot`** ha `main` ma **non** la lista Champions, pur essendo nel roster di MA
+- ✅ **32 forme Gigantamax** — **ereditano dalla specie base dal 12/08/2026**. Non è
+  un'invenzione: il Gigantamax è una **trasformazione temporanea**, non una forma con
+  un learnset suo, ed è esattamente il motivo per cui il dump non le elenca a parte.
+  Ogni voce ereditata lo **dichiara** con `eredita_da`, così un dato derivato resta
+  distinguibile da uno preso alla fonte. Verificato: `Charizard (Gigantamax Form)` ha
+  le stesse **75** mosse di Charizard. `pokedex` passa da **1291 a 1323** voci su 1343
+- ✅ **`Pawmot`** — chiarito il 12/08/2026, ed è **un buco del dump, non un errore
+  nostro**. Nel version group Champions ci sono **solo le evoluzioni finali** —
+  Charizard sì, Charmander e Charmeleon no; Meowscarada sì, i suoi pre-evo no — e
+  Pawmot è una finale, presente nel roster MA che viene dalla wiki. Nel dump però
+  mancano **tutti e tre**: Pawmi, Pawmo e Pawmot. Resta senza elenco, con l'avviso
+  giallo, che è il comportamento onesto: non gli si assegna il moveset dei giochi
+  principali, che su Champions non sarebbe legale
 
 > ⬜ **Nessuno ha ancora verificato che questi elenchi siano *giusti*.** Finora le prove
 > sono tutte interne al dato: i nomi risolvono, i conti tornano, Incineroar perde Knock
@@ -1478,7 +1487,7 @@ Dettagli che vale la pena ricordare:
 | ✅ | Nomi in `abilities.json` da rivedere → **fondere i doppioni** | Chiuso 11/08/2026: 24 coppie fuse, 415 → 391 voci, e `abilityEffect()` ora risolve anche per nome inglese. Dettagli nella sezione «Le abilità doppie», in cima. ⚠️ Restano le 10 voci il cui effetto non corrisponde a nessuna abilità reale, tenute apposta | Alcuni non corrispondono all'abilità descritta (es. `Spettroguardia` descrive Multiscaglia; il vero Wonder Guard è `Magidifesa`). Convivono nomi ufficiali IT e nomi di altra fonte. L'11/08/2026 il giro sulla wiki ha spiegato perché: **le due famiglie coesistono nello stesso file**, 307 voci col nome ufficiale (collegate ai Pokémon, ma solo 22 con un effetto attivo) e 108 vecchie (34 con l'effetto che il calcolatore usa davvero). Il lavoro non è tradurre, è fondere ogni coppia. Dettagli e tabella nella sezione dello switch lingua, in cima |
 | ✅ | **Le meccaniche del team builder erano morte** ⚠️ | Trovato e chiuso il 12/08/2026. `loadRegulationData()` faceva `CURRENT_MECHANICS = (d.regulation && d.regulation.mechanics) ? … : []`, ma **`/api/regulation/<id>/data` non restituiva `regulation`**: la risposta aveva solo `ok`, `reg_id`, `roster`, `count`. Quindi `CURRENT_MECHANICS` era **sempre vuoto**, il selettore stampava la sola voce «— nessuna —» e **la Mega non era selezionabile per nessun membro del team**, su nessuna regulation, benché tutte e tre abbiano `"mechanics": ["mega"]` nel registro. Stessa famiglia dei tre endpoint fantasma dell'11/08. Due righe soffrivano dello stesso buco: anche `d.items` non esisteva, ma lì il danno era nullo perché il datalist oggetti lo stampa già Jinja. **Non bastava aggiungere `regulation`**: `MEGA_MAP` era una `const` stampata da Jinja al caricamento, quindi restava quella della regulation iniziale — e il default del sito è `pokedex`, che una mega_map non ce l'ha. Ora l'endpoint restituisce anche `mega_map` e la costante è diventata `let`, aggiornata a ogni cambio di regulation. Verificato in browser: da `pokedex` a `ma` la mega_map passa da **0 a 58** voci, gli oggetti da 397 a 58, e Charizard offre **Mega Charizard X** e **Mega Charizard Y** |
 | ⬜ | **`build_catalog.py` oggi distruggerebbe il catalogo** ⚠️ | Trovato il 12/08/2026 preparando l'import delle mosse, **non corretto** perché fuori scope e perché non è più servito eseguirlo. Lo script legge come base i **file storici** (`data/pokemon_catalog.json`, `moves_ma.json`, …) e scrive il risultato in `data/catalog/`. Quella base ha **174 voci** contro le 1026 di oggi, non ha nessun `nome_it`/`nome_en` (il catalogo attuale li ha su 1026 su 1026) e ha ancora le **Mega convertite**: `Mega Venusaur` vale `hp 155` lì e `hp 80` qui. Peggio, `MEGA_BONUS` riapplicherebbe `+75 HP / +20` alle Mega nuove, cioè esattamente la conversione che la deconversione dell'11/08 ha tolto. Rieseguirlo oggi **riporterebbe indietro il catalogo di quattro giorni di lavoro, in silenzio**. Va fatto leggere `data/catalog/` quando esiste, e `MEGA_BONUS` va tolto. Fino ad allora, **non eseguirlo** |
-| ⬜ | **`pokedex` non ha una `mega_map`** | Emerso il 12/08/2026 riparando le meccaniche del team builder: `data/regulations/pokedex.json` ha `mega_map` **vuota** (0 voci, contro 58 di MA e 73 di MB). Il codice ora funziona, ma sulla regulation **di default del sito** il selettore Mega resta comunque vuoto — non per un baco, per un dato che non c'è. È una scelta di contenuto, quindi la decide Davide: o `pokedex` riceve l'unione delle mega_map esistenti (più le Mega del catalogo non ancora mappate), o si accetta che la Mega si scelga solo sulle regulation che la disciplinano. `scripts/completa_mega_map.py` è già lo strumento giusto e sa fermarsi su ciò che non risolve |
+| ✅ | **`pokedex` non aveva una `mega_map`** | Chiuso il 12/08/2026, e non serviva una decisione: il collegamento fra una Mega e la sua specie base è **deducibile**, ed è quello che `scripts/completa_mega_map.py` fa già per MA e MB. Bastava insegnargli che su `pokedex` il roster è `null`, cioè **tutto il catalogo** — stessa convenzione di `_load_roster()` — perché prima lo leggeva come roster vuoto e non ci trovava nessuna Mega. Risultato: **91 basi, 97 Mega, 97 su 97 raggiungibili**. Lo script si è fermato su 7 forme inventate invece di indovinarle: il suffisso `Z` è stato aggiunto alla regola di X e Y (`Mega Absol Z` sta ad `Absol` come `Mega Charizard X` sta a `Charizard`), mentre le 4 che seguono la convenzione `Mega <Forma> <Specie>` contro `<Specie> (<Forma> Form)` del catalogo sono state scritte **a mano una per una** in `BASE_A_MANO`. ⚠️ Corretto anche un `TypeError` nel riepilogo finale, che su un roster `null` esplodeva **dopo** aver già scritto il file: il lavoro era fatto ma la riga di controllo non arrivava mai |
 | ✅ | Catalogo con abilità incomplete | Chiuso 12/08/2026 con `scripts/completa_abilita_pokemon.py`: **182 voci completate, +184 abilità**, quasi tutte **nascoste** (a Venusaur mancava Chlorophyll, a Pikachu Lightning Rod). Le voci con una sola abilità scendono da 411 a **325**, e di quelle **323 ne hanno davvero una sola** anche per PokéAPI — sono Mega e forme regionali. La voce diceva che erano «quasi certamente incomplete»: era vero solo per 182 su 411. Restano 2 casi dubbi, le due Mega Meowstic inventate |
 | ✅ | Chiavi mega incoerenti nel catalogo | Chiuso 11/08/2026. Non erano anomalie ma **doppioni**: `mega-banette`, `mega-chimecho` e `mega-crabominable` esistevano sia come chiave top-level sia come forma annidata nella specie base. Le forme annidate, deconvertite, sono quelle giuste — le top-level sono state rimosse (1029 → 1026 voci). Gli override sprite in `api_pokemon.py:70-73` **restano**: sono indicizzati sul nome normalizzato, non sulla chiave, e servono ancora perché Mega Chimecho e Mega Crabominable sono inventate e non hanno uno sprite online |
 

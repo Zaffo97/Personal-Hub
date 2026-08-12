@@ -2,11 +2,291 @@
   "id": "pokedex",
   "label": "Pokedex — tutto il catalogo",
   "_commento": "Nessun filtro: null ovunque significa tutte le voci del catalogo.",
-  "last_updated": "2026-08-08",
+  "last_updated": "2026-08-11",
   "pokemon": null,
   "moves": null,
   "items": null,
   "abilities": null,
-  "mega_map": {},
+  "mega_map": {
+    "Abomasnow": [
+      "Mega Abomasnow"
+    ],
+    "Absol": [
+      "Mega Absol",
+      "Mega Absol Z"
+    ],
+    "Aerodactyl": [
+      "Mega Aerodactyl"
+    ],
+    "Aggron": [
+      "Mega Aggron"
+    ],
+    "Alakazam": [
+      "Mega Alakazam"
+    ],
+    "Altaria": [
+      "Mega Altaria"
+    ],
+    "Ampharos": [
+      "Mega Ampharos"
+    ],
+    "Audino": [
+      "Mega Audino"
+    ],
+    "Banette": [
+      "Mega Banette"
+    ],
+    "Barbaracle": [
+      "Mega Barbaracle"
+    ],
+    "Baxcalibur": [
+      "Mega Baxcalibur"
+    ],
+    "Beedrill": [
+      "Mega Beedrill"
+    ],
+    "Blastoise": [
+      "Mega Blastoise"
+    ],
+    "Blaziken": [
+      "Mega Blaziken"
+    ],
+    "Camerupt": [
+      "Mega Camerupt"
+    ],
+    "Chandelure": [
+      "Mega Chandelure"
+    ],
+    "Charizard": [
+      "Mega Charizard X",
+      "Mega Charizard Y"
+    ],
+    "Chesnaught": [
+      "Mega Chesnaught"
+    ],
+    "Chimecho": [
+      "Mega Chimecho"
+    ],
+    "Clefable": [
+      "Mega Clefable"
+    ],
+    "Crabominable": [
+      "Mega Crabominable"
+    ],
+    "Darkrai": [
+      "Mega Darkrai"
+    ],
+    "Delphox": [
+      "Mega Delphox"
+    ],
+    "Diancie": [
+      "Mega Diancie"
+    ],
+    "Dragalge": [
+      "Mega Dragalge"
+    ],
+    "Dragonite": [
+      "Mega Dragonite"
+    ],
+    "Drampa": [
+      "Mega Drampa"
+    ],
+    "Eelektross": [
+      "Mega Eelektross"
+    ],
+    "Emboar": [
+      "Mega Emboar"
+    ],
+    "Excadrill": [
+      "Mega Excadrill"
+    ],
+    "Falinks": [
+      "Mega Falinks"
+    ],
+    "Feraligatr": [
+      "Mega Feraligatr"
+    ],
+    "Floette": [
+      "Mega Floette"
+    ],
+    "Froslass": [
+      "Mega Froslass"
+    ],
+    "Gallade": [
+      "Mega Gallade"
+    ],
+    "Garchomp": [
+      "Mega Garchomp",
+      "Mega Garchomp Z"
+    ],
+    "Gardevoir": [
+      "Mega Gardevoir"
+    ],
+    "Gengar": [
+      "Mega Gengar"
+    ],
+    "Glalie": [
+      "Mega Glalie"
+    ],
+    "Glimmora": [
+      "Mega Glimmora"
+    ],
+    "Golisopod": [
+      "Mega Golisopod"
+    ],
+    "Golurk": [
+      "Mega Golurk"
+    ],
+    "Greninja": [
+      "Mega Greninja"
+    ],
+    "Gyarados": [
+      "Mega Gyarados"
+    ],
+    "Hawlucha": [
+      "Mega Hawlucha"
+    ],
+    "Heatran": [
+      "Mega Heatran"
+    ],
+    "Heracross": [
+      "Mega Heracross"
+    ],
+    "Houndoom": [
+      "Mega Houndoom"
+    ],
+    "Kangaskhan": [
+      "Mega Kangaskhan"
+    ],
+    "Latias": [
+      "Mega Latias"
+    ],
+    "Latios": [
+      "Mega Latios"
+    ],
+    "Lopunny": [
+      "Mega Lopunny"
+    ],
+    "Lucario": [
+      "Mega Lucario",
+      "Mega Lucario Z"
+    ],
+    "Magearna": [
+      "Mega Magearna"
+    ],
+    "Magearna (Original Color)": [
+      "Mega Original Magearna"
+    ],
+    "Malamar": [
+      "Mega Malamar"
+    ],
+    "Manectric": [
+      "Mega Manectric"
+    ],
+    "Mawile": [
+      "Mega Mawile"
+    ],
+    "Medicham": [
+      "Mega Medicham"
+    ],
+    "Meganium": [
+      "Mega Meganium"
+    ],
+    "Meowstic (Female)": [
+      "Mega Meowstic (Female)"
+    ],
+    "Meowstic (Male)": [
+      "Mega Meowstic (Male)"
+    ],
+    "Metagross": [
+      "Mega Metagross"
+    ],
+    "Mewtwo": [
+      "Mega Mewtwo X",
+      "Mega Mewtwo Y"
+    ],
+    "Pidgeot": [
+      "Mega Pidgeot"
+    ],
+    "Pinsir": [
+      "Mega Pinsir"
+    ],
+    "Pyroar": [
+      "Mega Pyroar"
+    ],
+    "Raichu": [
+      "Mega Raichu X",
+      "Mega Raichu Y"
+    ],
+    "Rayquaza": [
+      "Mega Rayquaza"
+    ],
+    "Sableye": [
+      "Mega Sableye"
+    ],
+    "Salamence": [
+      "Mega Salamence"
+    ],
+    "Sceptile": [
+      "Mega Sceptile"
+    ],
+    "Scizor": [
+      "Mega Scizor"
+    ],
+    "Scolipede": [
+      "Mega Scolipede"
+    ],
+    "Scovillain": [
+      "Mega Scovillain"
+    ],
+    "Scrafty": [
+      "Mega Scrafty"
+    ],
+    "Sharpedo": [
+      "Mega Sharpedo"
+    ],
+    "Skarmory": [
+      "Mega Skarmory"
+    ],
+    "Slowbro": [
+      "Mega Slowbro"
+    ],
+    "Staraptor": [
+      "Mega Staraptor"
+    ],
+    "Starmie": [
+      "Mega Starmie"
+    ],
+    "Steelix": [
+      "Mega Steelix"
+    ],
+    "Swampert": [
+      "Mega Swampert"
+    ],
+    "Tatsugiri": [
+      "Mega Curly Tatsugiri"
+    ],
+    "Tatsugiri (Droopy Form)": [
+      "Mega Droopy Tatsugiri"
+    ],
+    "Tatsugiri (Stretchy Form)": [
+      "Mega Stretchy Tatsugiri"
+    ],
+    "Tyranitar": [
+      "Mega Tyranitar"
+    ],
+    "Venusaur": [
+      "Mega Venusaur"
+    ],
+    "Victreebel": [
+      "Mega Victreebel"
+    ],
+    "Zeraora": [
+      "Mega Zeraora"
+    ],
+    "Zygarde": [
+      "Mega Zygarde"
+    ]
+  },
   "overrides": {}
 }

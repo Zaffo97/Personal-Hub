@@ -127,7 +127,14 @@ def indice_catalogo():
                 voci[nome_forma] = forma["slug"]
             else:
                 senza_slug.append(nome_forma)
-    return voci, sorted(senza_slug)
+    # Le specie stanno in `voci` con la **chiave** del catalogo (`charizard`), non col
+    # nome (`Charizard`): per agganciare una Gigantamax alla sua base serve il ponte.
+    per_nome = {}
+    for chiave, dati in catalogo.items():
+        for n in (dati.get("name"), chiave):
+            if n:
+                per_nome.setdefault(n, chiave)
+    return voci, sorted(senza_slug), per_nome
 
 
 # ── moveset ──────────────────────────────────────────────────────────────────
@@ -197,7 +204,16 @@ def costruisci_moveset(quali):
         if metodo not in per_slug[slug][r["version_group_id"]][nome]:
             per_slug[slug][r["version_group_id"]][nome].append(metodo)
 
-    voci_catalogo, senza_slug = indice_catalogo()
+    # Nel dump le Gigantamax non hanno righe proprie, e non e' una lacuna: il
+    # Gigantamax e' una **trasformazione temporanea**, non una forma con un learnset
+    # suo — le mosse sono quelle della specie base, ed e' esattamente cosi' che
+    # PokeAPI le modella. Farle ereditare non e' inventare; chi eredita lo **dichiara**
+    # nel file con `eredita_da`, cosi' a valle un dato derivato resta distinguibile.
+    def base_gigantamax(nome):
+        coda = " (Gigantamax Form)"
+        return nome[:-len(coda)] if nome.endswith(coda) else None
+
+    voci_catalogo, senza_slug, per_nome = indice_catalogo()
     fuori, usati_vg, senza_righe = {}, collections.Counter(), []
 
     for chiave, slug in sorted(voci_catalogo.items()):
@@ -229,9 +245,26 @@ def costruisci_moveset(quali):
         else:
             senza_righe.append(chiave)
 
+    # L'eredità delle Gigantamax si applica dopo che tutto il resto è costruito.
+    ereditate, gmax_senza_base = [], []
+    for chiave in list(senza_righe):
+        base = base_gigantamax(chiave)
+        if base is None:
+            continue
+        sorgente = fuori.get(per_nome.get(base, base))
+        if not sorgente:
+            gmax_senza_base.append(chiave)
+            continue
+        voce = {k: v for k, v in sorgente.items() if k != "slug"}
+        voce["eredita_da"] = base
+        fuori[chiave] = voce
+        senza_righe.remove(chiave)
+        ereditate.append(chiave)
+
     return fuori, dict(senza_slug=senza_slug, senza_righe=sorted(senza_righe),
                        usati_vg=usati_vg, righe_ignorate=righe_ignorate,
-                       voci_catalogo=len(voci_catalogo), riallineate=riallineate)
+                       voci_catalogo=len(voci_catalogo), riallineate=riallineate,
+                       ereditate=sorted(ereditate), gmax_senza_base=sorted(gmax_senza_base))
 
 
 # ── scrittura ────────────────────────────────────────────────────────────────
@@ -305,20 +338,18 @@ def main():
         for nome, n in s["usati_vg"].most_common():
             print(f"    {nome:20s} {n:5d} voci")
 
-    # Chi resta fuori non è un blocco solo, e confonderli nasconderebbe la differenza
-    # fra un dato che non esiste e un dato che esiste altrove.
-    gmax = [n for n in s["senza_righe"] if "Gigantamax" in n]
-    inventate = s["senza_slug"] + [n for n in s["senza_righe"] if "Gigantamax" not in n]
-    print(f"\nRESTANO FUORI  {len(s['senza_slug']) + len(s['senza_righe'])}")
-    print(f"  forme inventate — PokéAPI non le conosce     {len(inventate)}")
-    for n in sorted(inventate):
+    if s["ereditate"]:
+        print(f"\n  Gigantamax che ereditano dalla specie base: {len(s['ereditate'])}")
+        print("    (nel dump non hanno righe proprie e non è una lacuna: il Gigantamax")
+        print("     è una trasformazione, non un learnset a sé. Marcate con `eredita_da`)")
+    if s["gmax_senza_base"]:
+        print(f"    ⚠️ Gigantamax senza una base a cui agganciarsi: {s['gmax_senza_base']}")
+
+    inventate = sorted(s["senza_slug"] + s["senza_righe"])
+    print(f"\nRESTANO FUORI  {len(inventate)}")
+    print("  forme che PokéAPI non conosce — non ereditano niente, di proposito")
+    for n in inventate:
         print(f"    · {n}")
-    print(f"  forme Gigantamax — nel dump non hanno un      {len(gmax)}")
-    print("    moveset proprio: condividono quello della forma base")
-    for n in gmax[:6]:
-        print(f"    · {n}")
-    if len(gmax) > 6:
-        print(f"    … e altre {len(gmax) - 6}")
 
     if prima:
         perse = sorted(set(prima) - set(voci))

@@ -644,8 +644,44 @@
       "steam_tags": "VR, Free to Play, Multiplayer, Anime, Memes, Funny, Massively Multiplayer, First-Person, Open World, Early Access, Simulation, Casual"
     }
   ],
-  "teams": [],
-  "team_members": [],
+  "teams": [
+    {
+      "id": 1,
+      "name": "A",
+      "format": "VGC Reg MA",
+      "record": "",
+      "description": "",
+      "notes": "",
+      "created_at": "2026-08-12 13:09:02",
+      "regulation_id": "ma"
+    }
+  ],
+  "team_members": [
+    {
+      "id": 1,
+      "team_id": 1,
+      "slot": 0,
+      "pokemon": "Alolan Raichu",
+      "mega_stone": null,
+      "nature": "",
+      "ability": "",
+      "held_item": "",
+      "tera_type": null,
+      "move1": "",
+      "move2": "",
+      "move3": "",
+      "move4": "",
+      "sp_hp": 0,
+      "sp_atk": 0,
+      "sp_def": 0,
+      "sp_spatk": 0,
+      "sp_spdef": 0,
+      "sp_spe": 0,
+      "sprite_url": "https://img.pokemondb.net/sprites/home/normal/raichu-alolan.png",
+      "mechanic_type": "",
+      "mechanic_value": ""
+    }
+  ],
   "arduino_projects": [],
   "python_topics": [
     {
