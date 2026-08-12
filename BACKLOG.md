@@ -1217,6 +1217,57 @@ Dashboard; e i rifiuti su nome utente corto, password sotto gli 8 caratteri, use
 duplicato, auto-declassamento e auto-eliminazione. Export di quell'utente: **33 giochi,
 0 team, 0 build**. Sweep: 18 pagine / 33 script / 1970 handler, zero errori.
 
+### ⬜ DA FARE — i dati non hanno un proprietario (aperta il 12/08/2026)
+
+**Trovata da Davide provando la web app**, ed è il pezzo che manca perché «area
+riservata» voglia dire qualcosa: un team Pokémon salvato da un utente **lo vedono
+tutti**, e lo stesso vale per i giochi, i progetti Arduino e le build PC. I permessi
+per sezione, chiusi oggi, decidono **quali sezioni** vedi — non **di chi sono i dati**
+dentro. Sono due cose ortogonali, e finora ne esisteva una sola.
+
+**Cosa serve:**
+
+- ogni riga deve sapere **chi l'ha creata**
+- ogni utente vede e modifica **solo le proprie**
+- l'**admin vede tutto**, con scritto accanto **chi ha inserito cosa**, e possibilmente
+  un filtro per utente
+
+**Quanto costa, contato il 12/08/2026** — non stimato: **68 query** toccano le tabelle
+di contenuto, distribuite così:
+
+| Tabella | Query | | Blueprint | Query |
+|---|---|---|---|---|
+| `games` | 29 | | `gaming.py` | 24 |
+| `teams` | 10 | | `dashboard.py` | 22 |
+| `arduino_projects` | 7 | | `pokemon.py` | 12 |
+| `pc_builds` | 7 | | `pcbuilder.py` | 7 |
+| `python_topics` | 6 | | `arduino.py` | 4 |
+| `team_members` | 5 | | `python_tracker.py` | 3 |
+| `pc_components` | 4 | | | |
+
+**Le decisioni da prendere prima di partire**, perché cambiano la forma del lavoro:
+
+1. **Dove mettere il proprietario.** Solo sulle quattro tabelle «radice» — `games`,
+   `teams`, `arduino_projects`, `pc_builds` — mentre `team_members` e `pc_components`
+   lo ereditano dal genitore e alle loro query basta una join. Aggiungere la colonna
+   anche ai figli sarebbe un dato ripetuto che può divergere
+2. ⚠️ **`python_topics` è il caso storto**: non è contenuto creato dall'utente, è un
+   **elenco fisso di 53 voci** seminato una volta sola in `init_db()`, e la spunta
+   `done` sta sulla riga stessa. Per renderlo personale servono o 53 righe per utente,
+   o — meglio — una tabella `python_progress(user_id, topic_id, done)` che lascia il
+   catalogo condiviso e rende personale solo il progresso
+3. **Cosa fare delle righe esistenti**: assegnarle ad `admin` è l'unica scelta che non
+   perde niente, ma va detto e fatto in una migrazione dichiarata, non di soppiatto
+4. **Come non lasciare buchi.** È lo stesso rischio dei permessi per sezione, dove
+   `/export` e la Dashboard erano rimasti scoperti: con 68 query, dimenticarne una
+   significa mostrare i dati di un altro **senza che nulla lo segnali**. Serve un
+   meccanismo che **fallisca chiuso** — un helper obbligatorio per leggere le tabelle
+   di contenuto, o un test che elenchi le query e verifichi che ognuna filtri —
+   invece di aggiungere `WHERE user_id=?` a mano 68 volte e sperare
+
+Da fare in un blocco suo, non in coda ad altro: tocca ogni sezione e il modo giusto di
+verificarlo è creare due utenti e provare che nessuno dei due veda le cose dell'altro.
+
 ### ✅ Password migrate a scrypt (12/08/2026)
 
 Erano **sha256 senza sale**: due utenti con la stessa password avevano lo stesso hash,
