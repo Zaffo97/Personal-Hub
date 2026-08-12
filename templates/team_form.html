@@ -128,6 +128,7 @@
       </div>{% endfor %}
       <datalist id="mv_list_{{ i }}"></datalist>
     </div>
+    <div id="mv_note_{{ i }}" style="display:none;font-size:.68rem;margin:-.35rem 0 .5rem"></div>
 
     <div>
       <div class="text-xs font-700 text-muted mb-1" style="text-transform:uppercase">
@@ -237,6 +238,50 @@ async function loadRegulationData() {
     for (let i = 0; i < 6; i++) updateMechanicOptions(i);
 
   } catch(e) {}
+
+  // Mosse della regulation: e' l'elenco di partenza, quello che si vede prima di
+  // aver scelto un Pokemon e quello su cui si ricade quando il Pokemon non ha un
+  // moveset noto. Le mosse legali del singolo Pokemon arrivano da /api/pokemon.
+  try {
+    const rm = await fetch('/api/moves?reg=' + encodeURIComponent(regId));
+    const dm = await rm.json();
+    MOSSE_REG = dm.ok ? Object.keys(dm.moves || {}).sort() : [];
+  } catch(e) { MOSSE_REG = []; }
+  for (let i = 0; i < 6; i++) {
+    // Chi ha gia' un Pokemon scritto si rifa' chiedere le sue mosse: cambiando
+    // regulation cambia l'elenco legale, non solo quello di partenza.
+    if ((document.getElementById('pk_' + i).value || '').trim().length >= 3) fetchPkmn(i);
+    else scriviMosse(i, null, '');
+  }
+}
+
+// Elenco mosse della regulation attiva, popolato da loadRegulationData().
+let MOSSE_REG = [];
+
+// Riempie il datalist di uno slot. `legali` null = non lo sappiamo (forme inventate,
+// o Pokemon fuori dal moveset di Champions): si mostrano tutte quelle della
+// regulation con un avviso, non zero — altrimenti le forme inventate di Davide non
+// sarebbero piu' compilabili.
+function scriviMosse(slot, legali, nome) {
+  const dl = document.getElementById('mv_list_' + slot);
+  const nota = document.getElementById('mv_note_' + slot);
+  if (!dl) return;
+  const set = legali ? new Set(legali) : null;
+  const elenco = MOSSE_REG.filter(m => !set || set.has(m));
+  // I valori sono le chiavi del catalogo, come per il datalist degli Held Item qui
+  // accanto: e' quello che finisce nel DB quando il team viene salvato.
+  dl.innerHTML = elenco.map(m => '<option value="' + m.replace(/"/g, '&quot;') + '">').join('');
+  if (!nota) return;
+  const reg = document.getElementById('regulation_id').value;
+  if (!nome) { nota.style.display = 'none'; return; }
+  nota.style.display = 'block';
+  if (legali) {
+    nota.style.color = 'var(--text-muted, #888)';
+    nota.textContent = elenco.length + ' mosse di ' + nome + ' in ' + reg;
+  } else {
+    nota.style.color = 'var(--warning, #d90)';
+    nota.textContent = '⚠️ Nessun elenco mosse per ' + nome + ' in ' + reg + ': sono mostrate tutte';
+  }
 }
 
 // Ricostruisce il <select> mechanic_type in base alle meccaniche della regulation
@@ -299,7 +344,10 @@ function fetchPkmn(slot) {
   clearTimeout(fetchTimers[slot]);
   fetchTimers[slot] = setTimeout(async () => {
     try {
-      const r = await fetch('/api/pokemon/' + encodeURIComponent(name));
+      // `?reg=` serve alle mosse legali: l'elenco di Champions non e' quello dei
+      // giochi principali (Incineroar in M-A non ha Knock Off).
+      const reg = document.getElementById('regulation_id').value;
+      const r = await fetch('/api/pokemon/' + encodeURIComponent(name) + '?reg=' + encodeURIComponent(reg));
       const d = await r.json();
       if (!d.ok) return;
 
@@ -312,8 +360,10 @@ function fetchPkmn(slot) {
       }
       const abDl = document.getElementById('ab_list_' + slot);
       if (abDl && d.abilities) abDl.innerHTML = d.abilities.map(a => '<option value="' + a + '">').join('');
-      const mvDl = document.getElementById('mv_list_' + slot);
-      if (mvDl && d.moves) mvDl.innerHTML = d.moves.map(m => '<option value="' + m + '">').join('');
+      // Prima di oggi questa riga era `if (mvDl && d.moves)`, ma /api/pokemon non ha
+      // mai restituito `moves`: il datalist delle mosse del team builder e' rimasto
+      // vuoto da sempre. Ora il campo esiste, e `null` va distinto da lista vuota.
+      scriviMosse(slot, Array.isArray(d.moves) ? d.moves : null, d.nome || d.name || name);
 
       // Aggiorna opzioni mega se la meccanica corrente è mega
       onPokemonChange(slot);

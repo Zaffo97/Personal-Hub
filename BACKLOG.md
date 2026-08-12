@@ -757,9 +757,33 @@ sparita dalla tendina **in silenzio** — la classe di baco su cui questo proget
 inciampato più volte. L'import ora riallinea i nomi accettando solo le corrispondenze
 non ambigue e le **stampa**: 1 su 807, e ora **zero** nomi di mossa fuori dal catalogo.
 
+### ✅ Team builder — chiuso lo stesso giorno
+
+**Il codice c'era già e non aveva mai funzionato.** `fetchPkmn(slot)` in
+`team_form.html` conteneva `if (mvDl && d.moves) …`, ma `/api/pokemon` **non ha mai
+restituito `moves`**: il datalist delle mosse del team builder è rimasto vuoto da
+sempre. Stessa famiglia dei tre endpoint fantasma dell'11/08 — codice scritto contro
+una risposta che nessuno aveva mai implementato.
+
+Ora l'elenco di partenza sono le mosse della regulation, e appena scrivi un Pokémon si
+stringe alle sue. **Cambiando regulation dal selettore, gli slot già compilati si
+rifanno chiedere le mosse**: è il caso che Davide ha descritto.
+
+Misurato in browser, sullo stesso team senza ricaricare la pagina:
+
+| | `pokedex` | → `ma` |
+|---|---|---|
+| mosse della regulation | 919 | 460 |
+| slot con **Incineroar** | 80, con Knock Off | **61, senza Knock Off** (Darkest Lariat resta) |
+| slot con **Mega Meowstic (Male)** | 919 + avviso giallo | 460 + avviso giallo |
+| slot vuoto | 919 | 460 |
+
+I valori del datalist sono le **chiavi del catalogo**, non i nomi tradotti: è la stessa
+convenzione del datalist Held Item qui accanto, ed è ciò che finisce nel DB quando il
+team viene salvato. Cambiarla avrebbe cambiato i dati salvati.
+
 ### ⬜ Cosa resta
 
-- ⬜ **il team builder**, che è il punto dove servirebbe di più
 - ⬜ lo **Speed Tier**, dove le mosse non entrano ma lo schema sarebbe lo stesso
 - ⬜ il calcolatore **non impedisce** di scrivere una mossa illegale: la segnala e basta.
   È voluto per ora — un blocco duro sulle voci senza elenco sarebbe un falso divieto
@@ -1136,6 +1160,7 @@ Dettagli che vale la pena ricordare:
 | ✅ | `loadSpePkmn()` non ricalcola | Chiuso 11/08/2026: aggiunta la chiamata a `updateSpeed()`. Incineroar → base 60, Velocità **80**; Dragapult → base 142, Velocità **162** |
 | ✅ | Speed Tier senza limite di righe | Chiuso 11/08/2026 con un tetto a **300 righe**, come le altre tabelle del progetto: su `pokedex` erano **1343 righe / 714 KB** in un solo `innerHTML`, ora **300 / 159 KB**. Le righe tagliate sono le più **lontane** dalla propria Velocità, perché chi guarda uno Speed Tier guarda chi gli sta intorno: con Kingdra a 105 la tabella va da 95 a 115. Sopra la tabella resta scritto il conto pieno (`300 righe su 1343`), e la ricerca continua a pescare fuori dal taglio — provato con Regieleki, che sta a 200 |
 | ✅ | Nomi in `abilities.json` da rivedere → **fondere i doppioni** | Chiuso 11/08/2026: 24 coppie fuse, 415 → 391 voci, e `abilityEffect()` ora risolve anche per nome inglese. Dettagli nella sezione «Le abilità doppie», in cima. ⚠️ Restano le 10 voci il cui effetto non corrisponde a nessuna abilità reale, tenute apposta | Alcuni non corrispondono all'abilità descritta (es. `Spettroguardia` descrive Multiscaglia; il vero Wonder Guard è `Magidifesa`). Convivono nomi ufficiali IT e nomi di altra fonte. L'11/08/2026 il giro sulla wiki ha spiegato perché: **le due famiglie coesistono nello stesso file**, 307 voci col nome ufficiale (collegate ai Pokémon, ma solo 22 con un effetto attivo) e 108 vecchie (34 con l'effetto che il calcolatore usa davvero). Il lavoro non è tradurre, è fondere ogni coppia. Dettagli e tabella nella sezione dello switch lingua, in cima |
+| ⬜ | **Le meccaniche del team builder sono morte** ⚠️ | Trovato il 12/08/2026 lavorando alle mosse del team builder, **non corretto** perché fuori scope. `loadRegulationData()` in `team_form.html:234` fa `CURRENT_MECHANICS = (d.regulation && d.regulation.mechanics) ? … : []`, ma **`/api/regulation/<id>/data` non restituisce `regulation`**: la risposta ha solo `ok`, `reg_id`, `roster`, `count` — verificato. Quindi `CURRENT_MECHANICS` è **sempre vuoto**, `updateMechanicOptions()` stampa la sola opzione «— nessuna —», e **la Mega non è selezionabile per nessun membro del team**, su nessuna regulation, benché tutte e tre abbiano `"mechanics": ["mega"]` nel registro. Stessa famiglia dei tre endpoint fantasma dell'11/08: JS scritto contro una risposta mai implementata. Due righe nella stessa funzione soffrono dello stesso buco — anche `d.items` non esiste, ma lì il danno è nullo perché il datalist oggetti lo stampa già Jinja. La correzione è aggiungere `regulation` (e `items`) alla risposta dell'endpoint |
 | ⬜ | **`build_catalog.py` oggi distruggerebbe il catalogo** ⚠️ | Trovato il 12/08/2026 preparando l'import delle mosse, **non corretto** perché fuori scope e perché non è più servito eseguirlo. Lo script legge come base i **file storici** (`data/pokemon_catalog.json`, `moves_ma.json`, …) e scrive il risultato in `data/catalog/`. Quella base ha **174 voci** contro le 1026 di oggi, non ha nessun `nome_it`/`nome_en` (il catalogo attuale li ha su 1026 su 1026) e ha ancora le **Mega convertite**: `Mega Venusaur` vale `hp 155` lì e `hp 80` qui. Peggio, `MEGA_BONUS` riapplicherebbe `+75 HP / +20` alle Mega nuove, cioè esattamente la conversione che la deconversione dell'11/08 ha tolto. Rieseguirlo oggi **riporterebbe indietro il catalogo di quattro giorni di lavoro, in silenzio**. Va fatto leggere `data/catalog/` quando esiste, e `MEGA_BONUS` va tolto. Fino ad allora, **non eseguirlo** |
 | ⬜ | Catalogo con abilità incomplete | Ricontato 11/08/2026 sul catalogo di oggi: **238 specie su 1026** hanno una sola abilità e 2 nessuna, più **173 forme annidate su 317** con una sola. Quasi tutti ne hanno 2-3 con la nascosta. ⚠️ È il **prerequisito** della voce «ogni Pokémon deve mostrare solo le sue abilità», in cima: stringere le tendine prima di colmare questo buco toglierebbe scelte legittime |
 | ✅ | Chiavi mega incoerenti nel catalogo | Chiuso 11/08/2026. Non erano anomalie ma **doppioni**: `mega-banette`, `mega-chimecho` e `mega-crabominable` esistevano sia come chiave top-level sia come forma annidata nella specie base. Le forme annidate, deconvertite, sono quelle giuste — le top-level sono state rimosse (1029 → 1026 voci). Gli override sprite in `api_pokemon.py:70-73` **restano**: sono indicizzati sul nome normalizzato, non sulla chiave, e servono ancora perché Mega Chimecho e Mega Crabominable sono inventate e non hanno uno sprite online |
