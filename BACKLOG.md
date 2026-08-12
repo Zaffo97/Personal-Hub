@@ -42,6 +42,38 @@ L'esito va scritto qui, con i numeri: quante pagine, quanti campi, quante anomal
 trovate e quali. Le anomalie che non rientrano nello scope del giro si segnalano, non
 si correggono al volo.
 
+### ⬜ Nello stesso giro — le mosse assegnate sono davvero quelle giuste?
+
+Chiesto da Davide il 12/08/2026, **da fare col controllo finale**. Il moveset importato
+il 12/08 non è mai stato confrontato con una fonte indipendente: viene tutto dal dump
+CSV di PokéAPI, e finora l'unica verifica è stata **interna** — che i nomi risolvano,
+che i conti tornino, che Incineroar perda Knock Off passando a M-A. Questo dice che il
+meccanismo funziona, **non** che gli elenchi siano corretti.
+
+**Fonte da usare: [Bulbapedia](https://bulbapedia.bulbagarden.net/)**, indicata da
+Davide come la più attendibile. È già stata usata una volta con profitto, ed è
+esattamente il caso: l'11/08 ha confermato `Mirror Herb` → «Foglia carbone» facendo da
+**seconda fonte indipendente** rispetto a quella dell'import.
+
+Cosa il controllo deve coprire, in ordine di rischio:
+
+- **la lista `champions`** per prima. È la più giovane e la meno vista: 19 810 righe su
+  319 voci, e nessuno ha mai controllato che il version group `champions` del dump sia
+  completo. Se lì manca qualcosa, su M-A e M-B una mossa legale sparisce dalla tendina
+  **senza dire niente** — è la classe di baco peggiore di questo progetto
+- **`Pawmot`**, che è nel roster di M-A ma nel dump non ha righe Champions: o è un buco
+  del dump, o non è davvero in Champions. Un caso solo, ma è il canarino
+- **un campione della lista `main`** su specie di generazioni diverse, perché per 429
+  voci su 1258 il version group scelto **non** è Scarlatto/Violetto ma uno più vecchio
+- **i metodi**: `machine` è il 76% delle righe (50 551 su 66 033). Se il dump gonfia le
+  MT, gli elenchi sono più larghi del vero e il filtro serve a poco
+
+Il metodo è quello già usato per il roster: uno script rieseguibile che scarica, che
+**si ferma su ciò che non risolve** invece di indovinare, e che dove le due fonti non
+concordano **lo segnala e basta** — come `importa_nomi_wiki.py` con le 11 voci in
+disaccordo. Non si sovrascrive PokéAPI con Bulbapedia alla cieca: nessuna delle due
+fonti è sempre giusta, e qui la lezione è già stata pagata.
+
 ### ⬜ Nello stesso giro — l'inventario di cosa non serve più
 
 Insieme al collaudo, un **censimento di tutto quello che sta nel progetto** per capire
@@ -649,6 +681,11 @@ caso che il backlog citava come impossibile da rifiutare.
   quello della forma base. **Da decidere**: farle ereditare (non sarebbe un'invenzione,
   è come PokéAPI le modella) o lasciarle vuote. Non toccano il VGC, quindi non urge
 - ⬜ **`Pawmot`** ha `main` ma **non** la lista Champions, pur essendo nel roster di MA
+
+> ⬜ **Nessuno ha ancora verificato che questi elenchi siano *giusti*.** Finora le prove
+> sono tutte interne al dato: i nomi risolvono, i conti tornano, Incineroar perde Knock
+> Off. Serve una **seconda fonte indipendente**, e Davide ha indicato **Bulbapedia**. Il
+> controllo è messo insieme al giro di collaudo finale, in cima a questo file.
 
 > ⚠️ `PROJECT_CONTEXT.md` documentava `CHAMPIONS_BST` con un campo `moves: [...]` nella
 > struttura di ogni voce: **non c'è mai stato**. Corretto l'11/08/2026.
