@@ -22,6 +22,54 @@
   {% endfor %}
 </div>
 
+{# Suggerimenti dalla libreria stessa: Steam non espone "giochi simili", quindi la
+   fonte è la tua libreria. Compaiono solo se c'è abbastanza materia prima. #}
+{% if ancora %}
+<div class="card mb-3">
+  <div class="card-body">
+    <div class="flex items-center justify-between flex-wrap gap-2 mb-2">
+      <form method="GET" class="flex items-center gap-2 flex-wrap">
+        {% if current_filter %}<input type="hidden" name="status" value="{{ current_filter }}">{% endif %}
+        {% if q %}<input type="hidden" name="q" value="{{ q }}">{% endif %}
+        {% if genre %}<input type="hidden" name="genre" value="{{ genre }}">{% endif %}
+        {% if platform %}<input type="hidden" name="platform" value="{{ platform }}">{% endif %}
+        {% if sort %}<input type="hidden" name="sort" value="{{ sort }}">{% endif %}
+        <span class="font-600">&#127919; Se ti è piaciuto</span>
+        <select name="simile_a" class="form-control" style="max-width:250px" onchange="this.form.submit()">
+          {% for t in tutti %}<option value="{{ t.id }}" {% if t.id==ancora.id %}selected{% endif %}>{{ t.title }}</option>{% endfor %}
+        </select>
+      </form>
+      <span class="text-muted text-xs">{{ motivo_ancora }}</span>
+    </div>
+    {% if nota_sugg %}
+    <div class="text-sm text-muted" style="padding:.5rem 0">&#9888;&#65039; {{ nota_sugg }}</div>
+    {% endif %}
+    <div style="display:grid;grid-template-columns:repeat(auto-fill,minmax(190px,1fr));gap:.6rem">
+      {% for g, punti, comuni in suggeriti %}
+      <a href="/gaming/{{ g.id }}/edit" style="text-decoration:none;color:inherit">
+        <div style="display:flex;gap:.55rem;align-items:center;padding:.45rem;border:1px solid var(--border);border-radius:8px">
+          <div style="width:52px;height:26px;flex:0 0 auto;overflow:hidden;background:var(--surface-off);border-radius:4px">
+            {% if g.cover_url %}<img src="{{ g.cover_url }}" style="width:100%;height:100%;object-fit:cover" loading="lazy" alt="{{ g.title }}">{% endif %}
+          </div>
+          <div style="min-width:0">
+            <div class="text-sm font-600" style="white-space:nowrap;overflow:hidden;text-overflow:ellipsis">{{ g.title }}</div>
+            <div class="text-xs text-muted" style="white-space:nowrap;overflow:hidden;text-overflow:ellipsis"
+                 title="Generi in comune, dal più raro in libreria">{{ comuni|join(' · ') }}</div>
+          </div>
+        </div>
+      </a>
+      {% endfor %}
+    </div>
+    {% if suggeriti %}
+    <div class="text-xs text-muted" style="margin-top:.5rem">
+      Dalla tua libreria, per generi in comune &mdash; i generi rari pesano più di quelli
+      che hanno quasi tutti. Completati e abbandonati restano fuori.
+    </div>
+    {% endif %}
+  </div>
+</div>
+{% endif %}
+
 {# Un solo form: ricerca, filtri e ordinamento viaggiano insieme, altrimenti
    cambiarne uno azzererebbe gli altri. Lo `status` resta nei pulsanti qui sopra e
    passa di qui come campo nascosto. #}

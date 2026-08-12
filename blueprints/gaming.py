@@ -1,4 +1,5 @@
 import json
+import math
 import os
 import re
 import socket
@@ -317,6 +318,97 @@ def steam_arricchisci():
                     "rimasti": rimasti, "interrotto": errore_rete})
 
 
+def _generi(riga):
+    """I generi di un gioco, come insieme. `genre` è un elenco separato da virgole."""
+    return {g.strip() for g in (riga["genre"] or "").split(",") if g.strip()}
+
+
+# Un genere condiviso conta come segnale solo se **meno di metà libreria** ce l'ha:
+# sotto quella soglia non distingue niente. `log(N/df) > log(2)` è esattamente questo.
+SOGLIA_SEGNALE = math.log(2)
+
+
+def suggerimenti(giochi, quanti=4, id_ancora=None):
+    """Cosa giocare dopo, **partendo dalla libreria stessa**.
+
+    Steam non espone «giochi simili», e inventarsi una somiglianza sarebbe un dato
+    finto: l'unica fonte onesta qui sei tu. Si parte da cosa stai giocando e si
+    cercano nella tua libreria i giochi che gli somigliano di più per genere.
+
+    ⚠️ **I generi non pesano uguale.** In questa libreria «Azione» ce l'hanno 23
+    giochi su 33: condividerlo non dice quasi niente. «Corse», che ce l'hanno in 2, dice
+    molto. Il punteggio di un genere condiviso è quindi `log(N / quanti_ce_l_hanno)`,
+    cioè tanto più alto quanto più il genere è raro in libreria — senza questo, il
+    suggeritore direbbe solo «ti piace l'azione» e proporrebbe i giochi a caso fra i 23.
+
+    ⚠️ **Se il segnale è debole non si suggerisce lo stesso.** `Call of Duty®` ha un
+    solo genere, «Azione», che in questa libreria hanno 23 giochi su 33: qualunque
+    elenco basato su quello sarebbe rumore travestito da consiglio, e l'ordine lo
+    deciderebbe lo spareggio. In quel caso torna una `nota` che dice perché, e nessun
+    suggerimento.
+
+    Restituisce `(ancora, motivo_ancora, [(gioco, punteggio, generi_in_comune), …], nota)`.
+    `ancora` è `None` se la libreria è troppo piccola o senza generi.
+    """
+    if len(giochi) < 3:
+        return None, "", [], ""
+
+    # L'ancora è ciò che stai giocando, ma si può scegliere: con tutta la libreria in
+    # "Pausa" il ripiego sul più giocato può capitare su un gioco poco caratterizzato,
+    # e senza poterlo cambiare la funzione resterebbe muta.
+    ancora = next((g for g in giochi if g["id"] == id_ancora), None)
+    motivo = "scelto da te" if ancora else ""
+    if ancora is None:
+        in_corso = [g for g in giochi if g["status"] == "In corso"]
+        if in_corso:
+            ancora = max(in_corso, key=lambda g: g["hours_played"] or 0)
+            motivo = "perché lo stai giocando"
+        else:
+            con_ore = [g for g in giochi if (g["hours_played"] or 0) > 0]
+            if not con_ore:
+                return None, "", [], ""
+            ancora = max(con_ore, key=lambda g: g["hours_played"] or 0)
+            motivo = "il più giocato — nessun gioco è «In corso»"
+
+    generi_ancora = _generi(ancora)
+    if not generi_ancora:
+        return ancora, motivo, [], f"{ancora['title']} non ha generi in catalogo: non c'è su cosa confrontarlo."
+
+    # Quanti giochi hanno ciascun genere: è il denominatore della rarità.
+    quanti_hanno = {}
+    for g in giochi:
+        for nome in _generi(g):
+            quanti_hanno[nome] = quanti_hanno.get(nome, 0) + 1
+    totale = len(giochi)
+
+    classifica = []
+    for g in giochi:
+        if g["id"] == ancora["id"] or g["status"] in ("Completato", "Abbandonato"):
+            continue
+        comuni = generi_ancora & _generi(g)
+        if not comuni:
+            continue
+        punti = sum(math.log(totale / quanti_hanno[nome]) for nome in comuni)
+        if punti <= 0:      # solo generi che ha praticamente tutta la libreria
+            continue
+        # A parità di somiglianza vengono prima quelli su cui hai speso meno ore:
+        # suggerire il gioco che hai già consumato non serve a niente.
+        classifica.append((g, punti, sorted(comuni, key=lambda n: quanti_hanno[n])))
+    classifica.sort(key=lambda r: (-r[1], r[0]["hours_played"] or 0))
+
+    if not classifica:
+        return ancora, motivo, [], f"Nessun altro gioco condivide un genere con {ancora['title']}."
+    if classifica[0][1] < SOGLIA_SEGNALE:
+        comuni_deboli = ", ".join(f"«{n}»" for n in generi_ancora)
+        return ancora, motivo, [], (
+            f"{ancora['title']} ha solo {comuni_deboli}, che in libreria "
+            f"{'hanno' if len(generi_ancora) > 1 else 'ha'} "
+            f"{max(quanti_hanno[n] for n in generi_ancora)} giochi su {totale}: "
+            "troppo comune per distinguere qualcosa. Scegli un altro gioco qui sopra."
+        )
+    return ancora, motivo, classifica[:quanti], ""
+
+
 @bp.route("/")
 @login_required
 def gaming():
@@ -352,11 +444,18 @@ def gaming():
         for g in riga.split(",") if g.strip()})
     piattaforme = sorted({r[0] for r in db.execute(
         "SELECT DISTINCT platform FROM games WHERE platform IS NOT NULL AND platform <> ''")})
+    # I suggerimenti guardano **tutta** la libreria, non l'elenco filtrato: sono un
+    # consiglio su cosa giocare, non un riassunto di quello che stai guardando.
+    tutti = db.execute("SELECT * FROM games ORDER BY title COLLATE NOCASE").fetchall()
+    ancora, motivo_ancora, suggeriti, nota_sugg = suggerimenti(
+        tutti, id_ancora=_i(request.args.get("simile_a")) or None)
     db.close()
     return render_template("gaming.html", games=games, statuses=GAME_STATUSES,
                            platforms=GAME_PLATFORMS, current_filter=filt, q=q, counts=counts,
                            generi=generi, piattaforme=piattaforme, genre=genere,
-                           platform=piattaforma, sort=ordine, ordinamenti=ETICHETTE_ORDINE)
+                           platform=piattaforma, sort=ordine, ordinamenti=ETICHETTE_ORDINE,
+                           ancora=ancora, motivo_ancora=motivo_ancora, suggeriti=suggeriti,
+                           nota_sugg=nota_sugg, tutti=tutti)
 
 
 @bp.route("/new", methods=["GET", "POST"])

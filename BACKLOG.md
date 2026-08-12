@@ -1224,7 +1224,8 @@ schermata di amministrazione per gestirli.
 |---|---|---|
 | ✅ | Collegamento a una API Steam per tracciare i videogiochi | Fatto 10/08/2026. Tre pezzi, vedi sotto |
 | ✅ | Filtri e ordinamento nell'elenco | Fatto 12/08/2026. Prima si filtrava **solo per stato** e si cercava solo per titolo, con l'ordine fisso sulla data di inserimento. Ora ci sono **genere**, **piattaforma** e cinque ordinamenti (recenti, titolo A→Z, ore giocate ↓ e ↑, durata stimata ↓), un contatore «N su M», e i pulsanti di stato **portano con sé** ricerca, filtri e ordinamento invece di azzerarli. Le tendine elencano solo i valori **presenti in libreria**, così non offrono filtri che non danno risultati. Tre dettagli che valeva la pena curare: `genre` è un elenco separato da virgole, quindi il confronto è per sottostringa **con le virgole ai bordi** (`RPG` non deve pescare un ipotetico `JRPG`); `NULLS LAST` non esiste in SQLite, quindi i giochi **senza ore** finiscono in fondo e non in cima all'ordinamento per ore; e il frammento `ORDER BY` viene da un dizionario del codice, mai dalla richiesta — provato che `?sort=pippo'--` ricada sul default senza errori. Aggiunto anche `id DESC` come spareggio: l'import di massa da Steam scrive decine di righe nello stesso secondo, e «aggiunti di recente» mostrava il più vecchio per primo |
-| ⬜ | Suggerimenti giochi in base a cosa si sta giocando | Ora c'è la materia prima: 34 giochi con generi e ore. Steam **non** espone "giochi simili", quindi serve decidere la fonte: suggerire dalla libreria stessa (per genere e ore), o agganciare un servizio esterno |
+| ✅ | Suggerimenti giochi in base a cosa si sta giocando | Fatto 12/08/2026, **dalla libreria stessa**: Steam non espone «giochi simili» e inventare una somiglianza sarebbe un dato finto, quindi l'unica fonte onesta è la tua libreria. Riquadro «🎯 Se ti è piaciuto …» in cima a `/gaming`, con l'ancora **scegliibile** da una tendina (`?simile_a=<id>`); il default è il gioco «In corso», e non essendocene nessuno ripiega sul più giocato **dicendolo a schermo**. ⚠️ **I generi non pesano uguale**: «Azione» ce l'hanno 23 giochi su 33, «Corse» 2. Il punteggio di un genere condiviso è `log(N/quanti_ce_l_hanno)`, così i generi rari contano e quelli comuni no — senza, il suggeritore direbbe solo «ti piace l'azione». A parità di punteggio vengono prima i giochi con **meno ore**: consigliare quello che hai già consumato non serve. Completati e abbandonati restano fuori. ⚠️ **Quando il segnale è debole non suggerisce lo stesso**: sotto `log(2)` — cioè quando i generi condivisi ce li ha più di metà libreria — mostra il perché invece di riempire la fila. È il caso del default: «Call of Duty® ha solo «Azione», che in libreria ha 23 giochi su 33: troppo comune per distinguere qualcosa» |
+| ⬜ | Suggerimenti giochi — cosa manca | Il consiglio guarda **solo i generi**, perché è l'unico segnale nel DB: `hours_hltb` è vuota su tutti e 33 e le piattaforme sono tutte `PC`. Con i tag di Steam (che sono molto più fini dei generi: «Soulslike», «Coop», «Roguelite») i suggerimenti diventerebbero molto più precisi, ma vanno importati — `appdetails` non li espone, servono `store.steampowered.com/apptags` o lo scraping della pagina | Ora c'è la materia prima: 34 giochi con generi e ore. Steam **non** espone "giochi simili", quindi serve decidere la fonte: suggerire dalla libreria stessa (per genere e ore), o agganciare un servizio esterno |
 
 ### ⚠️ I 33 giochi persi, e la guardia che ora c'è (12/08/2026)
 
@@ -1260,6 +1261,20 @@ perché ci si è fermati non sarebbe mai arrivato a schermo. Aggiunto.
 
 Provati tutti e tre i percorsi: interruzione con `exit 1` e file **intatto**,
 `--anche-se-vuoto` che scrive, e la corsa normale che non si lamenta più.
+
+### Due cose nel dato della libreria, viste il 12/08/2026
+
+Non sono bachi, ma chi lavora sulla sezione deve saperle:
+
+- **`Monster Hunter Wilds Beta test` ha genere `—`**: Steam non dà generi alle beta.
+  Nel suggeritore non ha nessun altro gioco con cui confrontarsi, e la nota lo dice
+- **`Wallpaper Engine` non è un gioco**: ha le categorie *software* di Steam
+  (`Animazione e modellistica`, `Design e illustrazione`, `Fotoritocco`, `Accessori`),
+  quindi compare fra i generi della libreria e nei filtri
+- **tutti e 33 i giochi sono in «Pausa»** e `hours_hltb` è vuota su tutti: l'import di
+  massa non porta né lo stato reale né la durata stimata
+- i titoli con `®` e `™` (`Call of Duty®`, `Battlefield™ 6`, `HELLDIVERS™ 2`) sono
+  **corretti nel DB** — se li vedi storti è la console di Windows, non il dato
 
 ### Steam — cosa è stato fatto (10/08/2026)
 
