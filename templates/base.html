@@ -239,6 +239,21 @@ textarea.form-control{resize:vertical;min-height:70px}
   {% endwith %}
 </div>
 <script>
+// Le stesse traduzioni che usa Jinja con t(), per i pezzi di interfaccia che il
+// browser costruisce da solo: le tabelle degli editor, i messaggi del calcolatore.
+// In italiano l'oggetto e' vuoto e t() torna la frase com'e', perche' la chiave
+// del dizionario **e' la frase italiana**.
+window.T={{ traduzioni_json|safe }};
+window.LANG='{{ lang }}';
+function t(s){return (window.T && window.T[s]) || s;}
+// Per le frasi con dei numeri dentro: la frase resta **intera** nel dizionario, con
+// i segnaposto {cosi}, cosi' l'inglese puo' mettere le parole in un altro ordine.
+// Spezzarla in pezzi da concatenare renderebbe impossibile tradurla bene.
+function tf(s, valori){
+  let out = t(s);
+  for (const k in valori) out = out.split('{' + k + '}').join(valori[k]);
+  return out;
+}
 const html=document.documentElement;
 const saved=localStorage.getItem('hub_theme')||'dark';
 html.setAttribute('data-theme',saved);updateThemeIcon(saved);

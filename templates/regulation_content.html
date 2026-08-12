@@ -1,6 +1,6 @@
 {% extends "base.html" %}
-{% block title %}Contenuti {{ reg.label }} – Hub{% endblock %}
-{% block topbar_title %}🎯 Contenuti regulation{% endblock %}
+{% block title %}{{ t('Contenuti') }} {{ reg.label }} – Hub{% endblock %}
+{% block topbar_title %}🎯 {{ t('Contenuti regulation') }}{% endblock %}
 {% block extra_head %}
 <style>
 .sel-lista{max-height:520px;overflow-y:auto;border:1px solid var(--border);border-radius:var(--radius-md)}
@@ -18,11 +18,12 @@
   <div class="flex items-center gap-2">
     <a href="/pokemon/regulation/{{ reg.id }}" class="btn btn-secondary btn-sm">← {{ reg.label }}</a>
     <div>
-      <h1>🎯 Cosa fa parte di {{ reg.label }}</h1>
+      <h1>🎯 {{ t('Cosa fa parte di') }} {{ reg.label }}</h1>
       <p class="text-muted text-sm">
-        Spunta le voci del catalogo che appartengono a questa regulation.
-        I <strong>dati</strong> non si toccano qui: stanno nel
-        <a href="/pokemon/catalogo">catalogo</a>.
+        {# |safe perché la frase contiene markup e il dizionario è un file nostro,
+           non testo che arriva da fuori. #}
+        {{ t('Spunta le voci del catalogo che appartengono a questa regulation.') }}
+        {{ t('I <strong>dati</strong> non si toccano qui: stanno nel <a href="/pokemon/catalogo">catalogo</a>.')|safe }}
       </p>
     </div>
   </div>
@@ -32,9 +33,10 @@
   {% for d in db_disponibili %}
     <a href="{{ url_for('pokemon.regulation_content', reg_id=reg.id, db=d) }}"
        class="db-tab {% if d == db %}active{% endif %}">
-      {{ {'pokemon':'🐾 Pokémon','moves':'⚔️ Mosse','abilities':'🧬 Abilità','items':'🎒 Oggetti'}[d] }}
+      {{ {'pokemon':'🐾','moves':'⚔️','abilities':'🧬','items':'🎒'}[d] }}
+      {{ t({'pokemon':'Pokémon','moves':'Mosse','abilities':'Abilità','items':'Oggetti'}[d]) }}
       <span style="opacity:.7">
-        {% if conteggi[d].tutto %}tutte{% else %}{{ conteggi[d].scelti }}/{{ conteggi[d].totale }}{% endif %}
+        {% if conteggi[d].tutto %}{{ t('tutte') }}{% else %}{{ conteggi[d].scelti }}/{{ conteggi[d].totale }}{% endif %}
       </span>
     </a>
   {% endfor %}
@@ -44,15 +46,15 @@
   <div class="card-body">
     <label style="display:flex;align-items:center;gap:.5rem;font-size:.82rem;font-weight:600;margin-bottom:.75rem">
       <input type="checkbox" id="tutto" {% if tutto %}checked{% endif %} onchange="cambiaTutto()">
-      Includi <strong>tutte</strong> le voci del catalogo, anche quelle aggiunte in futuro
+      {{ t('Includi <strong>tutte</strong> le voci del catalogo, anche quelle aggiunte in futuro')|safe }}
     </label>
 
     <div id="pannello" {% if tutto %}style="opacity:.4;pointer-events:none"{% endif %}>
       <div style="display:flex;gap:.5rem;margin-bottom:.65rem;align-items:center;flex-wrap:wrap">
         <input id="cerca" class="form-control" style="max-width:240px;font-size:.78rem"
-               placeholder="🔍 Cerca..." oninput="rendi()">
-        <button class="btn btn-secondary btn-sm" onclick="spuntaFiltrati(true)">Seleziona i filtrati</button>
-        <button class="btn btn-secondary btn-sm" onclick="spuntaFiltrati(false)">Deseleziona i filtrati</button>
+               placeholder="🔍 {{ t('Cerca...') }}" oninput="rendi()">
+        <button class="btn btn-secondary btn-sm" onclick="spuntaFiltrati(true)">{{ t('Seleziona i filtrati') }}</button>
+        <button class="btn btn-secondary btn-sm" onclick="spuntaFiltrati(false)">{{ t('Deseleziona i filtrati') }}</button>
         <span id="conteggio" class="text-xs text-muted"></span>
       </div>
       <div class="sel-lista" id="lista"></div>
@@ -60,8 +62,8 @@
     </div>
 
     <div class="flex gap-2 mt-3">
-      <button class="btn btn-primary" onclick="salva()">💾 Salva contenuti</button>
-      <a href="/pokemon/regulation/{{ reg.id }}" class="btn btn-secondary">Annulla</a>
+      <button class="btn btn-primary" onclick="salva()">💾 {{ t('Salva contenuti') }}</button>
+      <a href="/pokemon/regulation/{{ reg.id }}" class="btn btn-secondary">{{ t('Annulla') }}</a>
       <span id="esito" class="text-xs" style="align-self:center"></span>
     </div>
   </div>
@@ -88,11 +90,12 @@ function rendi(){
   const f = filtrati();
   const mostrate = f.slice(0, MAX_RIGHE);
   document.getElementById('conteggio').textContent =
-    `${scelti.size} scelti su ${DISPONIBILI.length} · ${f.length} nel filtro`;
+    tf('{n} scelti su {tot} · {filtro} nel filtro',
+       {n: scelti.size, tot: DISPONIBILI.length, filtro: f.length});
   const avviso = document.getElementById('troppi');
   if (f.length > MAX_RIGHE) {
-    avviso.textContent = `Mostrate le prime ${MAX_RIGHE} di ${f.length}. `
-      + `"Seleziona i filtrati" agisce comunque su tutte e ${f.length}.`;
+    avviso.textContent = tf('Mostrate le prime {max} di {tot}. "Seleziona i filtrati" '
+      + 'agisce comunque su tutte e {tot}.', {max: MAX_RIGHE, tot: f.length});
     avviso.style.display = 'block';
   } else avviso.style.display = 'none';
 
@@ -105,7 +108,8 @@ function rendi(){
 function commuta(nome, acceso){
   if (acceso) scelti.add(nome); else scelti.delete(nome);
   document.getElementById('conteggio').textContent =
-    `${scelti.size} scelti su ${DISPONIBILI.length} · ${filtrati().length} nel filtro`;
+    tf('{n} scelti su {tot} · {filtro} nel filtro',
+       {n: scelti.size, tot: DISPONIBILI.length, filtro: filtrati().length});
 }
 
 function spuntaFiltrati(acceso){
@@ -124,7 +128,7 @@ function cambiaTutto(){
 async function salva(){
   const tutto = document.getElementById('tutto').checked;
   const esito = document.getElementById('esito');
-  esito.textContent = 'Salvataggio...';
+  esito.textContent = t('Salvataggio...');
   esito.style.color = 'var(--text-muted)';
   try{
     const r = await fetch('/pokemon/api/regulation/' + REG + '/contenuto/' + DB, {
@@ -135,10 +139,11 @@ async function salva(){
     if(!d.ok){ esito.textContent = d.error; esito.style.color = 'var(--error,#e05555)'; return; }
     esito.style.color = 'var(--primary)';
     esito.textContent = d.tutto
-      ? `Salvato: tutte le ${d.scelti} voci del catalogo.`
-      : `Salvato: ${d.scelti} voci`
-        + (d.ignorati && d.ignorati.length ? ` (${d.ignorati.length} nomi ignorati perché non nel catalogo)` : '');
-  }catch(e){ esito.textContent = 'Errore: ' + e.message; esito.style.color = 'var(--error,#e05555)'; }
+      ? tf('Salvato: tutte le {n} voci del catalogo.', {n: d.scelti})
+      : tf('Salvato: {n} voci', {n: d.scelti})
+        + (d.ignorati && d.ignorati.length
+           ? tf(' ({n} nomi ignorati perché non nel catalogo)', {n: d.ignorati.length}) : '');
+  }catch(e){ esito.textContent = t('Errore:') + ' ' + e.message; esito.style.color = 'var(--error,#e05555)'; }
 }
 
 rendi();

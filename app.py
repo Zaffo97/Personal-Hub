@@ -3,8 +3,9 @@ Personal Hub — entry point.
 Ogni area funzionale vive in blueprints/.
 """
 import os
+import json
 from flask import Flask
-from extensions import init_db, lingua_attiva, nome_vis
+from extensions import init_db, lingua_attiva, nome_vis, t, traduzioni
 from data import SEZIONI, BLUEPRINT_SEZIONE
 
 def create_app():
@@ -18,7 +19,13 @@ def create_app():
     # tendine di Pokémon, mosse e oggetti sono renderizzate dal server.
     @app.context_processor
     def _lingua():
-        return {"lang": lingua_attiva(), "nome_vis": nome_vis}
+        # `t` traduce le etichette dell'interfaccia, `nome_vis` i nomi dei dati.
+        # `traduzioni_json` è lo stesso dizionario per il JS: le pagine Pokémon
+        # costruiscono pezzi di interfaccia nel browser, e senza questo resterebbero
+        # in italiano anche in modalità inglese. In italiano è `{}`, cioè niente.
+        lingua = lingua_attiva()
+        return {"lang": lingua, "nome_vis": nome_vis, "t": t,
+                "traduzioni_json": json.dumps(traduzioni(lingua), ensure_ascii=False)}
 
     # La sidebar mostra solo le sezioni permesse. È un context processor e non un
     # calcolo dentro base.html perché la stessa risposta serve al controllo qui sotto.

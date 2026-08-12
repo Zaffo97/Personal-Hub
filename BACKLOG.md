@@ -108,6 +108,158 @@ si sa quale dei due l'ha rotto.
 
 ---
 
+## ⬜ Aggiungere dati dalla web app, senza passarmi dal mezzo (aperta il 12/08/2026)
+
+Chiesto da Davide il 12/08/2026: poter **importare nuovi Pokémon dentro `pokedex`
+direttamente dall'interfaccia**, senza doverlo chiedere a me, e lo stesso per **oggetti,
+mosse e abilità**. Poi verificare se la stessa strada vale per le altre regulation, e se
+un import manuale è già previsto da qualche parte.
+
+**Metà della risposta esiste già, e va detta prima di progettare il resto** — misurato
+sul codice il 12/08/2026, non ipotizzato:
+
+- `/pokemon/catalogo?db=pokemon|moves|abilities|items` ([catalog_editor.html](templates/catalog_editor.html),
+  route in [pokemon.py:712](blueprints/pokemon.py:712)) modifica **i dati**: crea, aggiorna,
+  rinomina ed elimina **una voce alla volta**, con archivio e ripristino. `DB_CATALOGO`
+  copre tutti e quattro i database chiesti
+- `/pokemon/regulation/<id>/contenuto?db=…` ([regulation_content.html](templates/regulation_content.html),
+  route in [pokemon.py:604](blueprints/pokemon.py:604)) sceglie **quali nomi** entrano in una
+  regulation, con il pulsante «tutte» e la copia da un'altra regulation
+  (`/api/regulation/<id>/copia-da`). Vale per **ogni** regulation convertita al filtro,
+  non solo per una
+
+Quindi la seconda domanda ha già una risposta parziale: **la scelta dei contenuti sì**,
+è generica; **l'inserimento di dati nuovi no**, se non voce per voce a mano.
+
+**E su `pokedex` c'è una cosa da sapere prima di scrivere una riga**: nel suo filtro
+`pokemon`, `moves`, `items` e `abilities` sono tutti e quattro `null`, cioè «tutto il
+catalogo». Un Pokémon aggiunto al catalogo **compare in `pokedex` da solo**, senza
+nessun passaggio in più. In `ma` (279 / 460 / 58) e `mb` (308 / 460 / 58) gli elenchi
+sono espliciti, quindi lì **non entra**: va spuntato nella schermata contenuti.
+
+**Cosa manca davvero, in ordine di rischio:**
+
+1. ⚠️ **Il moveset, che è il buco vero.** `data/catalog/pokemon_moves.json` **non** è tra
+   i `DB_CATALOGO` ([pokemon.py:71](blueprints/pokemon.py:71)) e nessuna pagina lo tocca:
+   lo scrive solo `scripts/importa_mosse_specie.py`. Una specie aggiunta a mano nasce
+   quindi **senza mosse legali**, e nel calcolatore e nel team builder la sua tendina
+   esce vuota **senza dire perché** — la classe di baco peggiore di questo progetto.
+   Qualunque forma prenda l'import, deve o dare le mosse alla specie nuova o **dichiarare
+   a schermo** che non ne ha
+2. **L'import in blocco**, che è la richiesta letterale: oggi caricare più voci insieme
+   si può fare **solo** dagli script in `scripts/`. Serve decidere la forma — incollare
+   JSON, caricare un file, o pescare da PokéAPI per nome — e in ogni caso riusare
+   `salva_catalogo()` / `_save_abilities()`, che sono l'unico punto dove nasce la copia
+   di sicurezza
+3. **Le regulation non-`pokedex`**: dopo l'aggiunta al catalogo, o si offre un
+   «aggiungi anche a…» al salvataggio, o si accetta il doppio passaggio — ma allora va
+   **scritto a schermo**, altrimenti sembra che l'import non abbia funzionato
+4. **Validazione, oggi assente.** `/api/catalogo/<db>/salva` accetta qualunque oggetto:
+   il solo controllo è `isinstance(voce, dict)` ([pokemon.py:756](blueprints/pokemon.py:756)).
+   Una voce Pokémon completa ha `name`, `slug`, `nome_it`, `nome_en`, `types`,
+   `base_stats`, `abilities`, `forms`: senza `base_stats` il calcolatore sbaglia i conti,
+   senza `nome_it`/`nome_en` lo switch lingua non ha cosa mostrare
+5. **Chi può farlo**: è scrittura sui dati condivisi, quindi va incrociato con i permessi
+   per sezione e con la voce dei dati senza proprietario più sotto
+
+Non c'è ancora una decisione su nessuno dei cinque punti: la voce è aperta, non
+progettata.
+
+---
+
+## ⬜ Mettere l'app online — Railway o cosa? (aperta il 12/08/2026)
+
+Chiesto da Davide il 12/08/2026: **usare la web app da dove vuole** — non solo da questo
+computer, ma anche dal telefono e da altri PC, **in contemporanea** — con una soluzione
+**possibilmente gratuita**. La domanda posta era: Railway è la strada giusta?
+
+> ### 🔒 I due vincoli, posti da Davide il 12/08/2026
+>
+> 1. **I dati degli utenti devono restare salvati, sempre.** Non «di solito»: una
+>    soluzione che al riavvio riparte pulita è esclusa a prescindere, anche se comoda
+> 2. **Gratis.**
+>
+> Messi insieme, i due vincoli **tagliano fuori Railway** — e con lui Render e Fly nella
+> forma gratuita, perché il disco persistente lì è la parte che si paga. Restano in
+> piedi solo le strade 1 e 3 qui sotto: **PythonAnywhere** e **il tunnel dal PC di
+> casa**. La strada 2 resta scritta solo per ricordare cosa si comprerebbe con 5 $.
+>
+> ⚠️ E il vincolo 1 va **verificato, non creduto**: qualunque strada si scelga, il
+> collaudo obbligatorio è **salvare qualcosa dalla web app, riavviare il servizio, e
+> ricontrollare che ci sia ancora**. È l'unico modo di accorgersi in tempo del
+> filesystem effimero, che non dà nessun errore: la pagina dice «Salvato» lo stesso.
+
+**La risposta breve: il problema non è quale hosting, è che questa app tiene lo stato
+in file su disco.** Contati il 12/08/2026: **20 punti** in `blueprints/` ed
+`extensions.py` aprono un file in scrittura mentre l'app gira — `salva_catalogo()`, le
+abilità, i filtri delle regulation, gli archivi in `data/archive/` — più `hub.db`, che
+è dove vivono utenti, team, giochi, progetti Arduino e build PC.
+
+Railway, Render e Fly danno un **filesystem effimero**: a ogni redeploy o riavvio il
+contenitore riparte dall'immagine. Senza un disco persistente, **ogni modifica fatta
+dalla web app sparisce al primo riavvio**, e sparirebbe in silenzio — la pagina
+direbbe «Salvato». Su Railway si risolve con un **volume** montato su `data/` e su
+`hub.db`: tecnicamente funziona, ma il piano gratuito di Railway **non esiste più** (c'è
+un credito di prova, poi si paga sui 5 $/mese). ⚠️ I prezzi vanno verificati quando ci
+si mette: cambiano spesso, e questo è quanto ne so io, non un preventivo.
+
+**Quanto dato deve viaggiare**, misurato: `data/` pesa 92 MB, ma **84 MB sono
+`data/cache/`** (PokéAPI e wiki, già ignorata da git e rigenerabile). Quello che deve
+davvero sopravvivere è **7,3 MB versionati** più `hub.db` (60 KB) e `data/archive/`
+(3 MB). È poco: nessun piano si spaventa per questo.
+
+**Le tre strade, in ordine di quanto costano a Davide** — con i vincoli qui sopra, la
+prima è la candidata e la terza la riserva; la seconda è fuori:
+
+1. ✅ **PythonAnywhere, piano gratuito** — il filesystem **è persistente**, che è
+   esattamente ciò che qui serve, e l'app non va in letargo. Limiti: una sola web app,
+   una quota di CPU al giorno, va **rinnovata a mano ogni tre mesi**, e le connessioni
+   in uscita passano da una whitelist (irrilevante: gli import da PokéAPI e dalla wiki
+   si lanciano da qui, non dal server). Per un'app a un utente e a traffico quasi zero è
+   la candidata più seria fra le gratuite
+2. ❌ **Railway / Render / Fly.io con un volume** — 5 $/mese circa, deploy da git,
+   esperienza migliore e nessun rinnovo da ricordare. **Esclusa dal vincolo «gratis»**,
+   e resta qui solo per sapere cosa si comprerebbe se un giorno il vincolo cadesse
+3. 🟨 **Il PC di casa esposto con un tunnel Cloudflare** — la riserva, se PythonAnywhere
+   stringe troppo. Gratis, e i dati non si spostano di qui: sono già dove sono adesso,
+   il che soddisfa il vincolo 1 nel modo più diretto possibile. Davanti ci si mette
+   Cloudflare Access per l'autenticazione. Il prezzo è che **il PC deve restare
+   acceso**: se è spento, dal telefono non si vede niente
+
+**Prima di esporre qualunque cosa a internet, quattro cose trovate nel codice il
+12/08/2026, e nessuna è opinabile:**
+
+- ⚠️ `app.py` finisce con `app.run(host="0.0.0.0", debug=True, port=5000)`. Il debugger
+  di Werkzeug acceso su una porta pubblica è **esecuzione di codice da remoto**. In
+  produzione ci vuole un server WSGI vero — `gunicorn` su Linux, `waitress` su Windows
+- ⚠️ `SECRET_KEY` ha come default `"dev-secret-change-me"`. Chi conosce quella stringa
+  **si firma da solo un cookie di sessione da admin**: va messa come variabile
+  d'ambiente, con un valore casuale
+- ⚠️ la pagina di login **stampa `admin / admin123`**. Va tolto, e la password cambiata
+- `requirements.txt` contiene una riga sola, `flask>=3.0`: manca tutto il resto di ciò
+  che serve a un deploy
+
+**E una cosa sulla contemporaneità**, che è la parte della richiesta più facile da dare
+per scontata: da più dispositivi insieme, SQLite regge senza problemi un uso come
+questo. I **file JSON scritti a mano no**: `salva_catalogo()` riscrive il file intero
+senza nessun lock, quindi due salvataggi nello stesso momento non danno errore —
+**l'ultimo vince e l'altro si perde**. Le cache in memoria invece sono già sull'mtime
+(`load_moveset()`, `traduzioni()`), quindi con più worker si comportano bene.
+
+**E una rete sotto, visto il vincolo «i dati restano salvati».** «Persistente» non vuol
+dire «al sicuro»: un piano gratuito può chiudere, scadere o essere sospeso. La copia
+leggibile la fa già `python scripts/esporta_dati.py` in `data/backup/hub_export.json`,
+che è versionata — ma **oggi la lancio io a mano da qui**. Online serve che quella copia
+si faccia **dal server e da sola**, altrimenti l'unico backup è vecchio quanto l'ultima
+sessione. Da decidere insieme al deploy, non dopo.
+
+Questa voce va incrociata con **«i dati non hanno un proprietario»** più sotto: finché
+ogni utente vede i team di tutti, mettere l'app online significa esporre a tutti gli
+utenti i dati di tutti. Ordine sensato: prima i proprietari dei dati, poi le quattro
+correzioni qui sopra, poi il deploy.
+
+---
+
 ## ✅ Regulation e interfaccia — le quattro voci, chiuse (11/08/2026)
 
 Tutte e quattro fatte e verificate: **41 controlli su 41** sul test client, regola #8
@@ -436,10 +588,69 @@ abilità usati dal catalogo Pokémon risolvono tutti, e risolvono sulle ufficial
 | ✅ | **Lo switch riguarda solo la sezione Pokémon** | Chiuso 11/08/2026: il pulsante compare **solo sotto `/pokemon/*`**, così non promette quello che non fa. Verificato pagina per pagina: assente su `/`, Gaming, Arduino, PC Builder e Python, presente sulle tre pagine Pokémon provate |
 | ✅ | **Bandierine al posto di `IT`/`EN`** | Chiuso 11/08/2026. Bandiera della lingua **attiva**, disegnata in **SVG inline** e non con le emoji bandiera: su Windows quelle non vengono renderizzate come tali e si sarebbero lette «IT» e «GB», cioè le stesse due lettere di prima. `toggleLingua()` legge ora `data-lang` invece del testo del pulsante, che non c'è più. Provato cliccandolo: il cookie passa a `en`, la bandiera diventa la Union Jack e le abilità nelle tendine passano all'inglese |
 
+### 🟨 Il secondo blocco — le stringhe dell'interfaccia (iniziato il 12/08/2026)
+
+**Quanto è grande, contato il 12/08/2026** — non stimato: **453** stringhe fisse nelle
+pagine Pokémon (calcolatori 142, moves_editor 52, abilities_editor 47, items_editor 43,
+regulation_editor 42, regulations_list 33, roster_editor 26, catalog_editor 23,
+pokemon 16, regulation_content 15, base 14), più **~110** dentro il JavaScript, di cui
+24 nei file `static/js/calcolatori-*.js`. Nell'intero progetto sono 691.
+
+**Come funziona**, e perché così:
+
+- `t('frase')` in Jinja e in JS, `tf('frase con {n} dentro', {n: …})` per le frasi coi
+  numeri. **La chiave del dizionario è la frase italiana stessa**, non un codice tipo
+  `btn.salva`: il template resta leggibile e una traduzione mancante ricade
+  sull'italiano, che è sempre giusto, invece di mostrare a schermo il nome della chiave
+- il dizionario è `data/i18n/en.json`. L'italiano non ha file: è la fonte
+- `traduzioni()` in `extensions.py` tiene la cache **con l'mtime**, come `load_moveset()`:
+  si può correggere una traduzione senza riavviare l'app
+- il JS riceve lo stesso dizionario in `window.T` da `base.html`; in italiano è `{}`
+- ⚠️ **il prezzo, dichiarato**: cambiare una parola italiana in un template stacca la
+  traduzione **in silenzio**. Per questo esiste
+  `python scripts/controlla_traduzioni.py`, che confronta le frasi chieste dal codice
+  con quelle del dizionario ed elenca mancanti, vuote e orfane
+
+**Fatto e verificato il 12/08/2026** — 3 template su 11:
+
+| Template | Stringhe | Stato |
+|---|---|---|
+| `pokemon.html` | 16 | ✅ provato in browser: `1 saved teams`, `Move Editor`, `Analyse` |
+| `regulation_content.html` | 15 | ✅ reso in EN col test client |
+| `catalog_editor.html` | 23 | ✅ reso in EN col test client |
+
+Verifica: **14 pagine × 2 lingue rese 200** col test client, `controlla_traduzioni.py`
+dà **69 chieste / 69 presenti / 0 mancanti**, e lo sweep di sintassi dà **1587 pezzi
+sani** (26 `<script>` + 1561 handler inline) — fatto nel browser con `new Function()`,
+perché qui non c'è node.
+
+⚠️ **Un baco intercettato dallo sweep, ed era mio**: avevo scritto
+`onsubmit="… confirm(tf('…', {db: {{ db|tojson }}}))"`, e `|tojson` rende `"pokedex"`
+**con le doppie** dentro un attributo delimitato dalle doppie — l'attributo si chiudeva
+a metà. Esattamente la classe di baco che ha tenuto morto il Ripristina del roster.
+Corretto con gli apici singoli, e il perché è scritto lì accanto.
+
+**Restano 8 template** (~380 stringhe): `calcolatori.html` più i 24 nei
+`static/js/calcolatori-*.js`, `moves_editor`, `abilities_editor`, `items_editor`,
+`regulation_editor`, `regulations_list`, `roster_editor`, `base.html`.
+
+⬜ **Due cose da decidere con Davide, non decise da me:**
+
+1. **La shell resta in italiano.** `base.html` (sidebar, «Esporta JSON», «Utenti»,
+   «Cambia tema») **non** è tradotta, di proposito: il pulsante lingua compare solo
+   sotto `/pokemon/*` — deciso l'11/08 — quindi tradurre la sidebar farebbe vedere
+   l'inglese anche su Gaming e Arduino **senza un modo per tornare indietro** da lì.
+   O si lascia così, o il pulsante torna su tutte le pagine
+2. **`1 team salvati` → `1 saved teams`.** Il plurale è sbagliato in entrambe le lingue;
+   in italiano lo era già prima, quindi non è una regressione. Si sistema quando si
+   decide se `tf()` debba gestire il singolare/plurale
+
+⚠️ **Un inciampo da sapere**: `{% for t in … %}` in `moves_editor.html` (righe 97 e 153)
+e `regulation_editor.html` (riga 215) usa `t` come variabile di ciclo e **ombrerebbe la
+funzione**. Vanno rinominate quando si traducono quei due file.
+
 ### Cosa NON copre ancora (stato tecnico)
 
-- ⬜ **le stringhe dell'interfaccia** — etichette, pulsanti, titoli: italiano fisso in
-  ~19 template. È il secondo blocco
 - ⬜ **gli editor** (`/pokemon/catalogo`, roster, mosse, oggetti) mostrano ancora la
   **chiave**, non il nome tradotto. Lì la chiave è l'identità della voce, quindi va
   deciso se e come mostrarle entrambe

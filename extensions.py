@@ -1,4 +1,4 @@
-import sqlite3, os, hashlib, re
+import sqlite3, os, hashlib, re, json
 from functools import wraps
 from flask import session, redirect, url_for, request
 from data import PYTHON_TOPICS
@@ -35,6 +35,46 @@ def nome_vis(voce, chiave="", lingua=None):
     if isinstance(voce, dict):
         return voce.get(f"nome_{lingua}") or voce.get("name") or chiave
     return chiave or voce
+
+
+# ── Le stringhe dell'interfaccia ─────────────────────────────────────────────
+# `nome_vis` qui sopra traduce i **dati** (Pokémon, mosse, oggetti, abilità);
+# questa parte traduce le **etichette**: titoli, pulsanti, intestazioni di tabella.
+#
+# La chiave del dizionario è **la frase italiana stessa**, non un codice inventato
+# tipo `btn.salva`. Due ragioni: il template resta leggibile (`{{ t('Salva') }}` si
+# capisce senza aprire il JSON) e una traduzione mancante **ricade sull'italiano**,
+# che è sempre giusto, invece di mostrare a schermo il codice della chiave.
+# Il prezzo è che cambiare la frase italiana in un template stacca la traduzione:
+# per accorgersene c'è `scripts/controlla_traduzioni.py`.
+I18N_DIR = os.path.join(DATA_DIR, "i18n")
+
+# Cache con l'mtime, come per il moveset: il file lo si modifica a mano fuori dal
+# processo, e rileggerlo quando cambia evita di riavviare l'app a ogni ritocco.
+_TRADUZIONI = {}
+
+
+def traduzioni(lingua=None):
+    """Il dizionario italiano → lingua richiesta. Per l'italiano è vuoto: è la fonte."""
+    lingua = lingua or lingua_attiva()
+    if lingua == "it":
+        return {}
+    percorso = os.path.join(I18N_DIR, f"{lingua}.json")
+    try:
+        mtime = os.path.getmtime(percorso)
+    except OSError:
+        return {}
+    voce = _TRADUZIONI.get(lingua)
+    if voce is None or voce["mtime"] != mtime:
+        with open(percorso, encoding="utf-8") as f:
+            voce = {"mtime": mtime, "voci": json.load(f)}
+        _TRADUZIONI[lingua] = voce
+    return voce["voci"]
+
+
+def t(testo, lingua=None):
+    """La stringa d'interfaccia nella lingua attiva; se manca, l'italiano com'è."""
+    return traduzioni(lingua).get(testo, testo)
 
 
 def get_db():

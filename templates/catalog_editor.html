@@ -1,6 +1,6 @@
 {% extends "base.html" %}
-{% block title %}Catalogo – Hub{% endblock %}
-{% block topbar_title %}📚 Catalogo{% endblock %}
+{% block title %}{{ t('Catalogo') }} – Hub{% endblock %}
+{% block topbar_title %}📚 {{ t('Catalogo') }}{% endblock %}
 {% block extra_head %}
 <style>
 .cat-table{width:100%;border-collapse:collapse;font-size:.78rem}
@@ -21,10 +21,9 @@ textarea.code-area{min-height:300px}
   <div class="flex items-center gap-2">
     <a href="/pokemon" class="btn btn-secondary btn-sm">← Pokémon</a>
     <div>
-      <h1>📚 Catalogo — Editor</h1>
+      <h1>📚 {{ t('Catalogo — Editor') }}</h1>
       <p class="text-muted text-sm">
-        Qui si modificano i <strong>dati</strong>. Negli editor di regulation si sceglie
-        soltanto <strong>quali voci</strong> ne fanno parte.
+        {{ t('Qui si modificano i <strong>dati</strong>. Negli editor di regulation si sceglie soltanto <strong>quali voci</strong> ne fanno parte.')|safe }}
       </p>
     </div>
   </div>
@@ -34,7 +33,8 @@ textarea.code-area{min-height:300px}
   {% for d in db_disponibili %}
     <a href="{{ url_for('pokemon.catalog_editor', db=d) }}"
        class="db-tab {% if d == db %}active{% endif %}">
-      {{ {'pokemon':'🐾 Pokémon','moves':'⚔️ Mosse','abilities':'🧬 Abilità','items':'🎒 Oggetti'}[d] }}
+      {{ {'pokemon':'🐾','moves':'⚔️','abilities':'🧬','items':'🎒'}[d] }}
+      {{ t({'pokemon':'Pokémon','moves':'Mosse','abilities':'Abilità','items':'Oggetti'}[d]) }}
       <span style="opacity:.7">{{ conteggi[d] }}</span>
     </a>
   {% endfor %}
@@ -44,19 +44,20 @@ textarea.code-area{min-height:300px}
 
   <div class="card">
     <div class="card-header">
-      <span class="card-title">{{ totale }} voci</span>
-      <button class="btn btn-primary btn-sm" onclick="nuovaVoce()">+ Aggiungi</button>
+      <span class="card-title">{{ totale }} {{ t('voci') }}</span>
+      <button class="btn btn-primary btn-sm" onclick="nuovaVoce()">+ {{ t('Aggiungi') }}</button>
     </div>
     <div class="card-body" style="padding-top:.5rem">
       <div style="display:flex;gap:.5rem;margin-bottom:.65rem;align-items:center;flex-wrap:wrap">
         <input id="cerca" class="form-control" style="max-width:220px;font-size:.78rem"
-               placeholder="🔍 Cerca..." oninput="rendi()">
+               placeholder="🔍 {{ t('Cerca...') }}" oninput="rendi()">
         <span id="conteggio" class="text-xs text-muted"></span>
       </div>
       <div style="max-height:560px;overflow-y:auto">
         <table class="cat-table">
           <thead><tr>
-            <th>Nome</th><th>Info</th><th style="text-align:right">Valore</th><th></th><th></th>
+            <th>{{ t('Nome') }}</th><th>{{ t('Info') }}</th>
+            <th style="text-align:right">{{ t('Valore') }}</th><th></th><th></th>
           </tr></thead>
           <tbody id="corpo"></tbody>
         </table>
@@ -67,35 +68,37 @@ textarea.code-area{min-height:300px}
 
   <div>
     <div class="card">
-      <div class="card-header"><span class="card-title" id="titolo_voce">Nessuna voce selezionata</span></div>
+      <div class="card-header"><span class="card-title" id="titolo_voce">{{ t('Nessuna voce selezionata') }}</span></div>
       <div class="card-body">
         <div class="form-group">
-          <label>Nome</label>
-          <input id="voce_nome" class="form-control" style="font-size:.8rem" placeholder="Seleziona una voce dalla tabella">
+          <label>{{ t('Nome') }}</label>
+          <input id="voce_nome" class="form-control" style="font-size:.8rem" placeholder="{{ t('Seleziona una voce dalla tabella') }}">
         </div>
         <div class="form-group mb-0">
-          <label>JSON della voce</label>
+          <label>{{ t('JSON della voce') }}</label>
           <textarea id="voce_json" class="form-control code-area" spellcheck="false"></textarea>
         </div>
         <div class="flex gap-2 mt-2">
-          <button class="btn btn-primary" onclick="salvaVoce()">💾 Salva voce</button>
-          <button class="btn btn-secondary" onclick="annulla()">↩ Annulla</button>
+          <button class="btn btn-primary" onclick="salvaVoce()">💾 {{ t('Salva voce') }}</button>
+          <button class="btn btn-secondary" onclick="annulla()">↩ {{ t('Annulla') }}</button>
         </div>
         <p id="esito" class="text-xs mt-2" style="display:none"></p>
       </div>
     </div>
 
     <div class="card mt-0">
-      <div class="card-header"><span class="card-title">🗄️ Archivio</span></div>
+      <div class="card-header"><span class="card-title">🗄️ {{ t('Archivio') }}</span></div>
       <div class="card-body">
         <p class="text-xs text-muted mb-2" style="line-height:1.6">
-          Ogni salvataggio tiene da parte la versione precedente in automatico.
+          {{ t('Ogni salvataggio tiene da parte la versione precedente in automatico.') }}
         </p>
         <form method="POST" action="{{ url_for('pokemon.catalog_archive', db=db) }}"
-              onsubmit="return confirm('Archiviare il catalogo {{ db }}?')" style="margin-bottom:.5rem">
-          <button type="submit" class="btn btn-secondary btn-sm">📦 Archivia {{ db }}</button>
+              {# apici singoli: |tojson renderebbe "pokemon" con le doppie, e chiuderebbe l'attributo.
+                 `db` viene da DB_CATALOGO, non dall'utente. #}
+              onsubmit="return confirm(tf('Archiviare il catalogo {db}?', {db: '{{ db }}'}))" style="margin-bottom:.5rem">
+          <button type="submit" class="btn btn-secondary btn-sm">📦 {{ t('Archivia') }} {{ db }}</button>
         </form>
-        <button class="btn btn-sm" style="font-size:.72rem" onclick="caricaArchivi()">Vedi archivi salvati</button>
+        <button class="btn btn-sm" style="font-size:.72rem" onclick="caricaArchivi()">{{ t('Vedi archivi salvati') }}</button>
         <div id="archivi" style="margin-top:.5rem"></div>
       </div>
     </div>
@@ -117,10 +120,11 @@ function rendi(){
   const filtrate = q ? INDICE.filter(r => r.nome.toLowerCase().includes(q)
                                        || (r.info || '').toLowerCase().includes(q)) : INDICE;
   const mostrate = filtrate.slice(0, MAX_RIGHE);
-  document.getElementById('conteggio').textContent = filtrate.length + ' voci';
+  document.getElementById('conteggio').textContent = filtrate.length + ' ' + t('voci');
   const avviso = document.getElementById('troppi');
   if (filtrate.length > MAX_RIGHE) {
-    avviso.textContent = `Mostrate le prime ${MAX_RIGHE} di ${filtrate.length}. Cerca per restringere.`;
+    avviso.textContent = tf('Mostrate le prime {max} di {tot}. Cerca per restringere.',
+                            {max: MAX_RIGHE, tot: filtrate.length});
     avviso.style.display = 'block';
   } else avviso.style.display = 'none';
 
@@ -144,7 +148,7 @@ function messaggio(testo, errore){
 }
 
 async function apri(chiave){
-  messaggio('Caricamento...', false);
+  messaggio(t('Caricamento...'), false);
   try{
     const r = await fetch('/pokemon/api/catalogo/' + DB + '/voce?nome=' + encodeURIComponent(chiave));
     const d = await r.json();
@@ -155,7 +159,7 @@ async function apri(chiave){
     document.getElementById('titolo_voce').textContent = d.nome;
     messaggio('', false);
     document.getElementById('esito').style.display = 'none';
-  }catch(e){ messaggio('Errore: ' + e.message, true); }
+  }catch(e){ messaggio(t('Errore:') + ' ' + e.message, true); }
 }
 
 function nuovaVoce(){
@@ -168,7 +172,7 @@ function nuovaVoce(){
     items:   {category:'other', desc:''}
   };
   document.getElementById('voce_json').value = JSON.stringify(modelli[DB], null, 2);
-  document.getElementById('titolo_voce').textContent = 'Nuova voce';
+  document.getElementById('titolo_voce').textContent = t('Nuova voce');
   document.getElementById('esito').style.display = 'none';
 }
 
@@ -176,16 +180,16 @@ function annulla(){
   nomeOriginale = null;
   document.getElementById('voce_nome').value = '';
   document.getElementById('voce_json').value = '';
-  document.getElementById('titolo_voce').textContent = 'Nessuna voce selezionata';
+  document.getElementById('titolo_voce').textContent = t('Nessuna voce selezionata');
   document.getElementById('esito').style.display = 'none';
 }
 
 async function salvaVoce(){
   const nome = document.getElementById('voce_nome').value.trim();
-  if(!nome){ messaggio('Il nome è obbligatorio', true); return; }
+  if(!nome){ messaggio(t('Il nome è obbligatorio'), true); return; }
   let voce;
   try{ voce = JSON.parse(document.getElementById('voce_json').value); }
-  catch(e){ messaggio('JSON non valido: ' + e.message, true); return; }
+  catch(e){ messaggio(t('JSON non valido:') + ' ' + e.message, true); return; }
   try{
     const r = await fetch('/pokemon/api/catalogo/' + DB + '/salva', {
       method:'POST', headers:{'Content-Type':'application/json'},
@@ -198,12 +202,12 @@ async function salvaVoce(){
     if(i >= 0) INDICE[i] = d.riga; else INDICE.push(d.riga);
     nomeOriginale = nome;
     rendi();
-    messaggio('Salvato. Il catalogo ha ' + d.totale + ' voci.', false);
-  }catch(e){ messaggio('Errore: ' + e.message, true); }
+    messaggio(tf('Salvato. Il catalogo ha {n} voci.', {n: d.totale}), false);
+  }catch(e){ messaggio(t('Errore:') + ' ' + e.message, true); }
 }
 
 async function elimina(chiave){
-  if(!confirm('Eliminare "' + chiave + '" dal catalogo?')) return;
+  if(!confirm(tf('Eliminare "{nome}" dal catalogo?', {nome: chiave}))) return;
   try{
     const r = await fetch('/pokemon/api/catalogo/' + DB + '/elimina', {
       method:'POST', headers:{'Content-Type':'application/json'},
@@ -215,31 +219,38 @@ async function elimina(chiave){
     if(i >= 0) INDICE.splice(i, 1);
     rendi();
     messaggio(d.usata_da && d.usata_da.length
-      ? 'Eliminata, ma era usata da: ' + d.usata_da.join(', ')
-      : 'Eliminata. Restano ' + d.totale + ' voci.', d.usata_da && d.usata_da.length);
-  }catch(e){ messaggio('Errore: ' + e.message, true); }
+      ? t('Eliminata, ma era usata da:') + ' ' + d.usata_da.join(', ')
+      : tf('Eliminata. Restano {n} voci.', {n: d.totale}), d.usata_da && d.usata_da.length);
+  }catch(e){ messaggio(t('Errore:') + ' ' + e.message, true); }
 }
 
 async function caricaArchivi(){
   const el = document.getElementById('archivi');
-  el.innerHTML = '<span class="text-xs text-muted">Caricamento...</span>';
+  el.innerHTML = '<span class="text-xs text-muted">' + t('Caricamento...') + '</span>';
   try{
     const r = await fetch('/pokemon/catalogo/' + DB + '/archives');
     const dati = await r.json();
-    if(!dati.length){ el.innerHTML = '<p class="text-xs text-muted mt-1">Nessun archivio salvato.</p>'; return; }
+    if(!dati.length){ el.innerHTML = '<p class="text-xs text-muted mt-1">' + t('Nessun archivio salvato.') + '</p>'; return; }
     // Niente apostrofi nel confirm: finisce in un attributo onsubmit delimitato da '
     el.innerHTML = dati.map(a =>
       '<div style="display:flex;align-items:center;justify-content:space-between;'
       + 'padding:.4rem 0;border-bottom:1px solid var(--border);gap:.5rem;flex-wrap:wrap">'
-      + '<div><span style="font-size:.78rem;font-weight:600">' + a.count + ' voci</span>'
+      + '<div><span style="font-size:.78rem;font-weight:600">' + a.count + ' ' + t('voci') + '</span>'
       + '<span class="text-muted" style="font-size:.72rem"> &mdash; ' + esc(a.modificato) + '</span>'
       + '<code style="font-size:.62rem;display:block;color:var(--text-faint)">'
-      + (a.automatico ? 'copia automatica' : esc(a.filename)) + '</code></div>'
+      + (a.automatico ? t('copia automatica') : esc(a.filename)) + '</code></div>'
       + '<form method="POST" action="/pokemon/catalogo/' + DB + '/restore/' + encodeURIComponent(a.filename) + '"'
-      + ' onsubmit="return confirm(\'Ripristinare ' + a.count + ' voci da questo archivio? Le voci correnti verranno salvate come copia automatica.\')">'
-      + '<button type="submit" class="btn btn-secondary btn-sm" style="font-size:.7rem">Ripristina</button>'
+      + ' onsubmit="return confirm(\''
+      + tf('Ripristinare {n} voci da questo archivio? '
+           + 'Le voci correnti verranno salvate come copia automatica.', {n: a.count})
+          // un apostrofo nella traduzione chiuderebbe la stringa dentro l'attributo:
+          // va lasciato scritto \' e non &#39;, che l'HTML decodifica prima del JS
+          .replace(/'/g, "\\'")
+      + '\')">'
+      + '<button type="submit" class="btn btn-secondary btn-sm" style="font-size:.7rem">'
+      + t('Ripristina') + '</button>'
       + '</form></div>').join('');
-  }catch(e){ el.innerHTML = '<span style="color:#c33;font-size:.75rem">Errore caricamento archivi.</span>'; }
+  }catch(e){ el.innerHTML = '<span style="color:#c33;font-size:.75rem">' + t('Errore caricamento archivi.') + '</span>'; }
 }
 
 rendi();
