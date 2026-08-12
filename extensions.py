@@ -152,6 +152,14 @@ def init_db():
     # steam_tags sono i tag della community, molto piu' fini dei generi: un gioco che
     # per `genre` e' solo "Azione" qui puo' essere "Souls-like, Open World, Difficult".
     # Elenco separato da virgole, gia' ordinato dal piu' votato.
+    # Permessi per sezione: elenco di slug separati da virgole. Nasce **vuota**, e
+    # vuota vale "tutte le sezioni", così chi c'era prima non perde niente.
+    try:
+        db.execute("ALTER TABLE users ADD COLUMN sections TEXT")
+        db.commit()
+    except Exception:
+        pass
+
     for col, tipo in [("steam_appid", "INTEGER"), ("hours_played", "REAL"),
                       ("steam_tags", "TEXT")]:
         try:
@@ -169,6 +177,48 @@ def login_required(f):
             return redirect(url_for("auth.login"))
         return f(*a, **kw)
     return wrap
+
+
+# --- Permessi per sezione ---------------------------------------------------
+# `users.sections` è un elenco di slug separati da virgole. **`NULL` o `*` valgono
+# "tutte"**, ed è la scelta che tiene al sicuro chi c'era prima: la colonna nasce
+# vuota, quindi nessun utente esistente perde accessi quando la funzione entra in
+# servizio. Gli amministratori vedono sempre tutto, qualunque cosa dica la colonna.
+TUTTE_LE_SEZIONI = "*"
+# ⚠️ Serve un valore esplicito per "nessuna sezione": la stringa vuota vuol già dire
+# "tutte", quindi senza questo un utente a cui l'admin toglie ogni spunta le
+# riceverebbe **tutte**, cioè l'esatto contrario.
+NESSUNA_SEZIONE = "-"
+
+
+def sezioni_utente(username=None):
+    """Gli slug che questo utente può vedere. `None` = tutte."""
+    from data import SEZIONI_SLUG
+    nome = username or session.get("username")
+    if not nome:
+        return []
+    db = get_db()
+    r = db.execute("SELECT role, sections FROM users WHERE username=?", (nome,)).fetchone()
+    db.close()
+    if not r:
+        return []
+    if (r["role"] or "") == "admin":
+        return list(SEZIONI_SLUG)
+    grezzo = (r["sections"] if "sections" in r.keys() else None) or ""
+    grezzo = grezzo.strip()
+    if grezzo == NESSUNA_SEZIONE:
+        return []
+    if not grezzo or grezzo == TUTTE_LE_SEZIONI:
+        return list(SEZIONI_SLUG)
+    scelte = {s.strip() for s in grezzo.split(",") if s.strip()}
+    # Filtrate contro l'elenco vero: uno slug rimasto in DB dopo la rimozione di una
+    # sezione non deve diventare un permesso fantasma.
+    return [s for s in SEZIONI_SLUG if s in scelte]
+
+
+def puo_vedere(slug):
+    """L'utente in sessione può vedere questa sezione?"""
+    return slug in sezioni_utente()
 
 
 def _i(v, d=0):

@@ -62,6 +62,23 @@ PYTHON_TOPICS = {
 }
 
 PC_CATEGORIES    = ["CPU","GPU","Motherboard","RAM","Storage SSD","Storage HDD","PSU","Case","CPU Cooler","Case Fan","Monitor","Tastiera","Mouse","Cuffie","Webcam","Scheda Audio","Altro"]
+# Le sezioni su cui si danno i permessi. `slug` è il nome del **blueprint** Flask:
+# è così che il controllo in `app.py` sa a quale sezione appartiene una richiesta
+# senza dover elencare le route una per una. Il Pokémon ne ha due, perché le API
+# stanno in un blueprint separato ma sono la stessa sezione per chi guarda.
+# La Dashboard non è qui di proposito: è la pagina di arrivo dopo il login e la
+# vedono tutti, altrimenti chi entra si troverebbe davanti un errore.
+SEZIONI = [
+    ("gaming",     "🎮 Gaming",         "/gaming",    ["gaming"]),
+    ("pokemon",    "🐉 Pokémon VGC",    "/pokemon",   ["pokemon", "api_pokemon"]),
+    ("arduino",    "🔌 Arduino",        "/arduino",   ["arduino"]),
+    ("python",     "🐍 Python Tracker", "/python",    ["python_tracker"]),
+    ("pcbuilder",  "🖥️ PC Builder",     "/pcbuilder", ["pcbuilder"]),
+]
+SEZIONI_SLUG = [s[0] for s in SEZIONI]
+# blueprint -> sezione, ricavata da SEZIONI così le due non possono divergere
+BLUEPRINT_SEZIONE = {bp: slug for slug, _, _, bps in SEZIONI for bp in bps}
+
 GAME_STATUSES    = ["In corso","Completato","Pausa","Wishlist","Abbandonato"]
 GAME_PLATFORMS   = ["PC","PlayStation 5","PlayStation 4","Nintendo Switch","Xbox","Mobile","Altro"]
 ARDUINO_STATUSES = ["Idea","In sviluppo","Completato","Pubblicato"]

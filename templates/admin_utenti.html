@@ -1,0 +1,105 @@
+{% extends "base.html" %}
+{% block title %}Utenti – Hub{% endblock %}
+{% block topbar_title %}&#128101; Utenti{% endblock %}
+{% block content %}
+<div class="page-header">
+  <div><h1>&#128101; Utenti e permessi</h1>
+    <p class="text-muted text-sm">Chi entra nella web app, e quali sezioni vede</p></div>
+</div>
+
+<div class="card mb-3" style="max-width:940px">
+  <div class="card-body">
+    <div class="font-600 text-sm mb-2">+ Nuovo utente</div>
+    <form method="POST" action="/admin/utenti/nuovo">
+      <div class="form-row">
+        <div class="form-group"><label>Nome utente</label>
+          <input name="username" class="form-control" required placeholder="mario"
+                 pattern="[A-Za-z0-9_.\-]{3,32}" title="3-32 caratteri: lettere, cifre, . _ -"></div>
+        <div class="form-group"><label>Nome visualizzato</label>
+          <input name="display_name" class="form-control" placeholder="Mario Rossi"></div>
+        <div class="form-group"><label>Password</label>
+          <input name="password" type="password" class="form-control" required minlength="8"
+                 placeholder="almeno 8 caratteri"></div>
+        <div class="form-group"><label>Ruolo</label>
+          <select name="role" class="form-control" onchange="mostraSezioni(this)">
+            <option value="user">Utente</option>
+            <option value="admin">Amministratore</option>
+          </select></div>
+      </div>
+      <div class="sezioni-box">
+        <div class="text-xs font-700 text-muted mb-1" style="text-transform:uppercase">Sezioni visibili</div>
+        <div class="flex gap-2 flex-wrap">
+          {% for slug, etichetta, _url, _bps in sezioni %}
+          <label style="display:flex;align-items:center;gap:.3rem;cursor:pointer;font-size:.8rem">
+            <input type="checkbox" name="sez_{{ slug }}" checked style="accent-color:var(--primary)"> {{ etichetta }}
+          </label>
+          {% endfor %}
+        </div>
+        <div class="text-xs text-muted" style="margin-top:.35rem">
+          La Dashboard la vedono tutti: &egrave; la pagina su cui si arriva dopo il login.
+        </div>
+      </div>
+      <button class="btn btn-primary btn-sm" style="margin-top:.6rem" type="submit">Crea utente</button>
+    </form>
+  </div>
+</div>
+
+{% for u in utenti %}
+<div class="card mb-2" style="max-width:940px">
+  <div class="card-body">
+    <div class="flex items-center justify-between flex-wrap gap-2 mb-2">
+      <div>
+        <span class="font-600">{{ u.display_name or u.username }}</span>
+        <span class="text-muted text-sm">&nbsp;{{ u.username }}</span>
+        {% if u.role == 'admin' %}<span class="badge badge-primary">amministratore</span>{% endif %}
+        {% if u.username == io_sono %}<span class="badge badge-neutral">sei tu</span>{% endif %}
+      </div>
+      <span class="text-muted text-xs">Sezioni: {{ u.nota }}</span>
+    </div>
+
+    <form method="POST" action="/admin/utenti/{{ u.id }}/permessi" class="mb-2">
+      <div class="flex gap-2 flex-wrap items-center">
+        <select name="role" class="form-control" style="max-width:170px;font-size:.8rem"
+                onchange="mostraSezioni(this)">
+          <option value="user" {% if u.role != 'admin' %}selected{% endif %}>Utente</option>
+          <option value="admin" {% if u.role == 'admin' %}selected{% endif %}>Amministratore</option>
+        </select>
+        <div class="sezioni-box flex gap-2 flex-wrap items-center"
+             {% if u.role == 'admin' %}style="display:none"{% endif %}>
+          {% for slug, etichetta, _url, _bps in sezioni %}
+          <label style="display:flex;align-items:center;gap:.3rem;cursor:pointer;font-size:.78rem">
+            <input type="checkbox" name="sez_{{ slug }}" style="accent-color:var(--primary)"
+                   {% if slug in u.permesse %}checked{% endif %}> {{ etichetta }}
+          </label>
+          {% endfor %}
+        </div>
+        <button class="btn btn-secondary btn-sm" type="submit">Salva</button>
+      </div>
+    </form>
+
+    <div class="flex gap-2 flex-wrap items-center">
+      <form method="POST" action="/admin/utenti/{{ u.id }}/password" class="flex gap-2 items-center">
+        <input name="password" type="password" class="form-control" style="max-width:180px;font-size:.8rem"
+               required minlength="8" placeholder="nuova password">
+        <button class="btn btn-secondary btn-sm" type="submit">Cambia password</button>
+      </form>
+      {% if u.username != io_sono %}
+      <form method="POST" action="/admin/utenti/{{ u.id }}/elimina"
+            onsubmit="return confirm('Eliminare l’utente {{ u.username }}? L’operazione non si annulla.')">
+        <button class="btn btn-danger btn-sm" type="submit">&#128465; Elimina</button>
+      </form>
+      {% endif %}
+    </div>
+  </div>
+</div>
+{% endfor %}
+
+<script>
+// Un amministratore vede tutto per definizione: le spunte sarebbero una promessa che
+// il codice non mantiene, quindi spariscono quando si sceglie quel ruolo.
+function mostraSezioni(sel) {
+  const box = sel.closest('form').querySelector('.sezioni-box');
+  if (box) box.style.display = (sel.value === 'admin') ? 'none' : '';
+}
+</script>
+{% endblock %}

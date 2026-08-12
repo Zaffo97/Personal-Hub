@@ -5,6 +5,7 @@ Ogni area funzionale vive in blueprints/.
 import os
 from flask import Flask
 from extensions import init_db, lingua_attiva, nome_vis
+from data import SEZIONI, BLUEPRINT_SEZIONE
 
 def create_app():
     app = Flask(__name__, template_folder="templates", static_folder="static")
@@ -19,6 +20,38 @@ def create_app():
     def _lingua():
         return {"lang": lingua_attiva(), "nome_vis": nome_vis}
 
+    # La sidebar mostra solo le sezioni permesse. È un context processor e non un
+    # calcolo dentro base.html perché la stessa risposta serve al controllo qui sotto.
+    @app.context_processor
+    def _permessi():
+        from extensions import sezioni_utente
+        from flask import session
+        permesse = sezioni_utente() if "username" in session else []
+        return {"sezioni": SEZIONI, "sezioni_permesse": permesse,
+                "e_admin": session.get("role") == "admin"}
+
+    # ⚠️ Il controllo sta **qui**, su `request.blueprint`, e non su un decoratore da
+    # mettere sulle singole viste: le sezioni hanno decine di route ciascuna — solo
+    # Pokémon ne ha oltre trenta fra pagine e API — e bastava dimenticarne una per
+    # lasciare aperta una porta senza che nulla lo segnalasse. Così una route nuova è
+    # protetta dal giorno in cui viene scritta, senza che nessuno se ne debba ricordare.
+    @app.before_request
+    def _controlla_sezione():
+        from flask import request, session, redirect, url_for, flash
+        from extensions import sezioni_utente
+        slug = BLUEPRINT_SEZIONE.get(request.blueprint or "")
+        if not slug or "username" not in session:
+            return None                     # non è una sezione, o ci pensa login_required
+        if slug in sezioni_utente():
+            return None
+        # Una risposta JSON a chi chiama un'API, una pagina a chi naviga: rispondere
+        # con un redirect a una fetch() darebbe un errore di parsing invece di un 403.
+        if request.blueprint == "api_pokemon" or request.path.startswith("/api/") \
+                or "/api/" in request.path:
+            return {"ok": False, "error": "Sezione non permessa"}, 403
+        flash("Non hai accesso a questa sezione.", "error")
+        return redirect(url_for("dashboard.dashboard"))
+
     from blueprints.auth           import bp as auth_bp
     from blueprints.dashboard      import bp as dashboard_bp
     from blueprints.gaming         import bp as gaming_bp
@@ -27,6 +60,7 @@ def create_app():
     from blueprints.arduino        import bp as arduino_bp
     from blueprints.python_tracker import bp as python_bp
     from blueprints.pcbuilder      import bp as pcbuilder_bp
+    from blueprints.admin          import bp as admin_bp
 
     app.register_blueprint(auth_bp)
     app.register_blueprint(dashboard_bp)
@@ -36,6 +70,7 @@ def create_app():
     app.register_blueprint(arduino_bp)
     app.register_blueprint(python_bp)
     app.register_blueprint(pcbuilder_bp)
+    app.register_blueprint(admin_bp)
 
     return app
 

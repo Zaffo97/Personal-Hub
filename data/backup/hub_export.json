@@ -4,7 +4,8 @@
       "id": 1,
       "username": "admin",
       "display_name": "Admin",
-      "role": "admin"
+      "role": "admin",
+      "sections": null
     }
   ],
   "games": [

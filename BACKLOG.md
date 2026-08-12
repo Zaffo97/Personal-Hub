@@ -1169,14 +1169,63 @@ scottatura + Reflect = ×0.25, terreno erboso + HH + spread = ×1.4625 — e lo 
 
 | | Voce |
 |---|---|
-| ⬜ | **Gestione utenti con permessi per sezione.** Poter aggiungere utenti **normali** e **amministratori**, e scegliere per ognuno quali sezioni può vedere, con una casella da spuntare per sezione (Pokémon, Gaming, Arduino, PC Builder, Python, Stampa 3D…). Obiettivo: far entrare altre persone nella web app facendo vedere loro solo ciò che le riguarda |
+| ✅ | **Gestione utenti con permessi per sezione** — fatto il 12/08/2026 |
 
-Punti di partenza già presenti: la tabella `users` ha **già** la colonna `role`
-(`DEFAULT 'user'`, e l'utente `admin` è creato con `role='admin'`), ma **nessuno la
-legge**: `login_required` in `extensions.py` controlla solo che ci sia `username` in
-sessione. Servono quindi una tabella o una colonna per i permessi di sezione, un
-decoratore che li verifichi, la sidebar che nasconda le voci non permesse, e una
-schermata di amministrazione per gestirli.
+Schermata **`/admin/utenti`**, visibile solo agli amministratori: crea utenti normali o
+amministratori, spunta per ognuno le sezioni visibili, cambia password ed elimina.
+
+**Dov'è il controllo, e perché lì.** Non su un decoratore da mettere sulle singole
+viste, ma in un `before_request` che guarda `request.blueprint` (`app.py`): le sezioni
+hanno decine di route ciascuna — solo Pokémon ne ha oltre trenta fra pagine e API — e
+bastava dimenticarne una per lasciare una porta aperta senza che nulla lo segnalasse.
+Così **una route nuova nasce protetta**. La mappa blueprint → sezione si ricava da
+`SEZIONI` in `data.py`, quindi le due non possono divergere.
+
+**Le scelte che tengono al sicuro chi c'era prima:**
+
+- `users.sections` nasce **vuota**, e vuoto vale **«tutte»**: nessun utente esistente
+  perde accessi quando la funzione entra in servizio
+- gli **admin vedono tutto** per definizione, e sulla loro riga le spunte spariscono —
+  sarebbero una promessa che il codice non mantiene
+- la **Dashboard non è fra le sezioni**: è la pagina di arrivo dopo il login, e chi ci
+  atterrasse senza permesso troverebbe un errore
+- **non ci si può declassare da soli** né eliminare sé stessi, e **deve restare almeno
+  un amministratore**: senza, bastano due clic per chiudere fuori tutti dalla schermata
+  che serve a rimettere i permessi
+
+⚠️ **Un baco nel primo disegno, trovato e chiuso prima di committare.** Togliendo
+**tutte** le spunte, `",".join([])` dà la stringa vuota — che vale «tutte»: l'esatto
+contrario di quello che l'admin aveva appena spuntato. Ora «nessuna» si scrive con un
+valore esplicito (`NESSUNA_SEZIONE = "-"`), e quell'utente vede solo la Dashboard.
+
+### ⚠️ Due falle trovate mentre la costruivo, e chiuse
+
+Senza queste, i permessi sarebbero stati **decorativi**: la sidebar nascondeva le voci
+ma i dati uscivano lo stesso.
+
+| | Cosa succedeva |
+|---|---|
+| **`/export`** | Restituiva **l'intero database** a chiunque avesse fatto login: un utente con la sola sezione Gaming si portava via team Pokémon e build PC. Misurato: 28 KB con dentro `teams` e `pc_builds`. Ora esporta **solo le sezioni permesse** e scrive quali in `sezioni_incluse` |
+| **Dashboard** | Mostrava conteggi e ultimi elementi di **ogni** sezione a chiunque: da lì si leggeva quanti team Pokémon o quante build PC esistono senza avere quelle sezioni. Ora ogni riquadro è calcolato solo se la sezione è permessa |
+
+Verifica: **24 controlli su 24** sul test client — admin che vede tutto, un utente con
+la sola sezione Gaming che entra in `/gaming` e viene respinto da `/pokemon`,
+`/arduino`, `/python`, `/pcbuilder`, riceve **403 JSON** su `/api/pokemon/...` (e non un
+redirect, che a una `fetch()` darebbe un errore di parsing), non entra in `/admin` e non
+vede quelle voci nella sidebar; un utente **senza nessuna sezione** che vede solo la
+Dashboard; e i rifiuti su nome utente corto, password sotto gli 8 caratteri, username
+duplicato, auto-declassamento e auto-eliminazione. Export di quell'utente: **33 giochi,
+0 team, 0 build**. Sweep: 18 pagine / 33 script / 1970 handler, zero errori.
+
+### ⬜ Resta aperto — le password
+
+⚠️ Le password sono **sha256 senza sale**, in `blueprints/auth.py` da sempre. Con un
+utente solo contava poco; ora che la web app è pensata per farci entrare altre persone
+conta di più: due utenti con la stessa password hanno lo stesso hash, e un hash sha256
+nudo si attacca con le tabelle precalcolate. La schermata nuova usa **lo stesso schema**
+di proposito — cambiarlo solo lì impedirebbe il login — quindi la migrazione è un lavoro
+suo: `werkzeug.security` (già disponibile con Flask) e un ricalcolo al primo accesso
+riuscito. **Non toccato**, va deciso da Davide.
 
 ---
 

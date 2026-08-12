@@ -148,14 +148,30 @@ textarea.form-control{resize:vertical;min-height:70px}
   <div style="padding:.5rem .4rem .2rem">
     <div class="sidebar-section">Menu</div>
     <a href="/" class="nav-item {% if request.endpoint=='dashboard' %}active{% endif %}"><em>📊</em> Dashboard</a>
+    {# Solo le sezioni permesse. `sezioni_permesse` arriva dal context processor in
+       app.py, lo stesso elenco che usa il controllo delle richieste: mostrare qui una
+       voce che poi risponde "non permesso" sarebbe peggio che non mostrarla. #}
+    {% if 'gaming' in sezioni_permesse %}
     <a href="/gaming" class="nav-item {% if request.endpoint and 'gam' in request.endpoint %}active{% endif %}"><em>🎮</em> Gaming</a>
+    {% endif %}
+    {% if 'pokemon' in sezioni_permesse %}
     <a href="/pokemon" class="nav-item {% if request.endpoint and ('pokemon' in request.endpoint or 'team' in request.endpoint) %}active{% endif %}"><em>🐉</em> Pokémon VGC</a>
+    {% endif %}
+    {% if 'arduino' in sezioni_permesse %}
     <a href="/arduino" class="nav-item {% if request.endpoint=='arduino' %}active{% endif %}"><em>🔌</em> Arduino</a>
+    {% endif %}
+    {% if 'python' in sezioni_permesse %}
     <a href="/python" class="nav-item {% if request.endpoint=='python_tracker' %}active{% endif %}"><em>🐍</em> Python Tracker</a>
+    {% endif %}
+    {% if 'pcbuilder' in sezioni_permesse %}
     <a href="/pcbuilder" class="nav-item {% if request.endpoint and 'pcbuilder' in request.endpoint %}active{% endif %}"><em>🖥️</em> PC Builder</a>
+    {% endif %}
 
 <div class="sidebar-section" style="margin-top:.6rem">Tools</div>
 <a href="/export" class="nav-item"><em>💾</em> Esporta JSON</a>
+{% if e_admin %}
+<a href="/admin/utenti" class="nav-item {% if request.blueprint=='admin' %}active{% endif %}"><em>👥</em> Utenti</a>
+{% endif %}
   </div>
   <div class="sidebar-bottom">
     <div class="user-chip">
