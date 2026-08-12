@@ -678,6 +678,27 @@ attiva (le 20 forme inventate, `Pawmot` su Champions), si mostra tutto o niente.
 Mostrare niente renderebbe inutilizzabili proprio le forme inventate di Davide, quindi
 il default sensato è **tutto, con un avviso** — ma è una scelta sua.
 
+### Serve una fonte in più? — chiesto da Davide il 12/08/2026
+
+**Per il caso che ha fatto lui, no: il dato c'è già.** Il moveset di Champions è nel
+dump di PokéAPI come version group a sé, ed è stato importato il 12/08 — 273 dei 279
+Pokémon di MA ce l'hanno, e Incineroar senza Knock Off è verificato lì dentro. Questo
+pezzo si può costruire domani senza chiedere niente a nessuno.
+
+**Serve una fonte, invece, per queste quattro cose**, ed è bene sapere che sono
+separate perché richiedono fonti diverse:
+
+| Cosa manca | Fonte che servirebbe |
+|---|---|
+| ⬜ **La differenza fra M-A e M-B** | Nel dump c'è **un solo** version group `champions`, quindi oggi le due regulation riceverebbero **la stessa identica lista**. Se M-A e M-B bandiscono mosse diverse, quella differenza **non è in nessun dato che abbiamo** e va scritta a mano o presa da un elenco ufficiale. È lo stesso buco già noto per mosse e oggetti, che oggi MB copia da MA |
+| ⬜ **Le 20 forme inventate** | Sono forme di Davide, PokéAPI non le conosce. Non è solo il moveset: è la stessa fonte che servirà per le loro stat e abilità. Finché non c'è, restano fuori — dichiarate, non riempite |
+| ⬜ **`Pawmot`** | È nel roster M-A preso dalla wiki, ma nel version group `champions` non ha righe. O è un buco del dump, o non è davvero in Champions: da controllare sulla wiki, che è già la fonte del roster |
+| ⬜ **Le regulation future** | Se la prossima non è basata su Champions, non ha un version group nel dump: il suo elenco di mosse legali va dalla schermata contenuti o da uno script di import dedicato, come è stato fatto per il roster di MA |
+
+> Il modo di lavorare resta quello già usato per il roster: dove esiste una fonte la si
+> importa con uno script rieseguibile che **si ferma su ciò che non risolve**; dove non
+> esiste, il dato si lascia mancante e lo si dichiara. Non si riempie a stima.
+
 > ⚠️ Questa voce **non** è la stessa cosa di «ogni Pokémon deve mostrare solo le sue
 > abilità»: quella riguarda le abilità e ha ancora il problema del catalogo incompleto
 > (238 specie con una sola). Qui il dato è completo al 98%.
