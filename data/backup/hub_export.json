@@ -6,6 +6,13 @@
       "display_name": "Admin",
       "role": "admin",
       "sections": null
+    },
+    {
+      "id": 2,
+      "username": "Tizzy",
+      "display_name": "Tizzy",
+      "role": "user",
+      "sections": "gaming,pokemon"
     }
   ],
   "games": [

@@ -1,4 +1,4 @@
-import sqlite3, os, hashlib
+import sqlite3, os, hashlib, re
 from functools import wraps
 from flask import session, redirect, url_for, request
 from data import PYTHON_TOPICS
@@ -86,7 +86,10 @@ def init_db():
         build_id INTEGER REFERENCES pc_builds(id) ON DELETE CASCADE,
         category TEXT, name TEXT, price REAL DEFAULT 0, notes TEXT);
     """)
-    pw = hashlib.sha256(b"admin123").hexdigest()
+    # L'admin di un DB nuovo nasce gia' con lo schema forte. Sui DB esistenti
+    # questa INSERT non fa nulla (OR IGNORE) e l'hash vecchio viene riscritto al
+    # primo login riuscito.
+    pw = hash_password("admin123")
     db.execute("INSERT OR IGNORE INTO users(username,password,display_name,role)"
                " VALUES(?,?,'Admin','admin')", ("admin", pw))
     if db.execute("SELECT COUNT(*) FROM python_topics").fetchone()[0] == 0:
@@ -168,6 +171,41 @@ def init_db():
         except Exception:
             pass
     db.close()
+
+
+# --- Password ---------------------------------------------------------------
+# Fino al 12/08/2026 erano **sha256 senza sale**: due utenti con la stessa password
+# avevano lo stesso hash, e un sha256 nudo si attacca con le tabelle precalcolate.
+# Ora si usa `werkzeug.security`, che di suo fa scrypt con un sale casuale.
+#
+# ⚠️ Non esiste una migrazione in blocco, e non e' una scelta: sha256 e' a senso unico,
+# quindi dal vecchio hash la password non si ricava. L'unica strada e' riconoscere
+# l'hash vecchio **al login**, verificarlo con lo schema vecchio e riscriverlo forte in
+# quel momento — l'utente non se ne accorge, e chi non entra mai resta com'e'.
+_LEGACY = re.compile(r"^[0-9a-f]{64}$")
+
+
+def hash_password(password):
+    """Hash nuovo (scrypt con sale). Da usare per ogni scrittura da oggi in poi."""
+    from werkzeug.security import generate_password_hash
+    return generate_password_hash(password)
+
+
+def verifica_password(memorizzato, password):
+    """`(corretta, da_riscrivere)`.
+
+    `da_riscrivere` e' True quando la verifica e' passata **con lo schema vecchio**:
+    e' il momento buono per sostituire l'hash, perche' e' l'unico in cui la password in
+    chiaro esiste.
+    """
+    from werkzeug.security import check_password_hash
+    memorizzato = memorizzato or ""
+    if _LEGACY.match(memorizzato):
+        return hashlib.sha256(password.encode()).hexdigest() == memorizzato, True
+    try:
+        return check_password_hash(memorizzato, password), False
+    except Exception:
+        return False, False
 
 
 def login_required(f):

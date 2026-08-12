@@ -8,23 +8,20 @@ le spunte non compaiono: sarebbero una promessa che il codice non mantiene.
 **Vuoto vale «tutte»**: è la scelta che tiene al sicuro chi c'era prima, perché la
 colonna nasce vuota su tutti gli utenti esistenti.
 """
-import hashlib
 import re
 
 from flask import (Blueprint, render_template, request, redirect, url_for, flash,
                    session)
 
 from data import SEZIONI, SEZIONI_SLUG
-from extensions import get_db, login_required, NESSUNA_SEZIONE
+from extensions import get_db, login_required, NESSUNA_SEZIONE, hash_password
 
 bp = Blueprint("admin", __name__, url_prefix="/admin")
 
-# Stesso schema di blueprints/auth.py. Non è una scelta: è quello con cui sono già
-# scritte le password nel DB, e cambiarlo qui e non là impedirebbe il login.
-# ⚠️ Vedi la voce a backlog: sha256 senza sale è debole, ma la migrazione è un lavoro
-# suo e va deciso da Davide.
-def _hash(password):
-    return hashlib.sha256(password.encode()).hexdigest()
+# Dal 12/08/2026 le password nuove nascono già con lo schema forte (scrypt con sale
+# di `werkzeug.security`). Le vecchie restano leggibili e vengono riscritte al primo
+# login riuscito — vedi `verifica_password()` in extensions.py.
+_hash = hash_password
 
 
 def solo_admin(f):

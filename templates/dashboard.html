@@ -7,7 +7,10 @@
   <p class="text-muted text-sm">{{ now }}</p>
 </div>
 
+{# Un riquadro per sezione, e solo per le sezioni permesse: mostrarli tutti a zero
+   direbbe comunque a chi non ha quella sezione che esiste, e quanti elementi ha. #}
 <div style="display:grid;grid-template-columns:repeat(auto-fill,minmax(170px,1fr));gap:.75rem;margin-bottom:1.25rem">
+  {% if 'gaming' in sezioni_permesse %}
   <a href="/gaming" style="text-decoration:none">
     <div class="card mb-0" style="padding:.85rem 1rem;cursor:pointer;transition:.15s"
          onmouseover="this.style.borderColor='var(--primary)'" onmouseout="this.style.borderColor='var(--border)'">
@@ -15,6 +18,8 @@
       <div style="font-size:1.6rem;font-weight:700">{{ stats.games }}</div>
       <div class="text-xs text-muted mt-1">{{ stats.games_active }} in corso &middot; {{ stats.games_done }} completati</div>
     </div></a>
+  {% endif %}
+  {% if 'pokemon' in sezioni_permesse %}
   <a href="/pokemon" style="text-decoration:none">
     <div class="card mb-0" style="padding:.85rem 1rem;cursor:pointer;transition:.15s"
          onmouseover="this.style.borderColor='var(--primary)'" onmouseout="this.style.borderColor='var(--border)'">
@@ -22,6 +27,8 @@
       <div style="font-size:1.6rem;font-weight:700">{{ stats.teams }}</div>
       <div class="text-xs text-muted mt-1">VGC</div>
     </div></a>
+  {% endif %}
+  {% if 'arduino' in sezioni_permesse %}
   <a href="/arduino" style="text-decoration:none">
     <div class="card mb-0" style="padding:.85rem 1rem;cursor:pointer;transition:.15s"
          onmouseover="this.style.borderColor='var(--primary)'" onmouseout="this.style.borderColor='var(--border)'">
@@ -29,6 +36,8 @@
       <div style="font-size:1.6rem;font-weight:700">{{ stats.arduino }}</div>
       <div class="text-xs text-muted mt-1">microcontrollori</div>
     </div></a>
+  {% endif %}
+  {% if 'python' in sezioni_permesse %}
   <a href="/python" style="text-decoration:none">
     <div class="card mb-0" style="padding:.85rem 1rem;cursor:pointer;transition:.15s"
          onmouseover="this.style.borderColor='var(--primary)'" onmouseout="this.style.borderColor='var(--border)'">
@@ -36,6 +45,8 @@
       <div style="font-size:1.6rem;font-weight:700">{{ stats.python_pct }}%</div>
       <div class="progress-bar mt-2"><div class="progress-fill" style="width:{{ stats.python_pct }}%"></div></div>
     </div></a>
+  {% endif %}
+  {% if 'pcbuilder' in sezioni_permesse %}
   <a href="/pcbuilder" style="text-decoration:none">
     <div class="card mb-0" style="padding:.85rem 1rem;cursor:pointer;transition:.15s"
          onmouseover="this.style.borderColor='var(--primary)'" onmouseout="this.style.borderColor='var(--border)'">
@@ -43,9 +54,13 @@
       <div style="font-size:1.6rem;font-weight:700">{{ stats.builds }}</div>
       <div class="text-xs text-muted mt-1">configurazioni salvate</div>
     </div></a>
+  {% endif %}
 </div>
 
+{# Anche i pannelli in basso seguono i permessi: "Nessun gioco" a chi la sezione
+   Gaming non ce l'ha sarebbe una risposta a una domanda che non ha fatto. #}
 <div style="display:grid;grid-template-columns:1fr 1fr;gap:1rem">
+  {% if 'gaming' in sezioni_permesse %}
   <div class="card">
     <div class="card-header">
       <span class="card-title">&#127918; Giochi recenti</span>
@@ -71,8 +86,10 @@
       Nessun gioco. <a href="/gaming/new" style="color:var(--primary)">Aggiungine uno!</a>
     </div>{% endif %}
   </div>
+  {% endif %}
 
   <div>
+    {% if 'arduino' in sezioni_permesse %}
     <div class="card">
       <div class="card-header">
         <span class="card-title">&#128268; Arduino recenti</span>
@@ -88,7 +105,8 @@
       <div style="padding:1rem;text-align:center;color:var(--text-muted);font-size:.8rem">Nessun progetto</div>
       {% endif %}
     </div>
-    {% if pc_builds %}
+    {% endif %}
+    {% if pc_builds and 'pcbuilder' in sezioni_permesse %}
     <div class="card">
       <div class="card-header">
         <span class="card-title">&#128421; PC Builds</span>

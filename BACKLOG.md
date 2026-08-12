@@ -1217,15 +1217,44 @@ Dashboard; e i rifiuti su nome utente corto, password sotto gli 8 caratteri, use
 duplicato, auto-declassamento e auto-eliminazione. Export di quell'utente: **33 giochi,
 0 team, 0 build**. Sweep: 18 pagine / 33 script / 1970 handler, zero errori.
 
-### ⬜ Resta aperto — le password
+### ✅ Password migrate a scrypt (12/08/2026)
 
-⚠️ Le password sono **sha256 senza sale**, in `blueprints/auth.py` da sempre. Con un
-utente solo contava poco; ora che la web app è pensata per farci entrare altre persone
-conta di più: due utenti con la stessa password hanno lo stesso hash, e un hash sha256
-nudo si attacca con le tabelle precalcolate. La schermata nuova usa **lo stesso schema**
-di proposito — cambiarlo solo lì impedirebbe il login — quindi la migrazione è un lavoro
-suo: `werkzeug.security` (già disponibile con Flask) e un ricalcolo al primo accesso
-riuscito. **Non toccato**, va deciso da Davide.
+Erano **sha256 senza sale**: due utenti con la stessa password avevano lo stesso hash,
+e un sha256 nudo si attacca con le tabelle precalcolate. Ora si usa
+`werkzeug.security`, che fa **scrypt con un sale casuale** — 162 caratteri, e due hash
+della stessa password sono diversi.
+
+⚠️ **Non esiste una migrazione in blocco, e non è una scelta**: sha256 è a senso unico,
+quindi dal vecchio hash la password non si ricava. L'unica strada è riconoscerlo **al
+login**, verificarlo con lo schema vecchio e riscriverlo forte in quel momento — l'unico
+istante in cui la password in chiaro esiste. Chi non entra mai resta com'è, e non è un
+problema: il suo hash vecchio continua a funzionare finché non lo usa.
+
+⚠️ **Un pezzo che si sarebbe rotto in silenzio**: `login()` cercava l'utente con
+l'hash **dentro il `WHERE`**, cioè confrontava in SQL. Funzionava solo perché sha256 dà
+sempre lo stesso risultato; con un sale casuale due hash della stessa password sono
+diversi e quella query non avrebbe trovato **nessuno**. Ora si cerca per nome e si
+verifica in Python.
+
+Verifica: **14 controlli su 14** — utente legacy che entra e si ritrova l'hash riscritto
+in `scrypt:`, hash **non** toccato da un tentativo fallito, secondo login che usa il
+nuovo schema senza riscrivere di nuovo, password sbagliata rifiutata in entrambi gli
+schemi, utente creato dalla schermata admin che nasce già forte, cambio password che
+resta forte e vecchia password che smette di funzionare.
+
+> Nota di metodo: due controlli sembravano falliti perché cercavo «Credenziali errate»
+> nella risposta al POST, che è un 200 — il flash si vede al caricamento successivo. Il
+> rifiuto funzionava: nessuna sessione aperta e la dashboard che rimanda al login. Ho
+> corretto l'asserzione, non il codice.
+
+### ✅ La Dashboard mostra solo le sezioni dell'utente (12/08/2026)
+
+Chiesto da Davide. Prima i cinque riquadri e i tre pannelli c'erano per tutti: dopo il
+primo giro i numeri erano a zero, ma **mostrare un riquadro a zero dice comunque che
+quella sezione esiste e quanti elementi ha**. Ora i riquadri e i pannelli compaiono solo
+se la sezione è permessa. Misurato: `admin` vede tutti e 5 i riquadri e i 3 pannelli, un
+utente solo-Gaming vede **un riquadro e un pannello**, uno con `pokemon,pcbuilder` vede
+**Team Pokémon e PC Build** con il solo pannello PC Builds.
 
 ---
 
