@@ -13,6 +13,30 @@ from data import GAME_STATUSES, GAME_PLATFORMS
 
 bp = Blueprint("gaming", __name__, url_prefix="/gaming")
 
+# Ordinamenti dell'elenco. Il frammento SQL sta qui e **non** arriva dalla richiesta:
+# `sort` e' solo la chiave di questo dizionario, con fallback al default, quindi
+# nessuna stringa dell'utente finisce in un ORDER BY.
+# `NULLS LAST` non esiste in SQLite: `col IS NULL` prima dell'ordinamento vero tiene
+# in fondo i giochi senza ore, che altrimenti aprirebbero l'elenco "per ore giocate".
+ORDINAMENTI = {
+    # `id DESC` come spareggio: l'import di massa da Steam scrive decine di righe nello
+    # stesso secondo, e con `created_at` da solo l'ordine fra quelle e' arbitrario —
+    # "aggiunti di recente" mostrava il piu' vecchio per primo.
+    "":         "ORDER BY created_at DESC, id DESC",
+    "recenti":  "ORDER BY created_at DESC, id DESC",
+    "titolo":   "ORDER BY title COLLATE NOCASE ASC",
+    "ore":      "ORDER BY hours_played IS NULL, hours_played DESC, title COLLATE NOCASE",
+    "ore_asc":  "ORDER BY hours_played IS NULL, hours_played ASC, title COLLATE NOCASE",
+    "durata":   "ORDER BY hours_hltb IS NULL, hours_hltb DESC, title COLLATE NOCASE",
+}
+ETICHETTE_ORDINE = [
+    ("recenti", "Aggiunti di recente"),
+    ("titolo",  "Titolo A→Z"),
+    ("ore",     "Ore giocate ↓"),
+    ("ore_asc", "Ore giocate ↑"),
+    ("durata",  "Durata stimata ↓"),
+]
+
 # --- Steam ------------------------------------------------------------------
 # Ricerca e dettagli usano endpoint pubblici: NON richiedono chiave.
 # Solo la libreria posseduta con le ore (GetOwnedGames) richiede una chiave,
@@ -299,17 +323,40 @@ def gaming():
     db    = get_db()
     filt  = request.args.get("status", "")
     q     = request.args.get("q", "")
+    genere = request.args.get("genre", "")
+    piattaforma = request.args.get("platform", "")
+    ordine = request.args.get("sort", "")
+
     sql   = "SELECT * FROM games WHERE 1=1"; params = []
     if filt: sql += " AND status=?";     params.append(filt)
     if q:    sql += " AND title LIKE ?"; params.append(f"%{q}%")
-    sql  += " ORDER BY created_at DESC"
+    # `genre` e' un elenco separato da virgole ("Action, RPG"), non un valore singolo:
+    # il confronto e' per sottostringa, con le virgole ai bordi per non far combaciare
+    # "RPG" dentro un ipotetico "JRPG".
+    if genere:
+        sql += " AND (',' || REPLACE(genre, ', ', ',') || ',') LIKE ?"
+        params.append(f"%,{genere},%")
+    if piattaforma:
+        sql += " AND platform=?"; params.append(piattaforma)
+    sql += " " + ORDINAMENTI.get(ordine, ORDINAMENTI[""])
     games  = db.execute(sql, params).fetchall()
+
     counts = {s: db.execute("SELECT COUNT(*) FROM games WHERE status=?", (s,)).fetchone()[0]
               for s in GAME_STATUSES}
     counts["Tutti"] = db.execute("SELECT COUNT(*) FROM games").fetchone()[0]
+
+    # Le tendine elencano solo i valori **presenti in libreria**: una lista fissa
+    # offrirebbe filtri che non danno mai risultati.
+    generi = sorted({g.strip() for (riga,) in db.execute(
+        "SELECT genre FROM games WHERE genre IS NOT NULL AND genre <> ''")
+        for g in riga.split(",") if g.strip()})
+    piattaforme = sorted({r[0] for r in db.execute(
+        "SELECT DISTINCT platform FROM games WHERE platform IS NOT NULL AND platform <> ''")})
     db.close()
     return render_template("gaming.html", games=games, statuses=GAME_STATUSES,
-                           platforms=GAME_PLATFORMS, current_filter=filt, q=q, counts=counts)
+                           platforms=GAME_PLATFORMS, current_filter=filt, q=q, counts=counts,
+                           generi=generi, piattaforme=piattaforme, genre=genere,
+                           platform=piattaforma, sort=ordine, ordinamenti=ETICHETTE_ORDINE)
 
 
 @bp.route("/new", methods=["GET", "POST"])
