@@ -27,6 +27,15 @@ import os
 import sqlite3
 import sys
 
+# La console di Windows e' cp1252 e non sa scrivere le emoji, come gia' per gli script
+# di import. Qui non e' cosmetico: senza questa riga l'avviso di INTERRUZIONE muore su
+# UnicodeEncodeError, cioe' proprio il messaggio che deve spiegare perche' ci si e'
+# fermati non arriverebbe mai a schermo.
+try:
+    sys.stdout.reconfigure(encoding="utf-8", errors="replace")
+except Exception:
+    pass
+
 RADICE = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 DB = os.path.join(RADICE, "hub.db")
 USCITA = os.path.join(RADICE, "data", "backup", "hub_export.json")
@@ -49,9 +58,36 @@ def righe(db, tabella):
     return [{k: r[k] for k in r.keys() if k not in fuori} for r in cur.fetchall()]
 
 
+def cali_sospetti(dati, precedente):
+    """Tabelle che nell'export precedente avevano righe e ora sono **vuote**.
+
+    Serve perché questo script è la sola copia su GitHub di `hub.db`, ed esportare
+    fedelmente il vuoto significa **sovrascrivere l'unica copia buona**. È già
+    successo: l'11/08/2026, fra le 10:09 e le 10:43, i 33 giochi importati da Steam
+    sono spariti dal DB e l'export li ha cancellati anche dal backup, in silenzio.
+
+    Un calo parziale non viene toccato — cancellare un gioco è una cosa normale.
+    Solo il crollo a zero è sospetto, perché è la firma di un DB perso o ricreato.
+    """
+    if not precedente:
+        return []
+    try:
+        prima = json.loads(precedente)
+    except Exception:
+        return []
+    fuori = []
+    for tabella, righe_nuove in dati.items():
+        vecchie = prima.get(tabella)
+        if isinstance(vecchie, list) and vecchie and not righe_nuove:
+            fuori.append((tabella, len(vecchie)))
+    return fuori
+
+
 def main():
     ap = argparse.ArgumentParser()
     ap.add_argument("--dry-run", action="store_true")
+    ap.add_argument("--anche-se-vuoto", action="store_true",
+                    help="scrive anche se una tabella è passata da N righe a zero")
     args = ap.parse_args()
 
     if not os.path.exists(DB):
@@ -81,14 +117,29 @@ def main():
     if mancanti:
         print(f"  (tabelle assenti nel DB: {', '.join(mancanti)})")
 
-    if args.dry_run:
-        print(f"\n--dry-run: {len(testo)} byte non scritti.")
-        return 0
-
     precedente = None
     if os.path.exists(USCITA):
         with io.open(USCITA, encoding="utf-8") as f:
             precedente = f.read()
+
+    cali = cali_sospetti(dati, precedente)
+    if cali and not args.anche_se_vuoto:
+        print("\n⚠️  INTERROTTO: una tabella è passata da righe a ZERO.")
+        for tabella, quante in cali:
+            print(f"      {tabella}: {quante} righe nell'export, 0 nel DB")
+        print("\n    L'export è la sola copia su GitHub di hub.db, che git non segue:")
+        print("    scriverlo ora cancellerebbe quei dati anche dal backup.")
+        print(f"    La versione buona è ancora in {os.path.relpath(USCITA, RADICE)},")
+        print("    e le versioni precedenti si leggono con `git log` su quel file.")
+        print("\n    Se il vuoto è voluto:  python scripts/esporta_dati.py --anche-se-vuoto")
+        return 1
+    if cali:
+        print(f"\n⚠️  Scrivo lo stesso ({', '.join(t for t, _ in cali)} a zero): --anche-se-vuoto")
+
+    if args.dry_run:
+        print(f"\n--dry-run: {len(testo)} byte non scritti.")
+        return 0
+
     if precedente == testo:
         print(f"\nNessuna differenza: {os.path.relpath(USCITA, RADICE)} è già aggiornato.")
         return 0

@@ -1225,6 +1225,41 @@ schermata di amministrazione per gestirli.
 | ✅ | Collegamento a una API Steam per tracciare i videogiochi | Fatto 10/08/2026. Tre pezzi, vedi sotto |
 | ⬜ | Suggerimenti giochi in base a cosa si sta giocando | Ora c'è la materia prima: 34 giochi con generi e ore. Steam **non** espone "giochi simili", quindi serve decidere la fonte: suggerire dalla libreria stessa (per genere e ore), o agganciare un servizio esterno |
 
+### ⚠️ I 33 giochi persi, e la guardia che ora c'è (12/08/2026)
+
+**I giochi importati da Steam non sono più nel DB**, e l'export li ha cancellati anche
+dal backup. Ricostruito da git, con gli orari:
+
+| Quando | Export |
+|---|---|
+| 11/08 **10:09** — `199514b` «Metti al sicuro anche i dati di hub.db» | **33 giochi, 904.8 ore** |
+| 11/08 **10:43** — `46691a8` | **0 giochi** |
+
+In quella mezz'ora sono spariti da `hub.db`, e `esporta_dati.py` ha esportato
+fedelmente il vuoto **sovrascrivendo l'unica copia buona**: la rete di sicurezza si è
+scritta sopra da sola. È solo `games` — `python_topics` (53) e `users` sono intatti, e
+`pc_builds`/`pc_components` sono anzi passati da 0 a 1 e 5, quindi non è stato un DB
+ripristinato o sostituito.
+
+**Non recuperati, per decisione di Davide del 12/08**: li rimetterà lui. La fotografia
+resta comunque leggibile con `git show 199514b:data/backup/hub_export.json`, e in ogni
+caso l'import da `/gaming/steam` è rieseguibile e non fa doppioni.
+
+✅ **La guardia c'è.** `esporta_dati.py` ora **si rifiuta di scrivere** quando una
+tabella passa da N righe a **zero**, dice quale e quante, e ricorda che le versioni
+precedenti si leggono con `git log` su quel file. Un calo parziale non lo tocca —
+cancellare un gioco è normale; solo il crollo a zero è la firma di un DB perso. La via
+d'uscita esplicita è `--anche-se-vuoto`. È la stessa medicina già data a
+`_save_abilities()` l'08/08, dove un salvataggio sbagliato azzerava 408 abilità.
+
+⚠️ Nel provarla è saltato fuori un secondo difetto: lo script **non aveva** il
+`sys.stdout.reconfigure` che gli altri hanno, quindi l'avviso moriva su
+`UnicodeEncodeError` per via dell'emoji — cioè proprio il messaggio che deve spiegare
+perché ci si è fermati non sarebbe mai arrivato a schermo. Aggiunto.
+
+Provati tutti e tre i percorsi: interruzione con `exit 1` e file **intatto**,
+`--anche-se-vuoto` che scrive, e la corsa normale che non si lamenta più.
+
 ### Steam — cosa è stato fatto (10/08/2026)
 
 **1. Ricerca in fase di inserimento** — su `/gaming/new` un campo cerca su Steam e un clic
