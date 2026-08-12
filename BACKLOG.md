@@ -167,6 +167,59 @@ progettata.
 
 ---
 
+## ⬜ Esportare **tutto** il DB, utenti e personalizzazioni comprese (aperta il 12/08/2026)
+
+Chiesto da Davide il 12/08/2026: un modo per esportare tutto il database, **utenti e
+loro personalizzazioni** inclusi.
+
+### Cosa l'export di oggi prende già — verificato il 12/08/2026
+
+`scripts/esporta_dati.py` copre **8 tabelle**: `users`, `games`, `teams`,
+`team_members`, `arduino_projects`, `python_topics`, `pc_builds`, `pc_components`.
+Degli utenti esporta **tutte le colonne tranne `password`**, e questo significa che
+**i permessi per sezione ci sono già**: stanno in `users.sections`, che è una colonna,
+non una tabella a parte. Quindi la parte «utenti e personalizzazioni» è coperta più di
+quanto sembri.
+
+### Le tre falle, tutte misurate sul DB vero
+
+1. ⚠️ **Una tabella su nove non è nell'elenco.** `hub.db` contiene anche
+   `regulations` (1 riga: `ma`, con `roster_file`/`moves_file`/`items_file`), che
+   `TABELLE` non nomina. Ma è **una tabella morta**: la scrive solo `init_db()` con un
+   `INSERT OR IGNORE` e **non la legge nessuno** — le regulation vivono in
+   `data/regulations/*.json` dal 10/08. Da decidere, non da subire: o entra
+   nell'export, o si toglie dal DB con l'inventario del codice morto. Oggi è omessa
+   **per caso**, non per scelta
+2. ⚠️ **Manca il ritorno.** Nessuno script rilegge `hub_export.json`: è la stessa cosa
+   segnata nella voce delle due guide, e vale la pena dirla due volte. Un export senza
+   import non è un backup, è un file che nessuno sa rimettere dentro. Serve un
+   `scripts/importa_dati.py` rieseguibile, con `--dry-run`, che dica **prima** cosa
+   sovrascriverebbe
+3. ⚠️ **Due personalizzazioni non sono nel DB**, quindi nessun export potrà mai
+   prenderle: il **tema** sta in `localStorage` (per browser) e la **lingua** nel cookie
+   `hub_lang` (per browser). Vanno spostate su colonne di `users` se si vuole che
+   seguano l'utente — ed è esattamente ciò che serve quando l'app sarà online e la userai
+   dal telefono e dal PC: oggi ogni dispositivo se le rimette da capo
+
+### La decisione da prendere: due export, non uno
+
+Le **password sono escluse di proposito** — `ESCLUSE = {"users": {"password"}}` — perché
+`hub_export.json` **viene committato**, e degli hash di password dentro un repo pubblico
+non ci vanno. Ma un backup vero, quello che serve per rimettere in piedi tutto senza
+reimpostare le password a mano, le password le deve contenere. Quindi:
+
+- `esporta_dati.py` resta com'è: **committabile, senza password**. È la copia che
+  sopravvive su GitHub
+- serve una seconda modalità — `--completo` — che scriva **tutto**, `regulations`
+  compresa e password incluse, in un file **fuori dal repo** o comunque in `.gitignore`,
+  da tenere dove Davide decide. Deve rifiutarsi di scrivere dentro una cartella
+  versionata: è l'unico modo perché la distinzione non salti per distrazione
+
+Da incrociare con il capitolo del deploy qui sotto: online, questo export deve girare
+**da solo sul server**, altrimenti l'unica copia è vecchia quanto l'ultima sessione.
+
+---
+
 ## ⬜ Due guide: com'è fatto, e come si riparte da un PC nuovo (aperta il 12/08/2026)
 
 Chieste da Davide il 12/08/2026:
