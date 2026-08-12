@@ -160,7 +160,9 @@
 </form>
 
 <script>
-const MEGA_MAP = {{ mega_map|tojson }};
+// `let`, non `const`: la mega_map segue la regulation scelta nella tendina, e Jinja
+// puo' stampare solo quella con cui la pagina e' stata renderizzata.
+let MEGA_MAP = {{ mega_map|tojson }};
 const CURRENT_REG_ID = "{{ team.regulation_id if team and team.regulation_id else current_reg.id }}";
 
 // Meccaniche disponibili per la regulation corrente (popolato da loadRegulationData)
@@ -233,8 +235,9 @@ async function loadRegulationData() {
       }
     }
 
-    // Aggiorna meccaniche disponibili
+    // Aggiorna meccaniche disponibili e mega_map: entrambe seguono la regulation.
     CURRENT_MECHANICS = (d.regulation && d.regulation.mechanics) ? d.regulation.mechanics : [];
+    if (d.mega_map) MEGA_MAP = d.mega_map;
     for (let i = 0; i < 6; i++) updateMechanicOptions(i);
 
   } catch(e) {}

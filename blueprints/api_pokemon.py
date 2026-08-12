@@ -509,7 +509,8 @@ def api_regulation_data(reg_id):
     lista statica da 158 nomi. L'import è dentro la funzione perché blueprints.pokemon
     è il posto dove vive la logica di filtro del catalogo.
     """
-    from blueprints.pokemon import _list_regulation_files, _load_roster
+    from blueprints.pokemon import (_list_regulation_files, _load_roster, load_items,
+                                    _load_mega_map)
 
     reg = next((r for r in _list_regulation_files() if r.get('id') == reg_id), None)
     if not reg:
@@ -519,7 +520,26 @@ def api_regulation_data(reg_id):
     if not roster:
         return jsonify({'ok': False, 'error': f'Roster vuoto per la regulation {reg_id}'}), 404
 
-    return jsonify({'ok': True, 'reg_id': reg_id, 'roster': roster, 'count': len(roster)})
+    # `regulation` e `items` erano letti da team_form.html e non sono mai esistiti qui:
+    # `CURRENT_MECHANICS` restava vuoto a ogni caricamento, quindi il selettore della
+    # meccanica mostrava la sola voce "nessuna" e **la Mega non era selezionabile per
+    # nessun membro del team**, su nessuna regulation — benche' tutte e tre abbiano
+    # `"mechanics": ["mega"]` nel registro. Stessa famiglia dei tre endpoint fantasma
+    # dell'11/08: JS scritto contro una risposta mai implementata.
+    return jsonify({
+        'ok': True, 'reg_id': reg_id, 'roster': roster, 'count': len(roster),
+        'regulation': {
+            'id': reg.get('id'), 'label': reg.get('label'),
+            'mechanics': reg.get('mechanics') or [],
+            'moveset': reg.get('moveset') or 'main',
+        },
+        'items': load_items(reg_id).get('items', {}),
+        # La mega_map arrivava solo da Jinja al caricamento della pagina, quindi
+        # restava quella della regulation iniziale anche dopo aver cambiato tendina:
+        # con `pokedex` come default, che una mega_map non ce l'ha, il selettore Mega
+        # non si popolava mai. Qui segue la regulation come tutto il resto.
+        'mega_map': _load_mega_map(reg),
+    })
 
 
 @bp.route('/moves')
