@@ -167,6 +167,74 @@ progettata.
 
 ---
 
+## ⬜ Due guide: com'è fatto, e come si riparte da un PC nuovo (aperta il 12/08/2026)
+
+Chieste da Davide il 12/08/2026:
+
+1. una guida che **documenti come è stato realizzato il progetto e come funziona**
+2. una guida che spieghi **come installarlo e farlo partire su un computer nuovo** —
+   cartella del progetto, Python, requisiti, programmi utili per lavorarci
+
+### Lo stato di fatto: i documenti non sono zero, sono cinque
+
+Contati il 12/08/2026, e in parte si contraddicono:
+
+| File | Righe | Cos'è, davvero |
+|---|---|---|
+| `DOCUMENTAZIONE_PersonalHub.md` | 303 | La più vicina alla guida n. 1. **Ferma al 07/08/2026**, «v16.2» |
+| `PROJECT_CONTEXT.md` | 656 | Dettagli tecnici, convenzioni e il log delle sessioni. Aggiornato |
+| `README.md` | 133 | Stack e struttura. Dice **«v11.1a»** |
+| `README-GitHub.md` | 104 | La vetrina con i badge, per chi arriva da GitHub |
+| `howtouse.txt` | 22 | Appunti a mano. È il germe della guida n. 2 |
+
+⚠️ **Due numeri di versione diversi** (`v11.1a` e `v16.2`) su due file che descrivono la
+stessa app: già da soli dicono che il problema non è scrivere, è **decidere chi dice
+cosa** e buttare i doppioni. La guida n. 1 quindi non nasce da zero: nasce dal fondere
+`DOCUMENTAZIONE_PersonalHub.md` con quello che è successo dopo il 07/08 — catalogo
+unico, regulation come filtro, Mega riportate alle base, moveset per specie, utenti e
+permessi, switch lingua — che **non è documentato in nessuno dei cinque**.
+
+⚠️ `howtouse.txt` inoltre **è già sbagliato**: indica `C:\Progetti_Python\personal-hub`,
+che non è questa cartella, e scrive la password in chiaro. Le sue ultime due righe però
+sono preziose, perché sono la stessa richiesta di oggi scritta mesi fa: «accesso al di
+fuori del pc», «accesso senza avere il pc acceso» — vedi il capitolo sul deploy qui
+sotto.
+
+### ⚠️ Cosa la guida n. 2 troverà rotto, e va sistemato **prima** di scriverla
+
+Non sono opinioni: verificato nel codice il 12/08/2026.
+
+- **`requirements.txt` ha una riga sola**, `flask>=3.0`. Ma gli script usano `requests`
+  (import da PokéAPI e wiki) e le password ora passano da `werkzeug.security`. Una
+  guida che dice `pip install -r requirements.txt` **oggi mente**
+- ⚠️ **il ripristino dei dati non esiste.** `hub.db` è escluso da git — giustamente — e
+  `scripts/esporta_dati.py` scrive `data/backup/hub_export.json`, ma **non c'è nessuno
+  script che lo rilegga**. Su un PC nuovo l'app riparte con il database che `init_db()`
+  crea da zero: il solo utente `admin`, e **niente** libreria giochi, team, progetti
+  Arduino o build PC. La guida n. 2 senza un `importa_dati.py` si ferma a metà, e il
+  backup che ci raccontiamo di avere non è un backup: è un file che nessuno sa rileggere
+- `data/cache/` (84 MB) non è versionata ed è giusto così: si rigenera. Ma va **detto**,
+  altrimenti sul PC nuovo il primo import sembra bloccato mentre invece sta scaricando
+- la password `admin123` sta scritta **nella pagina di login** e in `howtouse.txt`. La
+  guida nuova non deve propagarla ulteriormente
+
+### Come dovrebbero essere fatte
+
+- **n. 1 — «com'è fatto»**: per Davide fra sei mesi, non per un estraneo. Deve spiegare
+  *perché* le cose stanno come stanno — perché il catalogo è unico e le regulation sono
+  filtri, perché le chiavi non si rinominano mai, perché la lingua sta in un cookie e non
+  in `localStorage`, perché le cache guardano l'mtime. Quel «perché» oggi è sparso fra i
+  commenti nel codice e questo backlog, ed è la parte che si perde per prima
+- **n. 2 — «da PC nuovo a app che gira»**: una sequenza di comandi che **si può eseguire
+  alla lettera**, provata su una macchina pulita. Non «installa Python»: quale versione,
+  con quale flag, come si verifica che sia andata. E la prova finale è la regola #8 —
+  se il calcolatore dà A=183, D=122, HP=221, 85-102, l'installazione è buona
+
+Da fare **dopo** il giro di collaudo finale, non prima: documentare un'app che sta per
+cambiare significa riscrivere la guida due volte.
+
+---
+
 ## ⬜ Mettere l'app online — Railway o cosa? (aperta il 12/08/2026)
 
 Chiesto da Davide il 12/08/2026: **usare la web app da dove vuole** — non solo da questo
