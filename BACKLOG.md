@@ -167,10 +167,60 @@ progettata.
 
 ---
 
+## ⬜ Gli editor Pokémon solo per gli admin (aperta il 12/08/2026)
+
+Chiesto da Davide il 12/08/2026: **gli utenti non amministratori non devono vedere le
+sezioni editor dei Pokémon**.
+
+**Com'è adesso, verificato il 12/08/2026**: chi ha la sezione `pokemon` fra le proprie
+vede *tutto* ciò che sta sotto `/pokemon/*`. I permessi decidono **quali sezioni** apri,
+non **cosa puoi fare dentro**. Quindi un utente normale può aprire `/pokemon/catalogo`,
+`/pokemon/mosse`, `/pokemon/oggetti`, `/pokemon/abilita`, `/pokemon/roster` e gli editor
+di regulation, e **scrivere sui dati condivisi da tutti**: sono **28 route** in
+`blueprints/pokemon.py` che toccano catalogo, abilità, roster o regulation. Non è un
+danno ipotetico: `salva_catalogo()` riscrive il file per tutti gli utenti.
+
+**Come farlo, e come non farlo:**
+
+- il modello esiste già ed è `solo_admin` in [admin.py:28](blueprints/admin.py:28),
+  agganciato con un `before_request` **a tutto il blueprint** proprio perché «una route
+  nuova nasce protetta». Stessa idea del controllo per sezione in `app.py`
+- ⚠️ ma qui il blueprint **non** si può bloccare in blocco: `/pokemon` mescola le pagine
+  d'uso (team, calcolatori, Speed Tier) con gli editor. Serve un elenco — e va fatto
+  **al contrario di come viene istintivo**: non l'elenco di ciò che è vietato, che
+  **fallisce aperto** e lascia scoperta la prossima route che qualcuno aggiunge, ma
+  l'elenco di ciò che è **permesso a tutti**, con il resto admin-only. È la stessa
+  lezione dei permessi per sezione, dove `/export` e la Dashboard erano rimasti fuori
+- **le API vanno protette insieme alle pagine**: `/pokemon/api/catalogo/<db>/salva`,
+  `/elimina`, `/api/abilities/update`, `/api/regulations/save`… Nascondere il pulsante
+  non protegge niente, la chiamata resta raggiungibile
+- **e poi anche il pulsante**: la barra strumenti in `pokemon.html` mostra 7 collegamenti
+  agli editor. `e_admin` è già disponibile in ogni template dal context processor di
+  `app.py`, quindi nasconderli è una riga — ma è **cosmesi**, e va fatta *dopo* il
+  controllo vero, non al posto suo
+
+**Come si verifica**: due account, uno admin e uno no, e con il secondo si prova a
+**chiamare direttamente** una route di scrittura, non solo a cercare il pulsante. Se
+risponde qualcosa di diverso da un rifiuto, non è chiusa.
+
+Da incrociare con **«i dati non hanno un proprietario»**: sono due metà della stessa
+domanda — quella dice *di chi* sono i dati, questa dice *chi può cambiarli*.
+
+---
+
 ## ⬜ Esportare **tutto** il DB, utenti e personalizzazioni comprese (aperta il 12/08/2026)
 
-Chiesto da Davide il 12/08/2026: un modo per esportare tutto il database, **utenti e
-loro personalizzazioni** inclusi.
+Chiesto da Davide il 12/08/2026: un modo per esportare tutto il database — **utenti e
+loro personalizzazioni**, ma anche **tutto il resto**: giochi inseriti, team Pokémon,
+build del PC, progetti Arduino, progresso Python.
+
+> **Precisazione di Davide, stesso giorno**: «con esportazione db intendo anche
+> esportare tutto il resto». **Quella parte c'è già**, ed è il motivo per cui lo script
+> è nato. Contato sul DB vero il 12/08/2026: **33 giochi, 1 team con 1 membro, 1 build
+> PC con 5 componenti, 53 argomenti Python, 2 utenti** — tutto dentro
+> `data/backup/hub_export.json`, che è versionato. Quello che manca non è *cosa* si
+> esporta, sono le tre falle qui sotto: una tabella omessa per caso, nessun modo di
+> **rileggere** il file, e due personalizzazioni che nel DB non ci sono proprio.
 
 ### Cosa l'export di oggi prende già — verificato il 12/08/2026
 
