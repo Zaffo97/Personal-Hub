@@ -104,6 +104,15 @@ Altre abitudini che in questo progetto hanno già ripagato:
   leggeva il file di MA, un nome inesistente che rispondeva Mega Venusaur)
 - misura prima di proporre. I numeri in questo repo sono stati contati, non stimati
 
+**Il grafo è una fotografia, non uno specchio.** `graphify-out/` viene da un `/graphify`
+già passato, e non si aggiorna da solo. Prima di rispondere a una domanda
+sull'architettura usandolo, confronta la data di `graphify-out/graph.json` con l'ultimo
+commit che ha toccato il codice: se è più vecchia, `/graphify . --update`, che
+**ri-estrae solo i file cambiati** (`manifest.json` tiene `mtime` e hash di ognuno) e
+costa una frazione di un giro completo. Non va rifatto a ogni sessione — solo quando il
+grafo serve davvero, e **obbligatoriamente** prima del giro di collaudo finale e
+dell'inventario del codice morto, che sono i due lavori in cui deve essere completo.
+
 ---
 
 ## 💾 Toccare i dati

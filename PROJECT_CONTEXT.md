@@ -214,6 +214,41 @@ Helper: `voci_catalogo(db)` legge sempre un dizionario piatto (le abilità sono
 avvolte in `{"abilities": ...}`, gli altri tre no), `salva_catalogo(db, voci)` scrive
 tenendo la copia precedente in `data/archive/catalog_<db>_pre-salvataggio.json`.
 
+#### `data/catalog/pokemon_moves.json` — il quinto file, dal 12/08/2026
+
+Le mosse che ogni voce **può imparare**. Sta a parte dal catalogo, non dentro, perché
+`pokemon.json` finisce nel payload del browser e pesa già 547 KB per 8 campi a riga.
+Generato da `scripts/importa_mosse_specie.py`, rieseguibile, e **non è un dato curato**:
+si rigenera dal dump CSV di PokéAPI in un minuto, quindi non ha copia in
+`data/archive/` — la rete di sicurezza è il controllo che le voci non calino.
+
+```json
+"incineroar": {
+  "slug": "incineroar",
+  "main":      {"vg": "scarlet-violet", "moves": {"Knock Off": "machine", …}},
+  "champions": {"moves": {"Darkest Lariat": "train", …}}
+}
+```
+
+**Due elenchi per voce, non uno**, ed è la cosa da non confondere:
+
+- **`main`** — i giochi principali, dal version group più recente in cui la voce
+  compare. È l'elenco della regulation `pokedex`
+- **`champions`** — il moveset di **Pokémon Champions**, che nel dump di PokéAPI è un
+  version group suo (`champions`, id 32). È l'elenco di `ma` e `mb`
+
+Non coincidono: **Incineroar in Champions non ha Knock Off**, che nei giochi principali
+impara con una MT. Il valore dice *come* si impara — `level-up:<n>`, `machine`, `egg`,
+`tutor`, `train` (l'unico di Champions) — separati da virgola quando sono più d'uno.
+
+⚠️ **Il file c'è, ma non lo legge ancora nessuno**: nessuna route, nessun endpoint,
+nessun JS. Il consumo è la voce di backlog «mosse giuste per regulation».
+
+Le chiavi sono le stesse del catalogo: la **chiave** per le specie, il **nome della
+forma** per le forme annidate. Le forme inventate (Mega fan-made, Gourgeist di taglia,
+Mega Meowstic) **non ci sono**, di proposito: PokéAPI non le conosce e il moveset della
+specie base non è il loro.
+
 Import da `data.py`: `DATA_DIR, regulation_default, REG_MA_ROSTER, MEGA_EVOLUTIONS_MA, NATURES, NATURE_EFFECTS, CHAMPIONS_BST`
 
 ---
@@ -542,6 +577,7 @@ Di conseguenza tutto ciò che questa tabella dava per "funzionante" non era mai 
 
 | Data | Contenuto |
 |------|-----------|
+| 2026-08-12 | **Gli elenchi mosse per specie, importati** — il buco più grosso che restava nei dati: zero specie su 1026 avevano un `moves`, e nemmeno il vecchio catalogo (0 su 174). `scripts/importa_mosse_specie.py` scrive `data/catalog/pokemon_moves.json` (2,7 MB), è rieseguibile e **idempotente** (due giri, stesso md5), e si ferma se le voci calano. Non usa la API REST ma il **dump CSV** di PokéAPI, lo stesso di `build_catalog.py`: un file da 10 MB invece di 1026 chiamate. La scoperta che ha cambiato il lavoro sta lì dentro: fra i version group c'è **`champions` (id 32), 19 810 righe su 319 voci** — il moveset ufficiale di Pokémon Champions esiste, ed è la fonte esatta di `ma` e `mb`. Quindi ogni voce ha **due elenchi**: `main` (il version group più recente in cui compare: 862 voci su Scarlatto/Violetto, 167 su Spada/Scudo, a scendere) e `champions`. **Non coincidono**, ed è verificato sul caso che Davide ha citato: **Incineroar in Champions non ha Knock Off**, che in S/V impara con una MT — 11 mosse in meno e 8 in più, 80 contro 77. Copertura contata: `ma` **274/279** con moveset e 273 con la lista Champions, `mb` **302/308** e 301, `pokedex` **1291/1343**, con **zero nomi irrisolti** in tutti e tre. Canarino: **Magikarp ha 3 mosse** e Fulmine non è fra queste. Restano fuori **20 forme inventate**, che per decisione di Davide **non ereditano** il moveset della specie base, e 32 Gigantamax, che nel dump non ne hanno uno proprio. ⚠️ Il file **non lo legge ancora nessuno**: il consumo è la voce di backlog «le mosse giuste per ogni regulation», aperta oggi. ⚠️ Trovato preparando l'import e **non corretto** perché fuori scope: **`build_catalog.py` oggi distruggerebbe il catalogo** — legge come base i file storici (174 voci, senza `nome_it`, con le Mega ancora convertite: `Mega Venusaur` a `hp 155` contro `hp 80`) e scrive in `data/catalog/`. Rieseguirlo riporterebbe indietro quattro giorni di lavoro, in silenzio |
 | 2026-08-11 | **Due lavori aperti a backlog per le prossime sessioni.** (1) **Gli elenchi mosse per specie**, che non sono mai esistiti — zero su 1026, e nemmeno nel vecchio catalogo: per questo il calcolatore accetta qualunque mossa su qualunque Pokémon e nessuna regulation sa se le sue mosse bastino. La strada è `scripts/build_catalog.py` più i `moves[]` di PokéAPI, con `SLUG_OVERRIDES` e la cache già pronti; da decidere prima quali metodi di apprendimento tenere e cosa fare delle forme inventate, che su PokéAPI non ci sono. (2) **Ogni Pokémon deve mostrare solo le sue abilità**: oggi le tendine del tab Danno e dello Stat Preview elencano tutte e 386 le voci, mentre lo Speed Tier fa già la cosa giusta ed è il modello. Qui il dato **c'è** — 307 nomi distinti, tutti risolti tranne `Zero To Hero` — quindi è lavoro di interfaccia; ⚠️ ma prima va colmato il catalogo, perché **238 specie su 1026 hanno una sola abilità** (e 173 forme su 317): stringere le tendine adesso toglierebbe scelte legittime invece che rumore |
 | 2026-08-11 | **Le tre voci che aspettavano una decisione, chiuse.** (1) **`Mirror Herb` → «Foglia carbone» è confermato**: controllato su [Bulbapedia](https://bulbapedia.bulbagarden.net/wiki/Mirror_Herb), fonte indipendente da quella usata dall'import, che dà lo stesso nome italiano. Il giapponese è ものまねハーブ (*erba imitatrice*) e lo spagnolo *Hierba Copia*: è la localizzazione italiana ufficiale a essere strana, non il nostro dato. Sospetto tolto. (2) **Mosse e oggetti di MB restano quelli di MA** (460 e 58): finché non c'è una fonte su cosa cambi davvero, copiare MA è l'ipotesi meno arbitraria, e la differenza fra le due regulation resta il roster. (3) **Colonne del tab Danno allineate**: `align-items` da `start` a `stretch`, da 548/699/564 a 699 per tutti e tre, con le larghezze invariate (360 · 265 · 360). ⚠️ Misurando MB è emerso che **il catalogo non contiene gli elenchi mosse per specie** — zero su 1026, e non li aveva nemmeno il vecchio `pokemon_catalog.json`: non si può sapere se le mosse di una regulation bastino ai suoi Pokémon, né quali manchino a chi viene aggiunto. Questo file documentava un campo `moves` che non è mai esistito: corretto |
 | 2026-08-11 | **mega_map completate, MB popolata, doppioni di nome chiusi.** Con `scripts/completa_mega_map.py` ogni Mega presente in un roster è ora **raggiungibile**: MA passa da 58/59 a **59/59** e MB da 58/75 a **75/75**. Su MA la voce di backlog era sbagliata — diceva che la base di `Mega Meowstic (Male)` non era nel roster, ma cercava `Meowstic` mentre dentro c'è `Meowstic (Male)`: bastava collegarle. Su **MB**, che era rimasta un segnaposto, Davide ha deciso di **aggiungere le 13 specie base mancanti** (Barbaracle, Blaziken, Metagross, Swampert…), portando il roster da 295 a **308**; lo script lo fa solo per le regulation elencate in `AGGIUNGI_BASI`, perché aggiungere una specie è una scelta di contenuto e il roster di MA, che viene dalla wiki, non si tocca. Poi `scripts/fondi_doppioni_nome.py` ha tolto la causa del baco di `Sheer Force`: **8 coppie di chiavi diverse con lo stesso nome** fuse, con il criterio «resta la chiave giusta, i campi mancanti arrivano dall'altra» — non «vince il nome ufficiale», che su `King's Rock` avrebbe tenuto la variante importata e inerte invece di quella curata. I **filtri sono stati aggiornati di conseguenza**: MA e MB contenevano entrambe le varianti di `Freeze Dry`, quindi le mosse scendono da 461 a **460**, la stessa mossa contata due volte. Infine `scripts/rifinisci_abilita.py`: le **10 abilità di Champions** lo dicono ora nella propria descrizione, e il fallback `data/abilities.json` è stato **riallineato** al catalogo (408 → 386 voci) — non dismesso, ma non è più una macchina del tempo che riporterebbe indietro i doppioni. Chiuso anche lo **Speed Tier senza limite**: tetto a 300 righe (da 1343 righe / 714 KB a 300 / 159 KB), tagliando le più **lontane** dalla propria Velocità e lasciando il conto pieno scritto sopra la tabella. Verifica: **40 controlli su 40**, zero nomi condivisi e zero chiavi con spazi ai bordi in tutti e tre i database, regola #8 invariata, sweep su 25 pagine / 47 script / 2287 handler senza errori |

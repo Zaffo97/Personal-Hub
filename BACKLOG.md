@@ -3,7 +3,7 @@
 > Fonte: `Nuove implementazioni.docx` (verde = fatto).
 > Questo file è la versione tracciabile di quel documento: qui restano solo le voci
 > **non ancora chiuse**, più quelle chiuse di recente con la data.
-> Aggiornato: 11/08/2026
+> Aggiornato: 12/08/2026
 
 Legenda: ⬜ da fare · 🟨 parziale / da verificare · ✅ fatto
 
@@ -590,42 +590,97 @@ script di import dedicato, come è stato fatto per il roster di MA con la wiki.
 > Volevo dirti quante mosse mancassero ai 29 Pokémon che MB ha in più, e non si può:
 > vedi la voce qui sotto.
 
-## ⬜ DA FARE — gli elenchi mosse per specie (aperta l'11/08/2026)
+## ✅ Gli elenchi mosse per specie — importati il 12/08/2026
 
-**Il buco più grosso rimasto nei dati.** Misurato: **zero specie su 1026** hanno un
-elenco `moves` nel catalogo, e non ce l'aveva nemmeno il vecchio
-`data/pokemon_catalog.json` (0 su 174) — quindi non è una regressione dell'import, è un
-dato che **non è mai esistito**.
+Era **il buco più grosso rimasto nei dati**: zero specie su 1026 avevano un elenco
+`moves`, e non ce l'aveva nemmeno il vecchio `data/pokemon_catalog.json` (0 su 174) —
+non una regressione dell'import, un dato che **non era mai esistito**.
 
-**Cosa non si può fare oggi, per questo:**
+`python scripts/importa_mosse_specie.py [--dry-run] [--solo main,champions]`, che scrive
+`data/catalog/pokemon_moves.json` (2,7 MB). Rieseguibile e **idempotente**: due
+esecuzioni di fila danno lo stesso md5. Si rifiuta di scrivere se le voci calano.
 
-- sapere se le mosse di una regulation bastino ai suoi Pokémon, o quali manchino a chi
-  viene aggiunto al roster — è il motivo per cui su MB la domanda «quante mosse mancano
-  ai 29 Pokémon in più?» è rimasta senza risposta
-- **il calcolatore accetta qualunque mossa su qualunque Pokémon**: si può dare Fulmine a
-  Magikarp e nessuno dice niente
-- il team builder non può proporre le mosse del Pokémon scelto, che è la cosa che
-  farebbe risparmiare più tempo nella costruzione di un team
+### La scoperta che ha cambiato il lavoro: Champions è nel dump
 
-**La strada, quando si farà.** PokéAPI espone il moveset di ogni specie
-(`/pokemon/<slug>` → `moves[]`, con il metodo e la generazione di apprendimento), e nel
-progetto c'è già tutto il necessario per prenderlo senza inventare niente:
+Non è stata usata la API REST di PokéAPI ma il suo **dump CSV**, lo stesso di
+`build_catalog.py`: il moveset sta tutto in `pokemon_moves.csv`, quindi si scarica **un
+file da 10 MB** invece di fare 1026 chiamate. E lì dentro, fra i version group, c'è
+**`champions` (id 32): 19 810 righe su 319 voci.** Il moveset ufficiale di Pokémon
+Champions esiste, ed è la fonte esatta di cui `ma` e `mb` avevano bisogno.
 
-- `scripts/build_catalog.py` è lo script che costruisce il catalogo ed è **rieseguibile**
-  con `--dry-run`: è lì che va aggiunto il campo, non in uno script nuovo
-- gli `slug` PokéAPI sono già nel catalogo, e `SLUG_OVERRIDES` in `data.py` copre le
-  forme regionali e i casi speciali già risolti una volta
-- la cache di `data/cache/pokeapi/` evita di ripassare dalla rete a ogni giro, come per
-  `importa_nomi_lingua.py`
+Quindi ogni voce ha **due elenchi**, non uno:
 
-⚠️ Due cose da decidere prima di partire, perché cambiano la dimensione del lavoro:
-**quali metodi di apprendimento tenere** (solo livello, o anche MT, doni e mosse uovo) e
-**cosa fare delle forme inventate** — le Mega fan-made e le voci di Champions non stanno
-su PokéAPI, quindi erediteranno il moveset della specie base o resteranno vuote. È un
-import grosso: da valutare a mente fresca, non in coda a un'altra sessione.
+| | Da dove | A cosa serve |
+|---|---|---|
+| `main` | il version group più recente in cui la voce compare (862 su Scarlatto/Violetto, 167 su Spada/Scudo, poi a scendere fino a 6 su Rubino Omega) | la regulation `pokedex` |
+| `champions` | il version group `champions` del dump | `ma` e `mb` |
 
-⚠️ `PROJECT_CONTEXT.md` documentava `CHAMPIONS_BST` con un campo `moves: [...]` nella
-struttura di ogni voce: **non c'è mai stato**. Corretto nella stessa sessione.
+**E non coincidono.** Il caso che Davide ha citato è verificato sui dati veri:
+**Incineroar in Champions non ha Knock Off**, che in Scarlatto/Violetto impara con una
+MT. Sono **11** le mosse che ha in S/V e non in Champions (`Knock Off`, `U-turn`,
+`Tera Blast`, `Fire Pledge`…) e **8** quelle che ha solo in Champions (`Superpower`,
+`Blaze Kick`, `Brutal Swing`…): 80 mosse contro 77.
+
+Il valore di ogni mossa dice **come** si impara — `level-up:32`, `machine`, `egg`,
+`tutor`, `train` (l'unico metodo di Champions) — così l'interfaccia può filtrare per
+metodo senza un secondo import. Il livello si scrive sempre, `0` compreso: nel dump vuol
+dire «all'evoluzione o dal ricordamosse», che è un'informazione, non un buco.
+
+### La copertura, contata
+
+| | roster | nomi irrisolti | con moveset | con la lista Champions |
+|---|---|---|---|---|
+| `ma` | 279 | **0** | **274** | **273** |
+| `mb` | 308 | **0** | **302** | **301** |
+| `pokedex` | 1343 | **0** | **1291** | 314 |
+
+66 033 mosse in `main` (52 per voce in media) e 19 515 in `champions` (62). Canarini:
+**Magikarp ha 3 mosse** (Splash, Tackle, Flail) e **Fulmine non è fra queste** — è il
+caso che il backlog citava come impossibile da rifiutare.
+
+### Chi resta fuori, e perché
+
+- **20 forme inventate** — le Mega fan-made (`Mega Darkrai`, `Mega Zygarde`, i tre
+  Tatsugiri, i due `… Z`), `Mega Meowstic (M/F)`, le tre taglie di Gourgeist ed
+  `Eternal Flower Floette`. **Non ereditano il moveset della specie base**, per
+  decisione di Davide del 12/08: sono escluse e dichiarate, non riempite a caso.
+  Quando ci sarà la fonte si riaprono da lì
+- ⬜ **32 forme Gigantamax** — nel dump non hanno un moveset proprio, condividono
+  quello della forma base. **Da decidere**: farle ereditare (non sarebbe un'invenzione,
+  è come PokéAPI le modella) o lasciarle vuote. Non toccano il VGC, quindi non urge
+- ⬜ **`Pawmot`** ha `main` ma **non** la lista Champions, pur essendo nel roster di MA
+
+> ⚠️ `PROJECT_CONTEXT.md` documentava `CHAMPIONS_BST` con un campo `moves: [...]` nella
+> struttura di ogni voce: **non c'è mai stato**. Corretto l'11/08/2026.
+
+> ⚠️ **Il file c'è, ma non lo legge ancora nessuno**: nessuna route, nessun endpoint,
+> nessun JS. Il consumo è la voce qui sotto.
+
+---
+
+## ⬜ DA FARE — le mosse giuste per ogni regulation (aperta il 12/08/2026)
+
+Chiesta da Davide il 12/08. Il dato ora c'è; manca l'uso.
+
+Quando si cambia regulation, **le mosse mostrate per un Pokémon devono cambiare con
+lei**. Su `pokedex` si vedono tutte quelle che quel Pokémon può imparare; su `ma` e
+`mb` solo quelle legali lì. L'esempio di Davide, che è anche il caso di prova già
+verificato nei dati: **Incineroar in M-A e M-B non può più imparare Knock Off**.
+
+Dove va agganciato:
+
+- il **calcolatore**, tab Danno: la casella mossa oggi accetta qualunque nome
+- il **team builder**, che è il punto dove serve di più
+- lo **Speed Tier**, dove le mosse non entrano ma le abilità sì (stesso schema)
+
+Da decidere quando ci si arriva: se un Pokémon **non ha** un elenco per la regulation
+attiva (le 20 forme inventate, `Pawmot` su Champions), si mostra tutto o niente.
+Mostrare niente renderebbe inutilizzabili proprio le forme inventate di Davide, quindi
+il default sensato è **tutto, con un avviso** — ma è una scelta sua.
+
+> ⚠️ Questa voce **non** è la stessa cosa di «ogni Pokémon deve mostrare solo le sue
+> abilità»: quella riguarda le abilità e ha ancora il problema del catalogo incompleto
+> (238 specie con una sola). Qui il dato è completo al 98%.
 
 ---
 
@@ -974,6 +1029,7 @@ Dettagli che vale la pena ricordare:
 | ✅ | `loadSpePkmn()` non ricalcola | Chiuso 11/08/2026: aggiunta la chiamata a `updateSpeed()`. Incineroar → base 60, Velocità **80**; Dragapult → base 142, Velocità **162** |
 | ✅ | Speed Tier senza limite di righe | Chiuso 11/08/2026 con un tetto a **300 righe**, come le altre tabelle del progetto: su `pokedex` erano **1343 righe / 714 KB** in un solo `innerHTML`, ora **300 / 159 KB**. Le righe tagliate sono le più **lontane** dalla propria Velocità, perché chi guarda uno Speed Tier guarda chi gli sta intorno: con Kingdra a 105 la tabella va da 95 a 115. Sopra la tabella resta scritto il conto pieno (`300 righe su 1343`), e la ricerca continua a pescare fuori dal taglio — provato con Regieleki, che sta a 200 |
 | ✅ | Nomi in `abilities.json` da rivedere → **fondere i doppioni** | Chiuso 11/08/2026: 24 coppie fuse, 415 → 391 voci, e `abilityEffect()` ora risolve anche per nome inglese. Dettagli nella sezione «Le abilità doppie», in cima. ⚠️ Restano le 10 voci il cui effetto non corrisponde a nessuna abilità reale, tenute apposta | Alcuni non corrispondono all'abilità descritta (es. `Spettroguardia` descrive Multiscaglia; il vero Wonder Guard è `Magidifesa`). Convivono nomi ufficiali IT e nomi di altra fonte. L'11/08/2026 il giro sulla wiki ha spiegato perché: **le due famiglie coesistono nello stesso file**, 307 voci col nome ufficiale (collegate ai Pokémon, ma solo 22 con un effetto attivo) e 108 vecchie (34 con l'effetto che il calcolatore usa davvero). Il lavoro non è tradurre, è fondere ogni coppia. Dettagli e tabella nella sezione dello switch lingua, in cima |
+| ⬜ | **`build_catalog.py` oggi distruggerebbe il catalogo** ⚠️ | Trovato il 12/08/2026 preparando l'import delle mosse, **non corretto** perché fuori scope e perché non è più servito eseguirlo. Lo script legge come base i **file storici** (`data/pokemon_catalog.json`, `moves_ma.json`, …) e scrive il risultato in `data/catalog/`. Quella base ha **174 voci** contro le 1026 di oggi, non ha nessun `nome_it`/`nome_en` (il catalogo attuale li ha su 1026 su 1026) e ha ancora le **Mega convertite**: `Mega Venusaur` vale `hp 155` lì e `hp 80` qui. Peggio, `MEGA_BONUS` riapplicherebbe `+75 HP / +20` alle Mega nuove, cioè esattamente la conversione che la deconversione dell'11/08 ha tolto. Rieseguirlo oggi **riporterebbe indietro il catalogo di quattro giorni di lavoro, in silenzio**. Va fatto leggere `data/catalog/` quando esiste, e `MEGA_BONUS` va tolto. Fino ad allora, **non eseguirlo** |
 | ⬜ | Catalogo con abilità incomplete | Ricontato 11/08/2026 sul catalogo di oggi: **238 specie su 1026** hanno una sola abilità e 2 nessuna, più **173 forme annidate su 317** con una sola. Quasi tutti ne hanno 2-3 con la nascosta. ⚠️ È il **prerequisito** della voce «ogni Pokémon deve mostrare solo le sue abilità», in cima: stringere le tendine prima di colmare questo buco toglierebbe scelte legittime |
 | ✅ | Chiavi mega incoerenti nel catalogo | Chiuso 11/08/2026. Non erano anomalie ma **doppioni**: `mega-banette`, `mega-chimecho` e `mega-crabominable` esistevano sia come chiave top-level sia come forma annidata nella specie base. Le forme annidate, deconvertite, sono quelle giuste — le top-level sono state rimosse (1029 → 1026 voci). Gli override sprite in `api_pokemon.py:70-73` **restano**: sono indicizzati sul nome normalizzato, non sulla chiave, e servono ancora perché Mega Chimecho e Mega Crabominable sono inventate e non hanno uno sprite online |
 
