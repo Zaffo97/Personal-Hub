@@ -38,6 +38,7 @@ Non sono storia: sono le cose che questo progetto ha già pagato e che tornano a
 | ⚠️ **Lo sweep statico non basta** | `new Function()` su script e handler dice che la **sintassi** è valida, **non** che il codice giri. Il 13/08 la tabella dell'editor mosse è rimasta **vuota** con lo sweep a zero errori: `renderTable()` lanciava `tf is not defined` a runtime. Ogni giro di verifica va chiuso **caricando davvero** le pagine e contando le righe che compaiono — 919 mosse, 1343 tag del roster, 397 oggetti, 386 abilità. Una tabella vuota non dà errore a schermo |
 | **`t`/`tf` e l'ordine degli script** | Sono definite in un `<script>` nel **`<head>`** di `base.html`, e devono restarci. Più di un template le chiama **durante il parsing** e non dentro un evento (`moves_editor.html` chiude il suo script con `renderTable()`): con la definizione in fondo alla pagina, come era fino al 13/08, quella chiamata non le trova |
 | **Variabili mancanti nei template** | Jinja rende una variabile che non è nel contesto come **stringa vuota**, senza dire niente. `items_editor.html` usava `{{ regulation }}`, che quella route non ha **mai** passato: la conferma di archiviazione ha sempre detto «Archivia gli oggetti correnti ()?» con le parentesi vuote. Se ne è accorto solo `\|tojson`, che su `Undefined` solleva invece di tacere |
+| **Una parola italiana, due inglesi** | La chiave del dizionario **è la frase italiana**, quindi una parola che in inglese cambia col contesto non è esprimibile. Caso vivo: `Abilità` è la linguetta del catalogo (→ *Abilities*) **e** l'etichetta di un campo singolo nel team builder e nello Stat Preview, dove dovrebbe essere *Ability*. Oggi vince il plurale. Si risolve solo cambiando la frase **italiana** in uno dei due punti, e va fatto se e quando dà fastidio: storpiare l'italiano per aggiustare l'inglese è un cattivo affare |
 | **Default del DB** | `extensions.py:143` crea la colonna con `regulation_id TEXT DEFAULT 'ma'`. Non è un residuo dei 14 letterali tolti l'11/08: è il default del **DB**, e cambiarlo richiede una migrazione. Oggi non fa danno perché `_team_upsert()` passa sempre un valore esplicito |
 
 ---
@@ -286,15 +287,20 @@ riceve in `window.T`. ⚠️ Il prezzo, dichiarato: **cambiare una parola italia
 template stacca la traduzione in silenzio** — per questo esiste
 `python scripts/controlla_traduzioni.py`, che elenca mancanti, vuote e orfane.
 
-**Fatti 9 template su 12** — `pokemon.html` (16), `regulation_content.html` (15),
-`catalog_editor.html` (23) il 12/08; **`calcolatori.html` (142) più i 7 moduli
-`static/js/calcolatori-*.js`, `moves_editor.html` (52), `base.html`,
-`roster_editor.html` (26), `items_editor.html` (43) e `abilities_editor.html` (47) il
-13/08**. Il dizionario è a **318 chiavi su 318 chieste**, zero mancanti, zero orfane e
-zero doppie.
+✅ **Il blocco Pokémon è chiuso: 12 template su 12.** `pokemon.html` (16),
+`regulation_content.html` (15), `catalog_editor.html` (23) il 12/08; **`calcolatori.html`
+(142) più i 7 moduli `static/js/calcolatori-*.js`, `moves_editor.html` (52), `base.html`,
+`roster_editor.html` (26), `items_editor.html` (43), `abilities_editor.html` (47),
+`regulations_list.html` (33), `regulation_editor.html` (42) e `team_form.html` il 13/08**.
+Il dizionario è a **383 chiavi su 383 chieste**, zero mancanti, zero orfane e zero doppie.
 
-⬜ **Restano 3 template**: `regulation_editor` (42), `regulations_list` (33) e
-**`team_form.html`**.
+> ⚠️ **Cosa NON si traduce, e il perché è sempre lo stesso**: quello che viene **salvato**
+> non cambia con la lingua. I `value` dei tipi (chiavi di `TYPE_CHART`), le categorie
+> degli oggetti e delle abilità (chiavi del blocco `effect`), le meccaniche (`mega`,
+> `tera`), i datalist di mosse e oggetti (chiavi del catalogo, ed è ciò che finisce nel
+> DB) e **`TERA_TYPES` in `team_form.html`**, le cui `<option>` non hanno un attributo
+> `value`: lì il testo *è* il valore salvato in `mechanic_value`, e tradurlo cambierebbe
+> i dati dei team già salvati.
 
 ✅ **`controlla_traduzioni.py` ora trova anche le chiavi doppie.** Non poteva vederle:
 usa `json.load()`, che **tiene l'ultima e butta la prima in silenzio** — correggere la

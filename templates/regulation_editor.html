@@ -1,6 +1,6 @@
 {% extends "base.html" %}
 {% block title %}{{ reg.label }} – Hub{% endblock %}
-{% block topbar_title %}📌 Regulation Editor{% endblock %}
+{% block topbar_title %}📌 {{ t('Regulation Editor') }}{% endblock %}
 {% block extra_head %}
 <style>
 .meta-field{display:flex;flex-direction:column;gap:.25rem;margin-bottom:.75rem}
@@ -17,15 +17,18 @@
 </style>
 {% endblock %}
 {% block content %}
+{# Le meccaniche (mega, tera, zmove, dynamax) non si traducono: sono i valori che
+   finiscono in `mechanics` dentro regulations.json, e il team builder ci confronta
+   sopra. Si traduce solo cio' che sta intorno. #}
 <div class="page-header">
   <div class="flex items-center justify-between flex-wrap gap-2">
     <div class="flex items-center gap-2">
-      <a href="/pokemon/regulations" class="btn btn-secondary btn-sm">&#8592; Tutte le Regulation</a>
+      <a href="/pokemon/regulations" class="btn btn-secondary btn-sm">&#8592; {{ t('Tutte le Regulation') }}</a>
       <h1>📌 {{ reg.label }}</h1>
       <span style="font-size:.75rem;color:var(--text-muted);font-family:monospace;background:var(--surface-off);
                    padding:.2rem .5rem;border-radius:var(--radius-sm);border:1px solid var(--border)">{{ reg.id }}</span>
     </div>
-    <a href="/pokemon/team/new?regulation_id={{ reg.id }}" class="btn btn-primary btn-sm">+ Nuovo Team</a>
+    <a href="/pokemon/team/new?regulation_id={{ reg.id }}" class="btn btn-primary btn-sm">+ {{ t('Nuovo Team') }}</a>
   </div>
 </div>
 
@@ -37,11 +40,11 @@
   </div>
   <div class="card" style="text-align:center;padding:.9rem">
     <div style="font-size:1.8rem;font-weight:800;color:var(--primary)">{{ moves_count }}</div>
-    <div style="font-size:.72rem;color:var(--text-muted);text-transform:uppercase;font-weight:700">Mosse</div>
+    <div style="font-size:.72rem;color:var(--text-muted);text-transform:uppercase;font-weight:700">{{ t('Mosse') }}</div>
   </div>
   <div class="card" style="text-align:center;padding:.9rem">
     <div style="font-size:1.8rem;font-weight:800;color:var(--primary)">{{ items_count }}</div>
-    <div style="font-size:.72rem;color:var(--text-muted);text-transform:uppercase;font-weight:700">Oggetti</div>
+    <div style="font-size:.72rem;color:var(--text-muted);text-transform:uppercase;font-weight:700">{{ t('Oggetti') }}</div>
   </div>
   <div class="card" style="text-align:center;padding:.9rem">
     <div style="font-size:1.8rem;font-weight:800;color:var(--primary)">{{ teams_count }}</div>
@@ -53,14 +56,14 @@
 
   <!-- Editor metadati regulation -->
   <div class="card">
-    <div class="card-header"><span class="card-title">⚙️ Metadati Regulation</span></div>
+    <div class="card-header"><span class="card-title">⚙️ {{ t('Metadati Regulation') }}</span></div>
     <div class="card-body">
       <div class="meta-field">
-        <label>Label (nome visualizzato)</label>
-        <input id="meta_label" class="form-control" value="{{ reg.label }}" placeholder="Es. Regulation MB">
+        <label>{{ t('Label (nome visualizzato)') }}</label>
+        <input id="meta_label" class="form-control" value="{{ reg.label }}" placeholder="{{ t('Es. Regulation MB') }}">
       </div>
       <div class="meta-field">
-        <label>Meccaniche disponibili</label>
+        <label>{{ t('Meccaniche disponibili') }}</label>
         <div id="mech_list" style="display:flex;flex-wrap:wrap;gap:.4rem;margin-bottom:.4rem">
           {% for m in reg.mechanics %}
           <span class="mech-tag" data-mech="{{ m }}">{{ m }}<button onclick="removeMech('{{ m }}')">×</button></span>
@@ -73,50 +76,50 @@
             <option value="zmove">zmove</option>
             <option value="dynamax">dynamax</option>
           </select>
-          <button class="btn btn-secondary btn-sm" onclick="addMech()">+ Aggiungi</button>
+          <button class="btn btn-secondary btn-sm" onclick="addMech()">+ {{ t('Aggiungi') }}</button>
         </div>
       </div>
       {% if not reg.filter_file %}
       <div class="meta-field">
-        <label>File JSON Roster</label>
+        <label>{{ t('File JSON Roster') }}</label>
         <div class="file-row">
           <span style="font-size:.7rem;color:var(--text-muted)">Roster</span>
           <input id="meta_roster_file" class="form-control" value="{{ reg.roster_file }}">
           <a id="link_roster" href="/pokemon/roster?reg={{ reg.id }}" class="btn btn-secondary btn-sm">&#9998;</a>
         </div>
         <div class="file-row">
-          <span style="font-size:.7rem;color:var(--text-muted)">Mosse</span>
+          <span style="font-size:.7rem;color:var(--text-muted)">{{ t('Mosse') }}</span>
           <input id="meta_moves_file" class="form-control" value="{{ reg.moves_file }}">
           <a id="link_moves" href="/pokemon/mosse?reg={{ reg.id }}" class="btn btn-secondary btn-sm">&#9998;</a>
         </div>
         <div class="file-row">
-          <span style="font-size:.7rem;color:var(--text-muted)">Oggetti</span>
+          <span style="font-size:.7rem;color:var(--text-muted)">{{ t('Oggetti') }}</span>
           <input id="meta_items_file" class="form-control" value="{{ reg.items_file }}">
           <a id="link_items" href="/pokemon/oggetti?reg={{ reg.id }}" class="btn btn-secondary btn-sm">&#9998;</a>
         </div>
       </div>
       {% endif %}
-      <button class="btn btn-primary" style="width:100%" onclick="saveMeta()">&#128190; Salva Metadati</button>
+      <button class="btn btn-primary" style="width:100%" onclick="saveMeta()">&#128190; {{ t('Salva Metadati') }}</button>
     </div>
   </div>
 
   <!-- File collegati + azioni rapide -->
   <div class="card">
-    <div class="card-header"><span class="card-title">&#128196; Editor Contenuti</span></div>
+    <div class="card-header"><span class="card-title">&#128196; {{ t('Editor Contenuti') }}</span></div>
     <div class="card-body">
       {% if reg.filter_file %}
       <p style="font-size:.82rem;color:var(--text-muted);margin-bottom:1rem">
-        Questa regulation è un <strong>filtro sul catalogo</strong>: qui scegli
-        <strong>quali</strong> voci ne fanno parte. I dati (base stat, potenza,
-        effetti) si modificano nel <a href="/pokemon/catalogo">catalogo</a>.
+        {{ t('Questa regulation è un <strong>filtro sul catalogo</strong>: qui scegli <strong>quali</strong> voci ne fanno parte. I dati (base stat, potenza, effetti) si modificano nel <a href="/pokemon/catalogo">catalogo</a>.')|safe }}
       </p>
+      {# Le quattro etichette passano da t() con una variabile, quindi lo script di
+         controllo non le vede dentro la chiamata: sono dichiarate in `_dinamiche`. #}
       <div style="display:flex;flex-direction:column;gap:.6rem">
-        {% for d, etichetta in [('pokemon','🦢 Pokémon'), ('moves','⚡ Mosse'),
-                                ('items','🎒 Oggetti'), ('abilities','🧬 Abilità')] %}
+        {% for d, icona, etichetta in [('pokemon','🦢','Pokémon'), ('moves','⚡','Mosse'),
+                                       ('items','🎒','Oggetti'), ('abilities','🧬','Abilità')] %}
         <a href="/pokemon/regulation/{{ reg.id }}/contenuto?db={{ d }}" class="btn btn-secondary"
            style="display:flex;align-items:center;gap:.5rem;justify-content:space-between">
-          <span>{{ etichetta }}</span>
-          <span style="font-size:.72rem;opacity:.7">scegli cosa includere →</span>
+          <span>{{ icona }} {{ t(etichetta) }}</span>
+          <span style="font-size:.72rem;opacity:.7">{{ t('scegli cosa includere →') }}</span>
         </a>
         {% endfor %}
       </div>
@@ -126,22 +129,20 @@
       <hr style="margin:1rem 0;border-color:var(--border)">
       <div>
         <p style="font-size:.78rem;color:var(--text-muted);margin-bottom:.5rem">
-          <strong>Copia da un'altra regulation.</strong> Sovrascrive gli elenchi di
-          <strong>{{ reg.label }}</strong> con quelli scelti: comodo per partire da una
-          simile e poi togliere il superfluo.
+          {{ tf('<strong>Copia da un\'altra regulation.</strong> Sovrascrive gli elenchi di <strong>{reg}</strong> con quelli scelti: comodo per partire da una simile e poi togliere il superfluo.', {'reg': reg.label})|safe }}
         </p>
         <div style="display:flex;gap:.5rem;flex-wrap:wrap;align-items:center">
           <select id="copia_sorgente" class="form-control" style="max-width:210px;font-size:.8rem">
             {% for a in altre %}<option value="{{ a.id }}">{{ a.label }}</option>{% endfor %}
           </select>
-          <button class="btn btn-secondary btn-sm" onclick="copiaDa()">📋 Copia contenuti</button>
+          <button class="btn btn-secondary btn-sm" onclick="copiaDa()">📋 {{ t('Copia contenuti') }}</button>
         </div>
         <div style="display:flex;gap:.75rem;flex-wrap:wrap;margin-top:.5rem;font-size:.75rem">
           {% for campo, etichetta in [('pokemon','Pokémon'), ('moves','Mosse'),
                                       ('items','Oggetti'), ('abilities','Abilità'),
                                       ('mega_map','Mega map')] %}
           <label style="display:flex;align-items:center;gap:.25rem">
-            <input type="checkbox" class="copia-campo" value="{{ campo }}" checked> {{ etichetta }}
+            <input type="checkbox" class="copia-campo" value="{{ campo }}" checked> {{ t(etichetta) }}
           </label>
           {% endfor %}
         </div>
@@ -150,20 +151,19 @@
       {% endif %}
       {% else %}
       <p style="font-size:.82rem;color:var(--text-muted);margin-bottom:1rem">
-        Modifica direttamente roster, mosse e oggetti di questa regulation.
-        Ogni editor carica e salva solo i file di <strong>{{ reg.label }}</strong>.
+        {{ tf('Modifica direttamente roster, mosse e oggetti di questa regulation. Ogni editor carica e salva solo i file di <strong>{reg}</strong>.', {'reg': reg.label})|safe }}
       </p>
       <div style="display:flex;flex-direction:column;gap:.6rem">
         <a href="/pokemon/roster?reg={{ reg.id }}" class="btn btn-secondary" style="display:flex;align-items:center;gap:.5rem;justify-content:space-between">
-          <span>🦢 Roster Pok&eacute;mon</span>
+          <span>🦢 {{ t('Roster Pokémon') }}</span>
           <span style="font-size:.72rem;font-family:monospace;opacity:.7">{{ reg.roster_file }}</span>
         </a>
         <a href="/pokemon/mosse?reg={{ reg.id }}" class="btn btn-secondary" style="display:flex;align-items:center;gap:.5rem;justify-content:space-between">
-          <span>⚡ Editor Mosse</span>
+          <span>⚡ {{ t('Editor Mosse') }}</span>
           <span style="font-size:.72rem;font-family:monospace;opacity:.7">{{ reg.moves_file }}</span>
         </a>
         <a href="/pokemon/oggetti?reg={{ reg.id }}" class="btn btn-secondary" style="display:flex;align-items:center;gap:.5rem;justify-content:space-between">
-          <span>🎒 Editor Oggetti</span>
+          <span>🎒 {{ t('Editor Oggetti') }}</span>
           <span style="font-size:.72rem;font-family:monospace;opacity:.7">{{ reg.items_file }}</span>
         </a>
       </div>
@@ -173,8 +173,8 @@
 
       <!-- JSON raw visualizzazione -->
       <div style="margin-bottom:.5rem;display:flex;align-items:center;justify-content:space-between">
-        <span style="font-size:.75rem;font-weight:700;color:var(--text-muted);text-transform:uppercase">JSON Regulation</span>
-        <button class="btn btn-secondary btn-sm" onclick="toggleRawJson()">&#128196; Mostra/Nascondi JSON</button>
+        <span style="font-size:.75rem;font-weight:700;color:var(--text-muted);text-transform:uppercase">{{ t('JSON Regulation') }}</span>
+        <button class="btn btn-secondary btn-sm" onclick="toggleRawJson()">&#128196; {{ t('Mostra/Nascondi JSON') }}</button>
       </div>
       <div id="raw_json_wrap" style="display:none">
         <textarea id="raw_json" class="form-control" rows="8" style="font-family:monospace;font-size:.72rem"
@@ -189,8 +189,8 @@
 {% if roster %}
 <div class="card mb-4">
   <div class="card-header" style="display:flex;align-items:center;justify-content:space-between">
-    <span class="card-title">🦢 Roster ({{ roster_count }} Pok&eacute;mon)</span>
-    <a href="/pokemon/roster?reg={{ reg.id }}" class="btn btn-secondary btn-sm">&#9998; Modifica Roster</a>
+    <span class="card-title">🦢 {{ tf('Roster ({n} Pokémon)', {'n': roster_count}) }}</span>
+    <a href="/pokemon/roster?reg={{ reg.id }}" class="btn btn-secondary btn-sm">&#9998; {{ t('Modifica Roster') }}</a>
   </div>
   <div class="card-body">
     <div style="display:flex;flex-wrap:wrap;gap:.4rem">
@@ -206,28 +206,30 @@
 <!-- Team collegati -->
 <div class="card">
   <div class="card-header" style="display:flex;align-items:center;justify-content:space-between">
-    <span class="card-title">🏆 Team con questa Regulation ({{ teams_count }})</span>
-    <a href="/pokemon/team/new?regulation_id={{ reg.id }}" class="btn btn-primary btn-sm">+ Nuovo Team</a>
+    <span class="card-title">🏆 {{ tf('Team con questa Regulation ({n})', {'n': teams_count}) }}</span>
+    <a href="/pokemon/team/new?regulation_id={{ reg.id }}" class="btn btn-primary btn-sm">+ {{ t('Nuovo Team') }}</a>
   </div>
   <div class="card-body">
     {% if teams %}
+    {# `team` e non `t`: la variabile di ciclo ombrerebbe la funzione t() delle
+       traduzioni per tutto il blocco, e qui dentro ci si traduce. #}
     <div style="display:flex;flex-direction:column;gap:.5rem">
-      {% for t in teams %}
+      {% for team in teams %}
       <div style="display:flex;align-items:center;justify-content:space-between;
                   background:var(--surface-off);border:1px solid var(--border);
                   border-radius:var(--radius-md);padding:.6rem .9rem">
         <div>
-          <span style="font-weight:700;font-size:.9rem">{{ t.name }}</span>
-          <span style="font-size:.72rem;color:var(--text-muted);margin-left:.5rem">{{ t.format }}</span>
-          {% if t.record %}<span style="font-size:.72rem;color:var(--primary);margin-left:.5rem">{{ t.record }}</span>{% endif %}
+          <span style="font-weight:700;font-size:.9rem">{{ team.name }}</span>
+          <span style="font-size:.72rem;color:var(--text-muted);margin-left:.5rem">{{ team.format }}</span>
+          {% if team.record %}<span style="font-size:.72rem;color:var(--primary);margin-left:.5rem">{{ team.record }}</span>{% endif %}
         </div>
-        <a href="/pokemon/team/{{ t.id }}/edit" class="btn btn-secondary btn-sm">&#9998;</a>
+        <a href="/pokemon/team/{{ team.id }}/edit" class="btn btn-secondary btn-sm">&#9998;</a>
       </div>
       {% endfor %}
     </div>
     {% else %}
-    <p style="color:var(--text-muted);font-size:.85rem">Nessun team usa questa regulation.
-      <a href="/pokemon/team/new?regulation_id={{ reg.id }}">Crea il primo →</a>
+    <p style="color:var(--text-muted);font-size:.85rem">{{ t('Nessun team usa questa regulation.') }}
+      <a href="/pokemon/team/new?regulation_id={{ reg.id }}">{{ t('Crea il primo →') }}</a>
     </p>
     {% endif %}
   </div>
@@ -239,11 +241,11 @@
 const REG_ID = "{{ reg.id }}";
 
 function showToast(msg, ok=true) {
-  const t = document.getElementById('toast');
-  t.textContent = msg;
-  t.style.background = ok ? 'var(--primary)' : 'var(--error, #c33)';
-  t.classList.add('show');
-  setTimeout(() => t.classList.remove('show'), 2800);
+  const el = document.getElementById('toast');
+  el.textContent = msg;
+  el.style.background = ok ? 'var(--primary)' : 'var(--error, #c33)';
+  el.classList.add('show');
+  setTimeout(() => el.classList.remove('show'), 2800);
 }
 
 function toggleRawJson() {
@@ -265,7 +267,7 @@ function addMech() {
   const val = sel.value;
   if (!val) return;
   if (document.querySelector(`#mech_list .mech-tag[data-mech="${val}"]`)) {
-    showToast(`Meccanica '${val}' già presente`, false); return;
+    showToast(tf('Meccanica {mech} già presente', {mech: val}), false); return;
   }
   const span = document.createElement('span');
   span.className = 'mech-tag';
@@ -292,13 +294,13 @@ async function saveMeta() {
   const file      = campiFile();
   const mechanics = getMechs();
 
-  if (!label) { showToast('Label obbligatoria', false); return; }
+  if (!label) { showToast(t('Label obbligatoria'), false); return; }
 
   // Carica la lista completa di regulations, aggiorna solo questa
   try {
     const r1 = await fetch('/pokemon/api/regulations');
     const d1 = await r1.json();
-    if (!d1.ok) { showToast('Errore caricamento regulations', false); return; }
+    if (!d1.ok) { showToast(t('Errore caricamento regulations'), false); return; }
 
     const regs = d1.regulations.map(reg =>
       reg.id === REG_ID
@@ -313,7 +315,7 @@ async function saveMeta() {
     });
     const d2 = await r2.json();
     if (d2.ok) {
-      showToast('✅ Metadati salvati!');
+      showToast('✅ ' + t('Metadati salvati!'));
       // Aggiorna anche il JSON raw visualizzato
       const rawEl = document.getElementById('raw_json');
       if (rawEl) {
@@ -327,10 +329,10 @@ async function saveMeta() {
         if (el) el.href = `/pokemon/${rotta}?reg=${REG_ID}`;
       }
     } else {
-      showToast('Errore: ' + d2.error, false);
+      showToast(t('Errore:') + ' ' + d2.error, false);
     }
   } catch(e) {
-    showToast('Errore rete: ' + e, false);
+    showToast(t('Errore rete:') + ' ' + e, false);
   }
 }
 
@@ -345,16 +347,16 @@ async function copiaDa() {
   if (!campi.length) {
     esito.style.display = 'block';
     esito.style.color = 'var(--error,#e05555)';
-    esito.textContent = 'Scegli almeno un elemento da copiare.';
+    esito.textContent = t('Scegli almeno un elemento da copiare.');
     return;
   }
   const etichetta = sel.options[sel.selectedIndex].textContent.trim();
-  if (!confirm('Copiare ' + campi.join(', ') + ' da ' + etichetta
-               + '? Gli elenchi attuali di questa regulation verranno sostituiti.')) return;
+  if (!confirm(tf('Copiare {campi} da {sorgente}? Gli elenchi attuali di questa regulation verranno sostituiti.',
+                  {campi: campi.join(', '), sorgente: etichetta}))) return;
 
   esito.style.display = 'block';
   esito.style.color = 'var(--text-muted)';
-  esito.textContent = 'Copia in corso...';
+  esito.textContent = t('Copia in corso...');
   try {
     const r = await fetch('/pokemon/api/regulation/{{ reg.id }}/copia-da', {
       method: 'POST', headers: {'Content-Type':'application/json'},
@@ -363,16 +365,17 @@ async function copiaDa() {
     const d = await r.json();
     if (!d.ok) {
       esito.style.color = 'var(--error,#e05555)';
-      esito.textContent = 'Errore: ' + d.error;
+      esito.textContent = t('Errore:') + ' ' + d.error;
       return;
     }
     const righe = Object.entries(d.copiati).map(([k, v]) => k + ': ' + v).join(' · ');
     esito.style.color = 'var(--primary)';
-    esito.textContent = 'Copiato da ' + d.sorgente + ' — ' + righe + '. Ricarico...';
+    esito.textContent = tf('Copiato da {sorgente} — {righe}. Ricarico...',
+                           {sorgente: d.sorgente, righe: righe});
     setTimeout(() => window.location.reload(), 900);
   } catch(e) {
     esito.style.color = 'var(--error,#e05555)';
-    esito.textContent = 'Errore rete: ' + e;
+    esito.textContent = t('Errore rete:') + ' ' + e;
   }
 }
 </script>

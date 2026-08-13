@@ -23,24 +23,26 @@
 <div class="page-header">
   <div class="flex items-center justify-between flex-wrap gap-2">
     <div class="flex items-center gap-2">
-      <a href="/pokemon" class="btn btn-secondary btn-sm">&#8592; Indietro</a>
-      <h1>{% if team %}&#9998; {{ team.name }}{% else %}🏆 Nuovo Team{% endif %}</h1>
+      <a href="/pokemon" class="btn btn-secondary btn-sm">&#8592; {{ t('Indietro') }}</a>
+      <h1>{% if team %}&#9998; {{ team.name }}{% else %}🏆 {{ t('Nuovo Team') }}{% endif %}</h1>
     </div>
-    <button type="submit" form="teamForm" class="btn btn-primary btn-sm">&#128190; Salva team</button>
+    <button type="submit" form="teamForm" class="btn btn-primary btn-sm">&#128190; {{ t('Salva team') }}</button>
   </div>
 </div>
 <form method="POST" id="teamForm">
   <div class="card">
-    <div class="card-header"><span class="card-title">Informazioni Team</span></div>
+    <div class="card-header"><span class="card-title">{{ t('Informazioni Team') }}</span></div>
     <div class="card-body">
       <div class="form-row">
-        <div class="form-group"><label>Nome team *</label>
+        <div class="form-group"><label>{{ t('Nome team') }} *</label>
           <input name="team_name" class="form-control" required
-            value="{{ team.name if team else '' }}" placeholder="Es. Rain Team"></div>
-        <div class="form-group"><label>Formato</label>
+            value="{{ team.name if team else '' }}" placeholder="{{ t('Es. Rain Team') }}"></div>
+        <div class="form-group"><label>{{ t('Formato') }}</label>
+          {# Il valore iniziale resta "VGC Reg MA" di proposito: e' testo libero del
+             team, non un'etichetta di sistema. Deciso l'11/08/2026. #}
           <input name="team_format" class="form-control"
             value="{{ team.format if team else 'VGC Reg MA' }}"></div>
-        <div class="form-group"><label>Record (W/L)</label>
+        <div class="form-group"><label>{{ t('Record (W/L)') }}</label>
           <input name="team_record" class="form-control"
             value="{{ team.record if team else '' }}" placeholder="10-5"></div>
         <div class="form-group"><label>Regulation</label>
@@ -49,9 +51,9 @@
           </select>
         </div>
       </div>
-      <div class="form-group"><label>Descrizione</label>
+      <div class="form-group"><label>{{ t('Descrizione') }}</label>
         <textarea name="team_description" class="form-control" rows="2"
-          placeholder="Strategia, lead, matchup...">{{ team.description if team and team.description else '' }}</textarea></div>
+          placeholder="{{ t('Strategia, lead, matchup...') }}">{{ team.description if team and team.description else '' }}</textarea></div>
     </div>
   </div>
 
@@ -74,22 +76,22 @@
       <div style="flex:1;min-width:140px">
         <label style="font-size:.7rem;color:var(--text-muted)">Pok&eacute;mon</label>
         <input list="roster_list" name="pk_{{ i }}" id="pk_{{ i }}" class="form-control"
-          value="{{ m.pokemon if m else '' }}" placeholder="Cerca nel roster..."
+          value="{{ m.pokemon if m else '' }}" placeholder="{{ t('Cerca nel roster...') }}"
           oninput="fetchPkmn({{ i }})">
       </div>
 
       <!-- Meccanica dinamica -->
       <div class="mechanic-wrap" id="mechanic_wrap_{{ i }}">
         <div>
-          <label style="font-size:.7rem;color:var(--text-muted)">Meccanica</label>
+          <label style="font-size:.7rem;color:var(--text-muted)">{{ t('Meccanica') }}</label>
           <select name="mechanic_type_{{ i }}" id="mechanic_type_{{ i }}" class="form-control"
                   onchange="updateMechanicValue({{ i }})" style="min-width:100px">
-            <option value="">&mdash; nessuna &mdash;</option>
+            <option value="">&mdash; {{ t('nessuna') }} &mdash;</option>
             {# Le option vengono popolate via JS in base alla regulation #}
           </select>
         </div>
         <div id="mechanic_value_wrap_{{ i }}" style="display:none">
-          <label style="font-size:.7rem;color:var(--text-muted)" id="mechanic_value_lbl_{{ i }}">Valore</label>
+          <label style="font-size:.7rem;color:var(--text-muted)" id="mechanic_value_lbl_{{ i }}">{{ t('Valore') }}</label>
           <select name="mechanic_value_{{ i }}" id="mechanic_value_{{ i }}" class="form-control" style="min-width:130px">
           </select>
         </div>
@@ -100,7 +102,7 @@
     </div>
 
     <div class="form-row">
-      <div class="form-group"><label>Natura</label>
+      <div class="form-group"><label>{{ t('Natura') }}</label>
         <select name="nature_{{ i }}" class="form-control">
           <option value="">&mdash;</option>
           {% for n in natures %}
@@ -108,9 +110,9 @@
             {{ n }}{% if n in nature_effects %} ({{ nature_effects[n][0] }} {{ nature_effects[n][1] }}){% endif %}
           </option>{% endfor %}
         </select></div>
-      <div class="form-group"><label>Abilit&agrave;</label>
+      <div class="form-group"><label>{{ t('Abilità') }}</label>
         <input list="ab_list_{{ i }}" name="ability_{{ i }}" class="form-control"
-          value="{{ m.ability if m else '' }}" placeholder="Abilit&agrave;...">
+          value="{{ m.ability if m else '' }}" placeholder="{{ t('Abilità') }}...">
         <datalist id="ab_list_{{ i }}"></datalist></div>
       <div class="form-group"><label>Held Item</label>
         <input name="item_{{ i }}" class="form-control" list="item_list_{{ i }}"
@@ -122,9 +124,9 @@
 
     <div class="form-row mb-2">
       {% for mv in range(1,5) %}
-      <div class="form-group mb-0"><label>Mossa {{ mv }}</label>
+      <div class="form-group mb-0"><label>{{ tf('Mossa {n}', {'n': mv}) }}</label>
         <input list="mv_list_{{ i }}" name="move{{ mv }}_{{ i }}" class="form-control"
-          value="{{ m['move'~mv] if m and m['move'~mv] else '' }}" placeholder="Mossa {{ mv }}...">
+          value="{{ m['move'~mv] if m and m['move'~mv] else '' }}" placeholder="{{ tf('Mossa {n}', {'n': mv}) }}...">
       </div>{% endfor %}
       <datalist id="mv_list_{{ i }}"></datalist>
     </div>
@@ -132,8 +134,8 @@
 
     <div>
       <div class="text-xs font-700 text-muted mb-1" style="text-transform:uppercase">
-        SP (Stat Points) <span class="ev-sum" id="ev_sum_{{ i }}">0/66</span>
-        <span style="font-size:.6rem;font-weight:400;margin-left:.4rem">max 32 per stat &middot; 66 totali</span>
+        {{ t('SP (Stat Points)') }} <span class="ev-sum" id="ev_sum_{{ i }}">0/66</span>
+        <span style="font-size:.6rem;font-weight:400;margin-left:.4rem">{{ t('max 32 per stat · 66 totali') }}</span>
       </div>
       <div class="ev-grid">
         {% for stat in ['hp','atk','def','spatk','spdef','spe'] %}
@@ -154,8 +156,8 @@
   </datalist>
 
   <div class="flex gap-2 mb-4">
-    <button type="submit" class="btn btn-primary">&#128190; Salva team</button>
-    <a href="/pokemon" class="btn btn-secondary">Annulla</a>
+    <button type="submit" class="btn btn-primary">&#128190; {{ t('Salva team') }}</button>
+    <a href="/pokemon" class="btn btn-secondary">{{ t('Annulla') }}</a>
   </div>
 </form>
 
@@ -170,9 +172,13 @@ let CURRENT_MECHANICS = [];
 
 // Etichette e valori per tipo meccanica
 const MECHANIC_LABELS = {
-  mega: 'Mega Stone',
-  tera: 'Tera Type'
+  mega: t('Mega Stone'),
+  tera: t('Tera Type')
 };
+// ⚠️ NON si traducono. Le <option> costruite qui sotto non hanno un attributo
+// `value`, quindi il testo **e' il valore** che finisce in `mechanic_value` nel DB:
+// tradurlo cambierebbe i dati dei team gia' salvati. Stessa regola dei datalist di
+// mosse e oggetti, che portano le chiavi del catalogo e non i nomi tradotti.
 const TERA_TYPES = ['Normal','Fire','Water','Electric','Grass','Ice','Fighting',
   'Poison','Ground','Flying','Psychic','Bug','Rock','Ghost','Dragon','Dark','Steel','Fairy'];
 
@@ -278,12 +284,16 @@ function scriviMosse(slot, legali, nome) {
   const reg = document.getElementById('regulation_id').value;
   if (!nome) { nota.style.display = 'none'; return; }
   nota.style.display = 'block';
+  // Le due frasi sono le stesse del tab Danno del calcolatore: stessa chiave nel
+  // dizionario, quindi si traducono in un posto solo.
   if (legali) {
     nota.style.color = 'var(--text-muted, #888)';
-    nota.textContent = elenco.length + ' mosse di ' + nome + ' in ' + reg;
+    nota.textContent = tf('{n} mosse di {pkmn} in {reg}',
+                          {n: elenco.length, pkmn: nome, reg: reg});
   } else {
     nota.style.color = 'var(--warning, #d90)';
-    nota.textContent = '⚠️ Nessun elenco mosse per ' + nome + ' in ' + reg + ': sono mostrate tutte';
+    nota.textContent = tf('⚠️ Nessun elenco mosse per {pkmn} in {reg}: sono mostrate tutte',
+                          {pkmn: nome, reg: reg});
   }
 }
 
@@ -292,7 +302,7 @@ function updateMechanicOptions(slot) {
   const sel = document.getElementById('mechanic_type_' + slot);
   if (!sel) return;
   const savedType = document.getElementById('saved_mtype_' + slot).value;
-  sel.innerHTML = '<option value="">&mdash; nessuna &mdash;</option>' +
+  sel.innerHTML = '<option value="">&mdash; ' + t('nessuna') + ' &mdash;</option>' +
     CURRENT_MECHANICS.map(m =>
       `<option value="${m}" ${m === savedType ? 'selected' : ''}>${MECHANIC_LABELS[m] || m}</option>`
     ).join('');
@@ -316,7 +326,7 @@ function updateMechanicValue(slot) {
   }
 
   wrapEl.style.display = '';
-  lblEl.textContent = MECHANIC_LABELS[mtype] || 'Valore';
+  lblEl.textContent = MECHANIC_LABELS[mtype] || t('Valore');
 
   if (mtype === 'mega') {
     const pkName = document.getElementById('pk_' + slot).value.trim();
@@ -324,8 +334,9 @@ function updateMechanicValue(slot) {
     valEl.innerHTML = '<option value="">&mdash;</option>' +
       megas.map(mg => `<option ${mg === savedValue ? 'selected' : ''}>${mg}</option>`).join('');
   } else if (mtype === 'tera') {
+    // `tp` e non `t`: la variabile di ciclo ombrerebbe la funzione t().
     valEl.innerHTML = '<option value="">&mdash;</option>' +
-      TERA_TYPES.map(t => `<option ${t === savedValue ? 'selected' : ''}>${t}</option>`).join('');
+      TERA_TYPES.map(tp => `<option ${tp === savedValue ? 'selected' : ''}>${tp}</option>`).join('');
   } else {
     // Meccanica generica futura: campo testo libero convertito in select con un'unica opzione
     valEl.innerHTML = `<option value="${savedValue}">${savedValue || '—'}</option>`;
