@@ -1,5 +1,5 @@
 <!DOCTYPE html>
-<html lang="it" data-theme="dark">
+<html lang="{{ lang }}" data-theme="dark">
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width,initial-scale=1">
@@ -130,6 +130,29 @@ textarea.form-control{resize:vertical;min-height:70px}
   #content{padding:.85rem}
 }
 </style>
+{# ⚠️ `t()` e `tf()` stanno nel <head>, e devono restarci.
+   Servono ai pezzi di interfaccia che il browser costruisce da solo — le tabelle
+   degli editor, i messaggi del calcolatore — e piu' di un template le chiama
+   **durante il parsing**, non dentro un evento: moves_editor.html chiude il suo
+   script con renderTable(). Stando in fondo alla pagina come prima, quella chiamata
+   trovava `tf is not defined` e la tabella restava vuota **senza dire niente**,
+   perche' l'eccezione muore nello script della pagina. Definirle qui vuol dire che
+   esistono prima di qualunque script di un figlio.
+   In italiano il dizionario e' `{}` e t() torna la frase com'e': la chiave **e' la
+   frase italiana**. #}
+<script>
+window.T={{ traduzioni_json|safe }};
+window.LANG='{{ lang }}';
+function t(s){return (window.T && window.T[s]) || s;}
+// Per le frasi con dei numeri dentro: la frase resta **intera** nel dizionario, con
+// i segnaposto {cosi}, cosi' l'inglese puo' mettere le parole in un altro ordine.
+// Spezzarla in pezzi da concatenare renderebbe impossibile tradurla bene.
+function tf(s, valori){
+  let out = t(s);
+  for (const k in valori) out = out.split('{' + k + '}').join(valori[k]);
+  return out;
+}
+</script>
 {# extra_head sta FUORI dallo <style>: i template ci mettono <style> o <link> propri.
    Prima era dentro, quindi il primo </style> del template figlio chiudeva questo
    elemento e il </style> qui sotto restava orfano: funzionava per caso col CSS, e
@@ -146,8 +169,8 @@ textarea.form-control{resize:vertical;min-height:70px}
     Personal Hub
   </div>
   <div style="padding:.5rem .4rem .2rem">
-    <div class="sidebar-section">Menu</div>
-    <a href="/" class="nav-item {% if request.endpoint=='dashboard' %}active{% endif %}"><em>📊</em> Dashboard</a>
+    <div class="sidebar-section">{{ t('Menu') }}</div>
+    <a href="/" class="nav-item {% if request.endpoint=='dashboard' %}active{% endif %}"><em>📊</em> {{ t('Dashboard') }}</a>
     {# Solo le sezioni permesse. `sezioni_permesse` arriva dal context processor in
        app.py, lo stesso elenco che usa il controllo delle richieste: mostrare qui una
        voce che poi risponde "non permesso" sarebbe peggio che non mostrarla. #}
@@ -167,10 +190,10 @@ textarea.form-control{resize:vertical;min-height:70px}
     <a href="/pcbuilder" class="nav-item {% if request.endpoint and 'pcbuilder' in request.endpoint %}active{% endif %}"><em>🖥️</em> PC Builder</a>
     {% endif %}
 
-<div class="sidebar-section" style="margin-top:.6rem">Tools</div>
-<a href="/export" class="nav-item"><em>💾</em> Esporta JSON</a>
+<div class="sidebar-section" style="margin-top:.6rem">{{ t('Strumenti') }}</div>
+<a href="/export" class="nav-item"><em>💾</em> {{ t('Esporta JSON') }}</a>
 {% if e_admin %}
-<a href="/admin/utenti" class="nav-item {% if request.blueprint=='admin' %}active{% endif %}"><em>👥</em> Utenti</a>
+<a href="/admin/utenti" class="nav-item {% if request.blueprint=='admin' %}active{% endif %}"><em>👥</em> {{ t('Utenti') }}</a>
 {% endif %}
   </div>
   <div class="sidebar-bottom">
@@ -178,7 +201,7 @@ textarea.form-control{resize:vertical;min-height:70px}
       <div class="avatar">{{ session.get('display_name','?')[0]|upper }}</div>
       <span>{{ session.get('display_name','') }}</span>
     </div>
-    <a href="/logout" class="btn-icon" title="Logout">
+    <a href="/logout" class="btn-icon" title="{{ t('Logout') }}">
       <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2">
         <path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4"/>
         <polyline points="16 17 21 12 16 7"/><line x1="21" y1="12" x2="9" y2="12"/>
@@ -197,11 +220,12 @@ textarea.form-control{resize:vertical;min-height:70px}
       <span class="topbar-title">{% block topbar_title %}{% endblock %}</span>
     </div>
     <div class="topbar-actions">
-      {# Il pulsante traduce **solo i nomi dei dati Pokémon**: fuori da /pokemon/*
-         non farebbe niente, quindi non si mostra invece di promettere il falso.
+      {# Il pulsante sta su **tutte** le pagine dal 13/08/2026, per decisione di Davide.
+         Prima compariva solo sotto /pokemon/* perche' li' cambiava solo i nomi dei
+         dati; ora traduce anche l'interfaccia, e tenerlo confinato avrebbe lasciato
+         chi mette EN e poi va su Gaming **senza un modo per tornare indietro**.
          Bandiera della lingua **attiva**, disegnata inline: le emoji bandiera su
          Windows non vengono renderizzate come tali e si leggerebbero "IT"/"GB". #}
-      {% if request.path.startswith('/pokemon') %}
       <button class="btn-icon" onclick="toggleLingua()" id="langBtn" data-lang="{{ lang }}"
               title="{% if lang == 'it' %}Switch to English{% else %}Passa all'italiano{% endif %}"
               style="padding:0 .35rem">
@@ -221,8 +245,7 @@ textarea.form-control{resize:vertical;min-height:70px}
         </svg>
         {% endif %}
       </button>
-      {% endif %}
-      <button class="btn-icon" onclick="toggleTheme()" id="themeBtn" title="Cambia tema">
+      <button class="btn-icon" onclick="toggleTheme()" id="themeBtn" title="{{ t('Cambia tema') }}">
         <svg id="themeIcon" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
           <path d="M21 12.79A9 9 0 1 1 11.21 3 7 7 0 0 0 21 12.79z"/>
         </svg>
@@ -239,30 +262,19 @@ textarea.form-control{resize:vertical;min-height:70px}
   {% endwith %}
 </div>
 <script>
-// Le stesse traduzioni che usa Jinja con t(), per i pezzi di interfaccia che il
-// browser costruisce da solo: le tabelle degli editor, i messaggi del calcolatore.
-// In italiano l'oggetto e' vuoto e t() torna la frase com'e', perche' la chiave
-// del dizionario **e' la frase italiana**.
-window.T={{ traduzioni_json|safe }};
-window.LANG='{{ lang }}';
-function t(s){return (window.T && window.T[s]) || s;}
-// Per le frasi con dei numeri dentro: la frase resta **intera** nel dizionario, con
-// i segnaposto {cosi}, cosi' l'inglese puo' mettere le parole in un altro ordine.
-// Spezzarla in pezzi da concatenare renderebbe impossibile tradurla bene.
-function tf(s, valori){
-  let out = t(s);
-  for (const k in valori) out = out.split('{' + k + '}').join(valori[k]);
-  return out;
-}
+{# `t` e `tf` sono definite nel <head>, non qui: vedi il commento la' sopra. #}
 const html=document.documentElement;
 const saved=localStorage.getItem('hub_theme')||'dark';
 html.setAttribute('data-theme',saved);updateThemeIcon(saved);
+// ⚠️ `tema` e non `t`: la variabile ombrava la funzione t() delle traduzioni dentro
+// queste due funzioni. Oggi non fa danno perche' non ci si traduce niente, ma e' la
+// stessa trappola dei `{% raw %}{% for t in … %}{% endraw %}` negli editor, e qui t() e' globale.
 function toggleTheme(){
-  const t=html.getAttribute('data-theme')==='dark'?'light':'dark';
-  html.setAttribute('data-theme',t);localStorage.setItem('hub_theme',t);updateThemeIcon(t);
+  const tema=html.getAttribute('data-theme')==='dark'?'light':'dark';
+  html.setAttribute('data-theme',tema);localStorage.setItem('hub_theme',tema);updateThemeIcon(tema);
 }
-function updateThemeIcon(t){
-  document.getElementById('themeIcon').innerHTML=t==='dark'
+function updateThemeIcon(tema){
+  document.getElementById('themeIcon').innerHTML=tema==='dark'
     ?'<path d="M21 12.79A9 9 0 1 1 11.21 3 7 7 0 0 0 21 12.79z"/>'
     :'<circle cx="12" cy="12" r="5"/><path d="M12 1v2M12 21v2M4.22 4.22l1.42 1.42M18.36 18.36l1.42 1.42M1 12h2M21 12h2M4.22 19.78l1.42-1.42M18.36 5.64l1.42-1.42"/>';
 }

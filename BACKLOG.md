@@ -35,6 +35,8 @@ Non sono storia: sono le cose che questo progetto ha già pagato e che tornano a
 | **`t` come variabile** | `{% for t in … %}` in `moves_editor.html:97,153` e `regulation_editor.html:215` **ombrerebbe la funzione `t()`** delle traduzioni. Vanno rinominate quando si traducono quei due file |
 | **`|tojson` negli attributi** | `|tojson` rende `"pokedex"` **con le doppie**: dentro un attributo delimitato dalle doppie, l'attributo si chiude a metà. Usare gli apici singoli. ⚠️ Trappola già pagata due volte — il 12/08 e di nuovo il 13/08, ripresa dallo sweep entrambe le volte |
 | **Commenti e traduzioni** | `controlla_traduzioni.py` legge il **file grezzo**, commenti Jinja compresi: una chiamata a `t()` citata come esempio dentro un `{# … #}` viene contata fra le stringhe chieste dal codice e chiede una traduzione che non serve a nessuno. Nei commenti si descrive, non si cita la sintassi |
+| ⚠️ **Lo sweep statico non basta** | `new Function()` su script e handler dice che la **sintassi** è valida, **non** che il codice giri. Il 13/08 la tabella dell'editor mosse è rimasta **vuota** con lo sweep a zero errori: `renderTable()` lanciava `tf is not defined` a runtime. Ogni giro di verifica va chiuso **caricando davvero** le pagine e contando le righe che compaiono — 919 mosse, 1343 tag del roster, 397 oggetti, 386 abilità. Una tabella vuota non dà errore a schermo |
+| **`t`/`tf` e l'ordine degli script** | Sono definite in un `<script>` nel **`<head>`** di `base.html`, e devono restarci. Più di un template le chiama **durante il parsing** e non dentro un evento (`moves_editor.html` chiude il suo script con `renderTable()`): con la definizione in fondo alla pagina, come era fino al 13/08, quella chiamata non le trova |
 | **Default del DB** | `extensions.py:143` crea la colonna con `regulation_id TEXT DEFAULT 'ma'`. Non è un residuo dei 14 letterali tolti l'11/08: è il default del **DB**, e cambiarlo richiede una migrazione. Oggi non fa danno perché `_team_upsert()` passa sempre un valore esplicito |
 
 ---
@@ -283,25 +285,33 @@ riceve in `window.T`. ⚠️ Il prezzo, dichiarato: **cambiare una parola italia
 template stacca la traduzione in silenzio** — per questo esiste
 `python scripts/controlla_traduzioni.py`, che elenca mancanti, vuote e orfane.
 
-**Fatti 5 template su 12** — `pokemon.html` (16), `regulation_content.html` (15),
+**Fatti 7 template su 12** — `pokemon.html` (16), `regulation_content.html` (15),
 `catalog_editor.html` (23) il 12/08; **`calcolatori.html` (142) più i 7 moduli
-`static/js/calcolatori-*.js`, e `moves_editor.html` (52) il 13/08**. Il dizionario è a
-**252 chiavi su 252 chieste**, zero mancanti e zero orfane.
+`static/js/calcolatori-*.js`, `moves_editor.html` (52), `base.html` e
+`roster_editor.html` (26) il 13/08**. Il dizionario è a **281 chiavi su 281 chieste**,
+zero mancanti e zero orfane.
 
-⬜ **Restano 7 template**: `abilities_editor` (47), `items_editor` (43),
-`regulation_editor` (42), `regulations_list` (33), `roster_editor` (26), `base.html` (14)
-e **`team_form.html`**.
+⬜ **Restano 5 template**: `abilities_editor` (47), `items_editor` (43),
+`regulation_editor` (42), `regulations_list` (33) e **`team_form.html`**.
 
 > ⚠️ **`team_form.html` non era nel censimento delle 453 stringhe** del 12/08: è un buco
 > del conteggio, non una scelta. È il team builder, 345 righe, e sta sotto `/pokemon/*`
 > come le altre. Va tradotto con le altre.
 
-⬜ **La decisione ancora aperta: la shell.** `base.html` (sidebar, «Esporta JSON»,
-«Utenti», «Cambia tema») non è tradotta perché il pulsante lingua compare solo sotto
-`/pokemon/*`: tradurre la sidebar mostrerebbe l'inglese anche su Gaming e Arduino **senza
-un modo per tornare indietro** da lì. O si lascia così, o **il pulsante torna su tutte le
-pagine** — chiesto a Davide il 13/08/2026, non ancora deciso. Finché non lo è,
-`base.html` resta fuori.
+✅ **La shell è tradotta e il pulsante lingua sta su tutte le pagine**, deciso da Davide
+il 13/08/2026. Era la scelta obbligata una volta che si traduce l'interfaccia e non solo
+i nomi dei dati: confinare il pulsante sotto `/pokemon/*` avrebbe lasciato chi mette EN e
+poi va su Gaming **senza un modo per tornare indietro**. Tradotte sidebar, «Esporta
+JSON», «Utenti», «Cambia tema», e `<html lang>` ora segue la lingua attiva.
+
+### ⬜ Conseguenza aperta: le sezioni non-Pokémon
+
+Con la shell in inglese e il pulsante ovunque, **Gaming, Arduino, PC Builder, Python, la
+Dashboard, il login e la gestione utenti mostrano contenuto italiano sotto una shell
+inglese**. Non è una regressione — prima quelle pagine l'inglese non lo vedevano affatto
+— ma è un lavoro che prima non esisteva e ora sì, ed è più grande del blocco Pokémon:
+`steam_import` (303 righe), `pcbuilder` (267), `game_form` (194), `gaming` (144),
+`arduino` (128), `dashboard` (122), `admin_utenti` (100), `python` (71), `login` (60).
 
 ✅ **Il plurale `1 team salvati` è chiuso**, e non è servito insegnare i plurali a `tf()`:
 la frase italiana è stata riscritta in una forma che non si flette — `Team salvati: {n}`

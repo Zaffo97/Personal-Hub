@@ -1,5 +1,5 @@
 {% extends "base.html" %}
-{% block title %}Roster Editor – Hub{% endblock %}
+{% block title %}{{ t('Roster Editor') }} – Hub{% endblock %}
 {% block topbar_title %}📋 Roster — {{ current_reg.label }}{% endblock %}
 {% block extra_head %}
 <style>
@@ -18,10 +18,10 @@ textarea.code-area{min-height:300px}
 {% block content %}
 <div class="page-header">
   <div class="flex items-center gap-2">
-    <a href="/pokemon" class="btn btn-secondary btn-sm">← Indietro</a>
+    <a href="/pokemon" class="btn btn-secondary btn-sm">← {{ t('Indietro') }}</a>
     <div>
-      <h1>📋 Roster — Editor</h1>
-      <p class="text-muted text-sm">Aggiorna la lista Pokémon e le Mega Evoluzioni senza toccare il codice</p>
+      <h1>📋 {{ t('Roster — Editor') }}</h1>
+      <p class="text-muted text-sm">{{ t('Aggiorna la lista Pokémon e le Mega Evoluzioni senza toccare il codice') }}</p>
     </div>
     <select onchange="location.href='/pokemon/roster?reg='+this.value"
             class="form-control" style="max-width:200px;font-size:.82rem">
@@ -34,8 +34,8 @@ textarea.code-area{min-height:300px}
 
 {% if current_reg %}
 <div style="font-size:.75rem;color:var(--text-muted);margin-bottom:.5rem">
-  Stai modificando: <strong>{{ current_reg.label }}</strong>
-  <a href="/pokemon/regulation/{{ current_reg.id }}" style="margin-left:.5rem">← torna alla regulation</a>
+  {{ t('Stai modificando:') }} <strong>{{ current_reg.label }}</strong>
+  <a href="/pokemon/regulation/{{ current_reg.id }}" style="margin-left:.5rem">← {{ t('torna alla regulation') }}</a>
 </div>
 {% endif %}
 
@@ -47,9 +47,9 @@ textarea.code-area{min-height:300px}
   <div>
     <div class="card">
       <div class="card-header">
-        <span class="card-title">🦁 Pokémon nel Roster ({{ roster_data.pokemon|length }})</span>
+        <span class="card-title">🦁 {{ tf('Pokémon nel Roster ({n})', {'n': roster_data.pokemon|length}) }}</span>
         <div class="flex gap-1">
-          <input id="addInput" class="form-control" style="max-width:160px" placeholder="Es. Pikachu"
+          <input id="addInput" class="form-control" style="max-width:160px" placeholder="{{ t('Es. Pikachu') }}"
                  onkeydown="if(event.key==='Enter'){event.preventDefault();addPkmn()}">
           <button id="addBtn" class="btn btn-primary btn-sm" onclick="addPkmn()">+</button>
         </div>
@@ -59,7 +59,7 @@ textarea.code-area{min-height:300px}
         <div class="tag-list" id="pkmnTags">
           {% for pk in roster_data.pokemon|sort %}
           <span class="tag" data-name="{{ pk }}">
-            {{ pk }}<button onclick="removeTag(this)" title="Rimuovi">✕</button>
+            {{ pk }}<button onclick="removeTag(this)" title="{{ t('Rimuovi') }}">✕</button>
           </span>
           {% endfor %}
         </div>
@@ -68,10 +68,10 @@ textarea.code-area{min-height:300px}
 
     <div class="card mt-2">
       <div class="card-header">
-        <span class="card-title">✨ Mega Evoluzioni ({{ roster_data.mega_map|length }} Pokémon)</span>
+        <span class="card-title">✨ {{ tf('Mega Evoluzioni ({n} Pokémon)', {'n': roster_data.mega_map|length}) }}</span>
       </div>
       <div class="card-body">
-        <p class="text-xs text-muted mb-2">Modifica direttamente nel JSON a destra.</p>
+        <p class="text-xs text-muted mb-2">{{ t('Modifica direttamente nel JSON a destra.') }}</p>
         <div style="max-height:200px;overflow-y:auto">
         {% for pk, megas in roster_data.mega_map.items()|sort %}
         <div style="display:flex;align-items:center;gap:.5rem;padding:.25rem 0;
@@ -89,34 +89,34 @@ textarea.code-area{min-height:300px}
     <div class="card mt-2">
       <div class="card-body">
         <div class="text-sm">
-          <div><strong>Regolamento:</strong> {{ roster_data.regulation }}</div>
-          <div><strong>Aggiornato:</strong> {{ roster_data.last_updated }}</div>
-          <div class="mt-1"><strong>File:</strong> <code style="font-size:.72rem">data/roster_ma.json</code></div>
+          <div><strong>{{ t('Regolamento:') }}</strong> {{ roster_data.regulation }}</div>
+          <div><strong>{{ t('Aggiornato:') }}</strong> {{ roster_data.last_updated }}</div>
+          <div class="mt-1"><strong>{{ t('File:') }}</strong> <code style="font-size:.72rem">data/roster_ma.json</code></div>
         </div>
         <p class="text-xs text-muted mt-2" style="line-height:1.6">
-          💡 Puoi anche modificare direttamente il file <code>data/roster_ma.json</code>
-          con qualsiasi editor di testo e riavviare Flask.
+          💡 {{ t('Puoi anche modificare direttamente il file <code>data/roster_ma.json</code> con qualsiasi editor di testo e riavviare Flask.')|safe }}
         </p>
       </div>
     </div>
 
     <div class="card mt-2">
       <div class="card-header">
-        <span class="card-title">Archivio Regulation</span>
+        <span class="card-title">{{ t('Archivio Regulation') }}</span>
       </div>
       <div class="card-body">
         <p class="text-xs text-muted mb-2">
-          Prima di cambiare regulation, archivia il roster corrente.
-          Potrai ripristinarlo in futuro con un click.
+          {{ t('Prima di cambiare regulation, archivia il roster corrente. Potrai ripristinarlo in futuro con un click.') }}
         </p>
+        {# Attributo ad apici singoli e `|tojson` per il valore: dentro un attributo a
+           doppie il valore, che le doppie ce le ha, chiuderebbe l'attributo a meta'. #}
         <form method="POST" action="/pokemon/roster/archive"
-              onsubmit="return confirm('Archivia roster corrente ({{ roster_data.regulation }})?')"
+              onsubmit='return confirm(tf("Archivia roster corrente ({reg})?", {reg: {{ roster_data.regulation|tojson }}}))'
               style="margin-bottom:.5rem">
-          <button type="submit" class="btn btn-secondary btn-sm">Archivia Roster Corrente</button>
+          <button type="submit" class="btn btn-secondary btn-sm">{{ t('Archivia Roster Corrente') }}</button>
         </form>
         <div>
           <button class="btn btn-sm" style="font-size:.72rem" onclick="loadArchives()">
-            Vedi archivi salvati
+            {{ t('Vedi archivi salvati') }}
           </button>
           <div id="archives_list" style="margin-top:.5rem"></div>
         </div>
@@ -128,10 +128,10 @@ textarea.code-area{min-height:300px}
   <div>
     <div class="card">
       <div class="card-header">
-        <span class="card-title">📄 JSON raw</span>
+        <span class="card-title">📄 {{ t('JSON raw') }}</span>
         <div class="flex gap-1">
-          <button class="btn btn-secondary btn-sm" onclick="syncTagsToJson()">↺ Sync da UI</button>
-          <button class="btn btn-secondary btn-sm" onclick="formatJson()">✦ Formatta</button>
+          <button class="btn btn-secondary btn-sm" onclick="syncTagsToJson()">↺ {{ t('Sync da UI') }}</button>
+          <button class="btn btn-secondary btn-sm" onclick="formatJson()">✦ {{ t('Formatta') }}</button>
         </div>
       </div>
       <div class="card-body">
@@ -139,9 +139,9 @@ textarea.code-area{min-height:300px}
           <textarea name="roster_json" id="rosterJson" class="form-control code-area">{{ roster_json }}</textarea>
           <div class="flex gap-2 mt-2">
             <button type="submit" class="btn btn-primary" onclick="syncTagsToJson()">
-              💾 Salva e ricarica roster
+              💾 {{ t('Salva e ricarica roster') }}
             </button>
-            <button type="button" class="btn btn-secondary" onclick="resetJson()">↩ Ripristina</button>
+            <button type="button" class="btn btn-secondary" onclick="resetJson()">↩ {{ t('Ripristina') }}</button>
           </div>
         </form>
       </div>
@@ -170,7 +170,7 @@ async function addPkmn() {
   const name = inp.value.trim();
   if (!name) return;
   if (document.querySelector('.tag[data-name="' + name + '"]')) {
-    showMsg(name + ' \u00e8 gi\u00e0 nel roster.', 'warning');
+    showMsg(tf('{nome} è già nel roster.', {nome: name}), 'warning');
     inp.value = ''; return;
   }
   const btn = document.getElementById('addBtn');
@@ -178,22 +178,35 @@ async function addPkmn() {
   showMsg('', '');
   try {
     const res = await fetch('/api/pokemon/' + encodeURIComponent(name));
-    if (!res.ok) throw new Error('"' + name + '" non trovato su PokeAPI. Controlla il nome esatto (in inglese).');
+    if (!res.ok) throw new Error(tf('"{nome}" non trovato su PokeAPI. Controlla il nome esatto (in inglese).', {nome: name}));
     const d = await res.json();
     const tag = document.createElement('span');
     tag.className = 'tag'; tag.dataset.name = name;
-    const types = (d.types || []).join('/');
-    if (types) tag.title = 'Tipi: ' + types;
-    tag.innerHTML = name + ' <button onclick="removeTag(this)" title="Rimuovi">\u2715</button>';
+    const types = (d.types || []).map(tipoVisRoster).join('/');
+    if (types) tag.title = t('Tipi:') + ' ' + types;
+    tag.innerHTML = name + ' <button onclick="removeTag(this)" title="' + t('Rimuovi') + '">✕</button>';
     document.getElementById('pkmnTags').appendChild(tag);
     inp.value = '';
     syncTagsToJson();
-    showMsg('\u2705 ' + name + ' aggiunto' + (types ? ' (' + types + ')' : '') + '.', 'success');
+    showMsg('✅ ' + tf('{nome} aggiunto', {nome: name}) + (types ? ' (' + types + ')' : '') + '.', 'success');
   } catch(e) {
-    showMsg('\u274c ' + e.message, 'error');
+    showMsg('❌ ' + e.message, 'error');
   } finally {
     btn.textContent = '+'; btn.disabled = false;
   }
+}
+
+// Qui non c'e' calcolatori-core.js, quindi niente tipoVis(): i tipi arrivano da
+// /api/pokemon in inglese e vanno mostrati nella lingua attiva. In inglese sono
+// gia' giusti cosi' come sono; in italiano si passa dal dizionario, che ha i 18
+// tipi con la **chiave italiana**, quindi serve prima la mappa EN -> IT.
+const TIPI_EN_IT = {normal:'Normale',fire:'Fuoco',water:'Acqua',electric:'Elettro',
+  grass:'Erba',ice:'Ghiaccio',fighting:'Lotta',poison:'Veleno',ground:'Terra',
+  flying:'Volante',psychic:'Psico',bug:'Coleottero',rock:'Roccia',ghost:'Spettro',
+  dragon:'Drago',dark:'Buio',steel:'Acciaio',fairy:'Folletto'};
+function tipoVisRoster(tipo){
+  const it = TIPI_EN_IT[String(tipo).toLowerCase()] || tipo;
+  return t(it);
 }
 
 function removeTag(btn) {
@@ -202,7 +215,7 @@ function removeTag(btn) {
 }
 
 function syncTagsToJson() {
-  const tags = [...document.querySelectorAll('.tag')].map(t => t.dataset.name);
+  const tags = [...document.querySelectorAll('.tag')].map(el => el.dataset.name);
   try {
     const data = JSON.parse(document.getElementById('rosterJson').value);
     data.pokemon = tags;
@@ -214,22 +227,22 @@ function formatJson() {
   try {
     const data = JSON.parse(document.getElementById('rosterJson').value);
     document.getElementById('rosterJson').value = JSON.stringify(data, null, 2);
-  } catch(e) { alert('JSON non valido: ' + e.message); }
+  } catch(e) { alert(t('JSON non valido:') + ' ' + e.message); }
 }
 
 function resetJson() {
-  if (confirm('Ripristinare il JSON originale?'))
+  if (confirm(t('Ripristinare il JSON originale?')))
     document.getElementById('rosterJson').value = originalJson;
 }
 
 async function loadArchives() {
   const el = document.getElementById('archives_list');
-  el.innerHTML = '<span class="text-xs text-muted">Caricamento...</span>';
+  el.innerHTML = '<span class="text-xs text-muted">' + t('Caricamento...') + '</span>';
   try {
     const res = await fetch('/pokemon/roster/archives');
     const data = await res.json();
     if (!data.length) {
-      el.innerHTML = '<p class="text-xs text-muted mt-1">Nessun archivio salvato.</p>';
+      el.innerHTML = '<p class="text-xs text-muted mt-1">' + t('Nessun archivio salvato.') + '</p>';
       return;
     }
     el.innerHTML = data.map(function(a) {
@@ -242,16 +255,17 @@ async function loadArchives() {
         + '<code style="font-size:.62rem;display:block;color:var(--text-faint)">' + a.filename + '</code>'
         + '</div>'
         + '<form method="POST" action="/pokemon/roster/restore/' + encodeURIComponent(a.filename) + '"'
-        // Niente apostrofi in questa stringa: finisce dentro un attributo
-        // onsubmit delimitato da ', quindi l'apostrofo chiudeva la stringa del
-        // confirm. L'handler era un SyntaxError, form.onsubmit restava null e
-        // "Ripristina" sovrascriveva il roster senza chiedere conferma.
-        + ' onsubmit="return confirm(\'Ripristinare ' + a.regulation + '? Il roster corrente verra sovrascritto e salvato come backup.\')">'
-        + '<button type="submit" class="btn btn-secondary btn-sm" style="font-size:.7rem">Ripristina</button>'
+        // ⚠️ Niente apostrofi nella frase del confirm, in NESSUNA delle due lingue:
+        // finisce dentro un attributo onsubmit delimitato da ', quindi un apostrofo
+        // chiuderebbe la stringa. L'handler diventerebbe un SyntaxError, form.onsubmit
+        // resterebbe null e "Ripristina" sovrascriverebbe il roster senza chiedere
+        // conferma — e' esattamente il baco chiuso l'08/08/2026.
+        + ' onsubmit="return confirm(\'' + tf('Ripristinare {reg}? Il roster corrente verra sovrascritto e salvato come backup.', {reg: a.regulation}) + '\')">'
+        + '<button type="submit" class="btn btn-secondary btn-sm" style="font-size:.7rem">' + t('Ripristina') + '</button>'
         + '</form></div>';
     }).join('');
   } catch(e) {
-    el.innerHTML = '<span style="color:#c33;font-size:.75rem">Errore caricamento archivi.</span>';
+    el.innerHTML = '<span style="color:#c33;font-size:.75rem">' + t('Errore caricamento archivi.') + '</span>';
   }
 }
 </script>
