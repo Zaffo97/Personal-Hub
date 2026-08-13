@@ -1,6 +1,6 @@
 {% extends "base.html" %}
-{% block title %}Oggetti Editor – Hub{% endblock %}
-{% block topbar_title %}🎒 Oggetti — {{ current_reg.label }}{% endblock %}
+{% block title %}{{ t('Oggetti Editor') }} – Hub{% endblock %}
+{% block topbar_title %}🎒 {{ t('Oggetti') }} — {{ current_reg.label }}{% endblock %}
 {% block extra_head %}
 <style>
 .it-table{width:100%;border-collapse:collapse;font-size:.78rem}
@@ -28,11 +28,14 @@ textarea.code-area{min-height:320px}
 </style>
 {% endblock %}
 {% block content %}
+{# Le CHIAVI delle categorie (berry, choice, type_boost…) sono il dato e non si
+   toccano: sono il `value` delle tendine, il suffisso delle classi CSS e cio' che
+   finisce nel JSON. Si traduce solo l'etichetta. #}
 <div class="page-header">
   <div class="flex items-center justify-between flex-wrap gap-2">
     <div class="flex items-center gap-2">
-      <a href="/pokemon/calcolatori" class="btn btn-secondary btn-sm">← Calcolatori</a>
-      <div><h1>🎒 Oggetti — Editor</h1><p class="text-muted text-sm">{{ items|length }} oggetti</p></div>
+      <a href="/pokemon/calcolatori" class="btn btn-secondary btn-sm">← {{ t('Calcolatori') }}</a>
+      <div><h1>🎒 {{ t('Oggetti — Editor') }}</h1><p class="text-muted text-sm">{{ tf('{n} oggetti', {'n': items|length}) }}</p></div>
       <select onchange="location.href='/pokemon/oggetti?reg='+this.value"
               class="form-control" style="max-width:200px;font-size:.82rem">
         {% for r in regulations %}
@@ -44,16 +47,22 @@ textarea.code-area{min-height:320px}
 </div>
 <div class="card mb-3">
   <div class="card-body" style="display:flex;align-items:center;gap:1rem;flex-wrap:wrap;padding:.6rem 1rem">
-    <span style="font-size:.78rem;color:var(--text-muted)">Prima di cambiare regulation, archivia gli oggetti correnti.</span>
-    <form method="POST" action="/pokemon/oggetti/archive" onsubmit="return confirm('Archivia gli oggetti correnti ({{ regulation }})?')" style="margin:0">
-      <button type="submit" class="btn btn-warning btn-sm">📦 Archivia oggetti</button>
+    <span style="font-size:.78rem;color:var(--text-muted)">{{ t('Prima di cambiare regulation, archivia gli oggetti correnti.') }}</span>
+    {# Apici singoli sull'attributo: `|tojson` rende il valore con le doppie.
+       ⚠️ `current_reg.label` e non `regulation`: quest'ultima **non e' mai stata nel
+       contesto** — la route passa items, items_json, current_reg e regulations — e
+       Jinja rende una variabile mancante come stringa vuota, quindi il messaggio ha
+       sempre detto "Archivia gli oggetti correnti ()?" con le parentesi vuote,
+       senza che nulla lo segnalasse. #}
+    <form method="POST" action="/pokemon/oggetti/archive" onsubmit='return confirm(tf("Archivia gli oggetti correnti ({reg})?", {reg: {{ current_reg.label|tojson }}}))' style="margin:0">
+      <button type="submit" class="btn btn-warning btn-sm">📦 {{ t('Archivia oggetti') }}</button>
     </form>
   </div>
 </div>
 {% if current_reg %}
 <div style="font-size:.75rem;color:var(--text-muted);margin-bottom:.5rem">
-  Stai modificando: <strong>{{ current_reg.label }}</strong>
-  <a href="/pokemon/regulation/{{ current_reg.id }}" style="margin-left:.5rem">← torna alla regulation</a>
+  {{ t('Stai modificando:') }} <strong>{{ current_reg.label }}</strong>
+  <a href="/pokemon/regulation/{{ current_reg.id }}" style="margin-left:.5rem">← {{ t('torna alla regulation') }}</a>
 </div>
 {% endif %}
 
@@ -62,40 +71,40 @@ textarea.code-area{min-height:320px}
 <div>
   <div class="card">
     <div class="card-header">
-      <span class="card-title">📋 Lista oggetti</span>
-      <button class="btn btn-primary btn-sm" id="btnAdd">+ Aggiungi</button>
+      <span class="card-title">📋 {{ t('Lista oggetti') }}</span>
+      <button class="btn btn-primary btn-sm" id="btnAdd">+ {{ t('Aggiungi') }}</button>
     </div>
     <div class="card-body" style="padding-top:.5rem">
       <div style="display:flex;flex-wrap:wrap;gap:.5rem;margin-bottom:.65rem;align-items:center">
-        <input id="it_search" class="form-control" style="max-width:180px;font-size:.78rem" placeholder="🔍 Cerca...">
+        <input id="it_search" class="form-control" style="max-width:180px;font-size:.78rem" placeholder="🔍 {{ t('Cerca...') }}">
         <select id="it_cat_f" class="form-control" style="max-width:160px;font-size:.78rem">
-          <option value="">Tutte le categorie</option>
+          <option value="">{{ t('Tutte le categorie') }}</option>
           <option value="berry">Berry</option>
           <option value="choice">Choice</option>
-          <option value="conditional">Condizionale</option>
-          <option value="damage">Danno</option>
-          <option value="defensive">Difensivo</option>
+          <option value="conditional">{{ t('Condizionale') }}</option>
+          <option value="damage">{{ t('Danno') }}</option>
+          <option value="defensive">{{ t('Difensivo') }}</option>
           <option value="healing">Healing</option>
           <option value="orb">Orb</option>
           <option value="support">Support</option>
           <option value="survival">Survival</option>
           <option value="terrain">Terrain</option>
-          <option value="type_boost">Tipo Boost</option>
+          <option value="type_boost">{{ t('Tipo Boost') }}</option>
           <option value="utility">Utility</option>
-          <option value="weather">Meteo</option>
+          <option value="weather">{{ t('Meteo') }}</option>
         </select>
-        <button class="btn btn-secondary btn-sm" id="sortName">Nome ↕</button>
-        <button class="btn btn-secondary btn-sm" id="sortCat">Cat ↕</button>
+        <button class="btn btn-secondary btn-sm" id="sortName">{{ t('Nome') }} ↕</button>
+        <button class="btn btn-secondary btn-sm" id="sortCat">{{ t('Cat') }} ↕</button>
         <span id="it_count" style="font-size:.72rem;color:var(--text-muted)"></span>
       </div>
       <div style="overflow-x:auto;max-height:68vh;overflow-y:auto">
         <table class="it-table">
           <thead><tr>
-            <th style="width:20%">Nome</th>
-            <th style="width:15%">Categoria</th>
+            <th style="width:20%">{{ t('Nome') }}</th>
+            <th style="width:15%">{{ t('Categoria') }}</th>
             <th style="width:8%">Mod</th>
-            <th>Descrizione</th>
-            <th style="width:110px">Azioni</th>
+            <th>{{ t('Descrizione') }}</th>
+            <th style="width:110px">{{ t('Azioni') }}</th>
           </tr></thead>
           <tbody id="it_tbody"></tbody>
         </table>
@@ -104,16 +113,16 @@ textarea.code-area{min-height:320px}
   </div>
   <div class="card" style="position:sticky;top:1rem;max-height:calc(100vh - 2rem);overflow:auto">
     <div class="card-header">
-      <span class="card-title">📝 JSON Editor</span>
-      <button class="btn btn-success btn-sm" id="btnSave">💾 Salva</button>
+      <span class="card-title">📝 {{ t('JSON Editor') }}</span>
+      <button class="btn btn-success btn-sm" id="btnSave">💾 {{ t('Salva') }}</button>
     </div>
     <div class="card-body">
       <textarea id="itemsJsonArea" class="form-control code-area" spellcheck="false"></textarea>
       <div style="margin-top:.5rem;display:flex;gap:.5rem;flex-wrap:wrap">
-        <button class="btn btn-secondary btn-sm" id="btnSyncJson">↑ Tabella → JSON</button>
-        <button class="btn btn-warning btn-sm" id="btnSyncTable">↓ JSON → Tabella</button>
+        <button class="btn btn-secondary btn-sm" id="btnSyncJson">↑ {{ t('Tabella → JSON') }}</button>
+        <button class="btn btn-warning btn-sm" id="btnSyncTable">↓ {{ t('JSON → Tabella') }}</button>
       </div>
-      <p class="text-muted" style="font-size:.68rem;margin-top:.4rem">Modifica il JSON direttamente o usa la tabella.</p>
+      <p class="text-muted" style="font-size:.68rem;margin-top:.4rem">{{ t('Modifica il JSON direttamente o usa la tabella.') }}</p>
       <form method="POST" id="saveForm">
         <input type="hidden" name="items_json" id="itemsJsonHidden">
       </form>
@@ -122,32 +131,32 @@ textarea.code-area{min-height:320px}
 </div>
 <div id="add_modal" style="display:none;position:fixed;inset:0;background:oklch(0 0 0/.45);z-index:200;align-items:center;justify-content:center">
   <div style="background:var(--surface);border-radius:var(--radius-xl);padding:1.5rem;width:min(95vw,500px);box-shadow:var(--shadow-lg)">
-    <h3 style="margin-bottom:1rem" id="modalTitle">+ Aggiungi oggetto</h3>
-    <div class="form-group"><label>Nome *</label><input id="new_name" class="form-control"></div>
+    <h3 style="margin-bottom:1rem" id="modalTitle">+ {{ t('Aggiungi oggetto') }}</h3>
+    <div class="form-group"><label>{{ t('Nome') }} *</label><input id="new_name" class="form-control"></div>
     <div class="form-row">
-      <div class="form-group"><label>Categoria *</label>
+      <div class="form-group"><label>{{ t('Categoria') }} *</label>
         <select id="new_cat" class="form-control">
           <option value="berry">Berry</option>
           <option value="choice">Choice</option>
-          <option value="conditional">Condizionale</option>
-          <option value="damage">Danno</option>
-          <option value="defensive">Difensivo</option>
+          <option value="conditional">{{ t('Condizionale') }}</option>
+          <option value="damage">{{ t('Danno') }}</option>
+          <option value="defensive">{{ t('Difensivo') }}</option>
           <option value="healing">Healing</option>
           <option value="orb">Orb</option>
           <option value="support">Support</option>
           <option value="survival">Survival</option>
           <option value="terrain">Terrain</option>
-          <option value="type_boost">Tipo Boost</option>
+          <option value="type_boost">{{ t('Tipo Boost') }}</option>
           <option value="utility">Utility</option>
-          <option value="weather">Meteo</option>
+          <option value="weather">{{ t('Meteo') }}</option>
         </select>
       </div>
-      <div class="form-group"><label>Modificatore</label><input id="new_mod" type="number" step="0.01" class="form-control"></div>
+      <div class="form-group"><label>{{ t('Modificatore') }}</label><input id="new_mod" type="number" step="0.01" class="form-control"></div>
     </div>
-    <div class="form-group"><label>Descrizione</label><textarea id="new_desc" class="form-control" rows="3"></textarea></div>
+    <div class="form-group"><label>{{ t('Descrizione') }}</label><textarea id="new_desc" class="form-control" rows="3"></textarea></div>
     <div style="display:flex;gap:.5rem;margin-top:1rem">
-      <button class="btn btn-primary" id="btnConfirmAdd">Salva</button>
-      <button class="btn btn-secondary" id="btnCloseModal">Annulla</button>
+      <button class="btn btn-primary" id="btnConfirmAdd">{{ t('Salva') }}</button>
+      <button class="btn btn-secondary" id="btnCloseModal">{{ t('Annulla') }}</button>
     </div>
   </div>
 </div>
@@ -156,7 +165,8 @@ textarea.code-area{min-height:320px}
 let itemsData={items:JSON.parse(document.getElementById('items-data').textContent)};
 let sortMode='name';
 let editingName=null;
-const CAT_LABELS={berry:'Berry',choice:'Choice',conditional:'Condizionale',damage:'Danno',defensive:'Difensivo',healing:'Healing',orb:'Orb',support:'Support',survival:'Survival',terrain:'Terrain',type_boost:'Tipo Boost',utility:'Utility',weather:'Meteo'};
+// Le chiavi restano quelle del dato; cambia solo l'etichetta.
+const CAT_LABELS={berry:'Berry',choice:'Choice',conditional:t('Condizionale'),damage:t('Danno'),defensive:t('Difensivo'),healing:'Healing',orb:'Orb',support:'Support',survival:'Survival',terrain:'Terrain',type_boost:t('Tipo Boost'),utility:'Utility',weather:t('Meteo')};
 function renderTable(){
   const search=(document.getElementById('it_search').value||'').toLowerCase();
   const catF=document.getElementById('it_cat_f').value;
@@ -165,7 +175,7 @@ function renderTable(){
     if(catF&&it.category!==catF)return false;
     return true;
   }).sort((a,b)=>sortMode==='cat'?(a[1].category||'').localeCompare(b[1].category||'')||a[0].localeCompare(b[0]):a[0].localeCompare(b[0]));
-  document.getElementById('it_count').textContent=rows.length+' oggetti';
+  document.getElementById('it_count').textContent=tf('{n} oggetti',{n:rows.length});
   document.getElementById('itemsJsonArea').value=JSON.stringify(itemsData,null,2);
   document.getElementById('it_tbody').innerHTML=rows.map(([name,it])=>
     '<tr data-row="'+name.replace(/"/g,'&quot;')+'"><td><strong>'+name+'</strong></td>'+
@@ -190,17 +200,17 @@ function selectRow(name){
 function editItem(name){
   const it=itemsData.items[name];if(!it)return;
   editingName=name;
-  document.getElementById('modalTitle').textContent='Modifica: '+name;
+  document.getElementById('modalTitle').textContent=tf('Modifica: {nome}',{nome:name});
   document.getElementById('new_name').value=name;
   document.getElementById('new_cat').value=it.category||'utility';
   document.getElementById('new_mod').value=it.modifier!=null?it.modifier:'';
   document.getElementById('new_desc').value=it.desc||'';
   document.getElementById('add_modal').style.display='flex';
 }
-function deleteItem(name){if(!confirm('Eliminare '+name+'?'))return;delete itemsData.items[name];renderTable();}
+function deleteItem(name){if(!confirm(tf('Eliminare {nome}?',{nome:name})))return;delete itemsData.items[name];renderTable();}
 function showAddModal(){
   editingName=null;
-  document.getElementById('modalTitle').textContent='+ Aggiungi oggetto';
+  document.getElementById('modalTitle').textContent='+ '+t('Aggiungi oggetto');
   document.getElementById('new_name').value='';
   document.getElementById('new_cat').value='utility';
   document.getElementById('new_mod').value='';
@@ -210,14 +220,14 @@ function showAddModal(){
 function closeModal(){document.getElementById('add_modal').style.display='none';editingName=null;}
 function confirmAdd(){
   const name=document.getElementById('new_name').value.trim();
-  if(!name)return alert('Nome obbligatorio');
+  if(!name)return alert(t('Nome obbligatorio'));
   const mod=parseFloat(document.getElementById('new_mod').value);
   if(editingName&&editingName!==name)delete itemsData.items[editingName];
   itemsData.items[name]={category:document.getElementById('new_cat').value,modifier:isNaN(mod)?null:mod,desc:document.getElementById('new_desc').value};
   closeModal();renderTable();
 }
 function syncJsonFromTable(){document.getElementById('itemsJsonArea').value=JSON.stringify(itemsData,null,2);}
-function syncTableFromJson(){try{itemsData=JSON.parse(document.getElementById('itemsJsonArea').value);renderTable();}catch(e){alert('JSON non valido: '+e);}}
+function syncTableFromJson(){try{itemsData=JSON.parse(document.getElementById('itemsJsonArea').value);renderTable();}catch(e){alert(t('JSON non valido:')+' '+e);}}
 function saveJson(){document.getElementById('itemsJsonHidden').value=JSON.stringify(itemsData);document.getElementById('saveForm').submit();}
 document.getElementById('it_search').addEventListener('input',renderTable);
 document.getElementById('it_cat_f').addEventListener('change',renderTable);

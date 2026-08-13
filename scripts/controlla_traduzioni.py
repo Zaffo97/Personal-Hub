@@ -15,6 +15,7 @@ a mano. Una traduzione inventata dallo script sarebbe indistinguibile da una buo
 Esce con 1 se manca qualcosa, così si può usare come controllo prima di un commit.
 """
 import argparse
+import collections
 import io
 import json
 import os
@@ -59,6 +60,19 @@ def chiavi_nel_codice():
     return trovate
 
 
+def chiavi_doppie(percorso):
+    """Le chiavi ripetute nel file, che `json.load()` non può vedere.
+
+    Il dizionario si scrive a mano ed è lungo: la stessa frase può finire in due
+    sezioni diverse. `json.load()` **tiene l'ultima e butta la prima in silenzio**,
+    quindi correggere la traduzione sbagliata non cambia niente a schermo e non si
+    capisce perché. Qui si legge il file grezzo, che è l'unico modo di accorgersene.
+    """
+    testo = io.open(percorso, encoding="utf-8").read()
+    chiavi = re.findall(r'^\s*"((?:[^"\\]|\\.)*)"\s*:', testo, re.M)
+    return sorted(k for k, n in collections.Counter(chiavi).items() if n > 1)
+
+
 def main():
     ap = argparse.ArgumentParser(description=__doc__,
                                  formatter_class=argparse.RawDescriptionHelpFormatter)
@@ -84,12 +98,14 @@ def main():
     mancanti = {k: v for k, v in nel_codice.items() if k not in tradotte}
     vuote = sorted(k for k in tradotte if not dizionario[k])
     orfane = sorted(tradotte - set(nel_codice))
+    doppie = chiavi_doppie(percorso)
 
     print(f"chieste dal codice : {len(nel_codice)}")
     print(f"nel dizionario {args.lingua}  : {len(tradotte)}")
     print(f"mancanti           : {len(mancanti)}")
     print(f"presenti ma vuote  : {len(vuote)}")
     print(f"orfane (non più usate): {len(orfane)}")
+    print(f"chiavi doppie      : {len(doppie)}")
 
     if mancanti:
         print("\n-- mancanti --")
@@ -103,6 +119,12 @@ def main():
         print("\n-- orfane: la frase nel codice è cambiata, o la voce non serve più --")
         for k in orfane:
             print(f"  {k}")
+    if doppie:
+        print("\n-- doppie: scritte due volte nel file. json.load() tiene l'ultima e")
+        print("   butta la prima in silenzio, quindi correggere quella sbagliata")
+        print("   non cambierebbe niente a schermo --")
+        for k in doppie:
+            print(f"  {k}")
 
     if args.scrivi and mancanti:
         for k in mancanti:
@@ -112,7 +134,7 @@ def main():
             f.write("\n")
         print(f"\nscritte {len(mancanti)} voci vuote in {percorso}: vanno riempite a mano.")
 
-    return 1 if (mancanti or vuote) else 0
+    return 1 if (mancanti or vuote or doppie) else 0
 
 
 if __name__ == "__main__":

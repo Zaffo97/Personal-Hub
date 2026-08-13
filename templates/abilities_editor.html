@@ -1,6 +1,6 @@
 {% extends "base.html" %}
-{% block title %}Editor Abilità – Hub{% endblock %}
-{% block topbar_title %}🧬 Editor Abilità{% endblock %}
+{% block title %}{{ t('Editor Abilità') }} – Hub{% endblock %}
+{% block topbar_title %}🧬 {{ t('Editor Abilità') }}{% endblock %}
 {% block extra_head %}
 <style>
 .ab-table{width:100%;border-collapse:collapse;font-size:.78rem}
@@ -29,13 +29,16 @@ textarea.code-area{min-height:380px}
 </style>
 {% endblock %}
 {% block content %}
+{# Le categorie (`weather_override`, `stat_modifier`, …) restano com'e' in tutte e due
+   le lingue: sono chiavi tecniche del blocco `effect`, non etichette. Tradurle
+   scollegherebbe cio' che si legge da cio' che si scrive nel JSON qui accanto. #}
 <div class="page-header">
   <div class="flex items-center justify-between flex-wrap gap-2">
     <div class="flex items-center gap-2">
       <a href="/pokemon" class="btn btn-secondary btn-sm">← Pokémon</a>
       <div>
-        <h1>🧬 Abilità — Editor</h1>
-        <p class="text-muted text-sm">{{ abilities|length }} abilità • globale, indipendente dalla regulation</p>
+        <h1>🧬 {{ t('Abilità — Editor') }}</h1>
+        <p class="text-muted text-sm">{{ tf('{n} abilità • globale, indipendente dalla regulation', {'n': abilities|length}) }}</p>
       </div>
     </div>
   </div>
@@ -47,14 +50,14 @@ textarea.code-area{min-height:380px}
   <div>
     <div class="card">
       <div class="card-header">
-        <span class="card-title">📋 Lista abilità</span>
-        <button class="btn btn-primary btn-sm" onclick="showAddModal()">+ Aggiungi</button>
+        <span class="card-title">📋 {{ t('Lista abilità') }}</span>
+        <button class="btn btn-primary btn-sm" onclick="showAddModal()">+ {{ t('Aggiungi') }}</button>
       </div>
       <div class="card-body" style="padding-top:.5rem">
         <div style="display:flex;flex-wrap:wrap;gap:.5rem;margin-bottom:.65rem;align-items:center">
-          <input id="ab_search" class="form-control" style="max-width:180px;font-size:.78rem" placeholder="🔍 Cerca..." oninput="renderTable()">
+          <input id="ab_search" class="form-control" style="max-width:180px;font-size:.78rem" placeholder="🔍 {{ t('Cerca...') }}" oninput="renderTable()">
           <select id="ab_cat_f" class="form-control" style="max-width:180px;font-size:.78rem" onchange="renderTable()">
-            <option value="">Tutte le categorie</option>
+            <option value="">{{ t('Tutte le categorie') }}</option>
             <option value="none">none</option>
             <option value="weather_override">weather_override</option>
             <option value="weather_setter">weather_setter</option>
@@ -74,9 +77,9 @@ textarea.code-area{min-height:380px}
         <div style="max-height:520px;overflow-y:auto">
           <table class="ab-table">
             <thead><tr>
-              <th>Nome</th>
-              <th>Categoria</th>
-              <th>Descrizione</th>
+              <th>{{ t('Nome') }}</th>
+              <th>{{ t('Categoria') }}</th>
+              <th>{{ t('Descrizione') }}</th>
               <th></th>
             </tr></thead>
             <tbody id="ab_tbody"></tbody>
@@ -90,14 +93,14 @@ textarea.code-area{min-height:380px}
   <div>
     <div class="card">
       <div class="card-header">
-        <span class="card-title">📤 JSON raw</span>
-        <button class="btn btn-secondary btn-sm" onclick="formatJson()">✶ Formatta</button>
+        <span class="card-title">📤 {{ t('JSON raw') }}</span>
+        <button class="btn btn-secondary btn-sm" onclick="formatJson()">✶ {{ t('Formatta') }}</button>
       </div>
       <div class="card-body">
         <form method="POST" id="abForm" action="/pokemon/abilita">
           <textarea name="abilities_json" id="abJson" class="form-control code-area">{{ abilities_json }}</textarea>
           <div class="flex gap-2 mt-2">
-            <button type="submit" class="btn btn-primary">💾 Salva</button>
+            <button type="submit" class="btn btn-primary">💾 {{ t('Salva') }}</button>
             <button type="button" class="btn btn-secondary" onclick="location.reload()">↩ Reset</button>
           </div>
         </form>
@@ -105,20 +108,19 @@ textarea.code-area{min-height:380px}
     </div>
     <div class="card mt-0">
       <div class="card-header">
-        <span class="card-title">🗄️ Archivio</span>
+        <span class="card-title">🗄️ {{ t('Archivio') }}</span>
       </div>
       <div class="card-body">
         <p class="text-xs text-muted mb-2" style="line-height:1.6">
-          Ogni salvataggio tiene da parte la versione precedente in automatico.
-          Archivia a mano prima di modifiche grosse: gli archivi restano.
+          {{ t('Ogni salvataggio tiene da parte la versione precedente in automatico. Archivia a mano prima di modifiche grosse: gli archivi restano.') }}
         </p>
         <form method="POST" action="/pokemon/abilita/archive"
-              onsubmit="return confirm('Archiviare le abilita correnti?')"
+              onsubmit="return confirm(t('Archiviare le abilita correnti?'))"
               style="margin-bottom:.5rem">
-          <button type="submit" class="btn btn-secondary btn-sm">📦 Archivia abilità correnti</button>
+          <button type="submit" class="btn btn-secondary btn-sm">📦 {{ t('Archivia abilità correnti') }}</button>
         </form>
         <button class="btn btn-sm" style="font-size:.72rem" onclick="loadAbilityArchives()">
-          Vedi archivi salvati
+          {{ t('Vedi archivi salvati') }}
         </button>
         <div id="ab_archives" style="margin-top:.5rem"></div>
       </div>
@@ -126,10 +128,9 @@ textarea.code-area{min-height:380px}
 
     <div class="card mt-0">
       <div class="card-body text-sm">
-        <strong>File:</strong> <code style="font-size:.72rem">data/abilities.json</code><br>
+        <strong>{{ t('File:') }}</strong> <code style="font-size:.72rem">data/abilities.json</code><br>
         <p class="text-xs text-muted mt-2" style="line-height:1.6">
-          💡 Le abilità vengono usate dal <strong>Calcolatore Danno</strong> per applicare
-          moltiplicatori (immunità tipi, meteo, boost ecc.).
+          💡 {{ t('Le abilità vengono usate dal <strong>Calcolatore Danno</strong> per applicare moltiplicatori (immunità tipi, meteo, boost ecc.).')|safe }}
         </p>
       </div>
     </div>
@@ -142,13 +143,13 @@ textarea.code-area{min-height:380px}
      z-index:200;align-items:center;justify-content:center" onclick="if(event.target===this)closeModal()">
   <div style="background:var(--surface);border-radius:var(--radius-xl);padding:1.5rem;
        width:min(95vw,440px);box-shadow:var(--shadow-lg,0 12px 40px rgba(0,0,0,.5))">
-    <h3 style="margin-bottom:1rem">+ Aggiungi abilità</h3>
+    <h3 style="margin-bottom:1rem">+ {{ t('Aggiungi abilità') }}</h3>
     <div class="form-group">
-      <label>Nome *</label>
-      <input id="new_name" class="form-control" placeholder="Es. Velocista">
+      <label>{{ t('Nome') }} *</label>
+      <input id="new_name" class="form-control" placeholder="{{ t('Es. Velocista') }}">
     </div>
     <div class="form-group">
-      <label>Categoria *</label>
+      <label>{{ t('Categoria') }} *</label>
       <select id="new_cat" class="form-control">
         <option value="other">other</option>
         <option value="none">none</option>
@@ -166,16 +167,16 @@ textarea.code-area{min-height:380px}
       </select>
     </div>
     <div class="form-group">
-      <label>Descrizione <span style="font-weight:400;font-size:.72rem;color:var(--text-muted)">(opzionale)</span></label>
-      <textarea id="new_desc" class="form-control" rows="3" style="font-size:.75rem;resize:vertical" placeholder="Descrizione effetto..."></textarea>
+      <label>{{ t('Descrizione') }} <span style="font-weight:400;font-size:.72rem;color:var(--text-muted)">{{ t('(opzionale)') }}</span></label>
+      <textarea id="new_desc" class="form-control" rows="3" style="font-size:.75rem;resize:vertical" placeholder="{{ t('Descrizione effetto...') }}"></textarea>
     </div>
     <div class="form-group mb-0">
-      <label>Effect JSON <span style="font-weight:400;font-size:.72rem;color:var(--text-muted)">(campo interno per il calcolatore)</span></label>
+      <label>Effect JSON <span style="font-weight:400;font-size:.72rem;color:var(--text-muted)">{{ t('(campo interno per il calcolatore)') }}</span></label>
       <textarea id="new_effect" class="form-control" rows="3" style="font-family:'JetBrains Mono',monospace;font-size:.72rem;resize:vertical">{"type": "none"}</textarea>
     </div>
     <div class="flex gap-2 mt-3">
-      <button class="btn btn-primary" style="flex:1" onclick="addAbility()">+ Aggiungi</button>
-      <button class="btn btn-secondary" onclick="closeModal()">Annulla</button>
+      <button class="btn btn-primary" style="flex:1" onclick="addAbility()">+ {{ t('Aggiungi') }}</button>
+      <button class="btn btn-secondary" onclick="closeModal()">{{ t('Annulla') }}</button>
     </div>
   </div>
 </div>
@@ -197,7 +198,7 @@ function renderTable(){
     })
     .sort((a, b) => a[0].localeCompare(b[0]));
 
-  document.getElementById('ab_count').textContent = rows.length + ' abilità';
+  document.getElementById('ab_count').textContent = tf('{n} abilità', {n: rows.length});
 
   document.getElementById('ab_tbody').innerHTML = rows.map(([name, ab]) => {
     const cat = ab.category || 'other';
@@ -218,7 +219,7 @@ function renderTable(){
         '</div></div>';
     } else {
       const safe = desc.replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;');
-      descCell = '<span onclick="startEditDesc(\''+name.replace(/'/g,"\\'")+'\')" title="Clicca per modificare" '+
+      descCell = '<span onclick="startEditDesc(\''+name.replace(/'/g,"\\'")+'\')" title="'+t('Clicca per modificare')+'" '+
         'style="cursor:pointer;display:block;font-size:.72rem;color:var(--text-muted);max-width:300px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis">'+(safe||'<em style="color:var(--text-faint);font-size:.68rem">—</em>')+'</span>';
     }
 
@@ -246,7 +247,7 @@ function saveDesc(name){
 
 // ── Elimina ─────────────────────────────────────────────
 function deleteAbility(name){
-  if(!confirm('Eliminare l\'abilità "'+name+'"?')) return;
+  if(!confirm(tf('Eliminare l\'abilità "{nome}"?', {nome: name}))) return;
   delete abData.abilities[name];
   syncJson(); renderTable();
 }
@@ -264,12 +265,12 @@ function closeModal(){ document.getElementById('add_modal').style.display='none'
 
 function addAbility(){
   const name = document.getElementById('new_name').value.trim();
-  if(!name){ alert('Il nome è obbligatorio'); return; }
-  if(abData.abilities[name]){ alert('Abilità "'+name+'" già esistente'); return; }
+  if(!name){ alert(t('Il nome è obbligatorio')); return; }
+  if(abData.abilities[name]){ alert(tf('Abilità "{nome}" già esistente', {nome: name})); return; }
 
   let effect = {type:'none'};
   try { effect = JSON.parse(document.getElementById('new_effect').value || '{}'); }
-  catch(e){ alert('Effect JSON non valido: '+e.message); return; }
+  catch(e){ alert(t('Effect JSON non valido:') + ' ' + e.message); return; }
 
   abData.abilities[name] = {
     desc: document.getElementById('new_desc').value.trim(),
@@ -280,37 +281,37 @@ function addAbility(){
 }
 
 // ── Archivio ─────────────────────────────────────────────────
-// Nessun apostrofo nei testi del confirm: finisce in un attributo onsubmit
-// delimitato da ', dove un apostrofo chiuderebbe la stringa e l'handler
-// diventerebbe un SyntaxError (era il bug del Ripristina in roster_editor).
+// ⚠️ Nessun apostrofo nei testi del confirm, in NESSUNA delle due lingue: finisce
+// in un attributo onsubmit delimitato da ', dove un apostrofo chiuderebbe la stringa
+// e l'handler diventerebbe un SyntaxError (era il bug del Ripristina in roster_editor).
 async function loadAbilityArchives(){
   const el = document.getElementById('ab_archives');
-  el.innerHTML = '<span class="text-xs text-muted">Caricamento...</span>';
+  el.innerHTML = '<span class="text-xs text-muted">' + t('Caricamento...') + '</span>';
   try {
     const res = await fetch('/pokemon/abilita/archives');
     const data = await res.json();
     if(!data.length){
-      el.innerHTML = '<p class="text-xs text-muted mt-1">Nessun archivio salvato.</p>';
+      el.innerHTML = '<p class="text-xs text-muted mt-1">' + t('Nessun archivio salvato.') + '</p>';
       return;
     }
     el.innerHTML = data.map(function(a){
       const etichetta = a.automatico
-        ? '<span style="font-size:.62rem;color:var(--primary);font-weight:700">copia automatica</span>'
+        ? '<span style="font-size:.62rem;color:var(--primary);font-weight:700">' + t('copia automatica') + '</span>'
         : '<span style="font-size:.62rem;color:var(--text-faint)">' + a.filename + '</span>';
       return '<div style="display:flex;align-items:center;justify-content:space-between;'
         + 'padding:.4rem 0;border-bottom:1px solid var(--border);gap:.5rem;flex-wrap:wrap">'
         + '<div>'
-        + '<span style="font-size:.78rem;font-weight:600">' + a.count + ' abilità</span>'
+        + '<span style="font-size:.78rem;font-weight:600">' + tf('{n} abilità', {n: a.count}) + '</span>'
         + '<span class="text-muted" style="font-size:.72rem"> &mdash; ' + a.modificato + '</span>'
         + '<code style="display:block">' + etichetta + '</code>'
         + '</div>'
         + '<form method="POST" action="/pokemon/abilita/restore/' + encodeURIComponent(a.filename) + '"'
-        + ' onsubmit="return confirm(\'Ripristinare ' + a.count + ' abilita da questo archivio? Le abilita correnti verranno salvate come copia automatica.\')">'
-        + '<button type="submit" class="btn btn-secondary btn-sm" style="font-size:.7rem">Ripristina</button>'
+        + ' onsubmit="return confirm(\'' + tf('Ripristinare {n} abilita da questo archivio? Le abilita correnti verranno salvate come copia automatica.', {n: a.count}) + '\')">'
+        + '<button type="submit" class="btn btn-secondary btn-sm" style="font-size:.7rem">' + t('Ripristina') + '</button>'
         + '</form></div>';
     }).join('');
   } catch(e) {
-    el.innerHTML = '<span style="color:#c33;font-size:.75rem">Errore caricamento archivi.</span>';
+    el.innerHTML = '<span style="color:#c33;font-size:.75rem">' + t('Errore caricamento archivi.') + '</span>';
   }
 }
 
@@ -320,7 +321,7 @@ function syncJson(){
 }
 function formatJson(){
   try{ abData=JSON.parse(document.getElementById('abJson').value); syncJson(); renderTable(); }
-  catch(e){ alert('JSON non valido: '+e.message); }
+  catch(e){ alert(t('JSON non valido:') + ' ' + e.message); }
 }
 document.getElementById('abJson').addEventListener('input', function(){
   try{ abData=JSON.parse(document.getElementById('abJson').value); renderTable(); }catch(e){}
