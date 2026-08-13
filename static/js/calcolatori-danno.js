@@ -38,11 +38,12 @@ function applicaMosseLegali(d){
   if (MOSSE_LEGALI) {
     nota.style.display = 'block';
     nota.style.color = 'var(--text-muted, #888)';
-    nota.textContent = `${quante} mosse di ${nome} in ${REG_ID}`;
+    nota.textContent = tf('{n} mosse di {pkmn} in {reg}', {n: quante, pkmn: nome, reg: REG_ID});
   } else if (nome) {
     nota.style.display = 'block';
     nota.style.color = 'var(--warning, #d90)';
-    nota.textContent = `⚠️ Nessun elenco mosse per ${nome} in ${REG_ID}: sono mostrate tutte`;
+    nota.textContent = tf('⚠️ Nessun elenco mosse per {pkmn} in {reg}: sono mostrate tutte',
+                          {pkmn: nome, reg: REG_ID});
   } else {
     nota.style.display = 'none';
   }
@@ -54,7 +55,8 @@ function applicaMosseLegali(d){
     const chiave = risolviChiave(MOVES_DB, scritta);
     if (chiave && !MOSSE_LEGALI.includes(chiave)) {
       nota.style.color = 'var(--danger, #c33)';
-      nota.textContent = `⚠️ ${nomeVis(MOVES_DB[chiave], chiave)} non è fra le mosse di ${nome} in ${REG_ID}`;
+      nota.textContent = tf('⚠️ {mossa} non è fra le mosse di {pkmn} in {reg}',
+                            {mossa: nomeVis(MOVES_DB[chiave], chiave), pkmn: nome, reg: REG_ID});
     }
   }
 }
@@ -77,7 +79,7 @@ function onMoveSelect(){
   if(_ct){
     _ct.checked=(data.flags||[]).includes('contact');
     const _lbl=document.getElementById('f_contact_auto');
-    if(_lbl) _lbl.textContent=_ct.checked?'(auto: sì)':'(auto: no)';
+    if(_lbl) _lbl.textContent=_ct.checked?t('(auto: sì)'):t('(auto: no)');
   }
   // Label stage ATK/SP ATK e DEF/SP DEF
   const _isPhys=data.category==='physical';
@@ -86,11 +88,11 @@ function onMoveSelect(){
   if(_al) _al.textContent=_isPhys?'ATK':'SP ATK';
   if(_dl) _dl.textContent=_isPhys?'DEF':'SP DEF';
   if(badge){
-    const catIcon={physical:'Fis.',special:'Sp.',status:'Status'};
+    const catIcon={physical:t('Fisico'),special:t('Speciale'),status:t('Stato')};
     badge.style.display='flex';
-    badge.innerHTML=`<span class="mv-tag" style="background:${TYPE_CLR[data.type]||'#888'};color:#fff">${data.type}</span>`+
-      `<span class="mv-tag">${catIcon[data.category]||''} ${data.category}</span>`+
-      (data.bp?`<span class="mv-tag">BP ${data.bp}</span>`:'<span class="mv-tag">Status</span>');
+    badge.innerHTML=`<span class="mv-tag" style="background:${TYPE_CLR[data.type]||'#888'};color:#fff">${tipoVis(data.type)}</span>`+
+      `<span class="mv-tag">${catIcon[data.category]||data.category}</span>`+
+      (data.bp?`<span class="mv-tag">BP ${data.bp}</span>`:`<span class="mv-tag">${t('Stato')}</span>`);
   }
   // Weather Ball, Solar Beam e Solar Blade: BP e tipo dipendono dal meteo, quindi
   // vanno riscritti dopo l'autofill da MOVES_DB.
@@ -198,7 +200,7 @@ function calcDamage(){
   const atkAbilityName = document.getElementById('atk_ability')?.value || '';
   const defAbilityName = document.getElementById('def_ability')?.value || '';
 
-  if(!BS.atk?.hp&&!BS.atk?.atk){alert('Carica almeno l\'attaccante!');return;}
+  if(!BS.atk?.hp&&!BS.atk?.atk){alert(t('Carica almeno l\'attaccante!'));return;}
 
   const aFx = abilityEffect(atkAbilityName);
   const dFx = abilityEffect(defAbilityName);
@@ -247,8 +249,10 @@ function calcDamage(){
         if (res) res.style.display = 'block';
         const el = (id) => document.getElementById(id);
         if (el('dmg_line'))  el('dmg_line').textContent  = wonderGuardBlock
-          ? `${mvType} → Wonder Guard: bloccata (solo le super efficaci passano)`
-          : `${mvType} → Immune (0×) su ${effectiveDefTypes.join('/')}`;
+          ? tf('{tipo} → Wonder Guard: bloccata (solo le super efficaci passano)',
+               {tipo: tipoVis(mvType)})
+          : tf('{tipo} → Immune (0×) su {tipiDif}',
+               {tipo: tipoVis(mvType), tipiDif: effectiveDefTypes.map(tipoVis).join('/')});
         if (el('dmg_pct'))   el('dmg_pct').textContent   = '0%';
         if (el('dmg_bar'))   el('dmg_bar').style.width   = '0%';
         if (el('dmg_min'))   el('dmg_min').textContent   = '0';
@@ -414,15 +418,18 @@ function calcDamage(){
 
   const aN2 = document.getElementById('atk_name').value || 'Atk';
   const dN2 = document.getElementById('def_name').value || 'Def';
-  const mv  = document.getElementById('mv_name').value  || 'Mossa';
-  const teraTag  = atkTera ? ` [Tera ${atkTera}]` : '';
-  const abilTag  = atkAbilityName ? ` (${atkAbilityName})` : '';
+  const mv  = document.getElementById('mv_name').value  || t('Mossa');
+  const teraTag  = atkTera ? ` [Tera ${tipoVis(atkTera)}]` : '';
+  // Il `value` della tendina abilita' e' la CHIAVE: qui si mostra il nome tradotto.
+  const abilChiave = risolviChiave(ABILITIES_DATA, atkAbilityName);
+  const abilTag  = atkAbilityName
+    ? ` (${nomeVis(ABILITIES_DATA[abilChiave], abilChiave)})` : '';
   const stabLabel = stab > 1 ? ` +STAB(${stab}×)` : '';
   let effLabel = '';
-  if      (typeEff >= 4)    effLabel = ' ✕4 (super)';
-  else if (typeEff >= 2)    effLabel = ' ✕2 (super)';
-  else if (typeEff <= 0.25) effLabel = ' ✕0.25 (poco)';
-  else if (typeEff <= 0.5)  effLabel = ' ✕0.5 (poco)';
+  if      (typeEff >= 4)    effLabel = ' ✕4 ' + t('(super)');
+  else if (typeEff >= 2)    effLabel = ' ✕2 ' + t('(super)');
+  else if (typeEff <= 0.25) effLabel = ' ✕0.25 ' + t('(poco)');
+  else if (typeEff <= 0.5)  effLabel = ' ✕0.5 ' + t('(poco)');
 
   document.getElementById('dmg_line').textContent = `${aN2}${teraTag}${abilTag} → ${mv} → ${dN2} HP ${HP}`;
   document.getElementById('dmg_pct').textContent  = `${minP} ~ ${maxP}${effLabel}${stabLabel}`;
@@ -433,7 +440,7 @@ function calcDamage(){
     ? `<span style="color:var(--error,#c33)">${(ohko/16*100).toFixed(0)}%</span>` : '0%';
   document.getElementById('dmg_2hko').innerHTML   = twohko > 0
     ? `<span style="color:var(--warning,#b96)">${(twohko/16*100).toFixed(0)}%</span>` : '0%';
-  document.getElementById('dmg_rolls').textContent = 'Rolls: ' + rolls.join(', ');
+  document.getElementById('dmg_rolls').textContent = t('Rolls:') + ' ' + rolls.join(', ');
   document.getElementById('dmg_result').style.display = 'block';
   const _trNote = document.getElementById('trick_room_note');
   if (_trNote) _trNote.style.display = trickroom ? 'block' : 'none';

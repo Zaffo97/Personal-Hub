@@ -1,17 +1,20 @@
 {% extends "base.html" %}
-{% block title %}Calcolatori VGC – Hub{% endblock %}
-{% block topbar_title %}📊 Calcolatori VGC{% endblock %}
+{% block title %}{{ t('Calcolatori VGC') }} – Hub{% endblock %}
+{% block topbar_title %}📊 {{ t('Calcolatori VGC') }}{% endblock %}
 {% block extra_head %}
 <link rel="stylesheet" href="{{ url_for('static', filename='css/calcolatori.css') }}">
 {% endblock %}
 {% block content %}
+{# I nomi dei tipi si traducono **solo a schermo**: il `value` resta italiano perche'
+   e' la chiave di TYPE_CHART, TYPE_CLR_IT e TIPI_IT in calcolatori-data.js, ed e'
+   quella che calcDamage() cerca. Stessa regola delle chiavi del catalogo. #}
 <div class="page-header">
   <div class="flex items-center justify-between flex-wrap gap-2">
     <div class="flex items-center gap-2">
       <a href="/pokemon" class="btn btn-secondary btn-sm">← Pokémon</a>
       <div>
-        <h1>📊 Calcolatori VGC — {{ current_reg.label }}</h1>
-        <p class="text-muted text-sm">Danno, Speed Tier e Stat Preview in tempo reale</p>
+        <h1>📊 {{ t('Calcolatori VGC') }} — {{ current_reg.label }}</h1>
+        <p class="text-muted text-sm">{{ t('Danno, Speed Tier e Stat Preview in tempo reale') }}</p>
       </div>
     </div>
     <!-- ← AGGIUNGI QUI il selettore regulation -->
@@ -30,22 +33,22 @@
 <div id="team_quickload" style="display:none" class="mb-2">
   <div class="card" style="padding:.6rem 1rem">
     <div class="flex items-center gap-2 flex-wrap">
-      <span style="font-size:.75rem;font-weight:700;color:var(--text-muted)">🏆 Team caricato:</span>
+      <span style="font-size:.75rem;font-weight:700;color:var(--text-muted)">🏆 {{ t('Team caricato:') }}</span>
       <div id="team_pk_buttons" class="flex gap-1 flex-wrap"></div>
-      <span class="text-xs text-muted ml-1">Clicca per caricare ATK · Shift+click per DEF</span>
+      <span class="text-xs text-muted ml-1">{{ t('Clicca per caricare ATK · Shift+click per DEF') }}</span>
     </div>
   </div>
 </div>
 
 <div style="display:flex;justify-content:center;gap:.5rem;margin-bottom:.6rem">
-  <button onclick="openRef('types')" class="btn btn-secondary btn-sm">🗂️ Tipi</button>
-  <button onclick="openRef('natures')" class="btn btn-secondary btn-sm">🌿 Nature</button>
+  <button onclick="openRef('types')" class="btn btn-secondary btn-sm">🗂️ {{ t('Tipi') }}</button>
+  <button onclick="openRef('natures')" class="btn btn-secondary btn-sm">🌿 {{ t('Nature') }}</button>
 </div>
 <div class="calc-tabs">
-  <button class="calc-tab active" onclick="switchTab('dmg',this)">💥 Danno</button>
-  <button class="calc-tab" onclick="switchTab('speed',this)">⚡ Speed Tier</button>
-  <button class="calc-tab" onclick="switchTab('stat',this)">📈 Stat Preview</button>
-  <button class="calc-tab" onclick="switchTab('ref',this)">📚 Reference</button>
+  <button class="calc-tab active" onclick="switchTab('dmg',this)">💥 {{ t('Danno') }}</button>
+  <button class="calc-tab" onclick="switchTab('speed',this)">⚡ {{ t('Speed Tier') }}</button>
+  <button class="calc-tab" onclick="switchTab('stat',this)">📈 {{ t('Stat Preview') }}</button>
+  <button class="calc-tab" onclick="switchTab('ref',this)">📚 {{ t('Reference') }}</button>
 </div>
 
 <!-- ═══════════════════ TAB DANNO ═══════════════════ -->
@@ -75,11 +78,11 @@
 
   <!-- Attaccante -->
   <div class="card mb-0">
-    <div class="card-header"><span class="card-title">⚔️ Attaccante</span></div>
+    <div class="card-header"><span class="card-title">⚔️ {{ t('Attaccante') }}</span></div>
     <div class="card-body">
       <div class="form-group">
         <label>Pokémon</label>
-        <input list="rl_atk" id="atk_name" class="form-control" placeholder="Cerca..." oninput="loadSide('atk')">
+        <input list="rl_atk" id="atk_name" class="form-control" placeholder="{{ t('Cerca...') }}" oninput="loadSide('atk')">
         <datalist id="rl_atk">{% for pk in roster %}<option value="{{ nomi_vis.get(pk, pk) }}">{% endfor %}{% for mk in mega_list %}<option value="{{ nomi_vis.get(mk, mk) }}">{% endfor %}</datalist>
       </div>
       <div id="atk_form_wrap" style="display:none;margin-top:6px">
@@ -89,11 +92,11 @@
         <span style="font-size:2.5rem;opacity:.25">⚔️</span>
       </div>
       <div class="form-row">
-        <div class="form-group"><label>Liv.</label>
+        <div class="form-group"><label>{{ t('Liv.') }}</label>
           <input id="atk_lvl" type="number" class="form-control" value="50" min="1" max="100" oninput="recalcSide('atk')"></div>
-        <div class="form-group"><label>Natura</label>
+        <div class="form-group"><label>{{ t('Natura') }}</label>
           <select id="atk_nat" class="form-control" onchange="recalcSide('atk')">
-            <option value="">Neutrale</option>
+            <option value="">{{ t('Neutrale') }}</option>
             {% for n in natures %}<option value="{{ n }}">{{ n }}{% if n in nature_effects %} ({{ nature_effects[n][0] }} {{ nature_effects[n][1] }}){% endif %}</option>{% endfor %}
           </select></div>
       </div>
@@ -108,27 +111,27 @@
       </div>
       <!-- Tera + Stage + Item ATK -->
       <div class="form-group" style="margin-top:.35rem">
-        <label style="font-size:.72rem">Tera Type ATK <span style="font-weight:400;opacity:.55">(opz.)</span></label>
+        <label style="font-size:.72rem">Tera Type ATK <span style="font-weight:400;opacity:.55">{{ t('(opz.)') }}</span></label>
         <select id="atk_tera" class="form-control" style="font-size:.78rem">
-          <option value="">Nessuna Tera</option>
-            <option value="Normale">Normale</option>
-            <option value="Fuoco">Fuoco</option>
-            <option value="Acqua">Acqua</option>
-            <option value="Elettro">Elettro</option>
-            <option value="Erba">Erba</option>
-            <option value="Ghiaccio">Ghiaccio</option>
-            <option value="Lotta">Lotta</option>
-            <option value="Veleno">Veleno</option>
-            <option value="Terra">Terra</option>
-            <option value="Volante">Volante</option>
-            <option value="Psico">Psico</option>
-            <option value="Coleottero">Coleottero</option>
-            <option value="Roccia">Roccia</option>
-            <option value="Spettro">Spettro</option>
-            <option value="Drago">Drago</option>
-            <option value="Buio">Buio</option>
-            <option value="Acciaio">Acciaio</option>
-            <option value="Folletto">Folletto</option>
+          <option value="">{{ t('Nessuna Tera') }}</option>
+            <option value="Normale">{{ t('Normale') }}</option>
+            <option value="Fuoco">{{ t('Fuoco') }}</option>
+            <option value="Acqua">{{ t('Acqua') }}</option>
+            <option value="Elettro">{{ t('Elettro') }}</option>
+            <option value="Erba">{{ t('Erba') }}</option>
+            <option value="Ghiaccio">{{ t('Ghiaccio') }}</option>
+            <option value="Lotta">{{ t('Lotta') }}</option>
+            <option value="Veleno">{{ t('Veleno') }}</option>
+            <option value="Terra">{{ t('Terra') }}</option>
+            <option value="Volante">{{ t('Volante') }}</option>
+            <option value="Psico">{{ t('Psico') }}</option>
+            <option value="Coleottero">{{ t('Coleottero') }}</option>
+            <option value="Roccia">{{ t('Roccia') }}</option>
+            <option value="Spettro">{{ t('Spettro') }}</option>
+            <option value="Drago">{{ t('Drago') }}</option>
+            <option value="Buio">{{ t('Buio') }}</option>
+            <option value="Acciaio">{{ t('Acciaio') }}</option>
+            <option value="Folletto">{{ t('Folletto') }}</option>
         </select></div>
       <div class="form-row">
         <div class="form-group"><label style="font-size:.72rem">Stage <span id="atk_stage_lbl">ATK</span></label>
@@ -149,15 +152,15 @@
           </select></div>
         <div class="form-group"><label style="font-size:.72rem">Item ATK</label>
           <select id="atk_item" class="form-control" style="font-size:.78rem" onchange="calcDamage()">
-            <option value="1">— Nessun oggetto —</option>
+            <option value="1">{{ t('— Nessun oggetto —') }}</option>
             {% for iname, idata in items_data["items"]|dictsort %}{% if idata.category in ["choice","damage","conditional","type_boost","orb","utility"] and idata.modifier %}<option value="{{ idata.modifier }}">{{ nome_vis(idata, iname) }} ×{{ idata.modifier }}</option>{% endif %}{% endfor %}
           </select></div>
       </div>
       <div class="form-group">
         <label style="font-size:.72rem">Status ATK</label>
         <select id="atk_status" class="form-control" style="font-size:.78rem">
-          <option value="">Nessuno</option>
-          <option value="burn">🔥 Scottato (ATK fis. ×0.5)</option>
+          <option value="">{{ t('Nessuno') }}</option>
+          <option value="burn">🔥 {{ t('Scottato (ATK fis. ×0.5)') }}</option>
         </select>
       </div>
       <!-- ABILITY ATK -->
@@ -166,11 +169,11 @@
         <!-- Popolata da popolaSelectAbilita(): solo le abilità del Pokémon scelto,
              salvo la spunta "mostra tutte" qui sotto. -->
         <select id="atk_ability" class="form-control" style="font-size:.78rem" onchange="calcDamage()">
-      <option value="">— Nessuna —</option>
+      <option value="">{{ t('— Nessuna —') }}</option>
       </select>
       <label style="display:flex;align-items:center;gap:.3rem;cursor:pointer;font-size:.68rem;margin-top:.25rem;font-weight:400">
         <input type="checkbox" id="abil_tutte_dmg" style="accent-color:var(--primary)" onchange="ripopolaAbilita()">
-        mostra tutte le abilità del catalogo
+        {{ t('mostra tutte le abilità del catalogo') }}
       </label>
       </div>
     </div>
@@ -183,97 +186,97 @@
     <div class="card mb-0">
       <div class="card-body">
         <div class="form-group">
-          <label>Mossa</label>
-          <input list="mv_dl" id="mv_name" class="form-control" placeholder="Es. Earthquake" oninput="onMoveSelect()">
+          <label>{{ t('Mossa') }}</label>
+          <input list="mv_dl" id="mv_name" class="form-control" placeholder="{{ t('Es. Earthquake') }}" oninput="onMoveSelect()">
           <datalist id="mv_dl"></datalist>
           <div id="mv_legali" style="display:none;margin-top:.25rem;font-size:.68rem"></div>
           <div id="mv_autofill" style="display:none;margin-top:.3rem;gap:.3rem" class="flex flex-wrap"></div>
         </div>
-        <div class="form-group"><label>Potenza base</label>
+        <div class="form-group"><label>{{ t('Potenza base') }}</label>
           <input id="mv_bp" type="number" class="form-control" value="100" min="1">
           <div id="mv_weather_note" style="display:none;margin-top:.25rem;font-size:.68rem;color:var(--primary)"></div></div>
-        <div class="form-group"><label>Tipo mossa</label>
+        <div class="form-group"><label>{{ t('Tipo mossa') }}</label>
           <select id="mv_type" class="form-control">
-            <option value="">— Sconosciuto —</option>
-            <option value="Normale">Normale</option>
-            <option value="Fuoco">Fuoco</option>
-            <option value="Acqua">Acqua</option>
-            <option value="Elettro">Elettro</option>
-            <option value="Erba">Erba</option>
-            <option value="Ghiaccio">Ghiaccio</option>
-            <option value="Lotta">Lotta</option>
-            <option value="Veleno">Veleno</option>
-            <option value="Terra">Terra</option>
-            <option value="Volante">Volante</option>
-            <option value="Psico">Psico</option>
-            <option value="Coleottero">Coleottero</option>
-            <option value="Roccia">Roccia</option>
-            <option value="Spettro">Spettro</option>
-            <option value="Drago">Drago</option>
-            <option value="Buio">Buio</option>
-            <option value="Acciaio">Acciaio</option>
-            <option value="Folletto">Folletto</option>
+            <option value="">{{ t('— Sconosciuto —') }}</option>
+            <option value="Normale">{{ t('Normale') }}</option>
+            <option value="Fuoco">{{ t('Fuoco') }}</option>
+            <option value="Acqua">{{ t('Acqua') }}</option>
+            <option value="Elettro">{{ t('Elettro') }}</option>
+            <option value="Erba">{{ t('Erba') }}</option>
+            <option value="Ghiaccio">{{ t('Ghiaccio') }}</option>
+            <option value="Lotta">{{ t('Lotta') }}</option>
+            <option value="Veleno">{{ t('Veleno') }}</option>
+            <option value="Terra">{{ t('Terra') }}</option>
+            <option value="Volante">{{ t('Volante') }}</option>
+            <option value="Psico">{{ t('Psico') }}</option>
+            <option value="Coleottero">{{ t('Coleottero') }}</option>
+            <option value="Roccia">{{ t('Roccia') }}</option>
+            <option value="Spettro">{{ t('Spettro') }}</option>
+            <option value="Drago">{{ t('Drago') }}</option>
+            <option value="Buio">{{ t('Buio') }}</option>
+            <option value="Acciaio">{{ t('Acciaio') }}</option>
+            <option value="Folletto">{{ t('Folletto') }}</option>
           </select></div>
-        <div class="form-group"><label>Categoria</label>
+        <div class="form-group"><label>{{ t('Categoria') }}</label>
           <select id="mv_cat" class="form-control">
-            <option value="physical">⚔️ Fisico</option>
-            <option value="special">✨ Speciale</option>
+            <option value="physical">⚔️ {{ t('Fisico') }}</option>
+            <option value="special">✨ {{ t('Speciale') }}</option>
           </select></div>
         <div class="form-group mb-0"><label>Spread?</label>
           <select id="mv_spread" class="form-control">
-            <option value="1">Singolo ×1.0</option>
+            <option value="1">{{ t('Singolo') }} ×1.0</option>
             <option value="0.75">Spread ×0.75</option>
           </select></div>
       </div>
     </div>
-    <button class="btn btn-primary" style="width:100%;font-size:.85rem;padding:.55rem" onclick="calcDamage()">⚡ Calcola</button>
+    <button class="btn btn-primary" style="width:100%;font-size:.85rem;padding:.55rem" onclick="calcDamage()">⚡ {{ t('Calcola') }}</button>
     <div class="card mb-0">
-      <div class="card-header"><span class="card-title" style="font-size:.78rem">🌍 Condizioni</span></div>
+      <div class="card-header"><span class="card-title" style="font-size:.78rem">🌍 {{ t('Condizioni') }}</span></div>
       <div class="card-body">
-        <div class="form-group"><label>Meteo</label>
+        <div class="form-group"><label>{{ t('Meteo') }}</label>
           <select id="f_weather" class="form-control">
-            <option value="">Nessuno</option>
-            <option value="sun">☀️ Sole</option><option value="rain">🌧️ Pioggia</option>
-            <option value="sand">🌪️ Sabbia</option><option value="snow">❄️ Neve</option>
-            <option value="harshsun">☀️☀️ Sole forte</option>
-            <option value="heavyrain">🌧️🌧️ Pioggia forte</option>
+            <option value="">{{ t('Nessuno') }}</option>
+            <option value="sun">☀️ {{ t('Sole') }}</option><option value="rain">🌧️ {{ t('Pioggia') }}</option>
+            <option value="sand">🌪️ {{ t('Sabbia') }}</option><option value="snow">❄️ {{ t('Neve') }}</option>
+            <option value="harshsun">☀️☀️ {{ t('Sole forte') }}</option>
+            <option value="heavyrain">🌧️🌧️ {{ t('Pioggia forte') }}</option>
           </select>
           <div id="f_weather_note" style="display:none;margin-top:.25rem;font-size:.68rem;color:var(--primary)"></div></div>
         <div class="form-group mb-0"><label>Terrain</label>
           <select id="f_terrain" class="form-control">
-            <option value="">Nessuno</option>
-            <option value="electric">⚡ Elettrico</option>
-            <option value="grassy">🌿 Erboso</option>
-            <option value="psychic">Psichico</option>
-            <option value="misty">Nebbioso (Fairy)</option>
+            <option value="">{{ t('Nessuno') }}</option>
+            <option value="electric">⚡ {{ t('Elettrico') }}</option>
+            <option value="grassy">🌿 {{ t('Erboso') }}</option>
+            <option value="psychic">{{ t('Psichico') }}</option>
+            <option value="misty">{{ t('Nebbioso (Fairy)') }}</option>
           </select></div>
         <label style="display:flex;align-items:center;gap:.4rem;cursor:pointer;font-size:.75rem;margin-top:.5rem">
-          <input type="checkbox" id="f_tailwind" style="accent-color:var(--primary)"> Tailwind (Speed x2, non cambia danno)</label>
+          <input type="checkbox" id="f_tailwind" style="accent-color:var(--primary)"> {{ t('Tailwind (Speed x2, non cambia danno)') }}</label>
         <label style="display:flex;align-items:center;gap:.4rem;cursor:pointer;font-size:.75rem;margin-top:.25rem">
           <input type="checkbox" id="f_trickroom" style="accent-color:var(--primary)"> Trick Room</label>
         <label style="display:flex;align-items:center;gap:.4rem;cursor:pointer;font-size:.75rem;margin-top:.5rem">
-          <input type="checkbox" id="f_crit" style="accent-color:var(--primary)"> Critico</label>
+          <input type="checkbox" id="f_crit" style="accent-color:var(--primary)"> {{ t('Critico') }}</label>
         <label style="display:flex;align-items:center;gap:.4rem;cursor:pointer;font-size:.75rem;margin-top:.25rem">
           <input type="checkbox" id="f_hh" style="accent-color:var(--primary)"> Helping Hand</label>
         <label style="display:flex;align-items:center;gap:.4rem;cursor:pointer;font-size:.75rem;margin-top:.25rem">
           <input type="checkbox" id="f_reflect" style="accent-color:var(--primary)"> Reflect (DEF ×0.5)</label>
         <label style="display:flex;align-items:center;gap:.4rem;cursor:pointer;font-size:.75rem;margin-top:.25rem">
           <input type="checkbox" id="f_lscreen" style="accent-color:var(--primary)"> Light Screen (SpD ×0.5)</label>
-        <label style="display:flex;align-items:center;gap:.4rem;cursor:pointer;font-size:.75rem;margin-top:.5rem" title="Compilato in automatico dal flag della mossa; puoi forzarlo a mano">
-          <input type="checkbox" id="f_contact" style="accent-color:var(--primary)" onchange="calcDamage()"> Mossa da contatto <span id="f_contact_auto" style="opacity:.6;font-size:.68rem"></span></label>
-        <label style="display:flex;align-items:center;gap:.4rem;cursor:pointer;font-size:.75rem;margin-top:.25rem" title="Attiva Overgrow / Blaze / Torrent / Swarm">
-          <input type="checkbox" id="f_atk_pinch" style="accent-color:var(--primary)" onchange="calcDamage()"> Attaccante sotto 1/3 HP</label>
+        <label style="display:flex;align-items:center;gap:.4rem;cursor:pointer;font-size:.75rem;margin-top:.5rem" title="{{ t('Compilato in automatico dal flag della mossa; puoi forzarlo a mano') }}">
+          <input type="checkbox" id="f_contact" style="accent-color:var(--primary)" onchange="calcDamage()"> {{ t('Mossa da contatto') }} <span id="f_contact_auto" style="opacity:.6;font-size:.68rem"></span></label>
+        <label style="display:flex;align-items:center;gap:.4rem;cursor:pointer;font-size:.75rem;margin-top:.25rem" title="{{ t('Attiva Overgrow / Blaze / Torrent / Swarm') }}">
+          <input type="checkbox" id="f_atk_pinch" style="accent-color:var(--primary)" onchange="calcDamage()"> {{ t('Attaccante sotto 1/3 HP') }}</label>
       </div>
     </div>
   </div>
 
   <!-- Difensore -->
   <div class="card mb-0">
-    <div class="card-header"><span class="card-title">🛡️ Difensore</span></div>
+    <div class="card-header"><span class="card-title">🛡️ {{ t('Difensore') }}</span></div>
     <div class="card-body">
       <div class="form-group">
         <label>Pokémon</label>
-        <input list="rl_def" id="def_name" class="form-control" placeholder="Cerca..." oninput="loadSide('def')">
+        <input list="rl_def" id="def_name" class="form-control" placeholder="{{ t('Cerca...') }}" oninput="loadSide('def')">
         <datalist id="rl_def">{% for pk in roster %}<option value="{{ nomi_vis.get(pk, pk) }}">{% endfor %}{% for mk in mega_list %}<option value="{{ nomi_vis.get(mk, mk) }}">{% endfor %}</datalist>
       </div>
       <div id="def_form_wrap" style="display:none;margin-top:6px">
@@ -283,11 +286,11 @@
         <span style="font-size:2.5rem;opacity:.25">🛡️</span>
       </div>
       <div class="form-row">
-        <div class="form-group"><label>Liv.</label>
+        <div class="form-group"><label>{{ t('Liv.') }}</label>
           <input id="def_lvl" type="number" class="form-control" value="50" min="1" max="100" oninput="recalcSide('def')"></div>
-        <div class="form-group"><label>Natura</label>
+        <div class="form-group"><label>{{ t('Natura') }}</label>
           <select id="def_nat" class="form-control" onchange="recalcSide('def')">
-            <option value="">Neutrale</option>
+            <option value="">{{ t('Neutrale') }}</option>
             {% for n in natures %}<option value="{{ n }}">{{ n }}</option>{% endfor %}
           </select></div>
       </div>
@@ -302,73 +305,73 @@
       </div>
       <!-- Tera + Tipi + Stage + Item DEF -->
       <div class="form-row" style="margin-top:.35rem">
-        <div class="form-group"><label style="font-size:.72rem">Tipo 1 DEF</label>
+        <div class="form-group"><label style="font-size:.72rem">{{ t('Tipo 1 DEF') }}</label>
           <select id="def_type1" class="form-control" style="font-size:.78rem">
             <option value="">—</option>
-            <option value="Normale">Normale</option>
-            <option value="Fuoco">Fuoco</option>
-            <option value="Acqua">Acqua</option>
-            <option value="Elettro">Elettro</option>
-            <option value="Erba">Erba</option>
-            <option value="Ghiaccio">Ghiaccio</option>
-            <option value="Lotta">Lotta</option>
-            <option value="Veleno">Veleno</option>
-            <option value="Terra">Terra</option>
-            <option value="Volante">Volante</option>
-            <option value="Psico">Psico</option>
-            <option value="Coleottero">Coleottero</option>
-            <option value="Roccia">Roccia</option>
-            <option value="Spettro">Spettro</option>
-            <option value="Drago">Drago</option>
-            <option value="Buio">Buio</option>
-            <option value="Acciaio">Acciaio</option>
-            <option value="Folletto">Folletto</option>
+            <option value="Normale">{{ t('Normale') }}</option>
+            <option value="Fuoco">{{ t('Fuoco') }}</option>
+            <option value="Acqua">{{ t('Acqua') }}</option>
+            <option value="Elettro">{{ t('Elettro') }}</option>
+            <option value="Erba">{{ t('Erba') }}</option>
+            <option value="Ghiaccio">{{ t('Ghiaccio') }}</option>
+            <option value="Lotta">{{ t('Lotta') }}</option>
+            <option value="Veleno">{{ t('Veleno') }}</option>
+            <option value="Terra">{{ t('Terra') }}</option>
+            <option value="Volante">{{ t('Volante') }}</option>
+            <option value="Psico">{{ t('Psico') }}</option>
+            <option value="Coleottero">{{ t('Coleottero') }}</option>
+            <option value="Roccia">{{ t('Roccia') }}</option>
+            <option value="Spettro">{{ t('Spettro') }}</option>
+            <option value="Drago">{{ t('Drago') }}</option>
+            <option value="Buio">{{ t('Buio') }}</option>
+            <option value="Acciaio">{{ t('Acciaio') }}</option>
+            <option value="Folletto">{{ t('Folletto') }}</option>
           </select></div>
-        <div class="form-group"><label style="font-size:.72rem">Tipo 2 DEF</label>
+        <div class="form-group"><label style="font-size:.72rem">{{ t('Tipo 2 DEF') }}</label>
           <select id="def_type2" class="form-control" style="font-size:.78rem">
             <option value="">—</option>
-            <option value="Normale">Normale</option>
-            <option value="Fuoco">Fuoco</option>
-            <option value="Acqua">Acqua</option>
-            <option value="Elettro">Elettro</option>
-            <option value="Erba">Erba</option>
-            <option value="Ghiaccio">Ghiaccio</option>
-            <option value="Lotta">Lotta</option>
-            <option value="Veleno">Veleno</option>
-            <option value="Terra">Terra</option>
-            <option value="Volante">Volante</option>
-            <option value="Psico">Psico</option>
-            <option value="Coleottero">Coleottero</option>
-            <option value="Roccia">Roccia</option>
-            <option value="Spettro">Spettro</option>
-            <option value="Drago">Drago</option>
-            <option value="Buio">Buio</option>
-            <option value="Acciaio">Acciaio</option>
-            <option value="Folletto">Folletto</option>
+            <option value="Normale">{{ t('Normale') }}</option>
+            <option value="Fuoco">{{ t('Fuoco') }}</option>
+            <option value="Acqua">{{ t('Acqua') }}</option>
+            <option value="Elettro">{{ t('Elettro') }}</option>
+            <option value="Erba">{{ t('Erba') }}</option>
+            <option value="Ghiaccio">{{ t('Ghiaccio') }}</option>
+            <option value="Lotta">{{ t('Lotta') }}</option>
+            <option value="Veleno">{{ t('Veleno') }}</option>
+            <option value="Terra">{{ t('Terra') }}</option>
+            <option value="Volante">{{ t('Volante') }}</option>
+            <option value="Psico">{{ t('Psico') }}</option>
+            <option value="Coleottero">{{ t('Coleottero') }}</option>
+            <option value="Roccia">{{ t('Roccia') }}</option>
+            <option value="Spettro">{{ t('Spettro') }}</option>
+            <option value="Drago">{{ t('Drago') }}</option>
+            <option value="Buio">{{ t('Buio') }}</option>
+            <option value="Acciaio">{{ t('Acciaio') }}</option>
+            <option value="Folletto">{{ t('Folletto') }}</option>
           </select></div>
       </div>
       <div class="form-group">
-        <label style="font-size:.72rem">Tera Type DEF <span style="font-weight:400;opacity:.55">(opz.)</span></label>
+        <label style="font-size:.72rem">Tera Type DEF <span style="font-weight:400;opacity:.55">{{ t('(opz.)') }}</span></label>
         <select id="def_tera" class="form-control" style="font-size:.78rem">
-          <option value="">Nessuna Tera</option>
-          <option value="Normale">Normale</option>
-          <option value="Fuoco">Fuoco</option>
-          <option value="Acqua">Acqua</option>
-          <option value="Elettro">Elettro</option>
-          <option value="Erba">Erba</option>
-          <option value="Ghiaccio">Ghiaccio</option>
-          <option value="Lotta">Lotta</option>
-          <option value="Veleno">Veleno</option>
-          <option value="Terra">Terra</option>
-          <option value="Volante">Volante</option>
-          <option value="Psico">Psico</option>
-          <option value="Coleottero">Coleottero</option>
-          <option value="Roccia">Roccia</option>
-          <option value="Spettro">Spettro</option>
-          <option value="Drago">Drago</option>
-          <option value="Buio">Buio</option>
-          <option value="Acciaio">Acciaio</option>
-          <option value="Folletto">Folletto</option>
+          <option value="">{{ t('Nessuna Tera') }}</option>
+          <option value="Normale">{{ t('Normale') }}</option>
+          <option value="Fuoco">{{ t('Fuoco') }}</option>
+          <option value="Acqua">{{ t('Acqua') }}</option>
+          <option value="Elettro">{{ t('Elettro') }}</option>
+          <option value="Erba">{{ t('Erba') }}</option>
+          <option value="Ghiaccio">{{ t('Ghiaccio') }}</option>
+          <option value="Lotta">{{ t('Lotta') }}</option>
+          <option value="Veleno">{{ t('Veleno') }}</option>
+          <option value="Terra">{{ t('Terra') }}</option>
+          <option value="Volante">{{ t('Volante') }}</option>
+          <option value="Psico">{{ t('Psico') }}</option>
+          <option value="Coleottero">{{ t('Coleottero') }}</option>
+          <option value="Roccia">{{ t('Roccia') }}</option>
+          <option value="Spettro">{{ t('Spettro') }}</option>
+          <option value="Drago">{{ t('Drago') }}</option>
+          <option value="Buio">{{ t('Buio') }}</option>
+          <option value="Acciaio">{{ t('Acciaio') }}</option>
+          <option value="Folletto">{{ t('Folletto') }}</option>
         </select></div>
       <div class="form-row">
         <div class="form-group"><label style="font-size:.72rem">Stage <span id="def_stage_lbl">DEF</span></label>
@@ -389,7 +392,7 @@
           </select></div>
         <div class="form-group"><label style="font-size:.72rem">Item DEF</label>
           <select id="def_item" class="form-control" style="font-size:.78rem" onchange="calcDamage()">
-            <option value="1">— Nessun oggetto —</option>
+            <option value="1">{{ t('— Nessun oggetto —') }}</option>
             {% for iname, idata in items_data["items"]|dictsort %}{% if idata.category in ["defensive","healing","berry","survival","support","weather","terrain"] and idata.modifier %}<option value="{{ idata.modifier }}">{{ nome_vis(idata, iname) }} ×{{ idata.modifier }}</option>{% endif %}{% endfor %}
           </select>
         </div>
@@ -398,7 +401,7 @@
           <label style="font-size:.72rem">Ability DEF</label>
           <!-- Popolata da popolaSelectAbilita() con tutte le abilità di abilities.json -->
           <select id="def_ability" class="form-control" style="font-size:.78rem" onchange="calcDamage()">
-          <option value="">— Nessuna —</option>
+          <option value="">{{ t('— Nessuna —') }}</option>
         </select>
         </div>
       </div>
@@ -414,11 +417,11 @@
 <div id="tab_speed" class="calc-panel">
 <div style="display:grid;grid-template-columns:300px 1fr;gap:1rem">
   <div class="card mb-0">
-    <div class="card-header"><span class="card-title">⚡ Il tuo Pokémon</span></div>
+    <div class="card-header"><span class="card-title">⚡ {{ t('Il tuo Pokémon') }}</span></div>
     <div class="card-body">
       <div class="form-group">
         <label>Pokémon</label>
-        <input list="rl_spe" id="spe_name" class="form-control" placeholder="Cerca..." oninput="loadSpePkmn()">
+        <input list="rl_spe" id="spe_name" class="form-control" placeholder="{{ t('Cerca...') }}" oninput="loadSpePkmn()">
         <datalist id="rl_spe">{% for pk in roster %}<option value="{{ nomi_vis.get(pk, pk) }}">{% endfor %}{% for mk in mega_list %}<option value="{{ nomi_vis.get(mk, mk) }}">{% endfor %}</datalist>
       </div>
       <div id="spe_spr" style="text-align:center;height:62px;display:flex;align-items:center;justify-content:center">
@@ -430,28 +433,28 @@
         <div class="form-group"><label>EVs</label>
           <input id="spe_ev" type="number" min="0" max="32" class="form-control" value="0" oninput="updateSpeed()"></div>
       </div>
-      <div class="form-group"><label>Natura</label>
+      <div class="form-group"><label>{{ t('Natura') }}</label>
         <select id="spe_nat" class="form-control" onchange="updateSpeed()">
-          <option value="1.0">Neutrale ×1.0</option>
+          <option value="1.0">{{ t('Neutrale') }} ×1.0</option>
           <option value="1.1">+Speed ×1.1</option>
           <option value="0.9">-Speed ×0.9</option>
         </select>
       </div>
         <div class="form-group">
-          <label style="font-size:.78rem">Abilità</label>
+          <label style="font-size:.78rem">{{ t('Abilità') }}</label>
           <select id="spe_abil" class="form-control" style="font-size:.78rem" onchange="updateSpeed()">
-          <option value="">— Nessuna —</option>
+          <option value="">{{ t('— Nessuna —') }}</option>
         </select>
         </div>
         <div class="form-group">
-          <label style="font-size:.78rem">Mossa di potenziamento</label>
+          <label style="font-size:.78rem">{{ t('Mossa di potenziamento') }}</label>
           <select id="spe_boost" class="form-control" style="font-size:.78rem" onchange="onBoostSelect()">
-            <option value="">— Nessuna —</option>
+            <option value="">{{ t('— Nessuna —') }}</option>
           </select>
           <div id="spe_boost_nota" style="display:none;margin-top:.25rem;font-size:.68rem"></div>
         </div>
         <div class="form-group">
-          <label style="font-size:.78rem">Stage Velocità</label>
+          <label style="font-size:.78rem">{{ t('Stage Velocità') }}</label>
           <select id="spe_stage" class="form-control" style="font-size:.78rem" onchange="updateSpeed()">
             <option value="-6">-6 ×0.25</option><option value="-5">-5 ×0.286</option>
             <option value="-4">-4 ×0.333</option><option value="-3">-3 ×0.4</option>
@@ -463,7 +466,7 @@
           </select>
         </div>
     <div class="form-group mb-0">
-      <label style="font-size:.78rem">Condizioni</label>
+      <label style="font-size:.78rem">{{ t('Condizioni') }}</label>
       <div class="flex flex-wrap gap-1" style="font-size:.75rem;margin-top:.25rem">
       <label style="display:flex;align-items:center;gap:.3rem;cursor:pointer">
         <input type="checkbox" id="spe_tailwind" style="accent-color:var(--primary)" onchange="updateSpeed()"> 🌬️ Tailwind ×2
@@ -472,7 +475,7 @@
         <input type="checkbox" id="spe_scarf" style="accent-color:var(--primary)" onchange="updateSpeed()"> 🧣 Choice Scarf ×1.5
       </label>
       <label style="display:flex;align-items:center;gap:.3rem;cursor:pointer">
-        <input type="checkbox" id="spe_para" style="accent-color:var(--primary)" onchange="updateSpeed()"> ⚡ Paralisi ×0.5
+        <input type="checkbox" id="spe_para" style="accent-color:var(--primary)" onchange="updateSpeed()"> ⚡ {{ t('Paralisi') }} ×0.5
       </label>
       <label style="display:flex;align-items:center;gap:.3rem;cursor:pointer">
         <input type="checkbox" id="spe_icywind" style="accent-color:var(--primary)" onchange="updateSpeed()"> 🌀 Icy Wind ×0.5
@@ -481,37 +484,37 @@
         <input type="checkbox" id="spe_trickroom" style="accent-color:var(--primary)" onchange="updateSpeed()"> 🔄 Trick Room
       </label>
     </div>
-    <label style="font-size:.78rem;margin-top:.5rem;display:block">Meteo</label>
+    <label style="font-size:.78rem;margin-top:.5rem;display:block">{{ t('Meteo') }}</label>
     <select id="spe_weather" class="form-control" style="font-size:.78rem" onchange="updateSpeed()">
-      <option value="">Nessuno</option>
-      <option value="sun">☀️ Sole</option>
-      <option value="rain">🌧️ Pioggia</option>
-      <option value="sand">🌪️ Sabbia</option>
-      <option value="snow">❄️ Neve</option>
+      <option value="">{{ t('Nessuno') }}</option>
+      <option value="sun">☀️ {{ t('Sole') }}</option>
+      <option value="rain">🌧️ {{ t('Pioggia') }}</option>
+      <option value="sand">🌪️ {{ t('Sabbia') }}</option>
+      <option value="snow">❄️ {{ t('Neve') }}</option>
     </select>
   </div>
       <div class="text-center mt-2">
-        <div class="text-xs text-muted">Speed calcolata (Lv.50)</div>
+        <div class="text-xs text-muted">{{ t('Speed calcolata (Lv.50)') }}</div>
         <div id="spe_val" style="font-size:2rem;font-weight:800;color:var(--primary)">—</div>
       </div>
     </div>
   </div>
   <div class="card mb-0">
     <div class="card-header">
-      <span class="card-title" id="speed_tier_header">📊 Speed Tier — caricamento regulation</span>
+      <span class="card-title" id="speed_tier_header">📊 {{ t('Speed Tier — caricamento regulation') }}</span>
       <div class="flex gap-1">
-        <input id="spe_search" class="form-control" style="max-width:130px;font-size:.75rem" placeholder="Filtra..." oninput="renderSpeed()">
+        <input id="spe_search" class="form-control" style="max-width:130px;font-size:.75rem" placeholder="{{ t('Filtra...') }}" oninput="renderSpeed()">
         <select id="spe_filter" class="form-control" style="max-width:130px;font-size:.75rem" onchange="renderSpeed()">
-          <option value="all">Tutti</option>
-          <option value="faster">Più veloci</option>
-          <option value="slower">Più lenti</option>
+          <option value="all">{{ t('Tutti') }}</option>
+          <option value="faster">{{ t('Più veloci') }}</option>
+          <option value="slower">{{ t('Più lenti') }}</option>
           <option value="creep">Speed creep ±10</option>
         </select>
       </div>
     </div>
     <div id="speed_list" style="max-height:480px;overflow-y:auto;padding:.35rem .5rem">
       <div style="text-align:center;padding:2rem;color:var(--text-muted);font-size:.85rem">
-        Seleziona un Pokémon per vedere i confronti
+        {{ t('Seleziona un Pokémon per vedere i confronti') }}
       </div>
     </div>
   </div>
@@ -528,7 +531,7 @@
     <div class="card-body">
       <div class="form-group">
         <label>Pokémon</label>
-        <input list="rl_stat" id="stat_name" class="form-control" placeholder="Cerca un Pokémon..." oninput="loadStatPkmn('a')">
+        <input list="rl_stat" id="stat_name" class="form-control" placeholder="{{ t('Cerca un Pokémon...') }}" oninput="loadStatPkmn('a')">
         <datalist id="rl_stat">{% for pk in roster_calc %}<option value="{{ nomi_vis.get(pk, pk) }}">{% endfor %}{% for mk in mega_list %}<option value="{{ nomi_vis.get(mk, mk) }}">{% endfor %}</datalist>
       </div>
       <div style="display:flex;gap:.75rem;margin:.5rem 0;align-items:flex-start">
@@ -542,23 +545,23 @@
           <div id="stat_abils" class="text-xs text-muted" style="line-height:1.8"></div>
         </div>
       </div>
-      <div class="form-group"><label>Natura</label>
+      <div class="form-group"><label>{{ t('Natura') }}</label>
         <select id="stat_nat" class="form-control" onchange="updateStatPreview()">
-          <option value="">Neutrale</option>
+          <option value="">{{ t('Neutrale') }}</option>
           {% for n in natures %}<option value="{{ n }}">{{ n }}{% if n in nature_effects %} ({{ nature_effects[n][0] }} {{ nature_effects[n][1] }}){% endif %}</option>{% endfor %}
         </select>
       </div>
-      <div class="form-group"><label>Livello</label>
+      <div class="form-group"><label>{{ t('Livello') }}</label>
         <input id="stat_lvl" type="number" class="form-control" value="50" min="1" max="100" oninput="updateStatPreview()">
       </div>
       <!-- Popolata da popolaSelectAbilita(); ● = incide sulle stat mostrate -->
-      <div class="form-group"><label>Abilità</label>
+      <div class="form-group"><label>{{ t('Abilità') }}</label>
         <select id="stat_abil" class="form-control" onchange="updateStatPreview()">
-          <option value="">— Nessuna —</option>
+          <option value="">{{ t('— Nessuna —') }}</option>
         </select>
         <label style="display:flex;align-items:center;gap:.3rem;cursor:pointer;font-size:.68rem;margin-top:.25rem;font-weight:400">
           <input type="checkbox" id="abil_tutte_stat" style="accent-color:var(--primary)" onchange="ripopolaAbilita()">
-          mostra tutte le abilità del catalogo
+          {{ t('mostra tutte le abilità del catalogo') }}
         </label>
       </div>
       <div class="stat-grid">
@@ -578,12 +581,12 @@
   <div class="card mb-0">
     <div class="card-header" style="display:flex;align-items:center;justify-content:space-between">
       <span class="card-title" style="color:#e07b39">🟠 Pokémon B</span>
-      <button class="btn btn-secondary btn-sm" style="font-size:.68rem;padding:.2rem .5rem" onclick="clearStatB()">✕ Rimuovi</button>
+      <button class="btn btn-secondary btn-sm" style="font-size:.68rem;padding:.2rem .5rem" onclick="clearStatB()">✕ {{ t('Rimuovi') }}</button>
     </div>
     <div class="card-body">
       <div class="form-group">
         <label>Pokémon</label>
-        <input list="rl_stat_b" id="stat_name_b" class="form-control" placeholder="Cerca un Pokémon..." oninput="loadStatPkmn('b')">
+        <input list="rl_stat_b" id="stat_name_b" class="form-control" placeholder="{{ t('Cerca un Pokémon...') }}" oninput="loadStatPkmn('b')">
         <datalist id="rl_stat_b">{% for pk in roster_calc %}<option value="{{ nomi_vis.get(pk, pk) }}">{% endfor %}{% for mk in mega_list %}<option value="{{ nomi_vis.get(mk, mk) }}">{% endfor %}</datalist>
       </div>
       <div style="display:flex;gap:.75rem;margin:.5rem 0;align-items:flex-start">
@@ -597,19 +600,19 @@
           <div id="stat_abils_b" class="text-xs text-muted" style="line-height:1.8"></div>
         </div>
       </div>
-      <div class="form-group"><label>Natura</label>
+      <div class="form-group"><label>{{ t('Natura') }}</label>
         <select id="stat_nat_b" class="form-control" onchange="updateStatPreview()">
-          <option value="">Neutrale</option>
+          <option value="">{{ t('Neutrale') }}</option>
           {% for n in natures %}<option value="{{ n }}">{{ n }}{% if n in nature_effects %} ({{ nature_effects[n][0] }} {{ nature_effects[n][1] }}){% endif %}</option>{% endfor %}
         </select>
       </div>
-      <div class="form-group"><label>Livello</label>
+      <div class="form-group"><label>{{ t('Livello') }}</label>
         <input id="stat_lvl_b" type="number" class="form-control" value="50" min="1" max="100" oninput="updateStatPreview()">
       </div>
       <!-- Popolata da popolaSelectAbilita(); ● = incide sulle stat mostrate -->
-      <div class="form-group"><label>Abilità</label>
+      <div class="form-group"><label>{{ t('Abilità') }}</label>
         <select id="stat_abil_b" class="form-control" onchange="updateStatPreview()">
-          <option value="">— Nessuna —</option>
+          <option value="">{{ t('— Nessuna —') }}</option>
         </select>
       </div>
       <div class="stat-grid">
@@ -627,10 +630,10 @@
 
   <!-- Barre confronto -->
   <div class="card mb-0">
-    <div class="card-header"><span class="card-title">📊 Confronto Stat (Lv.50)</span></div>
+    <div class="card-header"><span class="card-title">📊 {{ t('Confronto Stat (Lv.50)') }}</span></div>
     <div class="card-body">
       <div id="stat_bars">
-        <div style="text-align:center;padding:2rem;color:var(--text-muted);font-size:.85rem">Seleziona almeno un Pokémon</div>
+        <div style="text-align:center;padding:2rem;color:var(--text-muted);font-size:.85rem">{{ t('Seleziona almeno un Pokémon') }}</div>
       </div>
     </div>
   </div>
@@ -641,27 +644,30 @@
 <!-- ═══════════════════ TAB REFERENCE ═══════════════════ -->
 <div id="tab_ref" class="calc-panel">
   <div style="display:flex;gap:.4rem;margin-bottom:1rem">
-    <button onclick="showRefSection('types',this)" id="refsec_btn_types" class="btn btn-primary btn-sm">🗂️ Tipi</button>
-    <button onclick="showRefSection('natures',this)" id="refsec_btn_natures" class="btn btn-secondary btn-sm">🌿 Nature</button>
+    <button onclick="showRefSection('types',this)" id="refsec_btn_types" class="btn btn-primary btn-sm">🗂️ {{ t('Tipi') }}</button>
+    <button onclick="showRefSection('natures',this)" id="refsec_btn_natures" class="btn btn-secondary btn-sm">🌿 {{ t('Nature') }}</button>
   </div>
   <div id="refsec_types" class="card mb-0" style="display:block">
-    <div class="card-header"><span class="card-title">🗂️ Tabella Efficacia Tipi — Gen 9</span></div>
+    <div class="card-header"><span class="card-title">🗂️ {{ t('Tabella Efficacia Tipi — Gen 9') }}</span></div>
     <div class="card-body">
+      {# La frase resta **intera** nel dizionario, `<strong>` compresi: spezzarla in
+         pezzi da concatenare renderebbe impossibile l'ordine delle parole inglese.
+         `|safe` e' sicuro perche' la sorgente e' data/i18n/*.json, non l'utente. #}
       <p style="font-size:.78rem;color:var(--text-muted);margin-bottom:.7rem">
-        Righe = tipo <strong>attaccante</strong> · Colonne = tipo <strong>difensore</strong>
+        {{ t('Righe = tipo <strong>attaccante</strong> · Colonne = tipo <strong>difensore</strong>')|safe }}
         &nbsp;|&nbsp;
-        <span style="background:#2a8a3a;color:#fff;padding:.1rem .35rem;border-radius:3px;font-size:.68rem">2×</span> super efficace &nbsp;
-        <span style="background:#c33322;color:#fff;padding:.1rem .35rem;border-radius:3px;font-size:.68rem">½</span> poco efficace &nbsp;
-        <span style="background:#555;color:#fff;padding:.1rem .35rem;border-radius:3px;font-size:.68rem">0</span> immune
+        <span style="background:#2a8a3a;color:#fff;padding:.1rem .35rem;border-radius:3px;font-size:.68rem">2×</span> {{ t('super efficace') }} &nbsp;
+        <span style="background:#c33322;color:#fff;padding:.1rem .35rem;border-radius:3px;font-size:.68rem">½</span> {{ t('poco efficace') }} &nbsp;
+        <span style="background:#555;color:#fff;padding:.1rem .35rem;border-radius:3px;font-size:.68rem">0</span> {{ t('immune') }}
       </p>
       <div id="tab_tipi_box"></div>
     </div>
   </div>
   <div id="refsec_natures" class="card mb-0" style="display:none;max-width:420px">
-    <div class="card-header"><span class="card-title">🌿 Tabella Nature</span></div>
+    <div class="card-header"><span class="card-title">🌿 {{ t('Tabella Nature') }}</span></div>
     <div class="card-body">
       <p style="font-size:.78rem;color:var(--text-muted);margin-bottom:.7rem">
-        Ogni natura aumenta una stat del <strong style="color:#2a8a3a">+10%</strong> e ne diminuisce un'altra del <strong style="color:#c33322">-10%</strong>.
+        {{ t('Ogni natura aumenta una stat del <strong style="color:#2a8a3a">+10%</strong> e ne diminuisce un\'altra del <strong style="color:#c33322">-10%</strong>.')|safe }}
       </p>
       <div id="tab_nature_box"></div>
     </div>
@@ -674,22 +680,22 @@
     <!-- Header overlay -->
     <div style="display:flex;align-items:center;gap:.75rem;padding:.85rem 1.1rem;border-bottom:1px solid var(--border);flex-shrink:0">
       <div style="display:flex;gap:.4rem">
-        <button onclick="showRef('types')" id="ref_btn_types" class="btn btn-primary btn-sm">🗂️ Tipi</button>
-        <button onclick="showRef('natures')" id="ref_btn_natures" class="btn btn-secondary btn-sm">🌿 Nature</button>
+        <button onclick="showRef('types')" id="ref_btn_types" class="btn btn-primary btn-sm">🗂️ {{ t('Tipi') }}</button>
+        <button onclick="showRef('natures')" id="ref_btn_natures" class="btn btn-secondary btn-sm">🌿 {{ t('Nature') }}</button>
       </div>
-      <span id="ref_title" style="font-weight:700;font-size:.95rem;flex:1">Tabella Tipi</span>
+      <span id="ref_title" style="font-weight:700;font-size:.95rem;flex:1">{{ t('Tabella Tipi') }}</span>
       <button onclick="closeRef()" style="background:none;border:none;font-size:1.4rem;cursor:pointer;color:var(--text-muted);line-height:1">×</button>
     </div>
     <!-- Contenuto scrollabile -->
     <div style="overflow:auto;padding:1rem;flex:1">
       <!-- TIPI -->
       <div id="ref_types">
-        <p style="font-size:.75rem;color:var(--text-muted);margin-bottom:.6rem">Righe = tipo attaccante · Colonne = tipo difensore &nbsp;|&nbsp; <span style="background:#2a8a3a;color:#fff;padding:.1rem .3rem;border-radius:3px;font-size:.65rem">2×</span> super efficace &nbsp; <span style="background:#c33322;color:#fff;padding:.1rem .3rem;border-radius:3px;font-size:.65rem">½</span> poco efficace &nbsp; <span style="background:#555;color:#fff;padding:.1rem .3rem;border-radius:3px;font-size:.65rem">0</span> immune</p>
+        <p style="font-size:.75rem;color:var(--text-muted);margin-bottom:.6rem">{{ t('Righe = tipo attaccante · Colonne = tipo difensore') }} &nbsp;|&nbsp; <span style="background:#2a8a3a;color:#fff;padding:.1rem .3rem;border-radius:3px;font-size:.65rem">2×</span> {{ t('super efficace') }} &nbsp; <span style="background:#c33322;color:#fff;padding:.1rem .3rem;border-radius:3px;font-size:.65rem">½</span> {{ t('poco efficace') }} &nbsp; <span style="background:#555;color:#fff;padding:.1rem .3rem;border-radius:3px;font-size:.65rem">0</span> {{ t('immune') }}</p>
         <div id="ovl_tipi_box"></div>
       </div>
       <!-- NATURE -->
       <div id="ref_natures" style="display:none;max-width:360px;margin:0 auto">
-        <p style="font-size:.75rem;color:var(--text-muted);margin-bottom:.6rem">Le nature neutre (Hardy, Docile, Serious, Bashful, Quirky) non modificano nessuna stat.</p>
+        <p style="font-size:.75rem;color:var(--text-muted);margin-bottom:.6rem">{{ t('Le nature neutre (Hardy, Docile, Serious, Bashful, Quirky) non modificano nessuna stat.') }}</p>
         <div id="ovl_nature_box"></div>
       </div>
     </div>

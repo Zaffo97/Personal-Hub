@@ -16,7 +16,7 @@ async function loadTeamFromURL(){
     btnWrap.innerHTML=TEAM_DATA.map((m,i)=>`
       <button class="team-pk-btn" id="tpk_${i}"
         onclick="loadTeamPkmn(${i},'atk',event)"
-        title="Click=ATK · Shift+Click=DEF">
+        title="${t('Click=ATK · Shift+Click=DEF')}">
         ${m.pokemon}
       </button>`).join('');
   }catch(e){console.warn('Team non caricato:',e);}

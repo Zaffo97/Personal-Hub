@@ -77,6 +77,25 @@ def t(testo, lingua=None):
     return traduzioni(lingua).get(testo, testo)
 
 
+def tf(testo, valori=None, lingua=None):
+    """Come `t()`, ma con i segnaposto `{nome}` sostituiti.
+
+    Gemella di `tf()` in `base.html`, e con la stessa ragione d'essere: la frase
+    resta **intera** nel dizionario invece di essere spezzata in pezzi da
+    concatenare, così l'inglese può metterne le parole in un altro ordine.
+    `{{ n }} {{ t('team salvati') }}` non è traducibile bene — il numero è
+    incastrato in mezzo e la frase non esiste da nessuna parte per intero.
+
+    Sostituzione a mano e non `str.format()`: le frasi contengono graffe che non
+    sono segnaposto (i blocchi `effect` mostrati negli editor), e `format()` ci
+    andrebbe a sbattere.
+    """
+    out = t(testo, lingua)
+    for chiave, valore in (valori or {}).items():
+        out = out.replace("{" + chiave + "}", str(valore))
+    return out
+
+
 def get_db():
     db = sqlite3.connect(DB)
     db.row_factory = sqlite3.Row

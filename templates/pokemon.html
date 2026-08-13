@@ -22,7 +22,12 @@
   <div class="flex items-center justify-between flex-wrap gap-2">
     <div>
       <h1>🎮 Pokémon VGC</h1>
-      <p class="text-muted text-sm">{{ teams|length }} {{ t('team salvati') }}</p>
+      {# Una frase sola col segnaposto invece del numero seguito da una frase a parte:
+         cosi' il "1 team salvati" sbagliato non esiste piu' in nessuna delle due
+         lingue, e l'inglese puo' mettere il numero dove vuole.
+         NB: niente esempi di chiamate dentro i commenti — controlla_traduzioni.py
+         legge il file grezzo e le conterebbe come stringhe chieste dal codice. #}
+      <p class="text-muted text-sm">{{ tf('Team salvati: {n}', {'n': teams|length}) }}</p>
     </div>
     <a href="/pokemon/team/new" class="btn btn-primary">+ {{ t('Nuovo Team') }}</a>
   </div>

@@ -15,8 +15,10 @@ const EFF_CELLA = {
   1:   { sfondo: 'transparent', testo: 'var(--text-muted)',   simbolo: '·' }
 };
 
-// Abbreviazione usata da righe e colonne: le prime 4 lettere del nome italiano.
-function abbrTipo(tipo) { return tipo.slice(0, 4); }
+// Abbreviazione usata da righe e colonne: le prime 4 lettere del nome **mostrato**,
+// quindi tradotto. Verificato che non nasca nessuna collisione: in inglese Grass/
+// Ground danno Gras/Grou e Dragon/Dark danno Drag/Dark, tutte distinte fra loro.
+function abbrTipo(tipo) { return tipoVis(tipo).slice(0, 4); }
 
 // Tabella 18x18 dell'efficacia, generata da TYPE_CHART.
 function htmlTabellaTipi() {
@@ -56,7 +58,7 @@ function htmlTabellaNature() {
 
   let h = '<table style="border-collapse:collapse;width:100%">'
     + '<tr style="background:var(--surface-off)">'
-    + '<th style="padding:.4rem .6rem;text-align:left;font-size:.75rem">Natura</th>'
+    + '<th style="padding:.4rem .6rem;text-align:left;font-size:.75rem">' + t('Natura') + '</th>'
     + '<th style="padding:.4rem .6rem;font-size:.75rem">+10%</th>'
     + '<th style="padding:.4rem .6rem;font-size:.75rem">-10%</th></tr>';
 
@@ -103,7 +105,7 @@ function showRef(section){
   preparaTabelleRiferimento();
   document.getElementById('ref_types').style.display   = section==='types'   ? 'block':'none';
   document.getElementById('ref_natures').style.display = section==='natures' ? 'block':'none';
-  document.getElementById('ref_title').textContent     = section==='types' ? 'Tabella Tipi (Gen 9)' : 'Tabella Nature';
+  document.getElementById('ref_title').textContent     = section==='types' ? t('Tabella Tipi (Gen 9)') : t('Tabella Nature');
   document.getElementById('ref_btn_types').className   = 'btn btn-sm ' + (section==='types'   ? 'btn-primary':'btn-secondary');
   document.getElementById('ref_btn_natures').className = 'btn btn-sm ' + (section==='natures' ? 'btn-primary':'btn-secondary');
 }

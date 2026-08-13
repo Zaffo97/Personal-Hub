@@ -33,7 +33,8 @@ Non sono storia: sono le cose che questo progetto ha già pagato e che tornano a
 | **File storici** | `data/pokemon_catalog.json`, `roster_ma.json`, `moves_ma.json`, `items_ma.json`, `abilities.json` sono ancora lì come **fallback**, e `pokemon_catalog.json` contiene le Mega nella vecchia forma convertita. Si dismettono al collaudo finale, non prima |
 | **Scritture concorrenti** | `salva_catalogo()` riscrive il file intero **senza lock**: due salvataggi nello stesso istante non danno errore, l'ultimo vince e l'altro si perde. Rilevante appena l'app va online |
 | **`t` come variabile** | `{% for t in … %}` in `moves_editor.html:97,153` e `regulation_editor.html:215` **ombrerebbe la funzione `t()`** delle traduzioni. Vanno rinominate quando si traducono quei due file |
-| **`|tojson` negli attributi** | `|tojson` rende `"pokedex"` **con le doppie**: dentro un attributo delimitato dalle doppie, l'attributo si chiude a metà. Usare gli apici singoli |
+| **`|tojson` negli attributi** | `|tojson` rende `"pokedex"` **con le doppie**: dentro un attributo delimitato dalle doppie, l'attributo si chiude a metà. Usare gli apici singoli. ⚠️ Trappola già pagata due volte — il 12/08 e di nuovo il 13/08, ripresa dallo sweep entrambe le volte |
+| **Commenti e traduzioni** | `controlla_traduzioni.py` legge il **file grezzo**, commenti Jinja compresi: una chiamata a `t()` citata come esempio dentro un `{# … #}` viene contata fra le stringhe chieste dal codice e chiede una traduzione che non serve a nessuno. Nei commenti si descrive, non si cita la sintassi |
 | **Default del DB** | `extensions.py:143` crea la colonna con `regulation_id TEXT DEFAULT 'ma'`. Non è un residuo dei 14 letterali tolti l'11/08: è il default del **DB**, e cambiarlo richiede una migrazione. Oggi non fa danno perché `_team_upsert()` passa sempre un valore esplicito |
 
 ---
@@ -282,22 +283,38 @@ riceve in `window.T`. ⚠️ Il prezzo, dichiarato: **cambiare una parola italia
 template stacca la traduzione in silenzio** — per questo esiste
 `python scripts/controlla_traduzioni.py`, che elenca mancanti, vuote e orfane.
 
-**Fatti 3 template su 11**: `pokemon.html` (16), `regulation_content.html` (15),
-`catalog_editor.html` (23). Verifica: 14 pagine × 2 lingue rese 200, 69 chieste / 69
-presenti / 0 mancanti, sweep 1587 pezzi sani.
+**Fatti 5 template su 12** — `pokemon.html` (16), `regulation_content.html` (15),
+`catalog_editor.html` (23) il 12/08; **`calcolatori.html` (142) più i 7 moduli
+`static/js/calcolatori-*.js`, e `moves_editor.html` (52) il 13/08**. Il dizionario è a
+**252 chiavi su 252 chieste**, zero mancanti e zero orfane.
 
-⬜ **Restano 8 template (~380 stringhe)**: `calcolatori.html` più i 24 nei
-`static/js/calcolatori-*.js`, `moves_editor`, `abilities_editor`, `items_editor`,
-`regulation_editor`, `regulations_list`, `roster_editor`, `base.html`.
+⬜ **Restano 7 template**: `abilities_editor` (47), `items_editor` (43),
+`regulation_editor` (42), `regulations_list` (33), `roster_editor` (26), `base.html` (14)
+e **`team_form.html`**.
 
-⬜ **Due cose da decidere con Davide:**
+> ⚠️ **`team_form.html` non era nel censimento delle 453 stringhe** del 12/08: è un buco
+> del conteggio, non una scelta. È il team builder, 345 righe, e sta sotto `/pokemon/*`
+> come le altre. Va tradotto con le altre.
 
-1. **La shell resta in italiano.** `base.html` (sidebar, «Esporta JSON», «Utenti») non è
-   tradotta di proposito: il pulsante lingua compare solo sotto `/pokemon/*`, quindi
-   tradurre la sidebar mostrerebbe l'inglese anche su Gaming e Arduino **senza un modo per
-   tornare indietro** da lì. O si lascia così, o il pulsante torna su tutte le pagine
-2. **`1 team salvati` → `1 saved teams`**: il plurale è sbagliato in entrambe le lingue (in
-   italiano lo era già prima). Si sistema quando si decide se `tf()` deve gestirlo
+⬜ **La decisione ancora aperta: la shell.** `base.html` (sidebar, «Esporta JSON»,
+«Utenti», «Cambia tema») non è tradotta perché il pulsante lingua compare solo sotto
+`/pokemon/*`: tradurre la sidebar mostrerebbe l'inglese anche su Gaming e Arduino **senza
+un modo per tornare indietro** da lì. O si lascia così, o **il pulsante torna su tutte le
+pagine** — chiesto a Davide il 13/08/2026, non ancora deciso. Finché non lo è,
+`base.html` resta fuori.
+
+✅ **Il plurale `1 team salvati` è chiuso**, e non è servito insegnare i plurali a `tf()`:
+la frase italiana è stata riscritta in una forma che non si flette — `Team salvati: {n}`
+→ `Saved teams: {n}` — che è giusta per qualunque numero in **entrambe** le lingue.
+Gestire singolare/plurale servirà solo se salterà fuori una frase che non si può
+riformulare così.
+
+✅ **`tf()` ora esiste anche in Jinja** (`extensions.py`, registrata nel context processor
+di `app.py`), gemella di quella in `base.html`. Prima c'era **solo nel JS**, ed è il vero
+motivo per cui il plurale era rotto: nei template le frasi coi numeri si spezzavano in
+`{{ n }} {{ t('team salvati') }}`, cioè in due pezzi che nessun dizionario può rimettere
+nell'ordine inglese. Sostituzione a mano e non `str.format()`, perché le frasi contengono
+graffe che non sono segnaposto (i blocchi `effect` mostrati negli editor).
 
 ⬜ **Due cose che lo switch non copre ancora:**
 

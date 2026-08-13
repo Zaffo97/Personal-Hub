@@ -1,6 +1,6 @@
 {% extends "base.html" %}
-{% block title %}Mosse Editor – Hub{% endblock %}
-{% block topbar_title %}⚔️ Mosse — {{ current_reg.label }}{% endblock %}
+{% block title %}{{ t('Mosse Editor') }} – Hub{% endblock %}
+{% block topbar_title %}⚔️ {{ t('Mosse') }} — {{ current_reg.label }}{% endblock %}
 {% block extra_head %}
 <style>
 .mv-table{width:100%;border-collapse:collapse;font-size:.78rem}
@@ -42,10 +42,10 @@ textarea.code-area{min-height:380px}
 <div class="page-header">
   <div class="flex items-center justify-between flex-wrap gap-2">
     <div class="flex items-center gap-2">
-      <a href="/pokemon/calcolatori" class="btn btn-secondary btn-sm">← Calcolatori</a>
+      <a href="/pokemon/calcolatori" class="btn btn-secondary btn-sm">← {{ t('Calcolatori') }}</a>
       <div>
-        <h1>⚔️ Mosse — Editor</h1>
-        <p class="text-muted text-sm">{{ moves_data.moves|length }} mosse · BP e categoria auto-compilati nel calcolatore</p>
+        <h1>⚔️ {{ t('Mosse — Editor') }}</h1>
+        <p class="text-muted text-sm">{{ tf('{n} mosse · BP e categoria auto-compilati nel calcolatore', {'n': moves_data.moves|length}) }}</p>
       </div>
       <select onchange="location.href='/pokemon/mosse?reg='+this.value"
               class="form-control" style="max-width:200px;font-size:.82rem">
@@ -59,19 +59,22 @@ textarea.code-area{min-height:380px}
 
 <div class="card mb-3">
   <div class="card-body" style="display:flex;align-items:center;gap:1rem;flex-wrap:wrap;padding:.6rem 1rem">
-    <span style="font-size:.78rem;color:var(--text-muted)">Prima di cambiare regulation, archivia le mosse correnti.</span>
+    <span style="font-size:.78rem;color:var(--text-muted)">{{ t('Prima di cambiare regulation, archivia le mosse correnti.') }}</span>
+    {# Attributo delimitato dagli **apici singoli**: `|tojson` rende il valore con
+       le doppie, e dentro un attributo a doppie l'attributo si chiuderebbe a meta'.
+       E' la stessa trappola gia' pagata il 12/08, e lo sweep l'ha ripresa qui. #}
     <form method="POST" action="/pokemon/mosse/archive"
-          onsubmit="return confirm('Archivia le mosse correnti ({{ moves_data.regulation }})?')"
+          onsubmit='return confirm(tf("Archivia le mosse correnti ({reg})?", {reg: {{ moves_data.regulation|tojson }}}))'
           style="margin:0">
-      <button type="submit" class="btn btn-secondary btn-sm">Archivia Mosse Correnti</button>
+      <button type="submit" class="btn btn-secondary btn-sm">{{ t('Archivia Mosse Correnti') }}</button>
     </form>
   </div>
 </div>
 
 {% if current_reg %}
 <div style="font-size:.75rem;color:var(--text-muted);margin-bottom:.5rem">
-  Stai modificando: <strong>{{ current_reg.label }}</strong>
-  <a href="/pokemon/regulation/{{ current_reg.id }}" style="margin-left:.5rem">← torna alla regulation</a>
+  {{ t('Stai modificando:') }} <strong>{{ current_reg.label }}</strong>
+  <a href="/pokemon/regulation/{{ current_reg.id }}" style="margin-left:.5rem">← {{ t('torna alla regulation') }}</a>
 </div>
 {% endif %}
 
@@ -80,29 +83,33 @@ textarea.code-area{min-height:380px}
 <div>
   <div class="card">
     <div class="card-header">
-      <span class="card-title">📋 Lista mosse</span>
-      <button class="btn btn-primary btn-sm" onclick="showAddModal()">+ Aggiungi</button>
+      <span class="card-title">📋 {{ t('Lista mosse') }}</span>
+      <button class="btn btn-primary btn-sm" onclick="showAddModal()">+ {{ t('Aggiungi') }}</button>
     </div>
     <div class="card-body" style="padding-top:.5rem">
       <div style="display:flex;flex-wrap:wrap;gap:.5rem;margin-bottom:.65rem;align-items:center">
-        <input id="mv_search" class="form-control" style="max-width:180px;font-size:.78rem" placeholder="🔍 Cerca..." oninput="renderTable()">
+        <input id="mv_search" class="form-control" style="max-width:180px;font-size:.78rem" placeholder="🔍 {{ t('Cerca...') }}" oninput="renderTable()">
         <select id="mv_cat_f" class="form-control" style="max-width:130px;font-size:.78rem" onchange="renderTable()">
-          <option value="">Tutte le categorie</option>
-          <option value="physical">⚔️ Fisiche</option>
-          <option value="special">✨ Speciali</option>
-          <option value="status">💤 Status</option>
+          <option value="">{{ t('Tutte le categorie') }}</option>
+          <option value="physical">⚔️ {{ t('Fisiche') }}</option>
+          <option value="special">✨ {{ t('Speciali') }}</option>
+          <option value="status">💤 {{ t('Stato') }}</option>
         </select>
+        {# `tipo` e non `t`: la variabile di ciclo ombrerebbe la funzione t() delle
+           traduzioni per tutto il blocco. Le etichette restano gli slug inglesi di
+           PokeAPI, che qui sono il **valore del dato** e non un'etichetta: gli
+           editor mostrano la chiave, ed e' la decisione ancora aperta nel backlog. #}
         <select id="mv_type_f" class="form-control" style="max-width:130px;font-size:.78rem" onchange="renderTable()">
-          <option value="">Tutti i tipi</option>
-          {% for t in ["normal","fire","water","grass","electric","ice","fighting","poison","ground","flying","psychic","bug","rock","ghost","dragon","dark","steel","fairy"] %}
-          <option value="{{ t }}">{{ t|capitalize }}</option>
+          <option value="">{{ t('Tutti i tipi') }}</option>
+          {% for tipo in ["normal","fire","water","grass","electric","ice","fighting","poison","ground","flying","psychic","bug","rock","ghost","dragon","dark","steel","fairy"] %}
+          <option value="{{ tipo }}">{{ tipo|capitalize }}</option>
           {% endfor %}
         </select>
         <span id="mv_count" class="text-xs text-muted"></span>
       </div>
       <div style="max-height:520px;overflow-y:auto">
         <table class="mv-table">
-          <thead><tr><th>Mossa</th><th>Tipo</th><th>Cat.</th><th>BP</th><th style="width:40px;text-align:center">Acc</th><th style="width:36px;text-align:center">Prio</th><th style="width:44px;text-align:center">Eff.%</th><th style="min-width:120px">Flag</th><th style="min-width:260px">Descrizione</th><th></th></tr></thead>
+          <thead><tr><th>{{ t('Mossa') }}</th><th>{{ t('Tipo') }}</th><th>{{ t('Cat.') }}</th><th>BP</th><th style="width:40px;text-align:center">Acc</th><th style="width:36px;text-align:center">{{ t('Prio') }}</th><th style="width:44px;text-align:center">{{ t('Eff.%') }}</th><th style="min-width:120px">Flag</th><th style="min-width:260px">{{ t('Descrizione') }}</th><th></th></tr></thead>
           <tbody id="mv_tbody"></tbody>
         </table>
       </div>
@@ -113,14 +120,14 @@ textarea.code-area{min-height:380px}
   <div>
     <div class="card">
       <div class="card-header">
-        <span class="card-title">📄 JSON raw</span>
-        <button class="btn btn-secondary btn-sm" onclick="formatJson()">✦ Formatta</button>
+        <span class="card-title">📄 {{ t('JSON raw') }}</span>
+        <button class="btn btn-secondary btn-sm" onclick="formatJson()">✦ {{ t('Formatta') }}</button>
       </div>
       <div class="card-body">
         <form method="POST" id="movesForm">
           <textarea name="moves_json" id="movesJson" class="form-control code-area">{{ moves_json }}</textarea>
           <div class="flex gap-2 mt-2">
-            <button type="submit" class="btn btn-primary">💾 Salva</button>
+            <button type="submit" class="btn btn-primary">💾 {{ t('Salva') }}</button>
             <button type="button" class="btn btn-secondary" onclick="location.reload()">↩ Reset</button>
           </div>
         </form>
@@ -128,11 +135,10 @@ textarea.code-area{min-height:380px}
     </div>
     <div class="card mt-2">
       <div class="card-body text-sm">
-        <strong>File:</strong> <code style="font-size:.72rem">data/moves_ma.json</code><br>
-        <strong>Aggiornato:</strong> {{ moves_data.last_updated }}<br>
+        <strong>{{ t('File:') }}</strong> <code style="font-size:.72rem">data/moves_ma.json</code><br>
+        <strong>{{ t('Aggiornato:') }}</strong> {{ moves_data.last_updated }}<br>
         <p class="text-xs text-muted mt-2" style="line-height:1.6">
-          💡 Selezionando una mossa nel <strong>Calcolatore Danno</strong>, BP e categoria
-          vengono compilati automaticamente da questo file.
+          💡 {{ t('Selezionando una mossa nel <strong>Calcolatore Danno</strong>, BP e categoria vengono compilati automaticamente da questo file.')|safe }}
         </p>
       </div>
     </div>
@@ -144,42 +150,42 @@ textarea.code-area{min-height:380px}
      z-index:200;align-items:center;justify-content:center" onclick="if(event.target===this)closeModal()">
   <div style="background:var(--surface);border-radius:var(--radius-xl);padding:1.5rem;
        width:min(95vw,400px);box-shadow:var(--shadow-lg)">
-    <h3 style="margin-bottom:1rem">+ Aggiungi mossa</h3>
-    <div class="form-group"><label>Nome *</label>
-      <input id="new_name" oninput="window._pokeapiValidated=false" class="form-control" placeholder="Es. Earthquake"></div>
+    <h3 style="margin-bottom:1rem">+ {{ t('Aggiungi mossa') }}</h3>
+    <div class="form-group"><label>{{ t('Nome') }} *</label>
+      <input id="new_name" oninput="window._pokeapiValidated=false" class="form-control" placeholder="{{ t('Es. Earthquake') }}"></div>
     <div class="form-row">
-      <div class="form-group"><label>Tipo *</label>
+      <div class="form-group"><label>{{ t('Tipo') }} *</label>
         <select id="new_type" class="form-control">
-          {% for t in ["normal","fire","water","grass","electric","ice","fighting","poison","ground","flying","psychic","bug","rock","ghost","dragon","dark","steel","fairy"] %}
-          <option value="{{ t }}">{{ t|capitalize }}</option>
+          {% for tipo in ["normal","fire","water","grass","electric","ice","fighting","poison","ground","flying","psychic","bug","rock","ghost","dragon","dark","steel","fairy"] %}
+          <option value="{{ tipo }}">{{ tipo|capitalize }}</option>
           {% endfor %}
         </select></div>
-      <div class="form-group"><label>Categoria *</label>
+      <div class="form-group"><label>{{ t('Categoria') }} *</label>
         <select id="new_cat" class="form-control">
-          <option value="physical">⚔️ Fisico</option>
-          <option value="special">✨ Speciale</option>
-          <option value="status">💤 Status</option>
+          <option value="physical">⚔️ {{ t('Fisico') }}</option>
+          <option value="special">✨ {{ t('Speciale') }}</option>
+          <option value="status">💤 {{ t('Stato') }}</option>
         </select></div>
     </div>
     <div class="form-row">
-      <div class="form-group"><label>Base Power (0 se status)</label>
+      <div class="form-group"><label>{{ t('Base Power (0 se status)') }}</label>
         <input id="new_bp" type="number" class="form-control" value="80" min="0" max="250"></div>
-      <div class="form-group"><label>Priorità</label>
+      <div class="form-group"><label>{{ t('Priorità') }}</label>
         <input id="new_prio" type="number" class="form-control" value="0" min="-7" max="5"></div>
     </div>
-    <div class="form-group"><label>Effetto secondario % <span style="font-weight:400;font-size:.72rem;color:var(--text-muted)">(0 se nessuno)</span></label>
+    <div class="form-group"><label>{{ t('Effetto secondario %') }} <span style="font-weight:400;font-size:.72rem;color:var(--text-muted)">{{ t('(0 se nessuno)') }}</span></label>
       <input id="new_eff" type="number" class="form-control" value="0" min="0" max="100"></div>
-    <div class="form-group"><label>Flag <span style="font-weight:400;font-size:.72rem;color:var(--text-muted)">(virgola-separati: contact, protect, punch, sound, bite, bullet, dance, pulse, powder, ballistic, recharge)</span></label>
-      <input id="new_flags" class="form-control" placeholder="Es. contact,protect"></div>
+    <div class="form-group"><label>Flag <span style="font-weight:400;font-size:.72rem;color:var(--text-muted)">{{ t('(virgola-separati: contact, protect, punch, sound, bite, bullet, dance, pulse, powder, ballistic, recharge)') }}</span></label>
+      <input id="new_flags" class="form-control" placeholder="{{ t('Es. contact,protect') }}"></div>
     <div class="form-group">
-      <label>Descrizione <span style="font-weight:400;font-size:.72rem;color:var(--text-muted)">(opzionale)</span></label>
-      <textarea id="new_desc" class="form-control" rows="3" style="font-size:.75rem;resize:vertical" placeholder="Verrà compilata da PokeAPI..."></textarea>
+      <label>{{ t('Descrizione') }} <span style="font-weight:400;font-size:.72rem;color:var(--text-muted)">{{ t('(opzionale)') }}</span></label>
+      <textarea id="new_desc" class="form-control" rows="3" style="font-size:.75rem;resize:vertical" placeholder="{{ t('Verrà compilata da PokeAPI...') }}"></textarea>
     </div>
-    <button type="button" class="btn btn-secondary btn-sm mb-2" onclick="fetchFromPokeAPI()" style="width:100%">🔍 Auto-compila da PokeAPI</button>
+    <button type="button" class="btn btn-secondary btn-sm mb-2" onclick="fetchFromPokeAPI()" style="width:100%">🔍 {{ t('Auto-compila da PokeAPI') }}</button>
     <div id="pokeapi_warn" style="display:none"></div>
     <div class="flex gap-2 mt-2">
-      <button class="btn btn-primary" style="flex:1" onclick="addMove()">+ Aggiungi</button>
-      <button class="btn btn-secondary" onclick="closeModal()">Annulla</button>
+      <button class="btn btn-primary" style="flex:1" onclick="addMove()">+ {{ t('Aggiungi') }}</button>
+      <button class="btn btn-secondary" onclick="closeModal()">{{ t('Annulla') }}</button>
     </div>
   </div>
 </div>
@@ -204,10 +210,10 @@ function renderTable(){
       if(typeF&&m.type!==typeF)return false;
       return true;
     }).sort((a,b)=>a[0].localeCompare(b[0]));
-  document.getElementById('mv_count').textContent=rows.length+' mosse';
-  const FLAG_LABELS={contact:'🤜Contatto',protect:'🛡Scudo',punch:'👊Pugno',
-    sound:'🔊Suono',bite:'🦷Morso',bullet:'🔵Proiettile',ballistic:'🏹Balistico',
-    dance:'💃Danza',pulse:'💫Impulso',powder:'🌿Polvere',recharge:'⚡Ricarica'};
+  document.getElementById('mv_count').textContent=tf('{n} mosse',{n:rows.length});
+  const FLAG_LABELS={contact:'🤜'+t('Contatto'),protect:'🛡'+t('Scudo'),punch:'👊'+t('Pugno'),
+    sound:'🔊'+t('Suono'),bite:'🦷'+t('Morso'),bullet:'🔵'+t('Proiettile'),ballistic:'🏹'+t('Balistico'),
+    dance:'💃'+t('Danza'),pulse:'💫'+t('Impulso'),powder:'🌿'+t('Polvere'),recharge:'⚡'+t('Ricarica')};
   const FLAG_CSS={contact:'flag-contact',protect:'flag-protect',punch:'flag-punch',
     sound:'flag-sound',bite:'flag-bite',bullet:'flag-bullet',ballistic:'flag-ballistic',
     dance:'flag-dance',pulse:'flag-pulse',powder:'flag-powder',recharge:'flag-recharge'};
@@ -245,7 +251,7 @@ function renderTable(){
         '</div></div>';
     } else {
       const safeDesc=desc.replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;');
-      descCell='<span class="mv-desc-full" onclick="startEditDesc(\''+name.replace(/'/g,"\\'")+'\')" title="Clicca per modificare" style="cursor:pointer;display:block">'+(safeDesc||'<em style=\'color:var(--text-muted);font-size:.68rem\'>—</em>')+'</span>';
+      descCell='<span class="mv-desc-full" onclick="startEditDesc(\''+name.replace(/'/g,"\\'")+'\')" title="'+t('Clicca per modificare')+'" style="cursor:pointer;display:block">'+(safeDesc||'<em style=\'color:var(--text-muted);font-size:.68rem\'>—</em>')+'</span>';
     }
 
     const typeBg=TYPE_CLR[m.type]||'#888';
@@ -256,7 +262,7 @@ function renderTable(){
       '<td><span class="type-badge" style="background:'+typeBg+'">'+m.type+'</span></td>'+
       '<td><span class="'+catCls+'">'+catIcon[m.category]+'</span></td>'+
       '<td><strong>'+( m.bp||'—' )+'</strong></td>'+
-      '<td style="text-align:center"><span style="font-size:.72rem;font-weight:600;color:var(--text-muted)">'+( m.accuracy !== undefined && m.accuracy !== null ? m.accuracy+'%' : '<span title="Sempre colpisce" style="color:var(--text-muted)">—</span>' )+'</span></td>'+
+      '<td style="text-align:center"><span style="font-size:.72rem;font-weight:600;color:var(--text-muted)">'+( m.accuracy !== undefined && m.accuracy !== null ? m.accuracy+'%' : '<span title="'+t('Sempre colpisce')+'" style="color:var(--text-muted)">—</span>' )+'</span></td>'+
       '<td style="text-align:center">'+prioCell+'</td>'+
       '<td style="text-align:center">'+effCell+'</td>'+
       '<td>'+flagHtml+'</td>'+
@@ -280,13 +286,13 @@ function saveDesc(el){
 // Il pulsante elimina (riga 246) chiama deleteMove(nome): la funzione si chiamava
 // removeMove e leggeva el.dataset.name, quindi eliminare una mossa non funzionava.
 function deleteMove(name){
-  if(!confirm('Rimuovere "'+name+'"?'))return;
+  if(!confirm(tf('Rimuovere "{nome}"?',{nome:name})))return;
   delete movesData.moves[name]; syncJson(); renderTable();
 }
 function syncJson(){document.getElementById('movesJson').value=JSON.stringify(movesData,null,2);}
 function formatJson(){
   try{movesData=JSON.parse(document.getElementById('movesJson').value);syncJson();renderTable();}
-  catch(e){alert('JSON non valido: '+e.message);}
+  catch(e){alert(t('JSON non valido:')+' '+e.message);}
 }
 function showAddModal(){
   document.getElementById('add_modal').style.display='flex';
@@ -299,13 +305,13 @@ function closeModal(){document.getElementById('add_modal').style.display='none';
 
 async function fetchFromPokeAPI(){
   const name=document.getElementById('new_name').value.trim();
-  if(!name){alert("Inserisci prima il nome della mossa");return;}
+  if(!name){alert(t('Inserisci prima il nome della mossa'));return;}
   const slug=name.toLowerCase().split(' ').join('-').replace(/[^a-z0-9-]/g,'');
   const warn=document.getElementById('pokeapi_warn');
   warn.style.display='none';
   try{
     const r=await fetch('https://pokeapi.co/api/v2/move/'+encodeURIComponent(slug));
-    if(!r.ok) throw new Error('Mossa non trovata su PokeAPI (slug: '+slug+')');
+    if(!r.ok) throw new Error(tf('Mossa non trovata su PokeAPI (slug: {slug})',{slug:slug}));
     const d=await r.json();
     const bp_api=d.power||0;
     const cat_api=d.damage_class?.name||'status';
@@ -319,20 +325,20 @@ async function fetchFromPokeAPI(){
     document.getElementById('new_desc').value=desc;
     for(let o of document.getElementById('new_type').options) o.selected=(o.value===type_api);
     warn.style.cssText='display:block;background:color-mix(in oklch,#f90 10%,transparent);border:1px solid #f90;border-radius:var(--radius-md);padding:.5rem .75rem;font-size:.72rem;color:#a06000;margin-bottom:.5rem';
-    warn.innerHTML='\u26a0\ufe0f <strong>Verifica sempre i valori Champions</strong> \u2014 potrebbero differire da PokeAPI standard.';
+    warn.innerHTML='\u26a0\ufe0f '+t('<strong>Verifica sempre i valori Champions</strong> — potrebbero differire da PokeAPI standard.');
     window._pokeapiValidated=true;
   }catch(e){
     warn.style.cssText='display:block;background:color-mix(in oklch,var(--error,#c33) 10%,transparent);border:1px solid var(--error,#c33);border-radius:var(--radius-md);padding:.5rem .75rem;font-size:.72rem;color:var(--error,#c33);margin-bottom:.5rem';
-    warn.innerHTML='\u274c '+e.message+'. Compila manualmente.';
+    warn.innerHTML='\u274c '+e.message+'. '+t('Compila manualmente.');
     window._pokeapiValidated=false;
   }
 }
 
 function addMove(){
   const name=document.getElementById('new_name').value.trim();
-  if(!name){alert('Inserisci il nome della mossa');return;}
+  if(!name){alert(t('Inserisci il nome della mossa'));return;}
   if(!window._pokeapiValidated){
-    alert('Valida prima la mossa con il bottone "Cerca su PokeAPI".');
+    alert(t('Valida prima la mossa con il bottone "Auto-compila da PokeAPI".'));
     return;
   }
   const desc=document.getElementById('new_desc').value.trim();

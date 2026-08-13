@@ -7,6 +7,14 @@ function tipoIT(t){
   if(!t) return '';
   return TYPE_EN_TO_IT[String(t).toLowerCase()] || t;
 }
+// Il tipo **da mostrare**, nella lingua attiva. La chiave resta sempre quella
+// italiana: TYPE_CHART, TYPE_CLR_IT e i `value` delle tendine sono indicizzati
+// cosi', ed e' la stessa regola delle chiavi del catalogo — cambia solo cio' che
+// si legge. Accetta anche i tipi inglesi che arrivano da /api/pokemon.
+function tipoVis(tipo){
+  const it = tipoIT(tipo);
+  return it ? t(it) : '';
+}
 // ── Utility ───────────────────────────────────────────────────────────────────
 function calcSt(base, ev, iv, lvl, nm, isHP) {
   const b = parseInt(base, 10) || 0;
@@ -112,18 +120,20 @@ function applicaMeteoAllaMossa() {
     if (bpEl)   bpEl.value = weather ? regola.bpConMeteo : regola.bpBase;
     if (tipoEl) tipoEl.value = tipo;
     messaggio = weather
-      ? `${METEO_LABEL[weather] || weather} → tipo ${tipo}, BP ${regola.bpConMeteo}`
-      : `Nessun meteo → tipo Normale, BP ${regola.bpBase}`;
+      ? tf('{meteo} → tipo {tipo}, BP {bp}', {meteo: t(METEO_LABEL[weather] || weather),
+                                              tipo: tipoVis(tipo), bp: regola.bpConMeteo})
+      : tf('Nessun meteo → tipo {tipo}, BP {bp}', {tipo: t('Normale'), bp: regola.bpBase});
   } else if (regola.dimezzaCon) {
     const dimezza = regola.dimezzaCon.includes(weather);
     if (bpEl) bpEl.value = dimezza ? Math.floor(regola.bpBase / 2) : regola.bpBase;
     messaggio = dimezza
-      ? `${METEO_LABEL[weather] || weather} → BP dimezzato a ${Math.floor(regola.bpBase / 2)}`
-      : `BP pieno ${regola.bpBase}`;
+      ? tf('{meteo} → BP dimezzato a {bp}', {meteo: t(METEO_LABEL[weather] || weather),
+                                             bp: Math.floor(regola.bpBase / 2)})
+      : tf('BP pieno {bp}', {bp: regola.bpBase});
   }
 
   if (nota) {
-    nota.textContent = '🌍 ' + messaggio + (fonte ? ` (meteo da ${fonte})` : '');
+    nota.textContent = '🌍 ' + messaggio + (fonte ? ' ' + tf('(meteo da {fonte})', {fonte: fonte}) : '');
     nota.style.display = 'block';
   }
 }
@@ -138,8 +148,16 @@ function aggiornaNotaMeteo() {
   const { weather, fonte } = meteoEffettivo();
   if (!fonte || weather === scelto) { nota.style.display = 'none'; return; }
   const fx = abilityEffect(fonte);
-  const verbo = fx.type === 'weather_override' ? 'impone' : 'evoca';
-  nota.textContent = `⚠️ ${fonte} ${verbo} ${METEO_LABEL[weather] || weather}: il calcolo usa questo meteo`;
+  // Le due frasi restano intere nel dizionario invece di essere "{abilita} " + verbo:
+  // in inglese il verbo non sta nello stesso posto. E vanno scritte **dentro** la
+  // chiamata a tf(), non passate da una variabile, altrimenti
+  // controlla_traduzioni.py non le vede e le segnala come orfane.
+  const chiaveAbil = risolviChiave(ABILITIES_DATA, fonte);
+  const valori = {abilita: nomeVis(ABILITIES_DATA[chiaveAbil], chiaveAbil),
+                  meteo: t(METEO_LABEL[weather] || weather)};
+  nota.textContent = fx.type === 'weather_override'
+    ? tf('⚠️ {abilita} impone {meteo}: il calcolo usa questo meteo', valori)
+    : tf('⚠️ {abilita} evoca {meteo}: il calcolo usa questo meteo', valori);
   nota.style.display = 'block';
 }
 
@@ -183,7 +201,7 @@ function popolaSelectAbilita(sel, ambito, soloQueste, riquadro) {
     : abilityIncideSulDanno;
   const frag = document.createDocumentFragment();
   const vuota = document.createElement('option');
-  vuota.value = ''; vuota.textContent = '— Nessuna —';
+  vuota.value = ''; vuota.textContent = t('— Nessuna —');
   frag.appendChild(vuota);
   // Il `value` resta la CHIAVE: e' quella che il motore degli effetti cerca dentro
   // ABILITIES_DATA. Cambia solo il testo che si legge.

@@ -33,8 +33,15 @@ async function loadStatPkmn(side){
     // Tipi e abilità (usa quelli della mega se attiva)
     const types = d.types || [];
     const abils = d.abilities || [];
-    document.getElementById('stat_types'+sfx).innerHTML=types.map(t=>'<span style="background:'+(TYPE_CLR[t]||TYPE_CLR[t.toLowerCase()]||'#888')+';color:#fff;padding:.15rem .5rem;border-radius:20px;font-size:.65rem;font-weight:700">'+t+'</span>').join('');
-    let abilHtml = '<strong>Abilita:</strong> '+abils.join(' / ');
+    // `tp` e non `t`: la variabile di ciclo ombrava la funzione t() delle traduzioni.
+    // I tipi arrivano da /api/pokemon in inglese, quindi finora si leggevano in
+    // inglese anche in modalita' italiana: ora passano da tipoVis().
+    document.getElementById('stat_types'+sfx).innerHTML=types.map(tp=>'<span style="background:'+(TYPE_CLR[tp]||TYPE_CLR[tp.toLowerCase()]||'#888')+';color:#fff;padding:.15rem .5rem;border-radius:20px;font-size:.65rem;font-weight:700">'+tipoVis(tp)+'</span>').join('');
+    const abilVis = abils.map(a => {
+      const k = risolviChiave(ABILITIES_DATA, a);
+      return nomeVis(ABILITIES_DATA[k], k);
+    });
+    let abilHtml = '<strong>'+t('Abilità:')+'</strong> '+abilVis.join(' / ');
     if(d.isMega) abilHtml += ' <span style="background:var(--primary);color:#fff;font-size:.6rem;padding:.1rem .4rem;border-radius:10px;font-weight:700">MEGA</span>';
     if(d.megaBST) abilHtml += ' <span style="color:var(--text-muted);font-size:.65rem">BST '+d.megaBST+'</span>';
     document.getElementById('stat_abils'+sfx).innerHTML=abilHtml;
@@ -69,7 +76,7 @@ function updateStatPreview(){
   const bars = document.getElementById('stat_bars');
 
   if (!curBS && !curBS_b){
-    bars.innerHTML = '<div style="text-align:center;padding:2rem;color:var(--text-muted);font-size:.85rem">Seleziona almeno un Pokemon</div>';
+    bars.innerHTML = '<div style="text-align:center;padding:2rem;color:var(--text-muted);font-size:.85rem">'+t('Seleziona almeno un Pokémon')+'</div>';
     return;
   }
 

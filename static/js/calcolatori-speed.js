@@ -1,10 +1,18 @@
 // calcolatori-speed.js — tab Speed Tier.
 // Serve calcolatori-data.js e calcolatori-core.js caricati prima.
 
+// Le due forme dell'intestazione — con e senza regulation — restano **intere** nel
+// dizionario: "📊 Speed Tier — " + n + " Pokémon" concatenato non e' traducibile.
+function intestazioneSpeed(reg) {
+  return '📊 ' + (reg
+    ? tf('Speed Tier — {n} Pokémon ({reg})', {n: SPEED_META.length, reg: reg})
+    : tf('Speed Tier — {n} Pokémon', {n: SPEED_META.length}));
+}
+
 // ── Mosse DB ──────────────────────────────────────────────────────────────────
 async function loadRegSpeed() {
   const header = document.getElementById('speed_tier_header');
-  if (header) header.textContent = '⏳ Caricamento…';
+  if (header) header.textContent = '⏳ ' + t('Caricamento…');
   try {
     const r = await fetch('/api/regulation/' + REG_ID + '/data');
     const d = await r.json();
@@ -20,11 +28,11 @@ async function loadRegSpeed() {
         })
         .filter(Boolean).sort((a,b) => b.base - a.base);
       if (mancanti.length) console.warn('Speed Tier — ' + mancanti.length + ' nomi del roster assenti dal catalogo:', mancanti);
-      if (header) header.textContent = '📊 Speed Tier — ' + SPEED_META.length + ' Pokémon (' + REG_ID.toUpperCase() + ')';
-    } else { SPEED_META = SPEED_META_STATIC; if (header) header.textContent = '📊 Speed Tier — ' + SPEED_META.length + ' Pokémon'; }
+      if (header) header.textContent = intestazioneSpeed(REG_ID.toUpperCase());
+    } else { SPEED_META = SPEED_META_STATIC; if (header) header.textContent = intestazioneSpeed(); }
     // Se il roster non risolve nulla, meglio la lista statica di una tabella vuota.
-    if (!SPEED_META.length) { SPEED_META = SPEED_META_STATIC; if (header) header.textContent = '📊 Speed Tier — ' + SPEED_META.length + ' Pokémon'; }
-  } catch(e) { SPEED_META = SPEED_META_STATIC; if (header) header.textContent = '📊 Speed Tier — ' + SPEED_META.length + ' Pokémon'; }
+    if (!SPEED_META.length) { SPEED_META = SPEED_META_STATIC; if (header) header.textContent = intestazioneSpeed(); }
+  } catch(e) { SPEED_META = SPEED_META_STATIC; if (header) header.textContent = intestazioneSpeed(); }
   renderSpeed();
 }
 // ── TAB SPEED ─────────────────────────────────────────────────────────────────
@@ -45,7 +53,7 @@ async function loadSpePkmn(){
     // Popola select abilità Speed
     const speAbilSel = document.getElementById('spe_abil');
     if (speAbilSel && d.abilities && d.abilities.length) {
-      speAbilSel.innerHTML = '<option value="">— Nessuna —</option>';
+      speAbilSel.innerHTML = '<option value="">' + t('— Nessuna —') + '</option>';
     // Il catalogo Pokémon cita le abilità col nome inglese: qui si risale alla
     // chiave e si mostra il nome nella lingua attiva, come nelle altre tendine.
     // Il `value` resta il nome di partenza — `abilityEffect` lo risolve comunque.
@@ -91,18 +99,20 @@ function popolaBoost(d, nome){
   chiavi.sort((a, b) =>
     (MOVES_DB[b].stat_changes.spe - MOVES_DB[a].stat_changes.spe)
     || nomeVis(MOVES_DB[a], a).localeCompare(nomeVis(MOVES_DB[b], b), LANG));
-  sel.innerHTML = '<option value="">— Nessuna —</option>' + chiavi.map(m =>
+  sel.innerHTML = '<option value="">' + t('— Nessuna —') + '</option>' + chiavi.map(m =>
     `<option value="${m.replace(/"/g,'&quot;')}">+${MOVES_DB[m].stat_changes.spe} ${nomeVis(MOVES_DB[m], m)}</option>`
   ).join('');
   if (!nota) return;
   if (!legali) {
     nota.style.display = 'block';
     nota.style.color = 'var(--warning, #d90)';
-    nota.textContent = `⚠️ Nessun elenco mosse per ${nome} in ${REG_ID}: mostrate tutte quelle della regulation`;
+    nota.textContent = tf('⚠️ Nessun elenco mosse per {pkmn} in {reg}: mostrate tutte quelle della regulation',
+                          {pkmn: nome, reg: REG_ID});
   } else if (!chiavi.length) {
     nota.style.display = 'block';
     nota.style.color = 'var(--text-muted, #888)';
-    nota.textContent = `${nome} non ha mosse che alzano la Velocità in ${REG_ID}`;
+    nota.textContent = tf('{pkmn} non ha mosse che alzano la Velocità in {reg}',
+                          {pkmn: nome, reg: REG_ID});
   } else {
     nota.style.display = 'none';
   }
@@ -178,7 +188,7 @@ function renderSpeed(){
   }).map(p=>({...p,speed:calcSt(p.base,0,31,50,1.0,false)}))
     .sort((a,b)=>b.speed-a.speed);
   const list=document.getElementById('speed_list');
-  if(!rows.length){list.innerHTML='<div style="text-align:center;padding:1rem;color:var(--text-muted);font-size:.8rem">Nessun Pokémon trovato</div>';return;}
+  if(!rows.length){list.innerHTML='<div style="text-align:center;padding:1rem;color:var(--text-muted);font-size:.8rem">'+t('Nessun Pokémon trovato')+'</div>';return;}
   // Tetto a 300 righe, come le altre tabelle del progetto: su `pokedex` il roster
   // e' di 1343 nomi, cioe' 714 KB di HTML in un solo innerHTML. Le righe tagliate
   // sono sempre le piu' lontane dalla propria Velocita', perche' l'elenco e'
@@ -193,7 +203,8 @@ function renderSpeed(){
   }
   const avviso=totale>TETTO
     ? `<div style="text-align:center;padding:.4rem;color:var(--text-muted);font-size:.72rem">
-         ${TETTO} righe su ${totale} — le piu' vicine alla tua Velocita'. Usa la ricerca o i filtri per le altre.
+         ${tf('{tetto} righe su {totale} — le più vicine alla tua Velocità. Usa la ricerca o i filtri per le altre.',
+              {tetto: TETTO, totale: totale})}
        </div>`
     : '';
   list.innerHTML=avviso+rows.map(p=>{
@@ -204,9 +215,9 @@ function renderSpeed(){
     return `<div class="speed-row ${cls}">
       <span style="width:20px;font-size:.75rem">${ico}</span>
       <span style="font-weight:600;min-width:160px;font-size:.8rem">${p.name}</span>
-      <span style="font-size:.7rem;color:var(--text-muted);min-width:55px" title="Stat base Speed">Base ${p.base}</span>
-      <span style="font-weight:700;color:var(--primary);min-width:38px" title="Speed a Lv.50, 0 EV, nat. neutrale">${p.speed}</span>
-      <span style="font-size:.65rem;color:var(--text-faint)" title="Con Choice Scarf / Con Tailwind">Scarf ${scarfSpd} · TW ${twSpd}</span>
+      <span style="font-size:.7rem;color:var(--text-muted);min-width:55px" title="${t('Stat base Speed')}">Base ${p.base}</span>
+      <span style="font-weight:700;color:var(--primary);min-width:38px" title="${t('Speed a Lv.50, 0 EV, nat. neutrale')}">${p.speed}</span>
+      <span style="font-size:.65rem;color:var(--text-faint)" title="${t('Con Choice Scarf / Con Tailwind')}">Scarf ${scarfSpd} · TW ${twSpd}</span>
     </div>`;
   }).join('');
 }
