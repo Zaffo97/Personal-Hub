@@ -2,7 +2,13 @@
 
 Questo file viene caricato **da solo** all'inizio di ogni sessione: qui stanno le
 regole che valgono sempre. Il *cosa* fare sta in `BACKLOG.md`, il *com'è fatto* in
-`PROJECT_CONTEXT.md`.
+`PROJECT_CONTEXT.md`, e quello che è **già stato fatto** in `STORICO.md`.
+
+> ⚠️ **Leggi `BACKLOG.md`, non `STORICO.md`.** Dal 13/08/2026 sono due file: nel backlog
+> c'è **solo ciò che è aperto** (~370 righe), più le trappole note che vanno rilette prima
+> di toccare una zona. Lo storico è una riga per lavoro chiuso, con la data e i numeri:
+> si apre **solo** per rispondere a «questo l'avevamo già fatto, e com'è andata?», non
+> all'inizio di una sessione.
 
 ---
 
@@ -15,10 +21,12 @@ Vale anche quando si sta chiudendo la sessione, o quando Davide dice che ha fini
 
 **Prima di proporre il push, due cose, in quest'ordine.**
 
-**1. Aggiorna `BACKLOG.md`** con quello che è successo nella sessione: cosa hai chiuso
-(con la data e i numeri della verifica) e cosa resta **sospeso** — le voci aperte, i
-casi da decidere a mano, i bachi trovati e non corretti perché fuori scope. Se una voce
-esisteva già, spuntala o correggila invece di scriverne una seconda.
+**1. Aggiorna `BACKLOG.md` e `STORICO.md`** con quello che è successo nella sessione.
+Cosa resta **sospeso** va nel backlog — le voci aperte, i casi da decidere a mano, i
+bachi trovati e non corretti perché fuori scope. Cosa hai **chiuso** esce dal backlog e
+diventa **una riga** in `STORICO.md`, con la data e i numeri della verifica: è la potatura
+del 13/08/2026, e si mantiene sola solo se la fai ogni volta. Se una voce esisteva già,
+spostala o correggila invece di scriverne una seconda.
 
 Non è un doppione della regola #5 ("tieni aggiornati `BACKLOG.md` e `PROJECT_CONTEXT.md`
 insieme al codice"): quella dice *quando* scrivere, questa è il **controllo prima di

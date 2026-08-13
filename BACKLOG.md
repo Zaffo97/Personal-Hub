@@ -1,1966 +1,464 @@
 # 📋 BACKLOG — Personal Hub
 
-> Fonte: `Nuove implementazioni.docx` (verde = fatto).
-> Questo file è la versione tracciabile di quel documento: qui restano solo le voci
-> **non ancora chiuse**, più quelle chiuse di recente con la data.
-> Aggiornato: 12/08/2026
+> **Qui c'è solo ciò che è aperto.** Le voci chiuse stanno in [`STORICO.md`](STORICO.md),
+> una riga per lavoro con la data e i numeri della verifica.
+> Aggiornato: **13/08/2026**. Fonte storica: `Nuove implementazioni.docx` (verde = fatto).
 
-Legenda: ⬜ da fare · 🟨 parziale / da verificare · ✅ fatto
+Legenda: ⬜ da fare · 🟨 parziale · ⚠️ trappola nota, da rileggere prima di toccare la zona
 
----
+**Indice**
 
-## 🏁 ⬜ DA FARE PER ULTIMO — il giro completo di collaudo
-
-**Questa voce si chiude dopo tutte le altre.** Quando i lavori in questo file sono
-finiti, si fa **un giro completo della web app**: ogni sezione, ogni pagina, **ogni
-campo e ogni funzione**, per vedere se c'è qualcosa che non torna. Non un controllo a
-campione sulle cose toccate di recente — tutto, comprese le parti che nessuno guarda da
-mesi.
-
-Perché serve, e perché va fatto **alla fine**: qui i bachi peggiori non hanno mai dato
-errore. Il PC Builder è rimasto inerte per settimane per un apice di troppo, il
-Ripristina del roster sovrascriveva senza chiedere conferma, lo Speed Tier ricadeva in
-silenzio su una lista statica e `/api/moves` leggeva il file sbagliato. Tutta roba che
-si vede solo **usando** la pagina, e che un lavoro fatto dopo può rimettere in piedi.
-
-Cosa deve coprire il giro, come promemoria — da dettagliare quando ci si arriva:
-
-- **ogni campo di ogni form**: vuoto, valore limite, valore assurdo, caratteri strani
-  (apostrofi e accenti: è la classe di bug che ha ucciso il Ripristina)
-- **ogni pulsante e ogni azione**: creazione, modifica, eliminazione, ripristino,
-  import, export — e la conferma dove deve esserci
-- **le due lingue**, `IT` ed `EN`, su tutte le pagine Pokémon
-- **tutte le regulation**, non solo `ma`: `pokedex` e `mb` sono quelle dove sono
-  usciti i bachi degli endpoint
-- **il calcolatore in tutti e quattro i tab**, con la regola #8 come pietra di paragone
-- lo sweep tecnico che qui ha già ripagato: rendere ogni pagina ed eseguire
-  `new Function()` su **ogni blocco `<script>` e ogni handler inline**
-- le sezioni non-Pokémon, che ricevono meno attenzione: Gaming, Arduino, PC Builder,
-  Python, e la Stampa 3D quando ci sarà
-
-L'esito va scritto qui, con i numeri: quante pagine, quanti campi, quante anomalie
-trovate e quali. Le anomalie che non rientrano nello scope del giro si segnalano, non
-si correggono al volo.
-
-### ⬜ Nello stesso giro — le mosse assegnate sono davvero quelle giuste?
-
-Chiesto da Davide il 12/08/2026, **da fare col controllo finale**. Il moveset importato
-il 12/08 non è mai stato confrontato con una fonte indipendente: viene tutto dal dump
-CSV di PokéAPI, e finora l'unica verifica è stata **interna** — che i nomi risolvano,
-che i conti tornino, che Incineroar perda Knock Off passando a M-A. Questo dice che il
-meccanismo funziona, **non** che gli elenchi siano corretti.
-
-**Fonte da usare: [Bulbapedia](https://bulbapedia.bulbagarden.net/)**, indicata da
-Davide come la più attendibile. È già stata usata una volta con profitto, ed è
-esattamente il caso: l'11/08 ha confermato `Mirror Herb` → «Foglia carbone» facendo da
-**seconda fonte indipendente** rispetto a quella dell'import.
-
-Cosa il controllo deve coprire, in ordine di rischio:
-
-- **la lista `champions`** per prima. È la più giovane e la meno vista: 19 810 righe su
-  319 voci, e nessuno ha mai controllato che il version group `champions` del dump sia
-  completo. Se lì manca qualcosa, su M-A e M-B una mossa legale sparisce dalla tendina
-  **senza dire niente** — è la classe di baco peggiore di questo progetto
-- **`Pawmot`**, che è nel roster di M-A ma nel dump non ha righe Champions: o è un buco
-  del dump, o non è davvero in Champions. Un caso solo, ma è il canarino
-- **un campione della lista `main`** su specie di generazioni diverse, perché per 429
-  voci su 1258 il version group scelto **non** è Scarlatto/Violetto ma uno più vecchio
-- **i metodi**: `machine` è il 76% delle righe (50 551 su 66 033). Se il dump gonfia le
-  MT, gli elenchi sono più larghi del vero e il filtro serve a poco
-
-Il metodo è quello già usato per il roster: uno script rieseguibile che scarica, che
-**si ferma su ciò che non risolve** invece di indovinare, e che dove le due fonti non
-concordano **lo segnala e basta** — come `importa_nomi_wiki.py` con le 11 voci in
-disaccordo. Non si sovrascrive PokéAPI con Bulbapedia alla cieca: nessuna delle due
-fonti è sempre giusta, e qui la lezione è già stata pagata.
-
-### ⬜ Nello stesso giro — l'inventario di cosa non serve più
-
-Insieme al collaudo, un **censimento di tutto quello che sta nel progetto** per capire
-cosa non viene più usato e si può togliere. Va fatto **alla fine** per lo stesso motivo:
-finché i lavori sono in corso, un file che oggi sembra morto può servire domani.
-
-Cosa passare in rassegna, tutto quanto:
-
-- **template** — chi li renderizza? `reference.html` è già noto come orfano (nessuna
-  route lo chiama). Vanno cercati anche i blocchi Jinja, gli `{% include %}` e i
-  `{% block %}` che nessuno estende più
-- **script** `static/js/` e `static/css/` — chi li carica, e all'interno **quali
-  funzioni non chiama nessuno**. Qui sono già state trovate `MEGA_DATA`, `PKMN_DB`,
-  `calc_stat_champions()` e una `switchTab` duplicata: la classe esiste
-- **route Python** — quali non sono raggiunte da nessun `url_for()`, link o `fetch()`
-- **funzioni e helper** nei blueprint, in `data.py` e in `extensions.py` mai importati
-- **gli script di `scripts/`** — quali sono una-tantum già consumati e quali vanno
-  tenuti perché rieseguibili (`build_catalog.py`, `importa_*`, `esporta_dati.py` restano;
-  altri no)
-- **i file di dati storici**, la voce più concreta: `data/roster_ma.json`,
-  `moves_ma.json`, `items_ma.json`, `abilities.json` e `pokemon_catalog.json` sono
-  ancora lì come **fallback** del catalogo unico. `pokemon_catalog.json` contiene per
-  giunta le Mega nella vecchia forma convertita. Da dismettere **solo** a verifica
-  finita — cioè qui
-- **colonne e tabelle del DB** che nessuna query legge più
-- **immagini e asset** in `static/` non referenziati
-
-Il metodo: **prima si misura, poi si propone**. Per ogni candidato serve la prova che
-non è usato (la ricerca che non trova riferimenti), e la rimozione si fa in un blocco
-suo, dopo il via libera di Davide — non insieme al collaudo, così se qualcosa si rompe
-si sa quale dei due l'ha rotto.
+1. [Le trappole che valgono ancora](#-le-trappole-che-valgono-ancora) — leggere prima di lavorare
+2. [I sei blocchi aperti](#1-i-sei-blocchi-aperti)
+3. [I lavori a metà](#2-i-lavori-a-metà)
+4. [Bachi noti e non corretti](#3-bachi-noti-e-non-corretti)
+5. [Voci minori, per sezione](#4-voci-minori-per-sezione)
+6. [🏁 Il giro di collaudo finale](#5--il-giro-di-collaudo-finale-va-fatto-per-ultimo)
 
 ---
 
-## ⬜ Aggiungere dati dalla web app, senza passarmi dal mezzo (aperta il 12/08/2026)
+## ⚠️ Le trappole che valgono ancora
 
-Chiesto da Davide il 12/08/2026: poter **importare nuovi Pokémon dentro `pokedex`
-direttamente dall'interfaccia**, senza doverlo chiedere a me, e lo stesso per **oggetti,
-mosse e abilità**. Poi verificare se la stessa strada vale per le altre regulation, e se
-un import manuale è già previsto da qualche parte.
+Non sono storia: sono le cose che questo progetto ha già pagato e che tornano a mordere.
+(Le regole di metodo — regola #8, sweep `new Function()`, `salva_catalogo()` — stanno in
+`CLAUDE.md`; qui c'è solo ciò che è specifico dei dati e del codice.)
 
-**Metà della risposta esiste già, e va detta prima di progettare il resto** — misurato
-sul codice il 12/08/2026, non ipotizzato:
+| Zona | La trappola |
+|---|---|
+| **Dati mancanti** | `moves: null` **non** vuol dire «nessuna mossa», vuol dire «non lo sappiamo». Le forme inventate non stanno su PokéAPI: se `null` valesse zero, diventerebbero inutilizzabili. Stessa logica per `roster: null` = tutto il catalogo |
+| **Risoluzione per nome** | Due chiavi diverse possono avere lo stesso `nome_it`/`nome_en`, e il catalogo Pokémon cita le abilità col nome **inglese** mentre le chiavi sono italiane. Ogni confronto per nome va fatto con `risolviChiave()` / `_INDICE`, mai con un match esatto sulla chiave |
+| **Fallback silenziosi** | Più di un baco qui non dava errore, dava il numero sbagliato: lo Speed Tier che ricadeva su una lista statica, `/api/moves` che leggeva il file di MA, un alias che rispondeva Mega Venusaur. Se un loader ha un ramo di riserva, va verificato **quale dei due** sta rispondendo |
+| **Endpoint fantasma** | Tre volte il JS ha chiamato una risposta che nessuno aveva mai implementato (`/api/regulations`, `d.moves`, `d.regulation`), fallendo dentro un `catch` muto. Un `catch(e){}` vuoto qui è un baco in attesa |
+| **Le Mega** | La firma «+75 HP» individua le voci convertite **specie per specie, non stat per stat**: su Froslass cinque valori su sei erano convertiti e uno no, e la regola applicata in blocco ha rotto proprio quello. E la conversione può partire da una forma diversa da quella di testa (Zygarde Complete) |
+| **File storici** | `data/pokemon_catalog.json`, `roster_ma.json`, `moves_ma.json`, `items_ma.json`, `abilities.json` sono ancora lì come **fallback**, e `pokemon_catalog.json` contiene le Mega nella vecchia forma convertita. Si dismettono al collaudo finale, non prima |
+| **Scritture concorrenti** | `salva_catalogo()` riscrive il file intero **senza lock**: due salvataggi nello stesso istante non danno errore, l'ultimo vince e l'altro si perde. Rilevante appena l'app va online |
+| **`t` come variabile** | `{% for t in … %}` in `moves_editor.html:97,153` e `regulation_editor.html:215` **ombrerebbe la funzione `t()`** delle traduzioni. Vanno rinominate quando si traducono quei due file |
+| **`|tojson` negli attributi** | `|tojson` rende `"pokedex"` **con le doppie**: dentro un attributo delimitato dalle doppie, l'attributo si chiude a metà. Usare gli apici singoli |
+| **Default del DB** | `extensions.py:143` crea la colonna con `regulation_id TEXT DEFAULT 'ma'`. Non è un residuo dei 14 letterali tolti l'11/08: è il default del **DB**, e cambiarlo richiede una migrazione. Oggi non fa danno perché `_team_upsert()` passa sempre un valore esplicito |
 
-- `/pokemon/catalogo?db=pokemon|moves|abilities|items` ([catalog_editor.html](templates/catalog_editor.html),
-  route in [pokemon.py:712](blueprints/pokemon.py:712)) modifica **i dati**: crea, aggiorna,
-  rinomina ed elimina **una voce alla volta**, con archivio e ripristino. `DB_CATALOGO`
-  copre tutti e quattro i database chiesti
-- `/pokemon/regulation/<id>/contenuto?db=…` ([regulation_content.html](templates/regulation_content.html),
-  route in [pokemon.py:604](blueprints/pokemon.py:604)) sceglie **quali nomi** entrano in una
-  regulation, con il pulsante «tutte» e la copia da un'altra regulation
-  (`/api/regulation/<id>/copia-da`). Vale per **ogni** regulation convertita al filtro,
-  non solo per una
+---
 
-Quindi la seconda domanda ha già una risposta parziale: **la scelta dei contenuti sì**,
-è generica; **l'inserimento di dati nuovi no**, se non voce per voce a mano.
+## 1. I sei blocchi aperti
 
-**E su `pokedex` c'è una cosa da sapere prima di scrivere una riga**: nel suo filtro
-`pokemon`, `moves`, `items` e `abilities` sono tutti e quattro `null`, cioè «tutto il
-catalogo». Un Pokémon aggiunto al catalogo **compare in `pokedex` da solo**, senza
-nessun passaggio in più. In `ma` (279 / 460 / 58) e `mb` (308 / 460 / 58) gli elenchi
-sono espliciti, quindi lì **non entra**: va spuntato nella schermata contenuti.
+Tutti aperti il 12/08/2026, tutti **misurati sul codice, non ipotizzati**. L'ordine
+consigliato è quello in cui sono scritti: 1.1 e 1.2 sono due metà della stessa domanda —
+*di chi* sono i dati e *chi* può cambiarli — e 1.5 dipende da entrambe.
+
+### 1.1 ⬜ I dati non hanno un proprietario
+
+**Trovata da Davide provando la web app.** Un team Pokémon salvato da un utente **lo
+vedono tutti**, e lo stesso vale per giochi, progetti Arduino e build PC. I permessi per
+sezione decidono **quali sezioni** vedi, non **di chi sono i dati** dentro.
+
+Serve: ogni riga sa chi l'ha creata · ogni utente vede solo le proprie · l'**admin vede
+tutto**, con scritto accanto chi ha inserito cosa e un filtro per utente.
+
+**Quanto costa, contato**: **68 query** toccano le tabelle di contenuto — `games` 29,
+`teams` 10, `arduino_projects` 7, `pc_builds` 7, `python_topics` 6, `team_members` 5,
+`pc_components` 4. Per blueprint: `gaming.py` 24, `dashboard.py` 22, `pokemon.py` 12,
+`pcbuilder.py` 7, `arduino.py` 4, `python_tracker.py` 3.
+
+**Le decisioni da prendere prima di partire:**
+
+1. **Dove mettere il proprietario**: solo sulle quattro tabelle radice (`games`, `teams`,
+   `arduino_projects`, `pc_builds`); `team_members` e `pc_components` lo ereditano con una
+   join. Metterlo anche sui figli sarebbe un dato ripetuto che può divergere
+2. ⚠️ **`python_topics` è il caso storto**: non è contenuto dell'utente, è un elenco fisso
+   di 53 voci seminato da `init_db()`, con la spunta `done` sulla riga stessa. Servono o 53
+   righe per utente, o — meglio — una tabella `python_progress(user_id, topic_id, done)`
+3. **Le righe esistenti**: assegnarle ad `admin` è l'unica scelta che non perde niente, ma
+   va fatta in una migrazione dichiarata
+4. ⚠️ **Come non lasciare buchi**: con 68 query, dimenticarne una significa mostrare i dati
+   di un altro **senza che nulla lo segnali**. Serve un meccanismo che **fallisca chiuso** —
+   un helper obbligatorio, o un test che elenchi le query e verifichi che ognuna filtri —
+   non `WHERE user_id=?` scritto a mano 68 volte
+
+Da fare in un blocco suo. Si verifica creando due utenti e provando che nessuno veda le
+cose dell'altro.
+
+### 1.2 ⬜ Gli editor Pokémon solo per gli admin
+
+Chi ha la sezione `pokemon` fra le proprie vede **tutto** ciò che sta sotto `/pokemon/*`,
+quindi può aprire catalogo, mosse, oggetti, abilità, roster e gli editor di regulation e
+**scrivere sui dati condivisi da tutti**: sono **28 route** in `blueprints/pokemon.py`.
+
+- il modello esiste già: `solo_admin` in [admin.py:28](blueprints/admin.py:28), agganciato
+  con un `before_request` **a tutto il blueprint** perché «una route nuova nasce protetta»
+- ⚠️ ma `/pokemon` **non** si può bloccare in blocco: mescola le pagine d'uso (team,
+  calcolatori, Speed Tier) con gli editor. Serve un elenco, e va fatto **al contrario di
+  come viene istintivo**: non la lista del vietato, che **fallisce aperto** sulla prossima
+  route che qualcuno aggiunge, ma la lista di ciò che è **permesso a tutti**
+- **le API vanno protette insieme alle pagine** (`/api/catalogo/<db>/salva`, `/elimina`,
+  `/api/abilities/update`, `/api/regulations/save`…): nascondere il pulsante non protegge
+  niente
+- **e poi anche il pulsante**: i 7 collegamenti agli editor in `pokemon.html`. `e_admin` è
+  già in ogni template dal context processor, quindi è una riga — ma è **cosmesi**, dopo il
+  controllo vero e non al posto suo
+
+Si verifica con due account, **chiamando direttamente** una route di scrittura col secondo.
+
+### 1.3 ⬜ Aggiungere dati dalla web app, senza passarmi dal mezzo
+
+Poter importare nuovi Pokémon in `pokedex` **dall'interfaccia**, e lo stesso per oggetti,
+mosse e abilità.
+
+**Metà esiste già**, e va detto prima di progettare il resto:
+
+- `/pokemon/catalogo?db=pokemon|moves|abilities|items` ([pokemon.py:712](blueprints/pokemon.py:712))
+  crea, aggiorna, rinomina ed elimina **una voce alla volta**, con archivio e ripristino:
+  `DB_CATALOGO` copre tutti e quattro i database chiesti
+- `/pokemon/regulation/<id>/contenuto` ([pokemon.py:604](blueprints/pokemon.py:604)) sceglie
+  **quali nomi** entrano in una regulation, per **ogni** regulation convertita al filtro
+
+E su `pokedex` i quattro filtri sono `null`, cioè «tutto il catalogo»: un Pokémon aggiunto
+**compare da solo**. In `ma` (279/460/58) e `mb` (308/460/58) gli elenchi sono espliciti,
+quindi lì va spuntato a mano.
 
 **Cosa manca davvero, in ordine di rischio:**
 
-1. ⚠️ **Il moveset, che è il buco vero.** `data/catalog/pokemon_moves.json` **non** è tra
-   i `DB_CATALOGO` ([pokemon.py:71](blueprints/pokemon.py:71)) e nessuna pagina lo tocca:
-   lo scrive solo `scripts/importa_mosse_specie.py`. Una specie aggiunta a mano nasce
-   quindi **senza mosse legali**, e nel calcolatore e nel team builder la sua tendina
-   esce vuota **senza dire perché** — la classe di baco peggiore di questo progetto.
-   Qualunque forma prenda l'import, deve o dare le mosse alla specie nuova o **dichiarare
-   a schermo** che non ne ha
-2. **L'import in blocco**, che è la richiesta letterale: oggi caricare più voci insieme
-   si può fare **solo** dagli script in `scripts/`. Serve decidere la forma — incollare
-   JSON, caricare un file, o pescare da PokéAPI per nome — e in ogni caso riusare
-   `salva_catalogo()` / `_save_abilities()`, che sono l'unico punto dove nasce la copia
-   di sicurezza
-3. **Le regulation non-`pokedex`**: dopo l'aggiunta al catalogo, o si offre un
-   «aggiungi anche a…» al salvataggio, o si accetta il doppio passaggio — ma allora va
-   **scritto a schermo**, altrimenti sembra che l'import non abbia funzionato
-4. **Validazione, oggi assente.** `/api/catalogo/<db>/salva` accetta qualunque oggetto:
-   il solo controllo è `isinstance(voce, dict)` ([pokemon.py:756](blueprints/pokemon.py:756)).
-   Una voce Pokémon completa ha `name`, `slug`, `nome_it`, `nome_en`, `types`,
-   `base_stats`, `abilities`, `forms`: senza `base_stats` il calcolatore sbaglia i conti,
-   senza `nome_it`/`nome_en` lo switch lingua non ha cosa mostrare
-5. **Chi può farlo**: è scrittura sui dati condivisi, quindi va incrociato con i permessi
-   per sezione e con la voce dei dati senza proprietario più sotto
+1. ⚠️ **Il moveset è il buco vero.** `data/catalog/pokemon_moves.json` **non** è tra i
+   `DB_CATALOGO` ([pokemon.py:71](blueprints/pokemon.py:71)) e nessuna pagina lo tocca: lo
+   scrive solo `scripts/importa_mosse_specie.py`. Una specie aggiunta a mano nasce **senza
+   mosse legali**, e la tendina esce vuota **senza dire perché**. Qualunque forma prenda
+   l'import, deve dare le mosse alla specie nuova o **dichiarare a schermo** che non ne ha
+2. **L'import in blocco**, che è la richiesta letterale: oggi si può fare solo dagli script.
+   Serve decidere la forma (incollare JSON, caricare un file, pescare da PokéAPI per nome) e
+   in ogni caso riusare `salva_catalogo()` / `_save_abilities()`
+3. **Le regulation non-`pokedex`**: o si offre un «aggiungi anche a…» al salvataggio, o si
+   accetta il doppio passaggio — ma allora va **scritto a schermo**
+4. **Validazione, oggi assente**: `/api/catalogo/<db>/salva` accetta qualunque oggetto, il
+   solo controllo è `isinstance(voce, dict)` ([pokemon.py:756](blueprints/pokemon.py:756)).
+   Senza `base_stats` il calcolatore sbaglia i conti, senza `nome_it`/`nome_en` lo switch
+   lingua non ha cosa mostrare
+5. **Chi può farlo**: è scrittura su dati condivisi, da incrociare con 1.1 e 1.2
 
-Non c'è ancora una decisione su nessuno dei cinque punti: la voce è aperta, non
-progettata.
+Nessuno dei cinque punti è deciso: la voce è aperta, non progettata.
 
----
+**Voce collegata** (dal docx): ⬜ *creare i JSON di una regulation nuova dalla web app* —
+roster, mosse, oggetti e abilità generati in autonomia. Obiettivo di fondo: **aggiungere
+una regulation senza IA, solo da interfaccia**.
 
-## ⬜ Gli editor Pokémon solo per gli admin (aperta il 12/08/2026)
+### 1.4 ⬜ Esportare tutto il DB, utenti e personalizzazioni comprese
 
-Chiesto da Davide il 12/08/2026: **gli utenti non amministratori non devono vedere le
-sezioni editor dei Pokémon**.
+> Precisazione di Davide: «con esportazione db intendo anche esportare tutto il resto».
+> **Quella parte c'è già.** Contato sul DB vero: 33 giochi, 1 team con 1 membro, 1 build PC
+> con 5 componenti, 53 argomenti Python, 2 utenti, tutto in `data/backup/hub_export.json`.
 
-**Com'è adesso, verificato il 12/08/2026**: chi ha la sezione `pokemon` fra le proprie
-vede *tutto* ciò che sta sotto `/pokemon/*`. I permessi decidono **quali sezioni** apri,
-non **cosa puoi fare dentro**. Quindi un utente normale può aprire `/pokemon/catalogo`,
-`/pokemon/mosse`, `/pokemon/oggetti`, `/pokemon/abilita`, `/pokemon/roster` e gli editor
-di regulation, e **scrivere sui dati condivisi da tutti**: sono **28 route** in
-`blueprints/pokemon.py` che toccano catalogo, abilità, roster o regulation. Non è un
-danno ipotetico: `salva_catalogo()` riscrive il file per tutti gli utenti.
+`scripts/esporta_dati.py` copre **8 tabelle** e degli utenti esporta tutte le colonne
+tranne `password` — quindi **i permessi per sezione ci sono già**, stanno in
+`users.sections`, che è una colonna e non una tabella a parte.
 
-**Come farlo, e come non farlo:**
+**Le tre falle, misurate sul DB vero:**
 
-- il modello esiste già ed è `solo_admin` in [admin.py:28](blueprints/admin.py:28),
-  agganciato con un `before_request` **a tutto il blueprint** proprio perché «una route
-  nuova nasce protetta». Stessa idea del controllo per sezione in `app.py`
-- ⚠️ ma qui il blueprint **non** si può bloccare in blocco: `/pokemon` mescola le pagine
-  d'uso (team, calcolatori, Speed Tier) con gli editor. Serve un elenco — e va fatto
-  **al contrario di come viene istintivo**: non l'elenco di ciò che è vietato, che
-  **fallisce aperto** e lascia scoperta la prossima route che qualcuno aggiunge, ma
-  l'elenco di ciò che è **permesso a tutti**, con il resto admin-only. È la stessa
-  lezione dei permessi per sezione, dove `/export` e la Dashboard erano rimasti fuori
-- **le API vanno protette insieme alle pagine**: `/pokemon/api/catalogo/<db>/salva`,
-  `/elimina`, `/api/abilities/update`, `/api/regulations/save`… Nascondere il pulsante
-  non protegge niente, la chiamata resta raggiungibile
-- **e poi anche il pulsante**: la barra strumenti in `pokemon.html` mostra 7 collegamenti
-  agli editor. `e_admin` è già disponibile in ogni template dal context processor di
-  `app.py`, quindi nasconderli è una riga — ma è **cosmesi**, e va fatta *dopo* il
-  controllo vero, non al posto suo
-
-**Come si verifica**: due account, uno admin e uno no, e con il secondo si prova a
-**chiamare direttamente** una route di scrittura, non solo a cercare il pulsante. Se
-risponde qualcosa di diverso da un rifiuto, non è chiusa.
-
-Da incrociare con **«i dati non hanno un proprietario»**: sono due metà della stessa
-domanda — quella dice *di chi* sono i dati, questa dice *chi può cambiarli*.
-
----
-
-## ⬜ Esportare **tutto** il DB, utenti e personalizzazioni comprese (aperta il 12/08/2026)
-
-Chiesto da Davide il 12/08/2026: un modo per esportare tutto il database — **utenti e
-loro personalizzazioni**, ma anche **tutto il resto**: giochi inseriti, team Pokémon,
-build del PC, progetti Arduino, progresso Python.
-
-> **Precisazione di Davide, stesso giorno**: «con esportazione db intendo anche
-> esportare tutto il resto». **Quella parte c'è già**, ed è il motivo per cui lo script
-> è nato. Contato sul DB vero il 12/08/2026: **33 giochi, 1 team con 1 membro, 1 build
-> PC con 5 componenti, 53 argomenti Python, 2 utenti** — tutto dentro
-> `data/backup/hub_export.json`, che è versionato. Quello che manca non è *cosa* si
-> esporta, sono le tre falle qui sotto: una tabella omessa per caso, nessun modo di
-> **rileggere** il file, e due personalizzazioni che nel DB non ci sono proprio.
-
-### Cosa l'export di oggi prende già — verificato il 12/08/2026
-
-`scripts/esporta_dati.py` copre **8 tabelle**: `users`, `games`, `teams`,
-`team_members`, `arduino_projects`, `python_topics`, `pc_builds`, `pc_components`.
-Degli utenti esporta **tutte le colonne tranne `password`**, e questo significa che
-**i permessi per sezione ci sono già**: stanno in `users.sections`, che è una colonna,
-non una tabella a parte. Quindi la parte «utenti e personalizzazioni» è coperta più di
-quanto sembri.
-
-### Le tre falle, tutte misurate sul DB vero
-
-1. ⚠️ **Una tabella su nove non è nell'elenco.** `hub.db` contiene anche
-   `regulations` (1 riga: `ma`, con `roster_file`/`moves_file`/`items_file`), che
-   `TABELLE` non nomina. Ma è **una tabella morta**: la scrive solo `init_db()` con un
-   `INSERT OR IGNORE` e **non la legge nessuno** — le regulation vivono in
-   `data/regulations/*.json` dal 10/08. Da decidere, non da subire: o entra
-   nell'export, o si toglie dal DB con l'inventario del codice morto. Oggi è omessa
-   **per caso**, non per scelta
-2. ⚠️ **Manca il ritorno.** Nessuno script rilegge `hub_export.json`: è la stessa cosa
-   segnata nella voce delle due guide, e vale la pena dirla due volte. Un export senza
-   import non è un backup, è un file che nessuno sa rimettere dentro. Serve un
+1. ⚠️ **Una tabella su nove non è nell'elenco**: `regulations` (1 riga) non è in `TABELLE`.
+   Ma è una **tabella morta** — la scrive solo `init_db()` e non la legge nessuno, le
+   regulation vivono in `data/regulations/*.json` dal 10/08. Da decidere: o entra
+   nell'export, o si toglie dal DB con l'inventario del codice morto. Oggi è omessa **per
+   caso**, non per scelta
+2. ⚠️ **Manca il ritorno**: nessuno script rilegge `hub_export.json`. Un export senza import
+   non è un backup, è un file che nessuno sa rimettere dentro. Serve
    `scripts/importa_dati.py` rieseguibile, con `--dry-run`, che dica **prima** cosa
    sovrascriverebbe
-3. ⚠️ **Due personalizzazioni non sono nel DB**, quindi nessun export potrà mai
-   prenderle: il **tema** sta in `localStorage` (per browser) e la **lingua** nel cookie
-   `hub_lang` (per browser). Vanno spostate su colonne di `users` se si vuole che
-   seguano l'utente — ed è esattamente ciò che serve quando l'app sarà online e la userai
-   dal telefono e dal PC: oggi ogni dispositivo se le rimette da capo
+3. ⚠️ **Due personalizzazioni non sono nel DB**, quindi nessun export potrà mai prenderle:
+   il **tema** è in `localStorage` e la **lingua** nel cookie `hub_lang`, entrambi per
+   browser. Vanno su colonne di `users` se devono seguire l'utente — cioè esattamente
+   quando l'app sarà online e la userai dal telefono e dal PC
 
-### La decisione da prendere: due export, non uno
+**La decisione da prendere: due export, non uno.** Le password sono escluse di proposito
+perché `hub_export.json` **viene committato**. Ma un backup vero le deve contenere. Quindi
+`esporta_dati.py` resta com'è, e serve una modalità **`--completo`** che scriva tutto,
+`regulations` e password comprese, in un file **fuori dal repo** — e che si **rifiuti** di
+scrivere in una cartella versionata, unico modo perché la distinzione non salti per
+distrazione.
 
-Le **password sono escluse di proposito** — `ESCLUSE = {"users": {"password"}}` — perché
-`hub_export.json` **viene committato**, e degli hash di password dentro un repo pubblico
-non ci vanno. Ma un backup vero, quello che serve per rimettere in piedi tutto senza
-reimpostare le password a mano, le password le deve contenere. Quindi:
+Da incrociare con 1.5: online questo export deve girare **da solo sul server**.
 
-- `esporta_dati.py` resta com'è: **committabile, senza password**. È la copia che
-  sopravvive su GitHub
-- serve una seconda modalità — `--completo` — che scriva **tutto**, `regulations`
-  compresa e password incluse, in un file **fuori dal repo** o comunque in `.gitignore`,
-  da tenere dove Davide decide. Deve rifiutarsi di scrivere dentro una cartella
-  versionata: è l'unico modo perché la distinzione non salti per distrazione
+### 1.5 ⬜ Mettere l'app online
 
-Da incrociare con il capitolo del deploy qui sotto: online, questo export deve girare
-**da solo sul server**, altrimenti l'unica copia è vecchia quanto l'ultima sessione.
+Usare la web app dal telefono e da altri PC, **in contemporanea**.
 
----
+> **I due vincoli, posti da Davide il 12/08/2026:**
+> 1. **I dati degli utenti restano salvati, sempre.** Una soluzione che al riavvio riparte
+>    pulita è esclusa a prescindere
+> 2. **Gratis.**
+>
+> Insieme **tagliano fuori Railway**, e con lui Render e Fly nella forma gratuita: il disco
+> persistente lì è la parte che si paga.
+>
+> ⚠️ Il vincolo 1 va **verificato, non creduto**: qualunque strada si scelga, il collaudo
+> obbligatorio è **salvare qualcosa, riavviare il servizio, ricontrollare che ci sia
+> ancora**. Il filesystem effimero non dà nessun errore: la pagina dice «Salvato» lo stesso.
 
-## ⬜ Due guide: com'è fatto, e come si riparte da un PC nuovo (aperta il 12/08/2026)
+**Il problema non è quale hosting, è che questa app tiene lo stato in file su disco**:
+**20 punti** in `blueprints/` ed `extensions.py` aprono un file in scrittura mentre l'app
+gira, più `hub.db`. Quanto deve viaggiare, misurato: `data/` pesa 92 MB ma **84 sono
+`data/cache/`**, rigenerabile e già ignorata da git — restano **7,3 MB versionati** più
+`hub.db` (60 KB) e `data/archive/` (3 MB). È poco.
 
-Chieste da Davide il 12/08/2026:
+| | Strada | Esito |
+|---|---|---|
+| 1 | **PythonAnywhere, piano gratuito** | ✅ **la candidata**: filesystem **persistente**, nessun letargo. Limiti: una sola web app, quota CPU giornaliera, **rinnovo a mano ogni tre mesi**, whitelist in uscita (irrilevante: gli import si lanciano da qui) |
+| 2 | Railway / Render / Fly con un volume | ❌ ~5 $/mese. **Esclusa dal vincolo «gratis»**, resta scritta solo per sapere cosa si comprerebbe |
+| 3 | **PC di casa con un tunnel Cloudflare** | 🟨 la riserva. Gratis, e i dati non si spostano di qui. Davanti ci va Cloudflare Access. Il prezzo: **il PC deve restare acceso** |
 
-1. una guida che **documenti come è stato realizzato il progetto e come funziona**
-2. una guida che spieghi **come installarlo e farlo partire su un computer nuovo** —
-   cartella del progetto, Python, requisiti, programmi utili per lavorarci
+⚠️ **Prima di esporre qualunque cosa, quattro cose trovate nel codice, nessuna opinabile:**
 
-### Lo stato di fatto: i documenti non sono zero, sono cinque
+- `app.py` finisce con `app.run(host="0.0.0.0", debug=True, port=5000)`. Il debugger di
+  Werkzeug su una porta pubblica è **esecuzione di codice da remoto**: serve un WSGI vero
+  (`gunicorn` su Linux, `waitress` su Windows)
+- `SECRET_KEY` ha come default `"dev-secret-change-me"`: chi conosce quella stringa **si
+  firma da solo un cookie di sessione da admin**
+- la pagina di login **stampa `admin / admin123`**: va tolto e la password cambiata
+- `requirements.txt` ha una riga sola
 
-Contati il 12/08/2026, e in parte si contraddicono:
+**Sulla contemporaneità**: SQLite regge un uso come questo senza problemi. I **file JSON
+scritti a mano no** — vedi la trappola sulle scritture concorrenti. Le cache in memoria
+sono già sull'mtime, quindi con più worker si comportano bene.
+
+**E una rete sotto**: «persistente» non vuol dire «al sicuro». Un piano gratuito può
+chiudere o essere sospeso, e oggi `esporta_dati.py` lo lancio io a mano da qui.
+
+### 1.6 ⬜ Due guide: com'è fatto, e come si riparte da un PC nuovo
+
+**Lo stato di fatto: i documenti non sono zero, sono cinque**, e in parte si contraddicono.
 
 | File | Righe | Cos'è, davvero |
 |---|---|---|
 | `DOCUMENTAZIONE_PersonalHub.md` | 303 | La più vicina alla guida n. 1. **Ferma al 07/08/2026**, «v16.2» |
-| `PROJECT_CONTEXT.md` | 656 | Dettagli tecnici, convenzioni e il log delle sessioni. Aggiornato |
+| `PROJECT_CONTEXT.md` | 656 | Dettagli tecnici, convenzioni, log delle sessioni. Aggiornato |
 | `README.md` | 133 | Stack e struttura. Dice **«v11.1a»** |
-| `README-GitHub.md` | 104 | La vetrina con i badge, per chi arriva da GitHub |
+| `README-GitHub.md` | 104 | La vetrina coi badge |
 | `howtouse.txt` | 22 | Appunti a mano. È il germe della guida n. 2 |
 
-⚠️ **Due numeri di versione diversi** (`v11.1a` e `v16.2`) su due file che descrivono la
-stessa app: già da soli dicono che il problema non è scrivere, è **decidere chi dice
-cosa** e buttare i doppioni. La guida n. 1 quindi non nasce da zero: nasce dal fondere
-`DOCUMENTAZIONE_PersonalHub.md` con quello che è successo dopo il 07/08 — catalogo
-unico, regulation come filtro, Mega riportate alle base, moveset per specie, utenti e
-permessi, switch lingua — che **non è documentato in nessuno dei cinque**.
+⚠️ **Due numeri di versione diversi** sullo stesso progetto dicono che il problema non è
+scrivere, è **decidere chi dice cosa** e buttare i doppioni. La guida n. 1 nasce dal fondere
+`DOCUMENTAZIONE_PersonalHub.md` con tutto ciò che è successo dopo il 07/08 — catalogo
+unico, regulation come filtro, Mega alle base, moveset per specie, utenti e permessi,
+switch lingua — che **non è documentato in nessuno dei cinque**.
 
-⚠️ `howtouse.txt` inoltre **è già sbagliato**: indica `C:\Progetti_Python\personal-hub`,
-che non è questa cartella, e scrive la password in chiaro. Le sue ultime due righe però
-sono preziose, perché sono la stessa richiesta di oggi scritta mesi fa: «accesso al di
-fuori del pc», «accesso senza avere il pc acceso» — vedi il capitolo sul deploy qui
-sotto.
+⚠️ `howtouse.txt` **è già sbagliato**: indica `C:\Progetti_Python\personal-hub`, che non è
+questa cartella, e scrive la password in chiaro. Le sue ultime due righe però sono la
+stessa richiesta di oggi scritta mesi fa: «accesso al di fuori del pc», «accesso senza
+avere il pc acceso».
 
-### ⚠️ Cosa la guida n. 2 troverà rotto, e va sistemato **prima** di scriverla
+**⚠️ Cosa la guida n. 2 troverà rotto, e va sistemato prima di scriverla:**
 
-Non sono opinioni: verificato nel codice il 12/08/2026.
+- **`requirements.txt` ha una riga sola**, `flask>=3.0`, ma gli script usano `requests` e le
+  password passano da `werkzeug.security`. Una guida che dice `pip install -r requirements.txt`
+  **oggi mente**
+- ⚠️ **il ripristino dei dati non esiste** (vedi 1.4): su un PC nuovo l'app riparte col DB
+  che `init_db()` crea da zero — solo l'utente `admin`, e **niente** giochi, team, Arduino o
+  build PC
+- `data/cache/` (84 MB) si rigenera, ma va **detto**, altrimenti il primo import sembra
+  bloccato mentre sta scaricando
+- la password `admin123` sta nella pagina di login e in `howtouse.txt`: la guida nuova non
+  deve propagarla
 
-- **`requirements.txt` ha una riga sola**, `flask>=3.0`. Ma gli script usano `requests`
-  (import da PokéAPI e wiki) e le password ora passano da `werkzeug.security`. Una
-  guida che dice `pip install -r requirements.txt` **oggi mente**
-- ⚠️ **il ripristino dei dati non esiste.** `hub.db` è escluso da git — giustamente — e
-  `scripts/esporta_dati.py` scrive `data/backup/hub_export.json`, ma **non c'è nessuno
-  script che lo rilegga**. Su un PC nuovo l'app riparte con il database che `init_db()`
-  crea da zero: il solo utente `admin`, e **niente** libreria giochi, team, progetti
-  Arduino o build PC. La guida n. 2 senza un `importa_dati.py` si ferma a metà, e il
-  backup che ci raccontiamo di avere non è un backup: è un file che nessuno sa rileggere
-- `data/cache/` (84 MB) non è versionata ed è giusto così: si rigenera. Ma va **detto**,
-  altrimenti sul PC nuovo il primo import sembra bloccato mentre invece sta scaricando
-- la password `admin123` sta scritta **nella pagina di login** e in `howtouse.txt`. La
-  guida nuova non deve propagarla ulteriormente
+**Come dovrebbero essere fatte**: la n. 1 è **per Davide fra sei mesi**, non per un
+estraneo — deve spiegare *perché* le cose stanno come stanno (perché il catalogo è unico,
+perché le chiavi non si rinominano, perché la lingua è in un cookie), che è la parte che si
+perde per prima. La n. 2 è una sequenza di comandi **eseguibile alla lettera**, provata su
+una macchina pulita, e la prova finale è la regola #8.
 
-### Come dovrebbero essere fatte
-
-- **n. 1 — «com'è fatto»**: per Davide fra sei mesi, non per un estraneo. Deve spiegare
-  *perché* le cose stanno come stanno — perché il catalogo è unico e le regulation sono
-  filtri, perché le chiavi non si rinominano mai, perché la lingua sta in un cookie e non
-  in `localStorage`, perché le cache guardano l'mtime. Quel «perché» oggi è sparso fra i
-  commenti nel codice e questo backlog, ed è la parte che si perde per prima
-- **n. 2 — «da PC nuovo a app che gira»**: una sequenza di comandi che **si può eseguire
-  alla lettera**, provata su una macchina pulita. Non «installa Python»: quale versione,
-  con quale flag, come si verifica che sia andata. E la prova finale è la regola #8 —
-  se il calcolatore dà A=183, D=122, HP=221, 85-102, l'installazione è buona
-
-Da fare **dopo** il giro di collaudo finale, non prima: documentare un'app che sta per
-cambiare significa riscrivere la guida due volte.
+Da fare **dopo** il collaudo (§5): documentare un'app che sta per cambiare significa
+riscrivere la guida due volte.
 
 ---
 
-## ⬜ Mettere l'app online — Railway o cosa? (aperta il 12/08/2026)
+## 2. I lavori a metà
 
-Chiesto da Davide il 12/08/2026: **usare la web app da dove vuole** — non solo da questo
-computer, ma anche dal telefono e da altri PC, **in contemporanea** — con una soluzione
-**possibilmente gratuita**. La domanda posta era: Railway è la strada giusta?
+### 2.1 🟨 Switch lingua — il secondo blocco, le stringhe dell'interfaccia
 
-> ### 🔒 I due vincoli, posti da Davide il 12/08/2026
->
-> 1. **I dati degli utenti devono restare salvati, sempre.** Non «di solito»: una
->    soluzione che al riavvio riparte pulita è esclusa a prescindere, anche se comoda
-> 2. **Gratis.**
->
-> Messi insieme, i due vincoli **tagliano fuori Railway** — e con lui Render e Fly nella
-> forma gratuita, perché il disco persistente lì è la parte che si paga. Restano in
-> piedi solo le strade 1 e 3 qui sotto: **PythonAnywhere** e **il tunnel dal PC di
-> casa**. La strada 2 resta scritta solo per ricordare cosa si comprerebbe con 5 $.
->
-> ⚠️ E il vincolo 1 va **verificato, non creduto**: qualunque strada si scelga, il
-> collaudo obbligatorio è **salvare qualcosa dalla web app, riavviare il servizio, e
-> ricontrollare che ci sia ancora**. È l'unico modo di accorgersi in tempo del
-> filesystem effimero, che non dà nessun errore: la pagina dice «Salvato» lo stesso.
+Il primo blocco (i **nomi dei dati**) è chiuso l'11/08. Questo è l'**interfaccia**.
 
-**La risposta breve: il problema non è quale hosting, è che questa app tiene lo stato
-in file su disco.** Contati il 12/08/2026: **20 punti** in `blueprints/` ed
-`extensions.py` aprono un file in scrittura mentre l'app gira — `salva_catalogo()`, le
-abilità, i filtri delle regulation, gli archivi in `data/archive/` — più `hub.db`, che
-è dove vivono utenti, team, giochi, progetti Arduino e build PC.
+**Quanto è grande, contato**: **453** stringhe fisse nelle pagine Pokémon + **~110** nel
+JavaScript. Nell'intero progetto sono 691.
 
-Railway, Render e Fly danno un **filesystem effimero**: a ogni redeploy o riavvio il
-contenitore riparte dall'immagine. Senza un disco persistente, **ogni modifica fatta
-dalla web app sparisce al primo riavvio**, e sparirebbe in silenzio — la pagina
-direbbe «Salvato». Su Railway si risolve con un **volume** montato su `data/` e su
-`hub.db`: tecnicamente funziona, ma il piano gratuito di Railway **non esiste più** (c'è
-un credito di prova, poi si paga sui 5 $/mese). ⚠️ I prezzi vanno verificati quando ci
-si mette: cambiano spesso, e questo è quanto ne so io, non un preventivo.
+**Come funziona**: `t('frase')` in Jinja e in JS, `tf('frase con {n}', {n: …})` per quelle
+coi numeri. **La chiave del dizionario è la frase italiana stessa**, non un codice tipo
+`btn.salva`: il template resta leggibile e una traduzione mancante ricade sull'italiano,
+che è sempre giusto. Il dizionario è `data/i18n/en.json`, con cache sull'mtime; il JS lo
+riceve in `window.T`. ⚠️ Il prezzo, dichiarato: **cambiare una parola italiana in un
+template stacca la traduzione in silenzio** — per questo esiste
+`python scripts/controlla_traduzioni.py`, che elenca mancanti, vuote e orfane.
 
-**Quanto dato deve viaggiare**, misurato: `data/` pesa 92 MB, ma **84 MB sono
-`data/cache/`** (PokéAPI e wiki, già ignorata da git e rigenerabile). Quello che deve
-davvero sopravvivere è **7,3 MB versionati** più `hub.db` (60 KB) e `data/archive/`
-(3 MB). È poco: nessun piano si spaventa per questo.
+**Fatti 3 template su 11**: `pokemon.html` (16), `regulation_content.html` (15),
+`catalog_editor.html` (23). Verifica: 14 pagine × 2 lingue rese 200, 69 chieste / 69
+presenti / 0 mancanti, sweep 1587 pezzi sani.
 
-**Le tre strade, in ordine di quanto costano a Davide** — con i vincoli qui sopra, la
-prima è la candidata e la terza la riserva; la seconda è fuori:
-
-1. ✅ **PythonAnywhere, piano gratuito** — il filesystem **è persistente**, che è
-   esattamente ciò che qui serve, e l'app non va in letargo. Limiti: una sola web app,
-   una quota di CPU al giorno, va **rinnovata a mano ogni tre mesi**, e le connessioni
-   in uscita passano da una whitelist (irrilevante: gli import da PokéAPI e dalla wiki
-   si lanciano da qui, non dal server). Per un'app a un utente e a traffico quasi zero è
-   la candidata più seria fra le gratuite
-2. ❌ **Railway / Render / Fly.io con un volume** — 5 $/mese circa, deploy da git,
-   esperienza migliore e nessun rinnovo da ricordare. **Esclusa dal vincolo «gratis»**,
-   e resta qui solo per sapere cosa si comprerebbe se un giorno il vincolo cadesse
-3. 🟨 **Il PC di casa esposto con un tunnel Cloudflare** — la riserva, se PythonAnywhere
-   stringe troppo. Gratis, e i dati non si spostano di qui: sono già dove sono adesso,
-   il che soddisfa il vincolo 1 nel modo più diretto possibile. Davanti ci si mette
-   Cloudflare Access per l'autenticazione. Il prezzo è che **il PC deve restare
-   acceso**: se è spento, dal telefono non si vede niente
-
-**Prima di esporre qualunque cosa a internet, quattro cose trovate nel codice il
-12/08/2026, e nessuna è opinabile:**
-
-- ⚠️ `app.py` finisce con `app.run(host="0.0.0.0", debug=True, port=5000)`. Il debugger
-  di Werkzeug acceso su una porta pubblica è **esecuzione di codice da remoto**. In
-  produzione ci vuole un server WSGI vero — `gunicorn` su Linux, `waitress` su Windows
-- ⚠️ `SECRET_KEY` ha come default `"dev-secret-change-me"`. Chi conosce quella stringa
-  **si firma da solo un cookie di sessione da admin**: va messa come variabile
-  d'ambiente, con un valore casuale
-- ⚠️ la pagina di login **stampa `admin / admin123`**. Va tolto, e la password cambiata
-- `requirements.txt` contiene una riga sola, `flask>=3.0`: manca tutto il resto di ciò
-  che serve a un deploy
-
-**E una cosa sulla contemporaneità**, che è la parte della richiesta più facile da dare
-per scontata: da più dispositivi insieme, SQLite regge senza problemi un uso come
-questo. I **file JSON scritti a mano no**: `salva_catalogo()` riscrive il file intero
-senza nessun lock, quindi due salvataggi nello stesso momento non danno errore —
-**l'ultimo vince e l'altro si perde**. Le cache in memoria invece sono già sull'mtime
-(`load_moveset()`, `traduzioni()`), quindi con più worker si comportano bene.
-
-**E una rete sotto, visto il vincolo «i dati restano salvati».** «Persistente» non vuol
-dire «al sicuro»: un piano gratuito può chiudere, scadere o essere sospeso. La copia
-leggibile la fa già `python scripts/esporta_dati.py` in `data/backup/hub_export.json`,
-che è versionata — ma **oggi la lancio io a mano da qui**. Online serve che quella copia
-si faccia **dal server e da sola**, altrimenti l'unico backup è vecchio quanto l'ultima
-sessione. Da decidere insieme al deploy, non dopo.
-
-Questa voce va incrociata con **«i dati non hanno un proprietario»** più sotto: finché
-ogni utente vede i team di tutti, mettere l'app online significa esporre a tutti gli
-utenti i dati di tutti. Ordine sensato: prima i proprietari dei dati, poi le quattro
-correzioni qui sopra, poi il deploy.
-
----
-
-## ✅ Regulation e interfaccia — le quattro voci, chiuse (11/08/2026)
-
-Tutte e quattro fatte e verificate: **41 controlli su 41** sul test client, regola #8
-esatta in browser (A=183, D=122, HP=221, 85-102 = 38.5%–46.2%) **su `pokedex` senza
-`?reg=`**, cioè proprio perché è il nuovo default, e sweep su **26 pagine, 44 blocchi
-`<script>` e 2197 handler inline**.
-
-| | Cosa è stato fatto |
-|---|---|
-| ✅ | **Niente più JSON per regulation.** I tre input `roster_file`/`moves_file`/`items_file` compaiono ora **solo** sulle regulation non migrate (`{% if not reg.filter_file %}`), e con loro spariscono da `saveMeta()`: `campiFile()` legge solo gli input presenti, quindi su una regulation a filtro quei campi non vengono più scritti. Su `ma`, che ha ancora i percorsi legacy nel registro, restano **conservati** — verificato salvando davvero dal browser: toast "✅ Metadati salvati!" e i tre file ancora nel JSON. Anche `regulations_list.html` non stampa più tre righe vuote: mostra `🔎 filtro sul catalogo — regulations/<id>.json` |
-| ✅ | **Titolo della sezione Pokémon** — `pokemon.html:24` è ora `🎮 Pokémon VGC`, senza regulation. Nello stesso giro sono caduti gli altri "Reg MA" scritti a mano che il cambio di default avrebbe reso **falsi a schermo**: i topbar e i titoli di `moves_editor`, `items_editor` e `roster_editor` ora dicono la regulation vera (`current_reg.label`, che le tre route già passavano), i due placeholder "Cerca nel Reg MA…" del calcolatore sono "Cerca un Pokémon…", e la card della dashboard dice "VGC". Resta di proposito il valore iniziale del campo **Formato** in `team_form.html:42` (`VGC Reg MA`): è testo libero del team, non un'etichetta di sistema |
-| ✅ | **Catalogo a sinistra del Calcolatore** — invertite le due righe in `pokemon.html:34-35` |
-| ✅ | **`pokedex` è il default del sito** — i 14 letterali `"ma"` sono spariti. Ora c'è **`regulation_default()` in `data.py`**, che restituisce **la prima regulation di `regulations.json`**: lo stesso criterio del fallback `regs[0]` che tutte le route già usavano quando l'id non esiste, quindi il file dice una cosa sola e la dice in un posto solo. Per cambiare default si sposta una voce in cima al registro, senza toccare il codice. In `regulations.json` l'ordine è ora `pokedex`, `ma`, `mb`. Misurato: `/api/moves` senza `reg` passa da 461 a **921** mosse, gli oggetti da 58 a **398**, il roster del team builder da 279 a **1343** |
-
-> ⚠️ **Una cosa che resta a `ma`**: `extensions.py:143` crea la colonna con
-> `regulation_id TEXT DEFAULT 'ma'`. Non è un doppione dei 14 — è il default del **DB**,
-> e cambiarlo richiede una migrazione. Oggi non fa danno perché `_team_upsert()` passa
-> sempre un valore esplicito, che ora è `regulation_default()`. I team già salvati
-> restano sulla loro regulation: nessuno è stato toccato.
-
-### ✅ Tre endpoint che il JS chiamava e che non esistevano
-
-Saltati fuori verificando la voce 1: `GET /pokemon/api/regulations` e
-`POST /pokemon/api/regulations/save` **non erano mai stati scritti**, e `team_form.html`
-chiamava `/api/regulations`, che pure non esiste. Conseguenze reali, non teoriche:
-
-- il pulsante **💾 Salva Metadati** dell'editor regulation non ha mai salvato niente:
-  404 → `r1.json()` lancia → `catch` → toast "Errore rete"
-- la tendina **Regulation** del team builder falliva dentro un `catch(e){}` muto e
-  restava con la **sola `<option>` stampata dal template**. Cioè: non si è mai potuta
-  scegliere la regulation di un team dall'interfaccia
-
-Sono stati aggiunti entrambi (`blueprints/pokemon.py`, accanto a create/delete) e
-`team_form.html` ora chiama quello giusto. Il salvataggio **rifiuta** un registro vuoto,
-non-lista, senza `id`/`label`, con id duplicati, o che **perderebbe una regulation**
-esistente — 5 payload rifiutati su 5, con il file verificato intatto dopo. Il motivo dei
-controlli: da oggi il registro dice anche **qual è il default del sito**, quindi un
-salvataggio sbagliato non toglierebbe solo un'etichetta.
-
-Verificato in browser: la tendina del team ora elenca **3** regulation e cambiandola il
-roster passa da **1343** (pokedex) a **279** (MA).
-
-### ✅ I cinque bachi piccoli — chiusi subito dopo (11/08/2026)
-
-Erano tutti già localizzati, e due erano diventati più visibili col nuovo default.
-**22 controlli su 22** sul test client, più la prova in browser di ognuno.
-
-| | Voce | Come è stato chiuso |
-|---|---|---|
-| ✅ | **`/pcbuilder/` rispondeva 500** ⚠️ | `pcbuilder.py:16` metteva la `sqlite3.Row` grezza in `{"data": b}`, e il template la passa a `\|tojson` nell'`onclick` di Modifica: `TypeError: Object of type Row is not JSON serializable`. **La sezione era inaccessibile** appena c'era una build salvata — e nel DB ce n'è una, quindi lo era davvero. Ora `dict(b)`, lo stesso che `pokemon()` fa per `teams_json`. Verificato in browser: la pagina si apre e il modale Modifica carica `ZAFFO-PC` con i suoi **5 componenti**, il primo un Ryzen 7 7800X3D |
-| ✅ | **53 `onmouseout` morti in `python.html:45`** | Il ramo `{% else %}` aggiungeva due apici dentro una stringa già quotata: l'attributo usciva `this.style.background=''''`, un `SyntaxError`, quindi su ogni argomento **non** completato l'handler era `null` e lo sfondo dell'hover non si spegneva più. Tolti i due apici di troppo. Da **0 handler vivi su 53 a 53 su 53**, verificato eseguendo davvero mouseover/mouseout: lo sfondo passa a `var(--surface-off)` e torna a vuoto. Renderizzati entrambi i rami: da fare → `background=''`, completato → `background='var(--success-dim)'` |
-| ✅ | **`loadSpePkmn()` non ricalcolava** | Riempiva `spe_base` ma non chiamava `updateSpeed()`: dopo aver scritto un nome nello Speed Tier la propria Velocità restava `—` e la tabella continuava a confrontarsi con il valore precedente. Aggiunta la chiamata. Misurato: Incineroar → base **60**, Velocità **80**; poi Dragapult → base **142**, Velocità **162**, con 1321 righe su 1343 marcate più lente |
-| ✅ | **L'eliminazione di una regulation lasciava il filtro orfano** | `api_regulations_delete` cancellava solo `roster_file`, `moves_file` e `items_file` — che sulle regulation nuove **non esistono**: `data/regulations/<id>.json` restava sul disco mentre la modale prometteva di averlo cancellato. Ora `filter_file` è nell'elenco, e **prima di toglierlo se ne tiene una copia** in `data/archive/regulation_<id>_pre-eliminazione.json`: il filtro è l'elenco di nomi scelto a mano, ricostruirne 279 sarebbe la perdita che l'archivio esiste per evitare. Il testo della modale ora dice il vero. Provato sul ciclo completo con una regulation usa-e-getta: creata, filtro sul disco, eliminata, filtro sparito, copia in archivio, registro con le tre vere intatte |
-| ✅ | **`Galarian Darmanitan` dava 404** | Delle **57** voci con un qualificatore regionale, **56** usano il prefisso (`Galarian Zapdos`) e **una sola** la parentesi: `Darmanitan (Galarian Form)`. Il nome nel catalogo **non è stato toccato** — è l'identità della forma e la usano i filtri delle regulation: la differenza si colma nell'indice di `api_pokemon.py`, che per una forma `X (Y Form)` con `Y` regionale registra anche l'alias `Y X`. Verificato che risolva con le stesse stat del nome canonico, che `Galarian Zapdos`, `Alolan Raichu`, `Hisuian Arcanine` e `Paldean Tauros (Aqua Breed)` continuino a risolvere, e che `Galarian Machamp`, `Mega Machamp` e `Alolan Pippo` restino **404** invece di rispondere un Pokémon a caso |
-
-> Sweep dopo i fix: **26 pagine, 45 blocchi `<script>`, 2206 handler inline, zero errori.**
-> Prima erano 54: i 53 di `python.html` più il 500 del PC Builder, che non essendo
-> renderizzabile non entrava nemmeno nel conteggio.
-
----
-
-## Le quattro voci — com'erano state aperte (11/08/2026)
-
-| | Voce | Cosa ho trovato guardando il codice |
-|---|---|---|
-| ✅ | **Verifica creazione regulation — servono ancora i JSON?** | **No, e in parte è già così.** `api_regulations_create` (`blueprints/pokemon.py:829`) scrive **da sé** un solo file, `data/regulations/<id>.json`, e registra `filter_file` in `regulations.json`: elenchi di nomi che puntano al catalogo, nessuna copia dei dati. I campi vuoti che si vedono sono i **tre residui del vecchio modello** — `roster_file`, `moves_file`, `items_file` — ancora stampati da `regulation_editor.html:83,88,93` (input modificabili) e da `regulations_list.html:45-47`. Su una regulation nuova sono vuoti perché quei file **non esistono più e non devono esistere**. Delle tre in `regulations.json` solo `ma` ha ancora i percorsi legacy. La strada più semplice ed efficace è quindi la seconda che proponi: **non creare nulla**, e togliere quei tre campi dove c'è `filter_file` (l'editor ha già il ramo `{% if reg.filter_file %}` alla riga 105, basta estenderlo). ⚠️ Da verificare prima: quei tre input sono anche **scritti** al salvataggio (`regulation_editor.html:277-292`), quindi vanno tolti da lì insieme |
-| ✅ | **Titolo della sezione Pokémon fisso su "Reg MA"** | `templates/pokemon.html:24` ha `<h1>🎮 Pokémon VGC — Reg MA</h1>` scritto a mano: resta "Reg MA" qualunque regulation sia attiva. Va reso generico — o senza regulation, o con la `label` di quella davvero in uso. La topbar (`pokemon.html:3`) e la sidebar (`base.html:152`) dicono già solo "Pokémon VGC" e vanno bene |
-| ✅ | **Pulsante Catalogo a sinistra del Calcolatore** | `templates/pokemon.html:34-35`: oggi l'ordine è `📊 Calcolatori VGC` e poi `📚 Catalogo`. Vanno invertiti. È uno scambio di due righe |
-| ✅ | **`pokedex` come default del sito** | Oggi il default è `ma`, **scritto a mano in 14 punti**: 11 in `blueprints/pokemon.py` (righe 181, 242, 330, 343, 365, 965, 1010, 1048, 1085, 1227, 1282), uno in `blueprints/api_pokemon.py:507` e due in `templates/team_form.html` (48 e 163). In `data/regulations.json` l'ordine è `ma`, `pokedex`, `mb`, e le tendine seguono quell'ordine. Serve **un punto solo** che dica qual è la regulation di partenza — costante o campo in `regulations.json` — invece di 12 letterali sparsi, e `pokedex` va messo per primo anche nell'elenco, così è il primo che si vede pure nell'editor. ⚠️ Attenzione a `_pokemon_regulation` (riga 252): se l'id non esiste ricade su `regs[0]`, quindi cambiare l'ordine del file **cambia già da solo** il comportamento di quel fallback |
-
-> Nota di metodo, ora avverata: la regola #8 va eseguita su **`pokedex`** (Amoonguss non
-> è nel roster di MA), che da oggi **è** il default — quindi il caso di prova e il
-> default coincidono, e aprire il calcolatore senza `?reg=` basta a rieseguirlo.
-
----
-
-## 🟨 Switch lingua IT ⇄ EN — primo blocco chiuso (11/08/2026)
-
-Pulsante **`IT`/`EN`** in `base.html`, accanto a quello del tema. Cambia lingua a
-**tutti i nomi dei dati**: Pokémon, mosse, abilità e oggetti.
-
-### Come è fatto
-
-- **Le chiavi del catalogo non cambiano mai.** Sono referenziate dai filtri delle
-  regulation, dal motore degli effetti, da `ABILITIES_CALC` e dai team salvati nel DB.
-  Ogni voce ha `nome_it` e `nome_en`, e cambia solo ciò che si legge
-- la lingua sta in un **cookie** (`hub_lang`), non in `localStorage`, perché la deve
-  leggere anche Flask: roster, mosse e oggetti nelle tendine li renderizza il server
-- il pulsante **ricarica** la pagina. È voluto: così cambia davvero tutto in un colpo
-  solo, senza metà pagina in una lingua e metà nell'altra. Il prezzo è che sul
-  calcolatore si perde quel che si stava scrivendo
-- si può **scrivere in entrambe le lingue**: `risolviChiave()` lato JS e `_INDICE`
-  lato Python accettano chiave, nome italiano e nome inglese. Scrivere `Privazione`
-  o `Knock Off` porta alla stessa mossa
-
-### L'import — `python scripts/importa_nomi_lingua.py [--dry-run] [--solo …]`
-
-Da PokéAPI, con cache in `data/cache/pokeapi/` (ignorata da git): la seconda
-esecuzione non ripassa dalla rete. ⚠️ PokéAPI risponde **403 senza `User-Agent`**.
-
-| Database | Con nome ufficiale nelle due lingue | Senza | Nomi davvero diversi tra IT ed EN |
-|---|---|---|---|
-| Mosse | **899 / 921** | 22 | 889 |
-| Oggetti | **378 / 398** | 20 | 341 |
-| Abilità | **312 / 415** | 103 | 307 |
-| Pokémon | **1019 / 1026** | 7 | **21** |
-
-Chi non si aggancia non resta a metà: prende `nome_it == nome_en == chiave`, così il
-commutatore ha sempre qualcosa da mostrare.
-
-**Cosa c'è dietro ogni "senza":**
-
-- **mosse (22)** ✅ — le mosse Z (`Breakneck Blitz`…) e `Syrup Bomb`: PokéAPI non ha
-  l'italiano. **Chiuse dalla wiki l'11/08/2026**, vedi la sezione qui sotto
-- **oggetti (20)** ✅ — roba recente: `Booster Energy`, `Clear Amulet`, `Covert Cloak`,
-  `Loaded Dice`, le maschere di Ogerpon. Buco a monte, non nostro. **Chiusi dalla wiki**
-- **Pokémon (7)** — le sole voci il cui nome è una forma (`Palafin (Zero Form)`,
-  `Meowstic (Male)`…). Giusto così: il nome italiano di una forma non è deducibile e
-  non va inventato. I **21** diversi sono i Paradosso più `Type: Null` →
-  `Crinealato`, `Manoferrea`, `Lunaruggente`, `Tipo Zero`…
-- **abilità (103)** ✅ — chiuse l'11/08/2026, ma **non traducendole**: erano doppioni,
-  e 24 coppie sono state fuse. La wiki infatti non le chiudeva: ne recuperava 5,
-  confermando che sono identiche nelle due lingue (`Download`, `Libero`, `Punk Rock`,
-  `Teravolt`, `Transistor`). Il problema non era di traduzione, vedi qui sotto
-
-### ✅ Il secondo giro — `python scripts/importa_nomi_wiki.py [--dry-run] [--solo …]`
-
-Fonte: **wiki di Pokémon Central**, la stessa di `importa_roster_champions.py`. Cache
-in `data/cache/wiki/` (ignorata da git). Due fonti nell'ordine:
-
-1. le pagine **«… in altre lingue»** (mosse, strumenti, abilità), tabelle con una riga
-   *Italiano* e una *Inglese*: 950 mosse, 860 strumenti, 306 abilità
-2. per quello che quelle liste non coprono — **gli strumenti di nona generazione non ci
-   sono** — la **pagina singola**, trovata con la ricerca della wiki e accettata solo se
-   la sua riga *Inglese* combacia con la chiave del catalogo. Così un risultato di
-   ricerca sbagliato viene scartato invece di entrare nei dati
-
-| Database | Senza traduzione prima | Riempite | Di cui davvero diverse in italiano | Restano |
-|---|---|---|---|---|
-| Mosse | 32 | **32** | 22 | **0** |
-| Oggetti | 57 | **57** | 20 (tutti presi dalla pagina singola) | **0** |
-| Abilità | 108 | 5 | 0 | **103** |
-
-Le 22 mosse nuove sono le 18 mosse Z (`Gigavolt Havoc` → **Gigascarica Folgorante**,
-`Black Hole Eclipse` → **Buco Nero del Non Ritorno**) più `Syrup Bomb` → Bomba
-Sciroppata, `Blood Moon` → Luna Rossa, `Matcha Gotcha` → Spruzzatè, `Ivy Cudgel` →
-Clava di Liane. I 20 oggetti sono `Booster Energy` → **Capsula energetica**,
-`Covert Cloak` → Anonimanto, `Loaded Dice` → Dado truccato, le tre maschere di Ogerpon
-e i sette Mochi. Gli altri 47 "senza traduzione" non erano un buco: sono le Megapietre,
-i cristalli Z e le altre voci che in italiano **si scrivono uguale**, e ora è
-verificato invece che presunto.
-
-**Lo script non sovrascrive mai una traduzione già presa da PokéAPI**: tocca solo le
-voci con `nome_it == nome_en`. Dove le due fonti non concordano lo **segnala e basta**,
-perché nessuna delle due è sempre giusta — PokéAPI abbrevia (`Revitalizz. Max`,
-`Autodistruz.`) e la wiki ha i suoi refusi (`Vasterngia`, `Morostretto`). ⬜ **11 voci
-da decidere a mano**, elencate dal rapporto dello script:
-
-| Voce | PokéAPI (in uso) | wiki |
-|---|---|---|
-| Aura Sphere | Forzasfera | **Sferapulsar** |
-| Heal Pulse | Ondasana | **Curapulsar** |
-| Self-Destruct | Autodistruzione | Autodistruz. |
-| Max Revive | Revitalizz. Max | **Revitalizzante Max** |
-| Exp. Share | Condividi esp. | **Condividi Esperienza** |
-| Expanding Force · Jaw Lock · Psycho Shift · Swallow · Shadow Wave · Shadow Panic | Vastenergia · Morsostretto · Psicotransfer · Introenergia · Ondascura · Ombrapanico | Vasterngia · Morostretto · Psicotrasfer · Intoenergia · Ondaoscura · Ombropanico |
-
-### ✅ Le 11 in disaccordo — decise l'11/08/2026
-
-Guardandole una per una si dividono in tre gruppi, non in uno. Applicate con
-`python scripts/applica_nomi_decisi.py [--dry-run]`, che verifica il valore di
-partenza di ogni voce e si ferma se non è quello atteso, quindi non può lavorare
-alla cieca né rifare il giro due volte.
-
-| Gruppo | Esito |
-|---|---|
-| **Due nomi davvero diversi** | Si passa alla wiki: `Aura Sphere` → **Sferapulsar**, `Heal Pulse` → **Curapulsar** |
-| **Tre abbreviazioni** | Forma estesa: `Max Revive` → **Revitalizzante Max**, `Exp. Share` → **Condividi Esperienza**. `Self-Destruct` era già «Autodistruzione». Nel gioco si abbrevia per stare nella casella di testo; qui lo spazio non manca |
-| **Sei refusi della wiki** | Nessuna modifica, e nessuna decisione da prendere: `Vasterngia`, `Morostretto`, `Psicotrasfer`, `Intoenergia`, `Ondaoscura`, `Ombropanico` sono errori di battitura contro le forme corrette già in uso |
-
-✅ **`Mirror Herb` → «Foglia carbone» è confermato**, e il sospetto è tolto.
-Controllato l'11/08/2026 su [Bulbapedia](https://bulbapedia.bulbagarden.net/wiki/Mirror_Herb),
-una fonte **indipendente** da quella che avevamo usato: dà lo stesso nome italiano.
-Il giapponese è ものまねハーブ (*erba imitatrice*) e lo spagnolo *Hierba Copia*, quindi
-è la localizzazione italiana ufficiale a essere strana, non il nostro dato. «Erba
-Speculare», che i motori di ricerca suggeriscono, **non esiste** sulla wiki (404).
-
-### ✅ Le abilità doppie — fuse l'11/08/2026
-
-**24 coppie fuse**, `data/catalog/abilities.json` da **415 a 391 voci**, con
-`python scripts/fondi_abilita_doppie.py [--dry-run]` (rieseguibile, copia in
-`data/archive/abilities_pre-fusione.json`). **39 controlli su 39.**
-
-**Il guasto era più grosso della fusione.** Il catalogo Pokémon cita le abilità col
-**nome inglese** (`Swift Swim`), mentre le chiavi del file sono italiane
-(`Nuotovelox`), e `abilityEffect()` faceva un match **esatto sulla chiave**: dei
-**307** nomi di abilità posseduti dai Pokémon, **zero** arrivavano a un effetto, e
-tutti e 56 gli effetti del file erano irraggiungibili partendo da un Pokémon. Nel tab
-Danno non si vedeva — lì la tendina elenca tutte le abilità in italiano e si sceglie a
-mano — ma nello **Speed Tier**, dove la tendina è popolata con le abilità del Pokémon,
-nessun effetto si applicava mai. Misurato: **Kingdra sotto pioggia con Swift Swim
-restava a 105 di Velocità invece di 210**.
-
-Servivano tutte e due le metà, e da sole non bastavano:
-
-1. **`abilityEffect()` ora risolve per chiave, nome italiano e nome inglese**, con lo
-   stesso `risolviChiave()` già usato dalla casella delle mosse. Da sola non
-   avrebbe acceso niente: avrebbe risolto su `Nuotovelox`, che era **inerte**
-2. **la fusione**: l'effetto passa dalla voce vecchia a quella ufficiale. Da sola non
-   avrebbe acceso niente: l'effetto sarebbe finito sulla voce giusta, ma il nome
-   inglese non l'avrebbe raggiunta
-
-Dopo: Kingdra **105 → 210**, esattamente ×2. Dei 307 nomi posseduti dai Pokémon,
-**307 risolvono** su una voce (erano 7) e quelli che arrivano a un effetto attivo
-passano da **22 a 39** a parità di risoluzione.
-
-**Le coppie non sono state indovinate.** L'accoppiamento automatico per somiglianza di
-testo è stato provato e sbagliava — proponeva `Combattività` → `Bruciaimpeto` e
-`Nuoto Veloce` → `Clorofilla`. Ogni voce è invece mappata a mano sull'**abilità reale
-che il suo `effect` descrive**, e lo script risolve quel nome inglese contro i dati,
-fermandosi su ciò che non trova. 24 su 24 risolte, tutte con la controparte appesa a
-un Pokémon vero:
-
-| | |
-|---|---|
-| `Combattività` → `Dentistretti` (Guts) | `Nuoto Veloce` → `Nuotovelox` (Swift Swim) |
-| `Assorbiacqua` → `Assorbacqua` · `Voltassorbi` → `Assorbivolt` | `Fuga` → `Remasabbia` · `Manto Slaccio` → `Spalaneve` |
-| `Multiscaglia` → `Multisquame` · `Ombra Fantasma` → `Spettroguardia` | `Pioggerella` → `Piovischio` · `Nevischio` → `Scendineve` |
-| `Scudo Peluria` → `Foltopelo` · `Spessore` → `Grassospesso` | `Tempesta di Sabbia` → `Sabbiafiume` |
-| `Squame Miracolo` → `Pelledura` · `Passo Veloce` → `Piedisvelti` | `Mega Sol` → `Terra Estrema` (Desolate Land) |
-| `Filtraggio`/`Prisma Armatura`/`Schermosaldo` → `Filtro`/`Scudoprisma`/`Solidroccia` | `Pioggia Perpetua` → `Mare Primordiale` |
-| `Erboristeria` → `Erbaiuto` · `Torrente` e `Torrentismo` → `Acquaiuto` | `Vampirico` → `Aiutofuoco` |
-
-Sulle 7 coppie dove **anche** la voce ufficiale aveva già un effetto, i due blocchi
-sono stati confrontati prima di sovrascrivere: **identici 7 su 7**, quindi la
-sovrascrittura non cambia nessun numero. Alla voce ufficiale seguono anche `category`,
-i campi extra di calcolo (`weather_ball_type`, `atk_boost`, …) e la `desc` della
-vecchia, che descrive l'effetto applicato davvero invece della formula generica.
-Chiave, `nome_it` e `nome_en` restano quelli ufficiali.
-
-> Correzione a quanto scritto sopra in questo file: **`Spettroguardia` non è un nome
-> sbagliato**. È **Shadow Shield**, che ha davvero l'effetto di Multiscale — la
-> descrizione era giusta e la nota «descrive Multiscaglia» era un falso allarme.
-
-**Le 10 che non ho toccato**, per decisione di Davide dell'11/08/2026: il loro effetto
-non corrisponde a nessuna abilità reale, quindi accoppiarle vorrebbe dire decidere che
-l'effetto attuale è sbagliato. Sono probabilmente abilità **di Champions**:
-
-| Voce | Perché non torna |
-|---|---|
-| `Nervosismo`, `Polifagia` | SpA +50% fisso, e sono identiche fra loro |
-| `Sforzo` | Attacco +50% — Huge Power e Pure Power raddoppiano |
-| `Tiratore` | +30% sulle mosse ad area — nessuna abilità reale |
-| `Manto Neve` | Difesa +50% con la Neve — Snow Cloak dà elusione, e il +Def è la meccanica della Neve |
-| `Tempra` | SpD +50% con la sabbia — è la meccanica della sabbia sui Roccia |
-| `Assorbifuoco` | immunità Fuoco **che cura** — Flash Fire non cura |
-| `Colpo Secco` | mosse Fuoco +50% sotto il Sole — Solar Power alza lo SpA |
-| `Compressione` | `effect` dice `tinted_lens`, la desc dice «tutte le mosse +30%» |
-| `Vento Misterioso` | meteo `fog` perpetuo — la nebbia non è un meteo del gioco |
-
-✅ Dall'11/08/2026 ognuna delle 10 lo **dice nella propria descrizione** («— abilità di
-Champions, senza corrispondente ufficiale», aggiunta da `scripts/rifinisci_abilita.py`),
-così chi le trova nella tendina capisce perché esistono e non le scambia per un errore.
-Gli effetti non sono stati toccati, e nessun'altra voce ha ricevuto la nota.
-
-Intatte anche le **7** senza traduzione ma appese a un Pokémon (`Download`,
-`Eelevate`, `Fire Mane`, `Libero`, `Punk Rock`, `Teravolt`, `Transistor`): non sono
-doppioni di nessuno.
-
-### Aperto dalla fusione
-
-| | Voce | Note |
-|---|---|---|
-| ✅ | **`Megasolar` aveva `nome_en: "Mega Sol"`** | Aggancio sbagliato dell'import — «Mega Sol» non è un nome inglese. Corretto l'11/08/2026 con `scripts/applica_nomi_decisi.py`: `nome_en` riportato a `Megasolar`, la convenzione delle voci senza traduzione ufficiale. Ora «Mega Sol» non risolve più su una voce inerte, e l'effetto vive dove deve, su `Terra Estrema` |
-| ✅ | **`ABILITIES_CALC` non la usava nessuno** | Rimossa da `data.py` l'11/08/2026 dopo aver verificato **zero consumer** in tutto il progetto: chi marca le abilità che incidono è `abilityIncideSulDanno()` in JS, che legge il blocco `effect`. L'elenco non era solo inerte, era destinato a divergere dai dati veri. Corretti anche i due documenti che lo citavano |
-| ✅ | **Il fallback `data/abilities.json` aveva ancora le 24 vecchie** | Riallineato al catalogo l'11/08/2026 con `scripts/rifinisci_abilita.py`: 408 → 386 voci. **Non è stato dismesso** — quello si fa al collaudo finale, con gli altri file storici — ma ha smesso di essere una macchina del tempo: se un giorno il fallback scattasse davvero, non riporterebbe indietro i doppioni appena chiusi, e in silenzio |
-| ✅ | **8 voci che condividevano il nome con un'altra chiave** ⚠️ | Trovate verificando le bandierine: **due chiavi diverse possono avere gli stessi `nome_it` e `nome_en`**, e la risoluzione per nome ne sceglie una sola. Il caso grave era **`Sheer Force`**, che esisteva come `Forza Bruta` (con l'effetto) e `Forzabruta` (inerte): vincendo l'ultima, un Pokémon con Sheer Force **non applicava niente**. Prima tamponato in `indiceNomi()` (a parità di nome tiene la voce con un effetto: danno da 82 a **106**, il ×1.3 atteso), poi **tolta la causa** con `scripts/fondi_doppioni_nome.py`. Il criterio non è «vince il nome ufficiale», che su `King's Rock` darebbe la voce sbagliata: resta la **chiave giusta** — quella che segue la convenzione del file e che i filtri già nominano — e i campi mancanti le arrivano dall'altra. Restano `Forzabruta` (con l'`effect` ereditato), `Pelledrago`, `Punta Perforante`, `Spargipiccante`, `Occhio Interiore` (senza lo spazio in fondo, con la desc ereditata), `Freeze-Dry`, `Mud Slap`, `King's Rock`. **I filtri sono stati aggiornati**: MA e MB contenevano entrambe le varianti di `Freeze Dry`, quindi le mosse scendono da 461 a **460** — la stessa mossa contata due volte, non una persa. Ora **zero** nomi condivisi e zero chiavi con spazi ai bordi in tutti e tre i database |
-
-### ⬜ Com'era il problema, prima della fusione
-
-Il secondo giro l'ha chiarito. La wiki ha **306** abilità ufficiali con nome italiano e
-inglese, il catalogo ne ha **415**, e le 307 già tradotte usano tutte il nome ufficiale
-— **zero disaccordi tra PokéAPI e wiki sulle abilità**, il che dice che quella parte è
-solida. Le 103 che restano si dividono così:
-
-- **69** hanno `effect: {"type": "none"}` — sono le abilità inventate (`Black Hole`,
-  `Aqua Boost`, `Bodyguard`, `Climber`, `Eelevate`…) e i placeholder. Giusto che non
-  abbiano un nome ufficiale
-- **34** hanno un effetto vero e proprio, e **7 di queste hanno un blocco `effect`
-  identico a una voce ufficiale già presente nel catalogo**:
-
-  | Voce senza nome ufficiale | Voce ufficiale già in catalogo |
-  |---|---|
-  | `Erboristeria` | `Erbaiuto` (Overgrow) |
-  | `Torrente`, `Torrentismo` | `Acquaiuto` (Torrent) |
-  | `Vampirico` | `Aiutofuoco` (Blaze) |
-  | `Filtraggio`, `Prisma Armatura`, `Schermosaldo` | `Filtro` / `Scudoprisma` / `Solidroccia` (Filter, Prism Armor, Solid Rock) |
-
-  Le altre 27 (`Combattività`, `Assorbiacqua`, `Multiscaglia`, `Nuoto Veloce`,
-  `Voltassorbi`…) sono lo stesso caso, solo che la controparte ufficiale in catalogo ha
-  `effect: none` invece di un effetto uguale. Su undici controllate a campione la
-  controparte c'è **sempre**, e sempre inerte: `Dentistretti` (Guts), `Assorbacqua`
-  (Water Absorb), `Multisquame` (Multiscale), `Nuotovelox` (Swift Swim), `Assorbivolt`
-  (Volt Absorb), `Pelledura`, `Grassospesso`, `Foltopelo`, `Piovischio`, `Scendineve`,
-  `Sabbiafiume`
-
-Il conto complessivo dice la stessa cosa: gli effetti veri stanno **dalla parte
-sbagliata**. Delle 307 voci col nome ufficiale solo **22** hanno un effetto attivo,
-contro **34 su 108** fra quelle senza. A far funzionare il calcolatore è in buona parte
-la voce vecchia; a essere collegata ai Pokémon è quella ufficiale — i 307 nomi di
-abilità usati dal catalogo Pokémon risolvono tutti, e risolvono sulle ufficiali.
-
-> Quindi la voce da aprire non è "tradurre le 103": è **fondere ogni coppia**, tenendo
-> la chiave giusta e portandoci sopra il blocco `effect` che funziona. È un lavoro sui
-> dati, con conseguenze su `ABILITIES_CALC`, sui team salvati e sulle regulation, e va
-> deciso da Davide — non l'ho toccato.
->
-> Correzione a quanto scritto prima in questo file: l'italiano ufficiale di **Guts non è
-> "Cuortenace" ma `Dentistretti`**, e quello di Water Absorb è `Assorbacqua`.
-
-### ⬜ Cosa manca — deciso con Davide l'11/08/2026
-
-| | Voce | Note |
-|---|---|---|
-| ⬜ | **Nomi e descrizioni tradotti anche negli editor** | Oggi `/pokemon/catalogo`, `/pokemon/mosse`, `/pokemon/oggetti` e `/pokemon/abilita` mostrano la **chiave**, e le descrizioni sono solo in italiano. Vanno tradotti sia i nomi sia i `desc` di mosse, abilità e oggetti. Serve un secondo giro di import per i testi inglesi — la chiave resta comunque l'identità della voce, quindi va deciso come mostrare entrambe |
-| ✅ | **Lo switch riguarda solo la sezione Pokémon** | Chiuso 11/08/2026: il pulsante compare **solo sotto `/pokemon/*`**, così non promette quello che non fa. Verificato pagina per pagina: assente su `/`, Gaming, Arduino, PC Builder e Python, presente sulle tre pagine Pokémon provate |
-| ✅ | **Bandierine al posto di `IT`/`EN`** | Chiuso 11/08/2026. Bandiera della lingua **attiva**, disegnata in **SVG inline** e non con le emoji bandiera: su Windows quelle non vengono renderizzate come tali e si sarebbero lette «IT» e «GB», cioè le stesse due lettere di prima. `toggleLingua()` legge ora `data-lang` invece del testo del pulsante, che non c'è più. Provato cliccandolo: il cookie passa a `en`, la bandiera diventa la Union Jack e le abilità nelle tendine passano all'inglese |
-
-### 🟨 Il secondo blocco — le stringhe dell'interfaccia (iniziato il 12/08/2026)
-
-**Quanto è grande, contato il 12/08/2026** — non stimato: **453** stringhe fisse nelle
-pagine Pokémon (calcolatori 142, moves_editor 52, abilities_editor 47, items_editor 43,
-regulation_editor 42, regulations_list 33, roster_editor 26, catalog_editor 23,
-pokemon 16, regulation_content 15, base 14), più **~110** dentro il JavaScript, di cui
-24 nei file `static/js/calcolatori-*.js`. Nell'intero progetto sono 691.
-
-**Come funziona**, e perché così:
-
-- `t('frase')` in Jinja e in JS, `tf('frase con {n} dentro', {n: …})` per le frasi coi
-  numeri. **La chiave del dizionario è la frase italiana stessa**, non un codice tipo
-  `btn.salva`: il template resta leggibile e una traduzione mancante ricade
-  sull'italiano, che è sempre giusto, invece di mostrare a schermo il nome della chiave
-- il dizionario è `data/i18n/en.json`. L'italiano non ha file: è la fonte
-- `traduzioni()` in `extensions.py` tiene la cache **con l'mtime**, come `load_moveset()`:
-  si può correggere una traduzione senza riavviare l'app
-- il JS riceve lo stesso dizionario in `window.T` da `base.html`; in italiano è `{}`
-- ⚠️ **il prezzo, dichiarato**: cambiare una parola italiana in un template stacca la
-  traduzione **in silenzio**. Per questo esiste
-  `python scripts/controlla_traduzioni.py`, che confronta le frasi chieste dal codice
-  con quelle del dizionario ed elenca mancanti, vuote e orfane
-
-**Fatto e verificato il 12/08/2026** — 3 template su 11:
-
-| Template | Stringhe | Stato |
-|---|---|---|
-| `pokemon.html` | 16 | ✅ provato in browser: `1 saved teams`, `Move Editor`, `Analyse` |
-| `regulation_content.html` | 15 | ✅ reso in EN col test client |
-| `catalog_editor.html` | 23 | ✅ reso in EN col test client |
-
-Verifica: **14 pagine × 2 lingue rese 200** col test client, `controlla_traduzioni.py`
-dà **69 chieste / 69 presenti / 0 mancanti**, e lo sweep di sintassi dà **1587 pezzi
-sani** (26 `<script>` + 1561 handler inline) — fatto nel browser con `new Function()`,
-perché qui non c'è node.
-
-⚠️ **Un baco intercettato dallo sweep, ed era mio**: avevo scritto
-`onsubmit="… confirm(tf('…', {db: {{ db|tojson }}}))"`, e `|tojson` rende `"pokedex"`
-**con le doppie** dentro un attributo delimitato dalle doppie — l'attributo si chiudeva
-a metà. Esattamente la classe di baco che ha tenuto morto il Ripristina del roster.
-Corretto con gli apici singoli, e il perché è scritto lì accanto.
-
-**Restano 8 template** (~380 stringhe): `calcolatori.html` più i 24 nei
+⬜ **Restano 8 template (~380 stringhe)**: `calcolatori.html` più i 24 nei
 `static/js/calcolatori-*.js`, `moves_editor`, `abilities_editor`, `items_editor`,
 `regulation_editor`, `regulations_list`, `roster_editor`, `base.html`.
 
-⬜ **Due cose da decidere con Davide, non decise da me:**
-
-1. **La shell resta in italiano.** `base.html` (sidebar, «Esporta JSON», «Utenti»,
-   «Cambia tema») **non** è tradotta, di proposito: il pulsante lingua compare solo
-   sotto `/pokemon/*` — deciso l'11/08 — quindi tradurre la sidebar farebbe vedere
-   l'inglese anche su Gaming e Arduino **senza un modo per tornare indietro** da lì.
-   O si lascia così, o il pulsante torna su tutte le pagine
-2. **`1 team salvati` → `1 saved teams`.** Il plurale è sbagliato in entrambe le lingue;
-   in italiano lo era già prima, quindi non è una regressione. Si sistema quando si
-   decide se `tf()` debba gestire il singolare/plurale
-
-⚠️ **Un inciampo da sapere**: `{% for t in … %}` in `moves_editor.html` (righe 97 e 153)
-e `regulation_editor.html` (riga 215) usa `t` come variabile di ciclo e **ombrerebbe la
-funzione**. Vanno rinominate quando si traducono quei due file.
-
-### Cosa NON copre ancora (stato tecnico)
-
-- ⬜ **gli editor** (`/pokemon/catalogo`, roster, mosse, oggetti) mostrano ancora la
-  **chiave**, non il nome tradotto. Lì la chiave è l'identità della voce, quindi va
-  deciso se e come mostrarle entrambe
-- ⬜ **le descrizioni** sono solo in italiano: `desc` non è stato toccato. Serve un
-  secondo giro di import per i testi inglesi
-
-> ⚠️ Conseguenza visibile subito: **in italiano il calcolatore ora scrive
-> `Privazione`, non `Knock Off`**, e `Cinturanera` invece di `Black Belt`. È quello
-> che la voce di backlog chiedeva, ma se per abitudine VGC preferisci i nomi inglesi
-> anche in modalità italiana, si cambia in un punto solo (`nomeVis`).
-
----
-
-## ✅ Stat delle Mega riportate alle base (11/08/2026)
-
-Le Mega nel catalogo non avevano un bonus: avevano le **stat di Lv.50 già calcolate**
-(IV 31, 0 SP) salvate dentro `base_stats`, mentre tutto il resto del catalogo tiene le
-base vere. Con la formula del progetto la conversione vale esattamente **+75 HP e +20
-sulle altre**, ed è per questo che nel gioco una Mega non cambia mai gli HP ma qui 95
-su 101 avevano +75.
-
-```
-(2·base + 31) · 50 // 100  =  base + 15   →  HP: +60 → +75 · altre: +5 → +20
-```
-
-**Fatto:**
-
-- **95 Mega deconvertite** (`hp − 75`, `− 20` sulle altre) con
-  `python scripts/deconverti_mega_catalogo.py [--dry-run]`, rieseguibile e con copia
-  in `data/archive/catalog_pokemon_pre-mega-deconv.json`
-- **3 chiavi top-level rimosse** — `mega-banette`, `mega-chimecho`,
-  `mega-crabominable` erano **doppioni** della forma annidata nella specie base, non
-  anomalie: 1029 → 1026 voci. Chiude la vecchia voce *"chiavi mega incoerenti"*
-- **`MEGA_DATA` eliminata** da `calcolatori-data.js` (−35 KB): `fetchPkmn()` prende
-  anche le Mega da `/api/pokemon`, cioè dal catalogo. `isMega` e il BST sono ora
-  derivati (`marcaMega()`), il BST è la somma delle base
-- rimosso il `console.log('full d:', d)` di debug in `calcolatori-speed.js`
-
-**Perché la deconversione è quella giusta**, e non un'ipotesi:
-
-| Verifica | Esito |
-|---|---|
-| Mega coperte da `MEGA_DATA` | **56 su 57** identiche alla cifra dopo la deconversione |
-| Mega **assenti** da `MEGA_DATA` ma ufficiali del gioco — Metagross, Mewtwo X/Y, Rayquaza, Salamence, Swampert, Sceptile, Latias, Latios, Mawile, Diancie, Blaziken | **tutte** coincidono coi valori reali |
-
-La seconda riga è la conferma indipendente: la deconversione azzecca valori che
-`MEGA_DATA` non poteva suggerire.
-
-**Il bug che questo chiude.** `fetchPkmn()` leggeva `MEGA_DATA` per ogni nome che
-inizia con `"Mega "` e non consultava mai il catalogo, mentre `loadRegSpeed()` leggeva
-`catalogEntry(name).base_stats.spe` e ci riapplicava la formula Lv.50: sulle Mega la
-formula finiva **applicata due volte**. Mega Venusaur valeva 80 di Velocità nel tab
-Danno e 100 (→ 120 a Lv.50) nello Speed Tier. Ora entrambi partono da 80.
-
-### ✅ Il bug che è saltato fuori verificando — `/api/regulation/<id>/data`
-
-L'endpoint che alimenta lo Speed Tier leggeva ancora il vecchio `roster_file`.
-Stessa identica storia di `/api/moves` chiusa il 10/08. Conseguenze **misurate**:
-
-| Regulation | Prima | Ora |
-|---|---|---|
-| `ma` | **208** nomi ereditati, **0 Mega** | **279** nomi, **59 Mega** |
-| `pokedex` | **404** → caduta muta sulla lista statica da 158 | **1344** nomi |
-| `mb` | **404** → stessa caduta | **295** nomi |
-
-Il roster legacy non conteneva **nessuna** Mega: lo Speed Tier non ne aveva mai
-mostrata una, e il lavoro di oggi sarebbe rimasto invisibile lì dentro. Ora
-l'endpoint chiama `_load_roster()`, lo stesso loader di tutto il resto, che sa
-leggere il filtro e ricade sul file vecchio solo se la regulation non è migrata.
-
-### Le tre Mega rimaste fuori — due chiuse da Davide
-
-| Voce | Esito |
-|---|---|
-| ✅ `Mega Froslass` | Base Velocità riportata a **120** (→ **140** a Lv.50, il valore giusto secondo Davide). Quel singolo valore nel catalogo era **già una base**, non un dato convertito, e la deconversione l'aveva abbassato a 100 sottraendo 20 di troppo. Era l'unico caso del genere: con la correzione le Mega coperte da `MEGA_DATA` combaciano **57 su 58** |
-| ✅ `Mega Machamp` | **Non esiste**: forma rimossa dal catalogo. Aveva `base_stats: {}` e non era referenziata da nessuna regulation (né nei roster né nei `mega_map` di MA, MB e Pokedex) |
-| ✅ `Mega Zygarde` | **Deconvertita il 12/08/2026 con la formula standard**, per decisione di Davide: `291/90/111/236/105/120` → **`216/70/91/216/85/100`**, BST 778. ⚠️ E si è scoperto **perché** sembrava «rotta a sé»: lo script cercava la firma `+75 HP` contro la sola voce di testa della specie, e Zygarde 50% ha 108 HP mentre la Mega ne ha 291. Ma la `Zygarde (Complete Forme)` ne ha **216**, e 216 + 75 = 291 — era convertita a partire da quella. Nessuna anomalia: solo il confronto sbagliato. Ora `deconverti_mega_catalogo.py` cerca la firma contro **tutte le forme non-Mega della specie**, ed è rimasto idempotente (alla riesecuzione: 0 deconvertite, 96 lasciate stare). ⚠️ **Correzione a quanto questo file diceva**: «SpA 216 sarebbe il più alto del catalogo di 43 punti, il massimo è Xurkitree con 173» — quel confronto guardava solo le **specie**, non le forme. Il massimo vero era **Mega Mewtwo Y con 194**, quindi lo scarto è 22, non 43. E il BST di 778 è in linea con le altre Mega leggendarie: Mega Mewtwo X, Y e Rayquaza stanno a 780 |
-
-> Lezione da tenere: la firma `+75 HP` individua le voci convertite **specie per specie**,
-> non stat per stat. Su Froslass cinque valori su sei erano convertiti e uno no, e la
-> regola applicata in blocco ha rotto proprio quello. Se ne salta fuori un altro, il
-> segnale è il confronto con la Velocità della specie base.
-
-### Il resto del catalogo NON è convertito — verificato
-
-La domanda giusta di Davide: la conversione riguarda solo le Mega o tutto il catalogo?
-Solo le Mega. Prove:
-
-| Canarino | catalogo | se fosse convertito |
-|---|---|---|
-| Shedinja HP | **1** | 76 |
-| Chansey HP | **250** | 325 |
-| Magikarp | **20/10/55/15/20/80** | 95/30/75/35/40/100 |
-
-20 specie note su 20 esatte, **200 specie su 1026 con HP sotto 50** (una conversione le
-avrebbe messe tutte sopra 75), le uniche cinque stat sopra 200 in tutto il catalogo sono
-reali (Chansey 250, Blissey 255, Shuckle 230, Guzzlord 223, Stakataka 211), e **nessuna
-forma non-Mega** ha la firma +75 HP.
-
-> `Mega Floette` era l'unica **già corretta** ed è rimasta intatta: era `MEGA_DATA` ad
-> avere la versione convertita, e sparendo si è sistemata da sé. Stessa cosa per
-> `Mega Meowstic (M)` vs `(Male)`: la trappola dei nomi non combacianti non esiste più,
-> perché esiste una fonte sola.
-
-> ⚠️ Il vecchio `data/pokemon_catalog.json` **non è stato toccato**: contiene ancora le
-> Mega convertite, ma è solo il fallback di `data/catalog/pokemon.json` e viene letto
-> unicamente se quest'ultimo manca. Da dismettere insieme agli altri file storici.
-
-### ✅ L'alias che rispondeva con un Pokémon a caso
-
-Togliere `Mega Machamp` ha scoperchiato un baco che c'era da sempre:
-`/api/pokemon/Mega Machamp` non dava 404, rispondeva **Mega Venusaur** con le sue stat.
-
-`_costruisci_indice()` registrava come alias il **primo pezzo** di ogni chiave con un
-trattino. Serve a far risolvere `Palafin` quando in catalogo c'è solo
-`palafin-zero-form` — ma su `mega-venusaur` registrava anche **`mega`**, e il fallback
-di `_find_in_catalog` (prova la chiave senza l'ultimo pezzo) ci finiva dentro. Stessa
-cosa per `alolan` (18 voci), `galarian` (18), `hisuian` (16), `totem` (12), `iron` (20),
-`tapu` (8), `paldean` (4). **Qualsiasi nome inventato che iniziasse così riceveva le
-stat di un Pokémon estraneo invece di un errore.**
-
-Ora c'è `NON_ALIASABILI` in `api_pokemon.py`: quei primi pezzi non diventano alias.
-Verificato che non rompe niente — dei **295** nomi usati da MA, MB e Pokedex **zero**
-dipendevano da questi alias, e i nomi nudi che servono davvero (`Palafin`, `Aegislash`,
-`Gourgeist`, `Zygarde`, `Meowstic`, `Morpeko`, `Mr. Mime`, `Iron Hands`, `Tapu Koko`…)
-risolvono ancora tutti.
-
-> Effetto collaterale utile: `Galarian Darmanitan` ora dà 404, e ha ragione — in
-> catalogo si chiama **`Darmanitan (Galarian Form)`**, l'unica delle 19 voci Galarian
-> scritta così invece che `Galarian X`. Prima l'alias spurio nascondeva l'incoerenza
-> dietro una risposta sbagliata. ✅ Colmato l'11/08/2026 con un alias nell'indice
-> (`X (Y Form)` con `Y` regionale → anche `Y X`): il nome nel catalogo non si tocca,
-> ma `Galarian Darmanitan` risolve. Le voci regionali sono **57**, e questa è l'unica
-> scritta con la parentesi.
-
-## ✅ Già fatto il 10/08/2026: `mega_map` di MA e MB
-
-| | prima | dopo |
-|---|---|---|
-| basi nel `mega_map` | 53 | **57** |
-| Mega irraggiungibili in MA | 6 | **1** |
-| Mega mappati ma fuori roster | 1 | **0** |
-
-- **aggiunte** `Chesnaught`, `Delphox`, `Emboar`, `Golurk`, `Greninja` — base e mega
-  entrambe già nel roster verificato, quindi nessun dato inventato
-- **rimosso** `Mega Machamp`: mappato ma fuori dal roster M-A di Champions, il team builder
-  offriva una mega non legale
-- copia di sicurezza in `data/archive/ma_pre-mega_map.json` e `mb_pre-mega_map.json`
-
-### ✅ Chiuso l'11/08/2026 — ogni Mega nel roster è raggiungibile
-
-`python scripts/completa_mega_map.py [--dry-run]`. Per ogni Mega del roster non ancora
-mappata deduce la specie base dal nome (`Mega Raichu X` → `Raichu`), **verifica che
-esista nel catalogo** e la collega; si ferma su ciò che non risolve.
-
-| | prima | dopo |
-|---|---|---|
-| MA — Mega raggiungibili | 58 / 59 | **59 / 59** |
-| MB — Mega raggiungibili | 58 / 75 | **75 / 75** |
-| MB — roster | 295 | **308** |
-
-- **`Mega Meowstic (Male)`** era l'unica irraggiungibile di MA, e la voce di backlog era
-  **sbagliata**: diceva che la base `Meowstic` non è nel roster, ma cercava il nome
-  sbagliato — dentro ci sono `Meowstic (Male)` e `Meowstic (Female)`, con le rispettive
-  forme nel catalogo. Bastava collegarle: nessun dato inventato
-- **MB non è più un segnaposto.** Delle 17 Mega irraggiungibili, 4 avevano la base già
-  nel roster (Meowstic M/F, Raichu X/Y); per le altre 13 — Barbaracle, Blaziken,
-  Dragalge, Eelektross, Falinks, Malamar, Metagross, Pyroar, Sceptile, Scolipede,
-  Scrafty, Staraptor, Swampert — **Davide ha deciso di aggiungere la specie base al
-  roster**. È una scelta di contenuto, non un dato dedotto, ed è per questo che lo
-  script la fa solo per le regulation elencate in `AGGIUNGI_BASI`: il roster di **MA**,
-  che viene dalla wiki di Pokémon Central, non si tocca
-
-✅ **Mosse e oggetti di MB restano quelli di MA** — 460 e 58 — per decisione dell'11/08/2026.
-MB è nata come MA più le Mega, e finché non c'è una fonte su cosa cambi davvero, copiare
-MA è l'ipotesi meno arbitraria: la differenza fra le due regulation resta il **roster**.
-Se un giorno salta fuori l'elenco vero, si passa dalla schermata contenuti o da uno
-script di import dedicato, come è stato fatto per il roster di MA con la wiki.
-
-> Volevo dirti quante mosse mancassero ai 29 Pokémon che MB ha in più, e non si può:
-> vedi la voce qui sotto.
-
-## ✅ Gli elenchi mosse per specie — importati il 12/08/2026
-
-Era **il buco più grosso rimasto nei dati**: zero specie su 1026 avevano un elenco
-`moves`, e non ce l'aveva nemmeno il vecchio `data/pokemon_catalog.json` (0 su 174) —
-non una regressione dell'import, un dato che **non era mai esistito**.
-
-`python scripts/importa_mosse_specie.py [--dry-run] [--solo main,champions]`, che scrive
-`data/catalog/pokemon_moves.json` (2,7 MB). Rieseguibile e **idempotente**: due
-esecuzioni di fila danno lo stesso md5. Si rifiuta di scrivere se le voci calano.
-
-### La scoperta che ha cambiato il lavoro: Champions è nel dump
-
-Non è stata usata la API REST di PokéAPI ma il suo **dump CSV**, lo stesso di
-`build_catalog.py`: il moveset sta tutto in `pokemon_moves.csv`, quindi si scarica **un
-file da 10 MB** invece di fare 1026 chiamate. E lì dentro, fra i version group, c'è
-**`champions` (id 32): 19 810 righe su 319 voci.** Il moveset ufficiale di Pokémon
-Champions esiste, ed è la fonte esatta di cui `ma` e `mb` avevano bisogno.
-
-Quindi ogni voce ha **due elenchi**, non uno:
-
-| | Da dove | A cosa serve |
-|---|---|---|
-| `main` | il version group più recente in cui la voce compare (862 su Scarlatto/Violetto, 167 su Spada/Scudo, poi a scendere fino a 6 su Rubino Omega) | la regulation `pokedex` |
-| `champions` | il version group `champions` del dump | `ma` e `mb` |
-
-**E non coincidono.** Il caso che Davide ha citato è verificato sui dati veri:
-**Incineroar in Champions non ha Knock Off**, che in Scarlatto/Violetto impara con una
-MT. Sono **11** le mosse che ha in S/V e non in Champions (`Knock Off`, `U-turn`,
-`Tera Blast`, `Fire Pledge`…) e **8** quelle che ha solo in Champions (`Superpower`,
-`Blaze Kick`, `Brutal Swing`…): 80 mosse contro 77.
-
-Il valore di ogni mossa dice **come** si impara — `level-up:32`, `machine`, `egg`,
-`tutor`, `train` (l'unico metodo di Champions) — così l'interfaccia può filtrare per
-metodo senza un secondo import. Il livello si scrive sempre, `0` compreso: nel dump vuol
-dire «all'evoluzione o dal ricordamosse», che è un'informazione, non un buco.
-
-### La copertura, contata
-
-| | roster | nomi irrisolti | con moveset | con la lista Champions |
-|---|---|---|---|---|
-| `ma` | 279 | **0** | **274** | **273** |
-| `mb` | 308 | **0** | **302** | **301** |
-| `pokedex` | 1343 | **0** | **1323** | 314 |
-
-66 033 mosse in `main` (52 per voce in media) e 19 515 in `champions` (62). Canarini:
-**Magikarp ha 3 mosse** (Splash, Tackle, Flail) e **Fulmine non è fra queste** — è il
-caso che il backlog citava come impossibile da rifiutare.
-
-### Chi resta fuori, e perché
-
-- **20 forme inventate** — le Mega fan-made (`Mega Darkrai`, `Mega Zygarde`, i tre
-  Tatsugiri, i due `… Z`), `Mega Meowstic (M/F)`, le tre taglie di Gourgeist ed
-  `Eternal Flower Floette`. **Non ereditano il moveset della specie base**, per
-  decisione di Davide del 12/08: sono escluse e dichiarate, non riempite a caso.
-  Quando ci sarà la fonte si riaprono da lì
-- ✅ **32 forme Gigantamax** — **ereditano dalla specie base dal 12/08/2026**. Non è
-  un'invenzione: il Gigantamax è una **trasformazione temporanea**, non una forma con
-  un learnset suo, ed è esattamente il motivo per cui il dump non le elenca a parte.
-  Ogni voce ereditata lo **dichiara** con `eredita_da`, così un dato derivato resta
-  distinguibile da uno preso alla fonte. Verificato: `Charizard (Gigantamax Form)` ha
-  le stesse **75** mosse di Charizard. `pokedex` passa da **1291 a 1323** voci su 1343
-- ✅ **`Pawmot`** — chiarito il 12/08/2026, ed è **un buco del dump, non un errore
-  nostro**. Nel version group Champions ci sono **solo le evoluzioni finali** —
-  Charizard sì, Charmander e Charmeleon no; Meowscarada sì, i suoi pre-evo no — e
-  Pawmot è una finale, presente nel roster MA che viene dalla wiki. Nel dump però
-  mancano **tutti e tre**: Pawmi, Pawmo e Pawmot. Resta senza elenco, con l'avviso
-  giallo, che è il comportamento onesto: non gli si assegna il moveset dei giochi
-  principali, che su Champions non sarebbe legale
-
-> ⬜ **Nessuno ha ancora verificato che questi elenchi siano *giusti*.** Finora le prove
-> sono tutte interne al dato: i nomi risolvono, i conti tornano, Incineroar perde Knock
-> Off. Serve una **seconda fonte indipendente**, e Davide ha indicato **Bulbapedia**. Il
-> controllo è messo insieme al giro di collaudo finale, in cima a questo file.
-
-> ⚠️ `PROJECT_CONTEXT.md` documentava `CHAMPIONS_BST` con un campo `moves: [...]` nella
-> struttura di ogni voce: **non c'è mai stato**. Corretto l'11/08/2026.
-
-> ⚠️ **Il file c'è, ma non lo legge ancora nessuno**: nessuna route, nessun endpoint,
-> nessun JS. Il consumo è la voce qui sotto.
-
----
-
-## 🟨 Le mosse giuste per ogni regulation — calcolatore fatto il 12/08/2026
-
-Chiesta da Davide il 12/08, e chiusa **per il tab Danno** lo stesso giorno.
-
-Quando si cambia regulation, **le mosse mostrate per un Pokémon cambiano con lei**. Su
-`pokedex` si vedono tutte quelle che quel Pokémon può imparare; su `ma` e `mb` solo
-quelle legali lì. L'esempio di Davide, verificato in browser: **Incineroar in M-A non
-può più imparare Knock Off**.
-
-### Com'è fatto
-
-Quale dei due elenchi usare **lo dice la regulation**, non il codice: campo `moveset` in
-`data/regulations.json` (`main` su `pokedex`, `champions` su `ma` e `mb`). Una
-regulation nuova senza quel campo ricade su `main`, che è il default onesto.
-
-- `load_moveset()` e `mosse_legali(nome, reg)` in `blueprints/pokemon.py`. La cache è
-  sull'**mtime** del file: dopo un import il processo se ne accorge da sé, senza riavvio
-- `/api/pokemon/<nome>` accetta `?reg=` e aggiunge `moves` e `moves_source`. Nessun
-  secondo giro di rete: il calcolatore chiama già quell'endpoint a ogni cambio di
-  Pokémon
-- lato JS, il datalist è l'**intersezione** fra le mosse della regulation (`MOVES_DB`,
-  già filtrato dal bootstrap) e quelle dell'attaccante
-
-⚠️ **`moves: null` non vuol dire «nessuna mossa», vuol dire «non lo sappiamo»**, ed è la
-distinzione su cui regge tutto il comportamento nei casi limite. Le forme inventate non
-stanno su PokéAPI: se `null` valesse zero, proprio le forme di Davide diventerebbero
-inutilizzabili. Con `null` si mostrano **tutte** le mosse e si dice perché.
-
-### Misurato in browser
-
-| regulation | mosse della regulation | datalist con Incineroar | Knock Off |
-|---|---|---|---|
-| `pokedex` | 919 | **80** | ✅ c'è |
-| `ma` | 460 | **61** | ❌ sparito |
-| `mb` | 460 | **61** | ❌ sparito |
-
-In italiano l'elenco di Incineroar contiene **Braccioteso** (Darkest Lariat) e **non**
-**Privazione** (Knock Off). `Mega Venusaur` su `ma` ha 45 mosse e Knock Off **ce l'ha**:
-il filtro è per Pokémon, non un divieto generale.
-
-Tre stati sotto la casella mossa, tutti provati:
-
-| Caso | Cosa si vede |
-|---|---|
-| elenco noto | grigio, «61 mosse di Incineroar in ma» |
-| mossa già scritta diventata illegale | rosso, «⚠️ Privazione non è fra le mosse di Incineroar in ma». **La mossa non viene cancellata** sotto le dita di chi sta scrivendo |
-| nessun elenco (forme inventate) | giallo, «⚠️ Nessun elenco mosse per Mega Meowstic (Male) in ma: sono mostrate tutte», e le opzioni restano 460 |
-
-Verifica: **regola #8 esatta in browser** su `pokedex` — A=183, D=122, HP=221, roll
-85-102 = 38.5%–46.2% — e sweep su **20 pagine, 32 blocchi `<script>`, 1933 handler
-inline, zero errori**, più i **7 moduli `calcolatori-*.js`** passati a `new Function()`
-uno per uno. (Meno pagine dei giri precedenti perché l'elenco copre solo le route senza
-parametri: le schermate `/regulation/<id>/...` non ci sono.)
-
-### ⚠️ Un baco intercettato prima che mordesse
-
-Il confronto fra le due liste è **per nome**, e `Mud-Slap` di PokéAPI non esisteva nel
-catalogo, dove dalla fusione dei doppioni dell'11/08 si chiama `Mud Slap`. Sarebbe
-sparita dalla tendina **in silenzio** — la classe di baco su cui questo progetto è già
-inciampato più volte. L'import ora riallinea i nomi accettando solo le corrispondenze
-non ambigue e le **stampa**: 1 su 807, e ora **zero** nomi di mossa fuori dal catalogo.
-
-### ✅ Team builder — chiuso lo stesso giorno
-
-**Il codice c'era già e non aveva mai funzionato.** `fetchPkmn(slot)` in
-`team_form.html` conteneva `if (mvDl && d.moves) …`, ma `/api/pokemon` **non ha mai
-restituito `moves`**: il datalist delle mosse del team builder è rimasto vuoto da
-sempre. Stessa famiglia dei tre endpoint fantasma dell'11/08 — codice scritto contro
-una risposta che nessuno aveva mai implementato.
-
-Ora l'elenco di partenza sono le mosse della regulation, e appena scrivi un Pokémon si
-stringe alle sue. **Cambiando regulation dal selettore, gli slot già compilati si
-rifanno chiedere le mosse**: è il caso che Davide ha descritto.
-
-Misurato in browser, sullo stesso team senza ricaricare la pagina:
-
-| | `pokedex` | → `ma` |
-|---|---|---|
-| mosse della regulation | 919 | 460 |
-| slot con **Incineroar** | 80, con Knock Off | **61, senza Knock Off** (Darkest Lariat resta) |
-| slot con **Mega Meowstic (Male)** | 919 + avviso giallo | 460 + avviso giallo |
-| slot vuoto | 919 | 460 |
-
-I valori del datalist sono le **chiavi del catalogo**, non i nomi tradotti: è la stessa
-convenzione del datalist Held Item qui accanto, ed è ciò che finisce nel DB quando il
-team viene salvato. Cambiarla avrebbe cambiato i dati salvati.
-
-### ✅ Speed Tier — chiuso il 12/08/2026
-
-La voce era scritta male: dicevo «lo schema sarebbe lo stesso», ma nello Speed Tier
-**non c'era nessun campo mossa e nemmeno un selettore di stage**. La Velocità si muoveva
-solo con le cinque caselle fisse (Tailwind, Scarf, Paralisi, Icy Wind, Trick Room), il
-meteo e l'abilità. Non c'era niente da riagganciare: c'era da aggiungere.
-
-Aggiunti due campi, che lavorano insieme:
-
-- **Mossa di potenziamento** — le mosse che alzano la Velocità e che **quel Pokémon può
-  davvero imparare nella regulation attiva**. Stesso doppio filtro del tab Danno:
-  `MOVES_DB` ∩ `d.moves`
-- **Stage Velocità**, da −6 a +6. Scegliere la mossa lo imposta, ma **non lo blocca**:
-  uno stage può arrivare da fuori — il Coaching di un alleato, un debuff avversario —
-  e nelle doppie VGC è metà dei casi
-
-**Di quanto alza non è indovinato.** Serviva un dato che il catalogo non aveva: delle
-919 mosse, **zero** dicevano quanti stage muovono. Importato con
-`python scripts/importa_variazioni_stat.py [--dry-run]` da
-`move_meta_stat_changes.csv` del dump PokéAPI — **174 mosse arricchite**, di cui **22
-alzano la Velocità**. È una proprietà oggettiva della mossa, non una scelta di
-bilanciamento: vale la stessa eccezione che `build_catalog.py` documenta per il flag
-`contact`. Solo in aggiunta, mai in sovrascrittura, e rieseguendolo dice «niente da
-aggiungere».
-
-Misurato in browser su `ma`:
-
-| | |
-|---|---|
-| Dragapult, tendina | **+2 Agilità**, **+1 Dragodanza** — solo le sue |
-| Dragapult 162 → Dragodanza | **243** (×1.5 esatto) |
-| Dragapult 162 → Agilità | **324** (×2 esatto), e i Pokémon più veloci passano da 3 a **0** |
-| Torkoal | +2 Gettaguscio, +1 Forzantica, +1 Nitrocarica, +1 Rapigiro |
-| Torkoal 40, stage −1 a mano | **26** (×0.667) |
-| `Mega Meowstic (Male)` | avviso giallo, tendina con tutte quelle della regulation |
-
-⚠️ **Un baco trovato dalla prova, non dalla lettura**: cambiando Pokémon lo stage
-restava applicato, e **Incineroar mostrava 160 invece di 80** perché teneva il +2 di
-Dragapult. Muto, come al solito. Ora cambiare Pokémon azzera mossa e stage: venivano da
-una mossa che il nuovo Pokémon può benissimo non avere.
-
-**`stageMult()` è stata spostata** da dentro `calcDamage()` a `calcolatori-data.js`:
-ricopiarla nello Speed Tier avrebbe creato la seconda copia di una tabella che deve
-restare unica, che è lo stesso motivo per cui `TYPE_CHART` è stata deduplicata l'08/08.
-Valori invariati, e riverificato che il tab Danno non si sia mosso: regola #8 esatta
-(A=183, D=122, HP=221, 85-102), ATK +2 → **×1.97**, ATK −2 → ×0.50, DEF +2 → ×0.51,
-DEF −2 → ×1.97, e il **critico continua a ignorare lo stage negativo dell'attaccante**
-(153 con −2 e 153 a zero, cioè il ×1.5 del critico).
-
-Sweep: **21 pagine, 34 blocchi `<script>`, 1992 handler inline, zero errori**, più i 7
-moduli `calcolatori-*.js` passati a `new Function()`.
-- ⬜ il calcolatore **non impedisce** di scrivere una mossa illegale: la segnala e basta.
-  È voluto per ora — un blocco duro sulle voci senza elenco sarebbe un falso divieto
-
-### Serve una fonte in più? — chiesto da Davide il 12/08/2026
-
-**Per il caso che ha fatto lui, no: il dato c'è già.** Il moveset di Champions è nel
-dump di PokéAPI come version group a sé, ed è stato importato il 12/08 — 273 dei 279
-Pokémon di MA ce l'hanno, e Incineroar senza Knock Off è verificato lì dentro. Questo
-pezzo si può costruire domani senza chiedere niente a nessuno.
-
-**Serve una fonte, invece, per queste quattro cose**, ed è bene sapere che sono
-separate perché richiedono fonti diverse:
+⬜ **Due cose da decidere con Davide:**
+
+1. **La shell resta in italiano.** `base.html` (sidebar, «Esporta JSON», «Utenti») non è
+   tradotta di proposito: il pulsante lingua compare solo sotto `/pokemon/*`, quindi
+   tradurre la sidebar mostrerebbe l'inglese anche su Gaming e Arduino **senza un modo per
+   tornare indietro** da lì. O si lascia così, o il pulsante torna su tutte le pagine
+2. **`1 team salvati` → `1 saved teams`**: il plurale è sbagliato in entrambe le lingue (in
+   italiano lo era già prima). Si sistema quando si decide se `tf()` deve gestirlo
+
+⬜ **Due cose che lo switch non copre ancora:**
+
+- **gli editor** (`/pokemon/catalogo`, roster, mosse, oggetti) mostrano ancora la **chiave**,
+  non il nome tradotto. Lì la chiave è l'identità della voce, quindi va deciso se e come
+  mostrarle entrambe
+- **le descrizioni** sono solo in italiano: `desc` non è stato toccato, serve un secondo
+  giro di import per i testi inglesi
+
+> ⚠️ Conseguenza già visibile: in italiano il calcolatore scrive **`Privazione`, non
+> `Knock Off`**, e `Cinturanera` invece di `Black Belt`. È quello che la voce chiedeva, ma
+> se per abitudine VGC preferisci l'inglese anche in italiano si cambia in un punto solo
+> (`nomeVis`).
+
+### 2.2 ⬜ Le 103 abilità da fondere — gli effetti stanno dalla parte sbagliata
+
+24 coppie sono state fuse l'11/08 (415 → 391 voci). **Restano 103 voci**, e il problema
+**non è di traduzione**: la wiki ne recuperava solo 5, confermando che sono identiche nelle
+due lingue.
+
+Delle 103: **69** hanno `effect: {"type": "none"}` — sono le abilità inventate e i
+placeholder, ed è giusto che non abbiano un nome ufficiale. **34** hanno un effetto vero, e
+**7 di queste hanno un blocco `effect` identico a una voce ufficiale già in catalogo**
+(`Erboristeria` ↔ `Erbaiuto`, `Torrente`/`Torrentismo` ↔ `Acquaiuto`, `Vampirico` ↔
+`Aiutofuoco`, `Filtraggio`/`Prisma Armatura`/`Schermosaldo` ↔ `Filtro`/`Scudoprisma`/`Solidroccia`).
+Le altre 27 sono lo stesso caso, solo che la controparte ufficiale ha `effect: none`: su
+undici controllate a campione la controparte c'è **sempre**, e sempre inerte.
+
+Il conto complessivo dice la stessa cosa: delle 307 voci col nome ufficiale solo **22**
+hanno un effetto attivo, contro **34 su 108** fra quelle senza. **A far funzionare il
+calcolatore è la voce vecchia; a essere collegata ai Pokémon è quella ufficiale.**
+
+> Il lavoro quindi è **fondere ogni coppia**, tenendo la chiave giusta e portandoci sopra
+> il blocco `effect` che funziona — lo stesso metodo delle 24 già fatte, mappate a mano e
+> mai indovinate per somiglianza. Ha conseguenze sui team salvati e sulle regulation, e va
+> deciso da Davide: non l'ho toccato.
+>
+> ✅ Le **10 voci senza corrispondente reale** (`Nervosismo`, `Sforzo`, `Tiratore`,
+> `Manto Neve`, `Tempra`, `Assorbifuoco`, `Colpo Secco`, `Compressione`, `Vento Misterioso`,
+> `Polifagia`) restano fuori per decisione dell'11/08, e ognuna lo dichiara nella propria
+> descrizione. Fuori anche le **7** senza traduzione ma appese a un Pokémon (`Download`,
+> `Libero`, `Punk Rock`, `Teravolt`, `Transistor`, `Eelevate`, `Fire Mane`).
+
+### 2.3 ⬜ Mosse per regulation — le quattro cose che richiedono una fonte
+
+Il meccanismo è chiuso (calcolatore, team builder, Speed Tier). Manca **il dato**, e le
+quattro cose richiedono **fonti diverse**:
 
 | Cosa manca | Fonte che servirebbe |
 |---|---|
-| ⬜ **La differenza fra M-A e M-B** | Nel dump c'è **un solo** version group `champions`, quindi oggi le due regulation riceverebbero **la stessa identica lista**. Se M-A e M-B bandiscono mosse diverse, quella differenza **non è in nessun dato che abbiamo** e va scritta a mano o presa da un elenco ufficiale. È lo stesso buco già noto per mosse e oggetti, che oggi MB copia da MA |
-| ⬜ **Le 20 forme inventate** | Sono forme di Davide, PokéAPI non le conosce. Non è solo il moveset: è la stessa fonte che servirà per le loro stat e abilità. Finché non c'è, restano fuori — dichiarate, non riempite |
-| ⬜ **`Pawmot`** | È nel roster M-A preso dalla wiki, ma nel version group `champions` non ha righe. O è un buco del dump, o non è davvero in Champions: da controllare sulla wiki, che è già la fonte del roster |
-| ⬜ **Le regulation future** | Se la prossima non è basata su Champions, non ha un version group nel dump: il suo elenco di mosse legali va dalla schermata contenuti o da uno script di import dedicato, come è stato fatto per il roster di MA |
+| **La differenza fra M-A e M-B** | Nel dump c'è **un solo** version group `champions`, quindi oggi le due regulation riceverebbero la **stessa identica lista**. Se bandiscono mosse diverse, quella differenza non è in nessun dato che abbiamo. È lo stesso buco già noto per mosse e oggetti, che oggi MB copia da MA |
+| **Le 20 forme inventate** | Sono forme di Davide, PokéAPI non le conosce. Non è solo il moveset: è la stessa fonte che servirà per le loro stat e abilità. Restano fuori — dichiarate, non riempite |
+| **`Pawmot`** | ✅ chiarito il 12/08: è un buco del dump, non un errore nostro. Resta senza elenco, con l'avviso giallo. Da riconfermare sulla wiki nel giro di collaudo |
+| **Le regulation future** | Se la prossima non è basata su Champions non ha un version group nel dump: il suo elenco va dalla schermata contenuti o da uno script dedicato |
 
-> Il modo di lavorare resta quello già usato per il roster: dove esiste una fonte la si
-> importa con uno script rieseguibile che **si ferma su ciò che non risolve**; dove non
-> esiste, il dato si lascia mancante e lo si dichiara. Non si riempie a stima.
-
-> ⚠️ Questa voce **non** è la stessa cosa di «ogni Pokémon deve mostrare solo le sue
-> abilità»: quella riguarda le abilità e ha ancora il problema del catalogo incompleto
-> (238 specie con una sola). Qui il dato è completo al 98%.
+> Il metodo resta quello del roster: dove esiste una fonte la si importa con uno script
+> rieseguibile che **si ferma su ciò che non risolve**; dove non esiste, il dato si lascia
+> mancante e **lo si dichiara**. Non si riempie a stima.
 
 ---
 
-## ✅ Ogni Pokémon mostra solo le **sue** abilità — chiuso il 12/08/2026
+## 3. Bachi noti e non corretti
 
-### Prima il prerequisito, e il backlog aveva torto a metà
-
-Diceva che «le 238 specie con una sola abilità sono quasi certamente incomplete».
-`python scripts/completa_abilita_pokemon.py [--dry-run]` lo ha **misurato invece di
-presumerlo**, riempiendo il catalogo da `pokemon_abilities.csv` del dump PokéAPI, che
-include le **abilità nascoste** — è lì che stava quasi tutto il buco.
-
-| | |
-|---|---|
-| voci completate | **182**, con **+184 abilità** |
-| abilità per voce, prima | `0:16 · 1:411 · 2:396 · 3:520` |
-| abilità per voce, dopo | `0:15 · 1:325 · 2:389 · 3:612 · 4:2` |
-| restano con **una sola** | 325 — ma **323 ne hanno davvero una sola** anche per PokéAPI |
-| casi ancora dubbi | **2**, e sono `Mega Meowstic (M)` e `(F)`, inventate |
-
-Le 323 sono **Mega e forme regionali**, che di abilità ne hanno una sola per davvero:
-Mega Venusaur ha solo Thick Fat. Il buco vero era un altro — a Venusaur mancava
-Chlorophyll, a Charizard Solar Power, a Pikachu Lightning Rod: le nascoste.
-
-Lo script è **solo in aggiunta, mai in rimozione**: le 21 abilità che PokéAPI non
-conosce restano dove sono, sono le voci di Champions e toglierle vorrebbe dire decidere
-che sono sbagliate. Rieseguendolo dice «niente da aggiungere».
-
-### Poi le tendine
-
-| Punto | Prima | Ora |
+| | Baco | Stato |
 |---|---|---|
-| **Tab Danno** (`atk_ability`/`def_ability`) | tutte e 386 | **solo le sue** |
-| **Stat Preview** (`stat_abil`/`stat_abil_b`) | tutte e 386, con le sue solo come testo | **solo le sue** |
-| **Speed Tier** | già corretto, era il modello | invariato |
+| ⚠️ | **`build_catalog.py` oggi distruggerebbe il catalogo** | Trovato il 12/08, **non corretto** perché fuori scope. Legge come base i **file storici** (174 voci contro le 1026 di oggi, nessun `nome_it`/`nome_en`, Mega ancora convertite) e scrive in `data/catalog/`. Peggio: `MEGA_BONUS` riapplicherebbe il `+75 HP / +20` che la deconversione dell'11/08 ha tolto. Rieseguirlo **riporterebbe indietro il catalogo di quattro giorni di lavoro, in silenzio**. Va fatto leggere `data/catalog/` quando esiste, e `MEGA_BONUS` va tolto. Fino ad allora **non eseguirlo** |
+| ⬜ | **Il calcolatore non impedisce di scrivere una mossa illegale** | La segnala e basta. **È voluto per ora**: un blocco duro sulle voci senza elenco sarebbe un falso divieto |
+| ⬜ | **`1 team salvati` / `1 saved teams`** | Plurale sbagliato in entrambe le lingue, vedi §2.1 |
 
-Misurato in browser: da **387** voci a **2** per Venusaur (Clorofilla, ● Erbaiuto), 2 per
-Pikachu (Parafulmine, Statico), 2 per Incineroar (● Aiutofuoco, Prepotenza), **3** per
-Amoonguss e **4** per Torkoal nello Stat Preview.
+---
 
-**La via d'uscita c'è, ed è quella che il backlog stesso proponeva**: una spunta
-*«mostra tutte le abilità del catalogo»* per riquadro — una nel tab Danno, una nello
-Stat Preview, indipendenti. Serve perché il catalogo contiene anche le **abilità
-inventate di Champions**, che nessun Pokémon ha in catalogo: senza, sarebbero
-inutilizzabili. Provata: 387 ⇄ 2.
+## 4. Voci minori, per sezione
 
-⚠️ **Due comportamenti che valeva la pena decidere invece di lasciar succedere:**
-
-- se un Pokémon **non ha abilità** in catalogo, la tendina resta **completa**: sono le
-  forme inventate, e lasciarle senza scelte sarebbe peggio del rumore che il filtro
-  toglie. In pratica quasi non capita, perché `/api/pokemon` fa già ereditare alla forma
-  le abilità della specie base quando le sue sono vuote — `Mega Darkrai` riceve
-  `Bad Dreams` da Darkrai
-- l'abilità **già scelta** che sparisce dall'elenco (Pokémon cambiato, o filtro appena
-  stretto) viene **azzerata**, non lasciata come `value` invisibile: provato scegliendo
-  Prepotenza su Incineroar e passando a Venusaur, la tendina torna a «— Nessuna —».
-  Rimetterla alla cieca avrebbe significato calcolare con un'abilità che non si vede
-
-Verifica: regola #8 esatta (A=183, D=122, HP=221, 85-102 = 38.5%–46.2%) e sweep su
-**21 pagine, 34 blocchi `<script>`, 1998 handler inline, zero errori**, più i 7 moduli
-`calcolatori-*.js`.
-
-> ✅ **Correzione a quanto questo file diceva**: `Zero To Hero`, l'abilità di Palafin,
-> era segnata come «l'unico dei 307 nomi che non risolve». **Risolve**, su `Supercambio`
-> (`nome_en: "Zero to Hero"`), e la tendina di Palafin la mostra. La voce era stale.
->
-> ⚠️ **Un difetto introdotto dall'import e corretto nella stessa sessione**: il catalogo
-> scrive `Zero To Hero` e PokéAPI `Zero to Hero`, che alla lettera sono due stringhe
-> diverse, quindi la prima esecuzione le ha aggiunte **entrambe** a Palafin. Ora il
-> confronto ignora le maiuscole e lo script **ripara** il doppione se lo trova: era
-> l'unico caso su tutto il catalogo, verificato.
-
-### Com'era la voce, prima (aperta l'11/08/2026)
-
-Oggi selezionando un Pokémon nel calcolatore la tendina Abilità elenca **tutte e 386**
-le voci del catalogo, con un ● su quelle che incidono sul calcolo. Devono comparire
-**solo le abilità di quel Pokémon**.
-
-**Il dato per farlo c'è già**, a differenza delle mosse: il catalogo tiene le abilità
-per specie, sono **307 nomi distinti** e — dopo la fusione dei doppioni dell'11/08 —
-risolvono tutti tranne uno. Il lavoro è quindi di interfaccia, non di import.
-
-Dov'è oggi il comportamento giusto e dove no:
-
-| Punto | Come si comporta |
+| Sezione | Voce |
 |---|---|
-| **Speed Tier** (`loadSpePkmn`, `calcolatori-speed.js`) | ✅ già così: riempie `spe_abil` con le abilità del Pokémon, tradotte, col ● su quelle che incidono. È il modello da seguire |
-| **Tab Danno** (`atk_ability` / `def_ability`) | ⬜ `popolaSelectAbilita()` in `calcolatori-core.js` le mette tutte |
-| **Stat Preview** (`stat_abil` / `stat_abil_b`) | ⬜ idem — le abilità del Pokémon sono lì solo come **testo** in `stat_abils`, non nella tendina |
-| **Team builder** | ⬜ da verificare quando ci si arriva |
-
-⚠️ **Da decidere prima di stringere le tendine**, perché è la ragione per cui finora
-erano larghe: la copertura del catalogo è **incompleta**. Contato l'11/08/2026:
-
-| Abilità per voce | Specie (1026) | Forme annidate (317) |
-|---|---|---|
-| nessuna | 2 | 14 |
-| una sola | **238** | **173** |
-| due | 345 | 51 |
-| tre | 441 | 79 |
-
-Quasi tutti i Pokémon reali ne hanno 2-3 con la nascosta: le **238 specie con una sola**
-sono quasi certamente incomplete, non Pokémon con un'abilità sola. Stringere la tendina
-senza colmare quel buco vorrebbe dire **togliere scelte legittime** invece di togliere
-rumore. Due strade, da scegliere: completare prima le abilità da PokéAPI (stessa strada
-degli elenchi mosse, con `build_catalog.py`), oppure filtrare subito lasciando un modo
-per vedere tutte le voci — una spunta «mostra tutte», che è anche l'unico modo di usare
-le abilità inventate di Champions su un Pokémon che non le ha in catalogo.
-
-Da guardare nello stesso giro: **`Zero To Hero`** (l'abilità di Palafin) è l'unico dei
-307 nomi che non risolve su nessuna voce del catalogo abilità.
+| 💾 **Log** | ⬜ Aggiungere una funzione di salvataggio log |
+| 🖨️ **Stampa 3D** | ⬜ Sezione nuova, sul modello di Arduino: richiamo a un sito per disegnare e salvataggio dei progetti |
+| 🤖 **Arduino** | ⬜ Richiamo a Tinkercad per disegnare il progetto e verificare i connettori |
+| 💻 **PC Builder** | ⬜ Wishlist Amazon o altri · ⬜ prezzo componente · ⬜ percentuale di compatibilità fra i pezzi (valutare UserBenchmark) · ⬜ gestire l'uscita di nuovi pezzi nel tempo |
+| 🐍 **Python** | ⬜ Spazio per inserire i propri progetti e testarli · ⬜ idee per rendere la sezione più utile |
+| 🐾 **Pokémon** | ⬜ Creare i JSON di una regulation nuova dalla web app (vedi §1.3) |
 
 ---
 
-## ✅ Clonare una regulation (10/08/2026)
-
-Due modi, per non ricostruire a mano una regulation simile a una esistente:
-
-- **In creazione**: nella modale "Nuova Regulation" c'è **Parti da** — vuota, tutto il
-  catalogo, oppure copia da una regulation esistente
-- **Su una regulation già creata**: nella sua pagina c'è **📋 Copia contenuti**, con
-  il selettore della sorgente e le caselle per scegliere cosa copiare (Pokémon,
-  mosse, oggetti, abilità, mega map). Serve proprio nel caso di `mb`, creata vuota
-
-`id` e `label` della destinazione non vengono mai sovrascritti, la sorgente non può
-coincidere con la destinazione, e la conferma elenca cosa verrà sostituito.
-20 controlli end-to-end, con `mb.json` verificato identico dopo il ripristino.
-
----
-
-## ✅ Regulation MA allineata a Pokémon Champions (10/08/2026)
-
-Roster preso da
-[wiki.pokemoncentral.it](https://wiki.pokemoncentral.it/Elenco_dei_Pokémon_di_Pokémon_Champions):
-**208 → 279 Pokémon**, Speed Tier a 279 su 279 senza nomi irrisolti.
-
-Rieseguibile con `python scripts/importa_roster_champions.py --dry-run` (scarica la
-pagina da solo). Per la futura **M-B** basterà crearla — la creazione produce già il
-formato a filtro — e spuntarne i contenuti da `/pokemon/regulation/<id>/contenuto`.
-
-> ⚠️ Nota per me stesso: in una sessione precedente avevo giudicato "sospetto" questo
-> roster perché mancavano Amoonguss, Rillaboom e Urshifu e c'erano Arbok, Ariados e
-> Audino. **Era sbagliato**: Champions ha un roster suo e quelle presenze/assenze sono
-> corrette. Non applicare assunzioni da VGC standard a Champions.
-
-Dettagli tecnici dell'import:
-- la wiki **non scrive il nome della forma**: la distingue solo per tipi e codice
-  sprite (`Minim0026A` = Raichu di Alola, `Minim0745C` = Lycanroc Crepuscolo). Lo
-  script mappa i suffissi e **si ferma** su ciò che non risolve, invece di indovinare
-- forme puramente estetiche (Vivillon, Florges, Furfrou, Alcremie: 40 righe)
-  collassate sulla forma base, perché per il calcolatore sono la stessa voce
-- i 29 nomi "rimossi" erano alias sostituiti dai nomi canonici del catalogo
-  (`Arcanine-Hisui` → `Hisuian Arcanine`, `Rotom-Wash` → `Wash Rotom`)
-- **3 doppioni di specie** rimasti dall'import PokéAPI uniti: `palafin-zero`,
-  `morpeko-full-belly` e `aegislash-shield` erano stati creati accanto alle voci
-  curate `palafin-zero-form`, `morpeko-full-belly-mode` e `aegislash-shield-forme`,
-  perché il nome curato non combaciava con quello ufficiale
-- un baco preso al volo: **"Meganium" inizia per "Mega"** e finiva nel ramo delle
-  Mega, risolto come "Mega Meganium". Ora il ramo Mega si attiva sul suffisso dello
-  sprite (`M`/`MX`/`MY`), che è il dato affidabile
-
----
-
-## ✅ Chiuso il 10/08/2026 — struttura pronta ad agganciare le regulation
-
-- **Creazione regulation nel modello a filtro** — `api_regulations_create` generava
-  ancora i vecchi `roster_/moves_/items_`, quindi una M-B nuova sarebbe nata fuori dal
-  catalogo. Ora crea `data/regulations/<id>.json` con elenchi di nomi e registra
-  `filter_file`. Tre punti di partenza: **vuota** (default), **tutto** il catalogo, o
-  **copia** da una regulation esistente
-- **Schermata contenuti** `/pokemon/regulation/<id>/contenuto?db=…` — spunti quali
-  voci del catalogo appartengono alla regulation, con le quattro linguette e i
-  contatori (`208/1350`, `461/921`, `58/398`, `tutte`). Ricerca, selezione di massa
-  che agisce su **tutti i filtrati** e non solo sulle 400 righe visibili, e una
-  casella "includi tutte le voci, anche quelle future" che scrive `null` nel filtro.
-  I nomi non presenti nel catalogo vengono ignorati e segnalati
-- 24 controlli sul ciclo completo: creo una regulation, la trovo vuota, ne scelgo i
-  contenuti, verifico che i loader filtrino davvero, provo "tutto" e la copia da MA,
-  apro il calcolatore sulla regulation nuova. 23 pagine senza errori di sintassi
-
-## ✅ Chiuso il 10/08/2026 — catalogo unico completato
-
-- **Doppioni unificati e `ALIAS` riparati** — i doppioni veri erano **solo 3**: il
-  trio `Tauros (X Breed)` scritto a mano accanto a `Paldean Tauros (X Breed)`
-  importato, identici campo per campo a parte lo `slug`. Rimossi quelli a mano.
-  Mega Machamp, Mega Meowstic e i Gourgeist **non** erano doppioni: sono forme
-  originali tue, senza corrispettivo ufficiale, e sono rimaste.
-
-  Nel controllo sono saltati fuori **6 `ALIAS` che non puntavano a nulla**: tre a
-  `Tauros (Paldean Combat)` e simili, nomi inesistenti nel catalogo; due
-  (`Lycanroc-Dusk`, `Lycanroc-Midnight`) puntavano a sé stessi; `Stunfisk-Galar`
-  mancava del tutto. Erano esattamente i 6 nomi che lo Speed Tier non risolveva.
-
-  **Speed Tier: 208 su 208, nessun nome irrisolto** (era 189 prima del catalogo,
-  202 dopo). Regola #8 invariata, 19 pagine pulite.
-
-  > Nota di metodo: la prima ricerca dei doppioni usava "stessi tipi e stesse stat"
-  > e dava 17 gruppi — quasi tutti falsi positivi (i 7 nuclei di Minior, i costumi
-  > di Pikachu, le build di Koraidon: stat identiche ma forme diverse davvero). Il
-  > segnale giusto era un altro: le forme **senza `slug`**, cioè quelle scritte a
-  > mano e mai riconciliate con i dati ufficiali.
-
-- **Verifica in browser del nuovo modello** — regola #8 esatta sul Pokedex (A=183,
-  D=122, HP=221, 85-102), 8 condizioni di danno su 8, 7 casi meteo su 7, tabelle di
-  riferimento rigenerate, 19 pagine senza errori di sintassi. **Speed Tier da 189 a
-  202 su 208**: il catalogo ha colmato quasi tutti i buchi, ne restano 6
-- **`/api/moves` ignorava la regulation** ⚠️ — leggeva `moves_ma.json` hardcoded, e
-  `loadMovesDB()` ci sovrascriveva sopra le mosse corrette arrivate dal bootstrap:
-  sul Pokedex le mosse passavano da **921 a 461**. Ora l'endpoint accetta `?reg=` e
-  `loadMovesDB()` non rifà più il fetch, perché il bootstrap porta già le mosse
-  filtrate sulla regulation attiva
-- **Editor del catalogo separato** — nuova schermata `/pokemon/catalogo` con le
-  quattro linguette (Pokémon · Mosse · Abilità · Oggetti). Modifica una voce per
-  volta via API invece di scaricare 449 KB di JSON nel browser; tabella limitata a
-  300 righe con ricerca; creazione, rinomina ed eliminazione, con avviso se la voce
-  è usata da una regulation. Archivio, elenco, ripristino e copia automatica prima
-  di ogni salvataggio, come per le abilità. 31 controlli end-to-end superati, con i
-  quattro file del catalogo verificati identici dopo il ripristino
-
-> La distinzione ora è netta: **`/pokemon/catalogo` modifica i dati**, gli editor di
-> regulation scelgono **quali nomi** ne fanno parte.
-
----
-
-## 🚧 STATO — catalogo unico + regulation come filtro (08/08/2026)
-
-Nuovo modello: **un database di default** in `data/catalog/` con tutte le voci, e le
-regulation che contengono **solo elenchi di nomi** che puntano lì (`null` = tutte).
-
-**Fatto e verificato (29 controlli su 29):**
-- `data/catalog/` — 1032 specie + 321 forme, 921 mosse, 398 oggetti, 415 abilità
-- `data/regulations/ma.json` (elenchi di nomi) e `pokedex.json` (nessun filtro)
-- loader in `blueprints/pokemon.py` che filtrano il catalogo; `data.py` e
-  `api_pokemon.py` leggono il nuovo catalogo con fallback al vecchio file
-- editor roster/mosse/oggetti adattati: su una regulation migrata salvano la
-  **selezione dei nomi**, non i dati
-- Regulation MA identica a prima: stesse 461 mosse, 58 oggetti, 208 Pokémon, stessa
-  mega_map, dati invariati. Pokedex vede tutto.
-
-**Da decidere, non urgente:**
-1. **Il roster di MA non contiene** Amoonguss, Rillaboom, Urshifu, Flutter Mane,
-   Chi-Yu — riverificato 10/08/2026 sul roster ufficiale a 279. Non è un buco da
-   colmare: Champions ha un roster suo e quelle assenze sono corrette (vedi la nota
-   più sopra). Prima il calcolatore li offriva lo stesso perché `CHAMPIONS_BST` era
-   globale; ora la regulation filtra davvero.
-
-   ⚠️ **Conseguenza sulla regola #8**: il caso di prova canonico è Incineroar →
-   **Amoonguss**, e Amoonguss non è più selezionabile in MA (Incineroar sì). Il caso
-   va eseguito sulla regulation **`pokedex`**, che non filtra nulla. Da tenere a mente
-   ogni volta che si valida una modifica ai calcolatori.
-2. I file `data/roster_ma.json`, `moves_ma.json`, `items_ma.json`, `abilities.json` e
-   `pokemon_catalog.json` restano come **fallback**: dismetterli solo a verifica finita
-
-Script rieseguibili: `scripts/build_catalog.py` (`--dry-run` per provare) e
-`scripts/migra_regulation.py`. Entrambi si rifiutano di modificare dati curati.
-
----
-
-## 🐾 POKÉMON
-
-### Abilità — 15.0
-| | Voce | Note |
-|---|---|---|
-| ✅ | Abilità che agiscono su calcolo danno / speed tier / stat preview | Fatto 07/08/2026. Motore data-driven che legge il blocco `effect` di `abilities.json`. Prima nessuna abilità funzionava: le tendine erano in italiano, il codice confrontava nomi inglesi |
-| ✅ | Editor abilità unico, non legato alla regulation | Verificato 08/08/2026: **era già tutto presente**, la voce era stale. `/pokemon/abilita` ha ricerca (`ab_search`), filtro categoria (13 opzioni, tutte corrispondenti ai dati), modale di aggiunta con rifiuto di duplicati e di `effect` JSON non valido, modifica descrizione inline, eliminazione, sync col JSON raw e POST di salvataggio. Provato eseguendolo su tutte le 408 abilità |
-
-### Revisione finale
-| | Voce | Note |
-|---|---|---|
-| ✅ | Sprite mancanti | Fatto 07/08/2026. Erano 96 nomi su 300 irrisolti (Mega e forme regionali erano irraggiungibili nel catalogo) + 38 sprite rotti dal repo pokesprite. Ora 296/300 risolti, 0 immagini rotte |
-| ✅ | **19 Pokémon del roster MA assenti dal catalogo** | Chiuso 10/08/2026 dall'import Champions e dall'unificazione dei doppioni: **0 mancanti su 279**, verificato risolvendo l'intero roster MA contro l'indice del catalogo (top-level + `name` + forme annidate in `forms`). La voce era rimasta ⬜ per svista |
-| ✅ | Dividere / snellire `calcolatori.html` | Fatto 08/08/2026. Da **1885 righe / 222 KB a 685 righe / 147 KB**, con **zero JS inline**: CSS in `static/css/calcolatori.css` e JS in 6 file `static/js/calcolatori-*.js` (data · core · danno · speed · stat · ui). I dati di Flask passano da un blocco `<script type="application/json" id="calc-bootstrap">`, lo stesso schema di `items_editor.html` |
-| ✅ | Tabelle di riferimento duplicate in `calcolatori.html` | Fatto 08/08/2026. Le 4 righe da 108 KB sono ora 4 `<div>` vuoti riempiti da `calcolatori-ref.js` dagli **stessi dati del calcolo**: `TYPE_CHART` per l'efficacia, `NATURES` + `NM` per le nature. Template a **38 KB** |
-| ✅ | DB ufficiale con TUTTI i Pokémon/abilità/mosse/oggetti di ogni generazione | Chiuso 11/08/2026. La regulation **Pokedex** esiste, non filtra nulla e dall'11/08 è pure il **default del sito**: 1343 Pokémon, 921 mosse, 398 oggetti, 391 abilità. Il **selettore regulation** c'è ora in ogni sezione: calcolatore e team builder l'avevano già, e i tre editor — mosse, oggetti, roster — l'hanno ricevuto oggi. Prima lì si cambiava regulation solo scrivendo `?reg=` a mano nell'URL |
-| ⬜ | Creare i JSON di una nuova regulation dalla web app | Roster, mosse, oggetti e abilità generati in autonomia, magari agganciandosi a una fonte esterna. **Obiettivo di fondo: aggiungere una regulation senza IA, solo da interfaccia** |
-| ✅ | Testare Speed Tier | Fatto 08/08/2026. `loadRegSpeed()` **non funzionava**: leggeva `bst.spe` mentre la velocità sta in `base_stats.spe`, quindi tutti i 174 Pokémon venivano scartati e la funzione ricadeva in silenzio sulla lista statica da 158 nomi. Ora costruisce 189 righe dal roster MA (208 nomi, 19 assenti dal catalogo) |
-| ✅ | Weather Ball e mosse condizionate da meteo/abilità | Fatto 08/08/2026. Nuovo motore meteo in `calcolatori.html`: `meteoEffettivo()` (le abilità `weather_override` impongono il meteo, le `weather_setter` lo evocano se non è stato scelto nulla), `tipoPallaClima()` che usa `weather_ball_type` di `abilities.json` come override della mappa meteo→tipo, `applicaMeteoAllaMossa()` che riscrive BP e tipo nei campi visibili. Coperte **Weather Ball** (tipo dal meteo, BP 50→100), **Solar Beam** e **Solar Blade** (BP dimezzato con pioggia/sabbia/neve). Aggiunta la Pioggia forte alla tendina, con `fire_blocked` che porta le mosse Fuoco a 0 |
-
-| ✅ | Traduzione di tutte le mosse/abilità/oggetti | Fatto 11/08/2026 con `scripts/importa_nomi_lingua.py` (PokéAPI) e `scripts/importa_nomi_wiki.py` (wiki di Pokémon Central, per i buchi di PokéAPI): `nome_it` e `nome_en` su tutte le voci dei quattro database. **Mosse e oggetti sono a posto al 100%**; sulle abilità restano 103 voci che sono un problema di doppioni, non di traduzione. Non serve una linguetta per scegliere la lingua dei database: la sceglie il pulsante `IT`/`EN` globale |
-
-### Calcolo danno — da verificare uno per uno
-Tutte queste voci sono **implementate nel codice**, ma nel docx erano segnate da testare.
-Nota: fino al 07/08/2026 l'intero JS della pagina non veniva eseguito per un `SyntaxError`,
-quindi nessuna di queste è mai stata realmente provata in browser.
-
-L'08/08/2026 il caso di prova della regola #8 è stato **eseguito in browser e superato**
-(Incineroar Adamant 32 SP atk → Amoonguss: A=183, D=122, HP=221, danno 85-102 = 38.5%-46.2%,
-identico all'atteso), quindi la catena base — stat, STAB, tabella tipi, roll — è confermata.
-Poi tutte le condizioni sono state provate una per una, **24 casi misurati in browser**
-accendendo un effetto alla volta e confrontando il rapporto col moltiplicatore atteso.
-
-| | Voce | Esito |
-|---|---|---|
-| ✅ | STAB | Confermato dal caso di prova (`+STAB(1.5×)` nell'output) |
-| ✅ | Terreni (electric / grassy / psychic / misty) | **Tre bug trovati e corretti.** Elettrico, erboso e psichico avevano una restrizione di categoria inesistente nel gioco |
-| ✅ | Burn (scottatura) | Corretto: ×0.5 sull'Attacco solo per le mosse fisiche, nessun effetto sulle speciali. Con Combattività (Guts) diventa ×1.5 |
-| ✅ | Reflect / Light Screen | Funzionavano ma col **valore delle singole** (×0.5). Portati a 2732/4096 ≈ ×0.667, il valore delle doppie. Ciascuno agisce solo sulla propria categoria e il critico li ignora |
-| ✅ | Helping Hand | ×1.5 corretto |
-| ✅ | Critico | ×1.5 corretto, ma **non ignorava gli stage**: corretto |
-
-Verificati anche l'accumulo dei moltiplicatori — Helping Hand + critico = ×2.25 esatto,
-scottatura + Reflect = ×0.25, terreno erboso + HH + spread = ×1.4625 — e lo spread a ×0.75.
-
----
-
-## 👥 UTENTI E PERMESSI (sezione nuova — 11/08/2026)
-
-| | Voce |
-|---|---|
-| ✅ | **Gestione utenti con permessi per sezione** — fatto il 12/08/2026 |
-
-Schermata **`/admin/utenti`**, visibile solo agli amministratori: crea utenti normali o
-amministratori, spunta per ognuno le sezioni visibili, cambia password ed elimina.
-
-**Dov'è il controllo, e perché lì.** Non su un decoratore da mettere sulle singole
-viste, ma in un `before_request` che guarda `request.blueprint` (`app.py`): le sezioni
-hanno decine di route ciascuna — solo Pokémon ne ha oltre trenta fra pagine e API — e
-bastava dimenticarne una per lasciare una porta aperta senza che nulla lo segnalasse.
-Così **una route nuova nasce protetta**. La mappa blueprint → sezione si ricava da
-`SEZIONI` in `data.py`, quindi le due non possono divergere.
-
-**Le scelte che tengono al sicuro chi c'era prima:**
-
-- `users.sections` nasce **vuota**, e vuoto vale **«tutte»**: nessun utente esistente
-  perde accessi quando la funzione entra in servizio
-- gli **admin vedono tutto** per definizione, e sulla loro riga le spunte spariscono —
-  sarebbero una promessa che il codice non mantiene
-- la **Dashboard non è fra le sezioni**: è la pagina di arrivo dopo il login, e chi ci
-  atterrasse senza permesso troverebbe un errore
-- **non ci si può declassare da soli** né eliminare sé stessi, e **deve restare almeno
-  un amministratore**: senza, bastano due clic per chiudere fuori tutti dalla schermata
-  che serve a rimettere i permessi
-
-⚠️ **Un baco nel primo disegno, trovato e chiuso prima di committare.** Togliendo
-**tutte** le spunte, `",".join([])` dà la stringa vuota — che vale «tutte»: l'esatto
-contrario di quello che l'admin aveva appena spuntato. Ora «nessuna» si scrive con un
-valore esplicito (`NESSUNA_SEZIONE = "-"`), e quell'utente vede solo la Dashboard.
-
-### ⚠️ Due falle trovate mentre la costruivo, e chiuse
-
-Senza queste, i permessi sarebbero stati **decorativi**: la sidebar nascondeva le voci
-ma i dati uscivano lo stesso.
-
-| | Cosa succedeva |
-|---|---|
-| **`/export`** | Restituiva **l'intero database** a chiunque avesse fatto login: un utente con la sola sezione Gaming si portava via team Pokémon e build PC. Misurato: 28 KB con dentro `teams` e `pc_builds`. Ora esporta **solo le sezioni permesse** e scrive quali in `sezioni_incluse` |
-| **Dashboard** | Mostrava conteggi e ultimi elementi di **ogni** sezione a chiunque: da lì si leggeva quanti team Pokémon o quante build PC esistono senza avere quelle sezioni. Ora ogni riquadro è calcolato solo se la sezione è permessa |
-
-Verifica: **24 controlli su 24** sul test client — admin che vede tutto, un utente con
-la sola sezione Gaming che entra in `/gaming` e viene respinto da `/pokemon`,
-`/arduino`, `/python`, `/pcbuilder`, riceve **403 JSON** su `/api/pokemon/...` (e non un
-redirect, che a una `fetch()` darebbe un errore di parsing), non entra in `/admin` e non
-vede quelle voci nella sidebar; un utente **senza nessuna sezione** che vede solo la
-Dashboard; e i rifiuti su nome utente corto, password sotto gli 8 caratteri, username
-duplicato, auto-declassamento e auto-eliminazione. Export di quell'utente: **33 giochi,
-0 team, 0 build**. Sweep: 18 pagine / 33 script / 1970 handler, zero errori.
-
-### ⬜ DA FARE — i dati non hanno un proprietario (aperta il 12/08/2026)
-
-**Trovata da Davide provando la web app**, ed è il pezzo che manca perché «area
-riservata» voglia dire qualcosa: un team Pokémon salvato da un utente **lo vedono
-tutti**, e lo stesso vale per i giochi, i progetti Arduino e le build PC. I permessi
-per sezione, chiusi oggi, decidono **quali sezioni** vedi — non **di chi sono i dati**
-dentro. Sono due cose ortogonali, e finora ne esisteva una sola.
-
-**Cosa serve:**
-
-- ogni riga deve sapere **chi l'ha creata**
-- ogni utente vede e modifica **solo le proprie**
-- l'**admin vede tutto**, con scritto accanto **chi ha inserito cosa**, e possibilmente
-  un filtro per utente
-
-**Quanto costa, contato il 12/08/2026** — non stimato: **68 query** toccano le tabelle
-di contenuto, distribuite così:
-
-| Tabella | Query | | Blueprint | Query |
-|---|---|---|---|---|
-| `games` | 29 | | `gaming.py` | 24 |
-| `teams` | 10 | | `dashboard.py` | 22 |
-| `arduino_projects` | 7 | | `pokemon.py` | 12 |
-| `pc_builds` | 7 | | `pcbuilder.py` | 7 |
-| `python_topics` | 6 | | `arduino.py` | 4 |
-| `team_members` | 5 | | `python_tracker.py` | 3 |
-| `pc_components` | 4 | | | |
-
-**Le decisioni da prendere prima di partire**, perché cambiano la forma del lavoro:
-
-1. **Dove mettere il proprietario.** Solo sulle quattro tabelle «radice» — `games`,
-   `teams`, `arduino_projects`, `pc_builds` — mentre `team_members` e `pc_components`
-   lo ereditano dal genitore e alle loro query basta una join. Aggiungere la colonna
-   anche ai figli sarebbe un dato ripetuto che può divergere
-2. ⚠️ **`python_topics` è il caso storto**: non è contenuto creato dall'utente, è un
-   **elenco fisso di 53 voci** seminato una volta sola in `init_db()`, e la spunta
-   `done` sta sulla riga stessa. Per renderlo personale servono o 53 righe per utente,
-   o — meglio — una tabella `python_progress(user_id, topic_id, done)` che lascia il
-   catalogo condiviso e rende personale solo il progresso
-3. **Cosa fare delle righe esistenti**: assegnarle ad `admin` è l'unica scelta che non
-   perde niente, ma va detto e fatto in una migrazione dichiarata, non di soppiatto
-4. **Come non lasciare buchi.** È lo stesso rischio dei permessi per sezione, dove
-   `/export` e la Dashboard erano rimasti scoperti: con 68 query, dimenticarne una
-   significa mostrare i dati di un altro **senza che nulla lo segnali**. Serve un
-   meccanismo che **fallisca chiuso** — un helper obbligatorio per leggere le tabelle
-   di contenuto, o un test che elenchi le query e verifichi che ognuna filtri —
-   invece di aggiungere `WHERE user_id=?` a mano 68 volte e sperare
-
-Da fare in un blocco suo, non in coda ad altro: tocca ogni sezione e il modo giusto di
-verificarlo è creare due utenti e provare che nessuno dei due veda le cose dell'altro.
-
-### ✅ Password migrate a scrypt (12/08/2026)
-
-Erano **sha256 senza sale**: due utenti con la stessa password avevano lo stesso hash,
-e un sha256 nudo si attacca con le tabelle precalcolate. Ora si usa
-`werkzeug.security`, che fa **scrypt con un sale casuale** — 162 caratteri, e due hash
-della stessa password sono diversi.
-
-⚠️ **Non esiste una migrazione in blocco, e non è una scelta**: sha256 è a senso unico,
-quindi dal vecchio hash la password non si ricava. L'unica strada è riconoscerlo **al
-login**, verificarlo con lo schema vecchio e riscriverlo forte in quel momento — l'unico
-istante in cui la password in chiaro esiste. Chi non entra mai resta com'è, e non è un
-problema: il suo hash vecchio continua a funzionare finché non lo usa.
-
-⚠️ **Un pezzo che si sarebbe rotto in silenzio**: `login()` cercava l'utente con
-l'hash **dentro il `WHERE`**, cioè confrontava in SQL. Funzionava solo perché sha256 dà
-sempre lo stesso risultato; con un sale casuale due hash della stessa password sono
-diversi e quella query non avrebbe trovato **nessuno**. Ora si cerca per nome e si
-verifica in Python.
-
-Verifica: **14 controlli su 14** — utente legacy che entra e si ritrova l'hash riscritto
-in `scrypt:`, hash **non** toccato da un tentativo fallito, secondo login che usa il
-nuovo schema senza riscrivere di nuovo, password sbagliata rifiutata in entrambi gli
-schemi, utente creato dalla schermata admin che nasce già forte, cambio password che
-resta forte e vecchia password che smette di funzionare.
-
-> Nota di metodo: due controlli sembravano falliti perché cercavo «Credenziali errate»
-> nella risposta al POST, che è un 200 — il flash si vede al caricamento successivo. Il
-> rifiuto funzionava: nessuna sessione aperta e la dashboard che rimanda al login. Ho
-> corretto l'asserzione, non il codice.
-
-### ✅ La Dashboard mostra solo le sezioni dell'utente (12/08/2026)
-
-Chiesto da Davide. Prima i cinque riquadri e i tre pannelli c'erano per tutti: dopo il
-primo giro i numeri erano a zero, ma **mostrare un riquadro a zero dice comunque che
-quella sezione esiste e quanti elementi ha**. Ora i riquadri e i pannelli compaiono solo
-se la sezione è permessa. Misurato: `admin` vede tutti e 5 i riquadri e i 3 pannelli, un
-utente solo-Gaming vede **un riquadro e un pannello**, uno con `pokemon,pcbuilder` vede
-**Team Pokémon e PC Build** con il solo pannello PC Builds.
-
----
-
-## 💾 SALVATAGGIO LOG
-| | Voce |
-|---|---|
-| ⬜ | Aggiungere una funzione di salvataggio log |
-
----
-
-## 🖨️ STAMPA 3D (sezione nuova)
-| | Voce |
-|---|---|
-| ⬜ | Nuova sezione Stampa 3D, sul modello di quella Arduino: richiamo a un sito per disegnare e salvataggio dei progetti |
-
----
-
-## 🤖 ARDUINO
-| | Voce |
-|---|---|
-| ⬜ | Richiamo a Tinkercad per disegnare il progetto e verificare i connettori |
-
----
-
-## 💻 PC BUILDER
-| | Voce |
-|---|---|
-| ⬜ | Wishlist Amazon o altri |
-| ⬜ | Prezzo componente |
-| ⬜ | Percentuale di compatibilità tra i pezzi (valutare UserBenchmark) |
-| ⬜ | Gestire l'uscita di nuovi pezzi nel tempo |
-
----
-
-## 🐍 PYTHON
-| | Voce |
-|---|---|
-| ⬜ | Spazio per inserire i propri progetti e testarli |
-| ⬜ | Idee per rendere la sezione più utile |
-
----
-
-## 🎮 GAMING
-| | Voce | Note |
-|---|---|---|
-| ✅ | Collegamento a una API Steam per tracciare i videogiochi | Fatto 10/08/2026. Tre pezzi, vedi sotto |
-| ✅ | Filtri e ordinamento nell'elenco | Fatto 12/08/2026. Prima si filtrava **solo per stato** e si cercava solo per titolo, con l'ordine fisso sulla data di inserimento. Ora ci sono **genere**, **piattaforma** e cinque ordinamenti (recenti, titolo A→Z, ore giocate ↓ e ↑, durata stimata ↓), un contatore «N su M», e i pulsanti di stato **portano con sé** ricerca, filtri e ordinamento invece di azzerarli. Le tendine elencano solo i valori **presenti in libreria**, così non offrono filtri che non danno risultati. Tre dettagli che valeva la pena curare: `genre` è un elenco separato da virgole, quindi il confronto è per sottostringa **con le virgole ai bordi** (`RPG` non deve pescare un ipotetico `JRPG`); `NULLS LAST` non esiste in SQLite, quindi i giochi **senza ore** finiscono in fondo e non in cima all'ordinamento per ore; e il frammento `ORDER BY` viene da un dizionario del codice, mai dalla richiesta — provato che `?sort=pippo'--` ricada sul default senza errori. Aggiunto anche `id DESC` come spareggio: l'import di massa da Steam scrive decine di righe nello stesso secondo, e «aggiunti di recente» mostrava il più vecchio per primo |
-| ✅ | Suggerimenti giochi in base a cosa si sta giocando | Fatto 12/08/2026, **dalla libreria stessa**: Steam non espone «giochi simili» e inventare una somiglianza sarebbe un dato finto, quindi l'unica fonte onesta è la tua libreria. Riquadro «🎯 Se ti è piaciuto …» in cima a `/gaming`, con l'ancora **scegliibile** da una tendina (`?simile_a=<id>`); il default è il gioco «In corso», e non essendocene nessuno ripiega sul più giocato **dicendolo a schermo**. ⚠️ **I generi non pesano uguale**: «Azione» ce l'hanno 23 giochi su 33, «Corse» 2. Il punteggio di un genere condiviso è `log(N/quanti_ce_l_hanno)`, così i generi rari contano e quelli comuni no — senza, il suggeritore direbbe solo «ti piace l'azione». A parità di punteggio vengono prima i giochi con **meno ore**: consigliare quello che hai già consumato non serve. Completati e abbandonati restano fuori. ⚠️ **Quando il segnale è debole non suggerisce lo stesso**: sotto `log(2)` — cioè quando i generi condivisi ce li ha più di metà libreria — mostra il perché invece di riempire la fila. È il caso del default: «Call of Duty® ha solo «Azione», che in libreria ha 23 giochi su 33: troppo comune per distinguere qualcosa» |
-| ✅ | Tag di Steam importati | Fatto 12/08/2026. I generi sono pochi e grossi — «Azione» ce l'hanno 23 giochi su 33 — e da soli non bastavano: col solo genere il suggeritore **non riusciva a consigliare niente** partendo da `Call of Duty®`. **Fonte: SteamSpy**, pubblica e senza chiave, che restituisce i tag già coi voti. ⚠️ Le altre due strade non reggono, provate: `appdetails` di Valve **non espone i tag**, e la pagina del negozio è dietro il **controllo dell'età** — su Elden Ring restituisce il solo «Violenza». Nuova colonna `steam_tags` e pulsante **«🎧 Completa i tag»** su `/gaming/steam`, accanto a quello dei generi ma **separato**: sono due fonti diverse con limiti diversi, e una che smette di rispondere non deve fermare l'altra. Lotti da 6 con una pausa di 1 secondo, che è il limite chiesto da SteamSpy. Misurato sulla libreria vera: **33 giochi in 35 secondi, 24 con tag e 9 senza** (i più recenti — ARC Raiders, Battlefield™ 6, Crimson Desert — che SteamSpy non ha ancora). Da 17 generi a **108 tag distinti**, 56 dei quali su un solo gioco. ⚠️ I tag sono **solo in inglese**: SteamSpy non ha una versione localizzata, mentre i generi restano in italiano perché vengono da Steam con `l=italian` | Ora c'è la materia prima: 34 giochi con generi e ore. Steam **non** espone "giochi simili", quindi serve decidere la fonte: suggerire dalla libreria stessa (per genere e ore), o agganciare un servizio esterno |
-
-### ⚠️ I 33 giochi persi, e la guardia che ora c'è (12/08/2026)
-
-**I giochi importati da Steam non sono più nel DB**, e l'export li ha cancellati anche
-dal backup. Ricostruito da git, con gli orari:
-
-| Quando | Export |
-|---|---|
-| 11/08 **10:09** — `199514b` «Metti al sicuro anche i dati di hub.db» | **33 giochi, 904.8 ore** |
-| 11/08 **10:43** — `46691a8` | **0 giochi** |
-
-In quella mezz'ora sono spariti da `hub.db`, e `esporta_dati.py` ha esportato
-fedelmente il vuoto **sovrascrivendo l'unica copia buona**: la rete di sicurezza si è
-scritta sopra da sola. È solo `games` — `python_topics` (53) e `users` sono intatti, e
-`pc_builds`/`pc_components` sono anzi passati da 0 a 1 e 5, quindi non è stato un DB
-ripristinato o sostituito.
-
-**Non recuperati, per decisione di Davide del 12/08**: li rimetterà lui. La fotografia
-resta comunque leggibile con `git show 199514b:data/backup/hub_export.json`, e in ogni
-caso l'import da `/gaming/steam` è rieseguibile e non fa doppioni.
-
-✅ **La guardia c'è.** `esporta_dati.py` ora **si rifiuta di scrivere** quando una
-tabella passa da N righe a **zero**, dice quale e quante, e ricorda che le versioni
-precedenti si leggono con `git log` su quel file. Un calo parziale non lo tocca —
-cancellare un gioco è normale; solo il crollo a zero è la firma di un DB perso. La via
-d'uscita esplicita è `--anche-se-vuoto`. È la stessa medicina già data a
-`_save_abilities()` l'08/08, dove un salvataggio sbagliato azzerava 408 abilità.
-
-⚠️ Nel provarla è saltato fuori un secondo difetto: lo script **non aveva** il
-`sys.stdout.reconfigure` che gli altri hanno, quindi l'avviso moriva su
-`UnicodeEncodeError` per via dell'emoji — cioè proprio il messaggio che deve spiegare
-perché ci si è fermati non sarebbe mai arrivato a schermo. Aggiunto.
-
-Provati tutti e tre i percorsi: interruzione con `exit 1` e file **intatto**,
-`--anche-se-vuoto` che scrive, e la corsa normale che non si lamenta più.
-
-### ✅ «Non trovo GTA VI» — la ricerca funziona (12/08/2026)
-
-Verificato interrogando davvero l'endpoint, non leggendo il codice. **Il catalogo di
-inserimento è collegato a Steam e funziona**: `storesearch` risponde per Elden Ring (5
-risultati), Hollow Knight: Silksong (2), Grand Theft Auto (7, da GTA V a Vice City).
-
-**GTA VI non c'è perché non ce l'ha Steam**: non ha una pagina sul negozio. Escluse le
-due spiegazioni alternative, misurandole:
-
-| Ipotesi | Prova |
-|---|---|
-| è il negozio italiano a filtrarlo | no: `total=0` anche con `l=english&cc=us` |
-| l'API esclude i giochi non ancora usciti | no: Silksong, non uscito, **compare** |
-
-Quindi finché Rockstar non apre la pagina Steam non c'è endpoint che lo restituisca, e
-va aggiunto a mano da **+ Aggiungi gioco**. Nota di contorno: la ricerca **non capisce
-le abbreviazioni** — `GTA VI` dà 0 risultati mentre `Grand Theft Auto` ne dà 7, ed è
-Steam a comportarsi così, non il nostro codice.
-
-### Due cose nel dato della libreria, viste il 12/08/2026
-
-Non sono bachi, ma chi lavora sulla sezione deve saperle:
-
-- **`Monster Hunter Wilds Beta test` ha genere `—`**: Steam non dà generi alle beta.
-  Nel suggeritore non ha nessun altro gioco con cui confrontarsi, e la nota lo dice
-- **`Wallpaper Engine` non è un gioco**: ha le categorie *software* di Steam
-  (`Animazione e modellistica`, `Design e illustrazione`, `Fotoritocco`, `Accessori`),
-  quindi compare fra i generi della libreria e nei filtri
-- **tutti e 33 i giochi sono in «Pausa»** e `hours_hltb` è vuota su tutti: l'import di
-  massa non porta né lo stato reale né la durata stimata
-- i titoli con `®` e `™` (`Call of Duty®`, `Battlefield™ 6`, `HELLDIVERS™ 2`) sono
-  **corretti nel DB** — se li vedi storti è la console di Windows, non il dato
-
-### Steam — cosa è stato fatto (10/08/2026)
-
-**1. Ricerca in fase di inserimento** — su `/gaming/new` un campo cerca su Steam e un clic
-compila titolo, genere, copertina e piattaforma, collegando l'`appid`. Endpoint pubblici,
-**nessuna chiave**: `storesearch` e `appdetails` (generi già in italiano).
-
-**2. Import della libreria** — `/gaming/steam`: legge i giochi posseduti con le ore giocate.
-È l'unico pezzo che richiede una chiave (`GetOwnedGames` risponde 401 senza).
-Deduplica sull'`appid`, un reimport aggiorna le ore e non crea doppioni.
-
-**3. Arricchimento generi** — l'import di massa non porta i generi (sarebbero N chiamate
-in più): un pulsante li chiede a Steam a lotti di 15. Anche questo senza chiave.
-
-Dettagli che vale la pena ricordare:
-- **`hours_played` è una colonna nuova, distinta da `hours_hltb`**: le ore giocate non
-  sono la stima di durata HowLongToBeat. L'import non tocca mai `hours_hltb`
-- la chiave si legge **solo** da `os.environ["STEAM_API_KEY"]`: nessun campo
-  nell'interfaccia, nessun file nel progetto, niente in git
-- il **nome visualizzato Steam non è risolvibile**: l'API risolve solo l'indirizzo
-  personalizzato (`/id/<vanity>`), che molti profili non hanno. Il campo accetta URL
-  completo e steamID64, ed è la strada consigliata
-- ⚠️ **trappola d'ambiente**: un processo Windows eredita una *copia* dell'ambiente. Se la
-  app parte prima che `STEAM_API_KEY` esista, non la vedrà mai. La pagina lo rende
-  diagnosticabile: guida gialla = il processo non ha la chiave, form = ce l'ha
-- errore di mappatura corretto in corsa: l'import metteva `ore > 0 → In corso`, e con 33
-  giochi il filtro per stato diventava inutile. Ora tutto entra come **Pausa**
-
----
-
-## ⚙️ GENERICO
-| | Voce |
-|---|---|
-| ⬜ | Deploy da GitHub a Railway — c'è un errore da diagnosticare |
-| 🟨 | **Switch lingua italiano ⇄ inglese.** Pulsante `IT`/`EN` in `base.html` accanto al tema: fatto l'11/08/2026, **primo blocco chiuso** (i nomi dei dati). Resta da fare il **secondo blocco**: le stringhe dell'interfaccia, oggi italiano fisso in ~19 template. Vedi la sezione dedicata in cima al file |
-
----
-
-## 🔧 Emerso dal codice (non nel docx)
-
-| | Voce | Note |
-|---|---|---|
-| ✅ | Formattazione editor mosse/oggetti/roster | Fatto 07/08/2026. Il banner "Stai modificando" stava dentro la griglia e occupava la colonna larga: la tabella mosse aveva 373px su 838 necessari (465 tagliati). Ora a tutta larghezza |
-| ✅ | `textarea.form-control` batte `.code-area` | Fatto 10/08/2026. In `base.html:95` la regola `textarea.form-control{min-height:70px}` ha specificità elemento+classe e vinceva su `.code-area` a prescindere dall'ordine. I template colpiti erano **5, non 3**: oltre a abilità, mosse e oggetti anche `roster_editor.html` e `arduino.html` (anche il campo codice Arduino era a 70px invece di 260). Aggiunta in ognuno la riga `textarea.code-area{min-height:…}` accanto alla regola esistente, lo stesso pattern già presente in `catalog_editor.html:16`. `base.html` non è stato toccato: la regola a 70px resta giusta per le textarea normali |
-| ✅ | Editor abilità senza archivio né backup | Fatto 08/08/2026. Archivio manuale, elenco, ripristino e **copia automatica prima di ogni salvataggio**. Ora l'editor abilità è il più protetto dei quattro |
-| ✅ | Colonne tab Danno del calcolatore | Chiuso 11/08/2026: `align-items` da `start` a `stretch`, una riga. I tre riquadri chiudevano a **548 / 699 / 564** px, ora tutti a **699**. Le larghezze non cambiano (360 · 265 · 360): il prezzo è un fondo vuoto di ~150 e ~135 px nei due laterali, perché la colonna Condizioni ha più campi delle altre. Deciso guardando il confronto misurato a 1280px |
-| ✅ | Nessun `.gitignore` | Fatto 10/08/2026. Creato `.gitignore` (`__pycache__/`, `*.py[cod]`, venv, `hub.db`, file di editor/OS) e tolti dall'indice `hub.db` + **13** `.pyc` con `git rm --cached`: i file restano su disco, git smette di seguirli. Gli archivi in `data/archive/` sono stati **lasciati tracciati** di proposito — sono la rete di sicurezza dei salvataggi, non scarto di build |
-| ⬜ | `main` diverge da `origin/main` | Locale avanti 2 / indietro 4. I commit remoti contengono un marker di conflitto e hanno perso `PROJECT_CONTEXT.md`. Riallineare richiede force-push |
-| ✅ | `reference.html` era orfano | Rimosso l'11/08/2026: 70 righe che nessuna route renderizzava. Il tab Reference del calcolatore è un'altra cosa — vive dentro `calcolatori.html` ed è riempito da `calcolatori-ref.js` |
-| ✅ | 53 `onmouseout` morti in `templates/python.html:45` | Chiuso 11/08/2026. Il ramo `{% else %}` aggiungeva due apici dentro una stringa già quotata (`this.style.background=''''`, `SyntaxError`), quindi su ogni argomento **non** completato l'handler era `null`. Tolti i due apici: da **0 handler vivi su 53 a 53 su 53**, provato eseguendo mouseover/mouseout |
-| ✅ | `loadSpePkmn()` non ricalcola | Chiuso 11/08/2026: aggiunta la chiamata a `updateSpeed()`. Incineroar → base 60, Velocità **80**; Dragapult → base 142, Velocità **162** |
-| ✅ | Speed Tier senza limite di righe | Chiuso 11/08/2026 con un tetto a **300 righe**, come le altre tabelle del progetto: su `pokedex` erano **1343 righe / 714 KB** in un solo `innerHTML`, ora **300 / 159 KB**. Le righe tagliate sono le più **lontane** dalla propria Velocità, perché chi guarda uno Speed Tier guarda chi gli sta intorno: con Kingdra a 105 la tabella va da 95 a 115. Sopra la tabella resta scritto il conto pieno (`300 righe su 1343`), e la ricerca continua a pescare fuori dal taglio — provato con Regieleki, che sta a 200 |
-| ✅ | Nomi in `abilities.json` da rivedere → **fondere i doppioni** | Chiuso 11/08/2026: 24 coppie fuse, 415 → 391 voci, e `abilityEffect()` ora risolve anche per nome inglese. Dettagli nella sezione «Le abilità doppie», in cima. ⚠️ Restano le 10 voci il cui effetto non corrisponde a nessuna abilità reale, tenute apposta | Alcuni non corrispondono all'abilità descritta (es. `Spettroguardia` descrive Multiscaglia; il vero Wonder Guard è `Magidifesa`). Convivono nomi ufficiali IT e nomi di altra fonte. L'11/08/2026 il giro sulla wiki ha spiegato perché: **le due famiglie coesistono nello stesso file**, 307 voci col nome ufficiale (collegate ai Pokémon, ma solo 22 con un effetto attivo) e 108 vecchie (34 con l'effetto che il calcolatore usa davvero). Il lavoro non è tradurre, è fondere ogni coppia. Dettagli e tabella nella sezione dello switch lingua, in cima |
-| ✅ | **Le meccaniche del team builder erano morte** ⚠️ | Trovato e chiuso il 12/08/2026. `loadRegulationData()` faceva `CURRENT_MECHANICS = (d.regulation && d.regulation.mechanics) ? … : []`, ma **`/api/regulation/<id>/data` non restituiva `regulation`**: la risposta aveva solo `ok`, `reg_id`, `roster`, `count`. Quindi `CURRENT_MECHANICS` era **sempre vuoto**, il selettore stampava la sola voce «— nessuna —» e **la Mega non era selezionabile per nessun membro del team**, su nessuna regulation, benché tutte e tre abbiano `"mechanics": ["mega"]` nel registro. Stessa famiglia dei tre endpoint fantasma dell'11/08. Due righe soffrivano dello stesso buco: anche `d.items` non esisteva, ma lì il danno era nullo perché il datalist oggetti lo stampa già Jinja. **Non bastava aggiungere `regulation`**: `MEGA_MAP` era una `const` stampata da Jinja al caricamento, quindi restava quella della regulation iniziale — e il default del sito è `pokedex`, che una mega_map non ce l'ha. Ora l'endpoint restituisce anche `mega_map` e la costante è diventata `let`, aggiornata a ogni cambio di regulation. Verificato in browser: da `pokedex` a `ma` la mega_map passa da **0 a 58** voci, gli oggetti da 397 a 58, e Charizard offre **Mega Charizard X** e **Mega Charizard Y** |
-| ⬜ | **`build_catalog.py` oggi distruggerebbe il catalogo** ⚠️ | Trovato il 12/08/2026 preparando l'import delle mosse, **non corretto** perché fuori scope e perché non è più servito eseguirlo. Lo script legge come base i **file storici** (`data/pokemon_catalog.json`, `moves_ma.json`, …) e scrive il risultato in `data/catalog/`. Quella base ha **174 voci** contro le 1026 di oggi, non ha nessun `nome_it`/`nome_en` (il catalogo attuale li ha su 1026 su 1026) e ha ancora le **Mega convertite**: `Mega Venusaur` vale `hp 155` lì e `hp 80` qui. Peggio, `MEGA_BONUS` riapplicherebbe `+75 HP / +20` alle Mega nuove, cioè esattamente la conversione che la deconversione dell'11/08 ha tolto. Rieseguirlo oggi **riporterebbe indietro il catalogo di quattro giorni di lavoro, in silenzio**. Va fatto leggere `data/catalog/` quando esiste, e `MEGA_BONUS` va tolto. Fino ad allora, **non eseguirlo** |
-| ✅ | **`pokedex` non aveva una `mega_map`** | Chiuso il 12/08/2026, e non serviva una decisione: il collegamento fra una Mega e la sua specie base è **deducibile**, ed è quello che `scripts/completa_mega_map.py` fa già per MA e MB. Bastava insegnargli che su `pokedex` il roster è `null`, cioè **tutto il catalogo** — stessa convenzione di `_load_roster()` — perché prima lo leggeva come roster vuoto e non ci trovava nessuna Mega. Risultato: **91 basi, 97 Mega, 97 su 97 raggiungibili**. Lo script si è fermato su 7 forme inventate invece di indovinarle: il suffisso `Z` è stato aggiunto alla regola di X e Y (`Mega Absol Z` sta ad `Absol` come `Mega Charizard X` sta a `Charizard`), mentre le 4 che seguono la convenzione `Mega <Forma> <Specie>` contro `<Specie> (<Forma> Form)` del catalogo sono state scritte **a mano una per una** in `BASE_A_MANO`. ⚠️ Corretto anche un `TypeError` nel riepilogo finale, che su un roster `null` esplodeva **dopo** aver già scritto il file: il lavoro era fatto ma la riga di controllo non arrivava mai |
-| ✅ | Catalogo con abilità incomplete | Chiuso 12/08/2026 con `scripts/completa_abilita_pokemon.py`: **182 voci completate, +184 abilità**, quasi tutte **nascoste** (a Venusaur mancava Chlorophyll, a Pikachu Lightning Rod). Le voci con una sola abilità scendono da 411 a **325**, e di quelle **323 ne hanno davvero una sola** anche per PokéAPI — sono Mega e forme regionali. La voce diceva che erano «quasi certamente incomplete»: era vero solo per 182 su 411. Restano 2 casi dubbi, le due Mega Meowstic inventate |
-| ✅ | Chiavi mega incoerenti nel catalogo | Chiuso 11/08/2026. Non erano anomalie ma **doppioni**: `mega-banette`, `mega-chimecho` e `mega-crabominable` esistevano sia come chiave top-level sia come forma annidata nella specie base. Le forme annidate, deconvertite, sono quelle giuste — le top-level sono state rimosse (1029 → 1026 voci). Gli override sprite in `api_pokemon.py:70-73` **restano**: sono indicizzati sul nome normalizzato, non sulla chiave, e servono ancora perché Mega Chimecho e Mega Crabominable sono inventate e non hanno uno sprite online |
-
----
-
-## ✅ Chiuso l'08/08/2026
-
-- **Archivio e backup delle abilità** — `_save_abilities()` sovrascriveva `data/abilities.json` senza tenere nulla da parte: un salvataggio sbagliato azzerava 408 abilità, incluse le 56 con blocco `effect` da cui dipende il calcolatore. Ora:
-  - **copia automatica** della versione precedente a ogni salvataggio, in `data/archive/abilities_pre-salvataggio.json`. È a scorrimento — sempre lo stesso nome — così non riempie la cartella. Protegge anche chi non tocca mai il pulsante Archivia
-  - **archivio manuale** con `/pokemon/abilita/archive`, **elenco** con `/pokemon/abilita/archives`, **ripristino** con `/pokemon/abilita/restore/<file>`
-  - il salvataggio **rifiuta** un `abilities` vuoto o non-oggetto, che prima avrebbe cancellato tutto, e il messaggio mostra la differenza di conteggio (`408 voci (-12 rispetto a prima)`), così un calo anomalo si vede subito
-  - il ripristino accetta solo file dell'archivio col prefisso giusto: `../../app.py` viene respinto
-
-  Verificato con 18 controlli end-to-end sul test client, compresi il giro completo archivia → salvataggio distruttivo → ripristina con **md5 identico all'originale**, i 4 payload che devono essere rifiutati, e il path traversal. Il test lavora sui dati veri, quindi ripristina lo stato e verifica di averlo fatto: file identico e nessun archivio residuo.
-
-  Lato interfaccia, gli `onsubmit` generati sono stati passati a `new Function()` prima di considerarli fatti: è la classe di bug che teneva il Ripristina del roster senza conferma.
-
-- **Terreni: boost legato alla categoria sbagliata** ⚠️ — elettrico e psichico agivano solo sulle mosse speciali, erboso solo sulle fisiche. Nel gioco il boost dipende **solo dal tipo della mossa**. Quindi Wild Charge in terreno elettrico, Energy Ball in quello erboso e Psychic Fangs in quello psichico non prendevano **nulla**: misurato 68 → 68. Ora 68 → 88. Il terreno nebbioso era già corretto (non aveva la restrizione)
-
-- **Il critico non ignorava gli stage** — nel gioco un critico ignora gli stage che sfavoriscono chi attacca: quelli negativi dell'attaccante e quelli positivi del difensore. Qui li applicava comunque: critico contro Difesa a +2 dava **52 invece di 102**, e con Attacco a −2 dava **51 invece di 102**. Corretto, e verificato che continui a rispettare gli stage favorevoli (Difesa −2 alza ancora il danno)
-
-- **Reflect e Light Screen col valore delle singole** — tagliavano a metà, ma il VGC si gioca **solo in doppie**, dove valgono 2732/4096 ≈ ×0.667. Il calcolatore ha già il selettore spread a 0.75, che è una meccanica esclusiva delle doppie, quindi il ×0.5 contraddiceva il suo stesso contesto. Ora la costante è `SCHERMO_DOPPIE` in `calcolatori-data.js`: se un giorno servisse il calcolo in singole, è l'unico punto da cambiare
-
-- **`calcolatori.html` spacchettato** — **1885 → 687 righe, 222 → 38 KB, zero JS inline**. CSS in `static/css/`, JS in 7 moduli `static/js/calcolatori-*.js` caricati in ordine obbligato (`data` dichiara le costanti, `core` le formule, `ui` avvia). Prima `static/` era una cartella vuota
-
-  | File | Righe | Contenuto |
-  |---|---|---|
-  | `calcolatori-data.js` | 118 | bootstrap dal JSON + `TYPE_CHART`, `TIPI_IT`, `TYPE_CLR_IT`, `SPEED_META_STATIC`, `MEGA_DATA`, `ALIAS`, mappe nature/meteo, limiti SP |
-  | `calcolatori-core.js` | 288 | `calcSt`, `tipoIT`, indice catalogo, motore abilità, motore meteo, `fetchPkmn`, limiti SP |
-  | `calcolatori-danno.js` | 383 | `loadMovesDB`, `onMoveSelect`, `loadSide`, `recalcSide`, `calcDamage` |
-  | `calcolatori-speed.js` | 130 | `loadRegSpeed`, `loadSpePkmn`, `updateSpeed`, `renderSpeed` |
-  | `calcolatori-stat.js` | 194 | Stat Preview e forme alternative |
-  | `calcolatori-ref.js` | 119 | genera le tabelle tipi e nature, overlay e tab Reference |
-  | `calcolatori-ui.js` | 96 | quick-load team, init |
-
-- **Tabelle di riferimento deduplicate** — le 4 righe da 108 KB di HTML incollato sono diventate 4 `<div>` vuoti riempiti al primo accesso da `calcolatori-ref.js`. Non è solo peso: quelle tabelle erano **indipendenti dal motore**, quindi potevano divergere in silenzio dal calcolo che dovrebbero documentare. Ora l'efficacia esce da `TYPE_CHART` (la stessa che `calcDamage()` usa: prima era una `const TC` locale, ora è unica in `calcolatori-data.js`) e le nature da `NATURES` + `NM`.
-
-  Prima di riscriverle ho estratto i dati dal markup e li ho confrontati col motore: **0 disaccordi su 324 celle** e le 25 nature identiche. Poi ho verificato l'inverso, cioè che l'HTML generato coincida con l'originale: **identico byte per byte, 45911 e 9820 byte, zero differenze**.
-
-  Parità verificata anche a valle: regola #8 invariata (85-102), Speed Tier 189 (MA), 12 casi meteo identici, Fuoco su Erba/Veleno ×2 e Drago su Folletto = 0 (prova che il motore legge la chart condivisa), tab e overlay con titoli e stati dei pulsanti corretti, 7 file JS e il CSS validi e serviti.
-
-- **`extra_head` di `base.html` stava dentro `<style>`** ⚠️ — il blocco era all'interno dell'elemento `<style>`, quindi il primo `</style>` di ogni template figlio chiudeva lo stile di base e il `</style>` di base restava **orfano in tutte e 10 le pagine** che usano il blocco. Il CSS funzionava per caso (assorbito nello stile di base); un `<link>` veniva ignorato come testo CSS — ed è così che il problema è emerso. Ora il blocco è fuori: `<style>` bilanciati su tutte le 13 pagine, cascata invariata
-
-- **Motore meteo** — Weather Ball, Solar Beam e Solar Blade ora rispondono al meteo, e le abilità meteo determinano il meteo del calcolo. Il campo `weather_ball_type`, presente su 7 abilità e mai letto da nessuno, è finalmente in uso. Due note nell'interfaccia rendono visibile cosa sta succedendo: sotto il BP (`🌍 Sole forte → tipo Fuoco, BP 100`) e sotto la tendina Meteo quando un'abilità sovrascrive la scelta (`⚠️ Mega Sol impone Sole forte`)
-
-  | Caso | Atteso | Ottenuto |
-  |---|---|---|
-  | Weather Ball, nessun meteo | Normale, BP 50 | ✅ 17-21 danno |
-  | Weather Ball, Sole | Fuoco, BP 100 | ✅ 153-183 |
-  | Weather Ball, Pioggia | Acqua, BP 100 | ✅ 25-30 |
-  | Weather Ball, Sabbia / Neve | Roccia / Ghiaccio | ✅ |
-  | Weather Ball, nessun meteo + Siccità | Sole → Fuoco | ✅ nota mostrata |
-  | Weather Ball, Pioggia scelta + Mega Sol | Sole forte → Fuoco | ✅ l'abilità vince |
-  | Solar Beam, Sole / Pioggia | BP 120 / 60 | ✅ |
-  | Solar Blade, Sabbia | BP 62 | ✅ |
-  | Mossa Fuoco, Pioggia forte | 0 | ✅ |
-  | Mossa Fuoco, Pioggia normale | ×0.5 | ✅ 51-60 |
-
-  Rapporto di controllo: Sole/Pioggia sulla stessa mossa Fuoco = 153/51 = **×3 esatto**, cioè ×1.5 contro ×0.5. Il caso di prova della regola #8 resta invariato a 85-102.
-
-- **Editor abilità** — la voce di backlog era stale: ricerca, filtro, aggiunta, eliminazione e salvataggio erano già tutti implementati e funzionanti. Verificato eseguendoli
-- **Speed Tier muto** — `loadRegSpeed()` leggeva `bst.spe` invece di `base_stats.spe`: 174 Pokémon su 174 scartati e caduta silenziosa sulla lista statica. Aggiunto `catalogEntry()`, che risolve anche le 84 forme annidate in `forms` (equivalente JS di `_INDICE`). Da 158 nomi statici a **189 dal roster MA**
-- **Ripristino roster senza conferma** ⚠️ — nell'`onsubmit` del pulsante Ripristina, `verra'` produceva un apostrofo dentro la stringa a singoli apici dell'attributo: l'handler era un `SyntaxError`, `form.onsubmit` era `null` e **il roster corrente veniva sovrascritto senza alcuna richiesta di conferma**
-- **Typo a video** — `roster_editor.html:166` mostrava "eà gia' nel roster", ora "è già nel roster"
-- **Doc: nomi delle globali sbagliati** — `PROJECT_CONTEXT.md` documentava `CHAMPIONS_DATA` e `ABILITIES_LIST`, che non esistono: sono `CHAMPIONS_BST` e `ABILITIES_DATA`
-- **Verifica in browser delle 13 pagine** — script inline **e** handler negli attributi passati a `new Function()`: 0 `SyntaxError`. I 4 fix del 07/08 (PC Builder, `calcDamage()`, `deleteMove`, `startEditDesc`) provati eseguendoli, non solo leggendoli
-
-> Il check ora copre anche gli **handler inline negli attributi** (`onclick`, `onsubmit`, …), non solo i blocchi `<script>`: è così che è emerso il bug del Ripristina. Attenzione però: quel bug stava in HTML **generato da JS**, che uno sweep statico non vede — serve far girare la funzione che lo produce.
-
----
-
-## ✅ Chiuso il 07/08/2026
-
-- **`SyntaxError` che azzerava tutto il JS di `calcolatori.html`** — merge rotto alle righe 718-729: nessuna riga della pagina veniva eseguita
-- **Formula stat incoerente** — Speed Tier usava `ev*2`, Danno e Stat Preview `floor(ev/4)`: stesso Pokémon, numeri diversi. Ora entrambi `ev*2` (convenzione Champions)
-- **Bug abilità 1-5** — abilità tipo-cambio, flag contatto, Fluffy, Wonder Guard, Overgrow & co. sotto 1/3 HP
-- **Tutte le 408 abilità nelle tendine** con ● sulle 44 che incidono sul calcolo
-- **Tendina abilità nello Stat Preview** su entrambi i lati
-- **`ABILITIES_DATA` a doppio encoding** — arrivava come stringa invece che oggetto
-- **Pulizia dead code** — `PKMN_DB`, `calc_stat_champions()`, `switchTab` duplicata, 816 `<option>` Jinja inutili, mappa tipi ripetuta 5 volte
-- **Sprite** — 0 rotti su 296 nomi
-- **Formattazione editor** mosse/oggetti/roster — banner fuori dalla griglia, tabella da 373 a 961 px
-
-### 5 bug trovati dal grafo (graphify) e sistemati
-| File | Bug | Effetto |
-|---|---|---|
-| `templates/pcbuilder.html:202` | apici singoli attorno a `.comp-row` chiudevano la stringa JS | **`SyntaxError`: tutto lo script del PC Builder morto** (tab, modali, import DxDiag) |
-| `templates/calcolatori.html:176,407` | le select oggetto chiamavano `calcDmg()`, inesistente | cambiare oggetto lanciava errore invece di ricalcolare |
-| `templates/moves_editor.html:246` | il pulsante elimina chiamava `deleteMove`, la funzione era `removeMove(el)` | eliminare una mossa non funzionava |
-| `templates/moves_editor.html:263` | `startEditDesc(el)` leggeva `el.dataset.name` ma riceveva una stringa | modifica inline della descrizione in errore |
-| `templates/roster_editor.html:238` | un `"` di troppo dopo il tag `<form>` | apice spurio stampato a video negli archivi |
-
-> Il primo è **lo stesso guasto** del `SyntaxError` di `calcolatori.html`: una riga malformata che azzera un intero blocco `<script>`. Il PC Builder era inerte da tempo senza che nulla lo segnalasse.
-> Check utile per il futuro: renderizzare ogni pagina ed eseguire `new vm.Script()` su ogni blocco inline intercetta questa classe di bug in pochi secondi.
+## 5. 🏁 Il giro di collaudo finale (va fatto **per ultimo**)
+
+**Questa voce si chiude dopo tutte le altre.** Sono tre lavori che si fanno insieme, e
+vanno alla fine per lo stesso motivo: qui i bachi peggiori non hanno mai dato errore — il
+PC Builder inerte per settimane per un apice di troppo, il Ripristina che sovrascriveva
+senza chiedere, lo Speed Tier che ricadeva su una lista statica — e un lavoro fatto dopo
+può rimetterli in piedi.
+
+⚠️ **Prima di iniziare**: `graphify-out/` è una fotografia, non uno specchio. Va rifatto
+(`/graphify . --update`) **obbligatoriamente** prima di 5.2 e 5.3, che sono i due lavori in
+cui il grafo deve essere completo.
+
+### 5.1 ⬜ Il giro completo della web app
+
+Ogni sezione, ogni pagina, **ogni campo e ogni funzione**. Non un controllo a campione
+sulle cose toccate di recente: tutto, comprese le parti che nessuno guarda da mesi.
+
+- **ogni campo di ogni form**: vuoto, valore limite, valore assurdo, caratteri strani —
+  apostrofi e accenti sono la classe di bug che ha ucciso il Ripristina
+- **ogni pulsante e ogni azione**: creazione, modifica, eliminazione, ripristino, import,
+  export — e la conferma dove deve esserci
+- **le due lingue** su tutte le pagine Pokémon
+- **tutte le regulation**, non solo `ma`: `pokedex` e `mb` sono quelle dove sono usciti i
+  bachi degli endpoint
+- **il calcolatore in tutti e quattro i tab**, con la regola #8 come pietra di paragone
+- lo **sweep** su ogni blocco `<script>` e ogni handler inline
+- le sezioni non-Pokémon, che ricevono meno attenzione: Gaming, Arduino, PC Builder, Python
+
+L'esito va scritto qui con i numeri: quante pagine, quanti campi, quante anomalie e quali.
+Le anomalie fuori scope si segnalano, non si correggono al volo.
+
+### 5.2 ⬜ Le mosse assegnate sono davvero quelle giuste?
+
+Il moveset importato il 12/08 non è mai stato confrontato con una fonte indipendente:
+viene tutto dal dump di PokéAPI, e finora l'unica verifica è stata **interna** — i nomi
+risolvono, i conti tornano, Incineroar perde Knock Off. Questo dice che il meccanismo
+funziona, **non** che gli elenchi siano corretti.
+
+**Fonte: [Bulbapedia](https://bulbapedia.bulbagarden.net/)**, indicata da Davide come la più
+attendibile e già usata con profitto (ha confermato `Mirror Herb` → «Foglia carbone» come
+seconda fonte indipendente).
+
+In ordine di rischio:
+
+- **la lista `champions` per prima**: è la più giovane e la meno vista (19 810 righe su 319
+  voci), e nessuno ha mai controllato che quel version group sia completo. Se lì manca
+  qualcosa, su M-A e M-B una mossa legale sparisce dalla tendina **senza dire niente**
+- **`Pawmot`**, il canarino: un caso solo, già spiegato come buco del dump, da riconfermare
+- **un campione della lista `main`** su generazioni diverse: per 429 voci su 1258 il version
+  group scelto **non** è Scarlatto/Violetto
+- **i metodi**: `machine` è il 76% delle righe (50 551 su 66 033). Se il dump gonfia le MT,
+  gli elenchi sono più larghi del vero e il filtro serve a poco
+
+Metodo: uno script rieseguibile che scarica, che **si ferma su ciò che non risolve**, e che
+dove le due fonti non concordano **lo segnala e basta**. Non si sovrascrive PokéAPI con
+Bulbapedia alla cieca: nessuna delle due è sempre giusta, e la lezione è già stata pagata.
+
+### 5.3 ⬜ L'inventario di cosa non serve più
+
+Un censimento di tutto il progetto per capire cosa si può togliere. Va fatto alla fine
+perché finché i lavori sono in corso, un file che oggi sembra morto può servire domani.
+
+- **template** — chi li renderizza? Vanno cercati anche i blocchi Jinja, gli `{% include %}`
+  e i `{% block %}` che nessuno estende più
+- **`static/js/` e `static/css/`** — chi li carica, e **quali funzioni non chiama nessuno**
+  (qui sono già state trovate `MEGA_DATA`, `PKMN_DB`, `calc_stat_champions()` e una
+  `switchTab` duplicata: la classe esiste)
+- **route Python** non raggiunte da nessun `url_for()`, link o `fetch()`
+- **funzioni e helper** nei blueprint, in `data.py` e in `extensions.py` mai importati
+- **gli script di `scripts/`** — quali sono una-tantum già consumati (`build_catalog.py`,
+  gli `importa_*` ed `esporta_dati.py` restano perché rieseguibili)
+- **i file di dati storici**, la voce più concreta — vedi la trappola in cima. Da dismettere
+  **solo** a verifica finita, cioè qui
+- **la tabella `regulations` nel DB** (vedi §1.4, falla 1) e ogni altra colonna che nessuna
+  query legge più
+- **immagini e asset** in `static/` non referenziati
+
+Il metodo: **prima si misura, poi si propone.** Per ogni candidato serve la prova che non è
+usato, e la rimozione si fa in un blocco suo, dopo il via libera di Davide — non insieme al
+collaudo, così se qualcosa si rompe si sa quale dei due l'ha rotto.
