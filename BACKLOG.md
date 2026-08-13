@@ -336,9 +336,34 @@ motivo per cui il plurale era rotto: nei template le frasi coi numeri si spezzav
 nell'ordine inglese. Sostituzione a mano e non `str.format()`, perché le frasi contengono
 graffe che non sono segnaposto (i blocchi `effect` mostrati negli editor).
 
-⬜ **Una cosa che lo switch non copre**: **gli editor** (`/pokemon/catalogo`, roster,
-mosse, oggetti) mostrano ancora la **chiave**, non il nome tradotto. Lì la chiave è
-l'identità della voce, quindi va deciso se e come mostrarle entrambe.
+### ⬜ Gli editor non seguono la lingua (segnalato da Davide il 13/08/2026)
+
+**Provato dalla web app**: cambiando lingua, le voci dentro gli editor di mosse, abilità
+e oggetti non cambiano. **Non è un baco nuovo** — quegli editor stampano la **chiave** del
+catalogo, non il nome — ma va chiuso, e il quadro è il rovescio esatto su tutti e tre.
+Contato il 13/08/2026:
+
+| Editor | Cosa si legge | Chiavi identiche al `nome_it` |
+|---|---|---|
+| **Mosse** | `Absorb`, `Acid Spray` — **sempre inglese** | **10** su 919 |
+| **Oggetti** | `Black Belt`, `Charcoal` — **sempre inglese** | **37** su 397 |
+| **Abilità** | `Abillegame`, `Acceleratore` — **sempre italiano** | **386 su 386** |
+
+⚠️ **Le abilità sono il caso opposto, e va saputo prima di scrivere il codice**: le loro
+chiavi sono *italiane* (`Abillegame` ha `nome_en: Skill Link`, `Acceleratore` ha
+`Speed Boost`), quindi in modalità inglese quell'editor resta in italiano. Una correzione
+scritta pensando «la chiave è inglese, mostro `nome_it` in italiano» funzionerebbe su
+mosse e oggetti e **peggiorerebbe** le abilità.
+
+**Il vincolo che rende la cosa non banale**: la chiave **non si può sostituire** con il
+nome tradotto. È l'identità della voce — la usano i filtri delle regulation, il motore
+degli effetti, `ABILITIES_DATA` e i team salvati nel DB — ed è anche **quello che si
+scrive** nell'editor JSON lì accanto e nel campo Nome della modale. Una tabella che
+mostra «Assorbimento» mentre il JSON dice `Absorb` sarebbe peggio di adesso.
+
+Quindi vanno mostrate **entrambe**, e la forma è da decidere: nome tradotto in grande con
+la chiave sotto in `<code>`, o una colonna in più. Da fare insieme a §2.2, che tocca gli
+stessi tre editor per le descrizioni.
 
 > ⚠️ Conseguenza già visibile: in italiano il calcolatore scrive **`Privazione`, non
 > `Knock Off`**, e `Cinturanera` invece di `Black Belt`. È quello che la voce chiedeva, ma
@@ -461,6 +486,48 @@ quattro cose richiedono **fonti diverse**:
 | 💻 **PC Builder** | ⬜ Wishlist Amazon o altri · ⬜ prezzo componente · ⬜ percentuale di compatibilità fra i pezzi (valutare UserBenchmark) · ⬜ gestire l'uscita di nuovi pezzi nel tempo |
 | 🐍 **Python** | ⬜ Spazio per inserire i propri progetti e testarli · ⬜ idee per rendere la sezione più utile |
 | 🐾 **Pokémon** | ⬜ Creare i JSON di una regulation nuova dalla web app (vedi §1.3) |
+
+### 4.1 ⬜ Gaming — il calendario delle uscite (chiesto da Davide il 13/08/2026)
+
+**Chiesto**: nella sezione Gaming una **barra o un calendario con le prossime uscite**,
+di **tutte le piattaforme** e non solo Steam, sul modello di quello di Opera GX. Serve
+quindi agganciarsi a un servizio esterno.
+
+**Cosa c'è oggi, verificato sullo schema**: `games` ha `title`, `platform`, `genre`,
+`status`, `hours_hltb`, `cover_url`, `steam_tags`, `date_start` e `date_end`. ⚠️ **Non
+c'è nessuna data di uscita**: `date_start`/`date_end` sono quando *tu* hai iniziato e
+finito di giocare, non quando il gioco esce. Il dato non c'è proprio, va importato.
+
+⚠️ **Le uscite future non sono la tua libreria, e non vanno messe in `games`.** Sono
+centinaia di titoli che non possiedi: finirebbero nei conteggi della sezione, nei filtri
+per genere e piattaforma, nel suggeritore e **nell'export**. Vanno in una tabella loro,
+riempita da una cache che si può buttare e rifare — la libreria resta quella che è.
+
+**Le fonti possibili, per quel che ne so io — e va verificato quando ci si mette,
+non dato per buono:**
+
+| Fonte | Cosa darebbe | Il prezzo |
+|---|---|---|
+| **IGDB** (Twitch/Amazon) | La più completa che conosco per il **multi-piattaforma**: ha un endpoint di date d'uscita con piattaforma e regione, quindi è la candidata più seria per «tutte le piattaforme» | Gratis ma serve un'app sviluppatore Twitch e un giro OAuth per il token; c'è un limite di richieste al secondo |
+| **RAWG** | Stessa idea, più semplice da attaccare: chiave gratuita e basta, niente OAuth, con filtri per intervallo di date e piattaforma | Copertura e qualità dei dati da confrontare con IGDB su un campione vero |
+| **Steam** | ⚠️ **Solo Steam**, quindi da solo non risponde alla richiesta. Ma è già cablato qui (`storesearch` e `appdetails`, senza chiave) e `appdetails` porta la data d'uscita | Utile al massimo come complemento |
+| **Opera GX / GX Corner** | È la cosa che Davide ha in mente | ⚠️ **Non mi risulta esista un'API pubblica documentata**: è una funzione dentro il browser, non un servizio. Da controllare prima di contarci — se non c'è, il modello resta ma la fonte è un'altra |
+
+**Le due cose da decidere prima di scrivere una riga:**
+
+1. **Quali piattaforme mostrare.** In libreria `platform` c'è già, quindi si può filtrare
+   il calendario su quelle che ti interessano invece di mostrarne 40. Da decidere se è un
+   filtro o una preferenza salvata
+2. **Chi aggiorna la cache, e quando.** Oggi ogni import di questa app **lo lanci tu da un
+   pulsante**. Un calendario che si aggiorna solo quando ci clicchi sopra è mezzo inutile,
+   ma un aggiornamento automatico ha senso solo quando l'app gira da qualche parte: da
+   incrociare con §1.5
+
+> Modello già collaudato qui per gli import esterni, e vale anche per questo: lotti
+> piccoli con una pausa, la chiave **solo** da variabile d'ambiente e mai nel repo, e lo
+> script che **si ferma su ciò che non risolve** invece di indovinare. È come è stato
+> fatto per SteamSpy, dove il rispetto del limite era 6 richieste per volta con un secondo
+> di pausa.
 
 ---
 
