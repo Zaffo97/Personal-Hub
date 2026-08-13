@@ -18,6 +18,103 @@ pagina ed esegue `new Function()` su ogni blocco `<script>` **e** su ogni handle
 
 ---
 
+## 13/08/2026
+
+**Il backlog potato in due**
+
+- ✅ **`BACKLOG.md` da 1967 a ~370 righe** (144 KB → 30 KB, il **21%**): dentro resta solo
+  ciò che è aperto, più le trappole. Le voci chiuse sono diventate questo file, una riga
+  per lavoro. Tolti i doppioni contati: i cinque bachi piccoli dell'11/08 stavano anche in
+  «Emerso dal codice», le quattro voci di regulation comparivano sia chiuse sia nella
+  versione «com'erano state aperte», le abilità doppie in tre punti, Mega Machamp in tre
+  sezioni. Corrette due voci **stale**: «`main` diverge da `origin/main`» (riallineati
+  l'11/08) e «`reference.html` è noto come orfano» (rimosso l'11/08).
+
+**Switch lingua — il secondo blocco, l'interfaccia**
+
+- ✅ **La sezione Pokémon è tradotta: 12 template su 12**, dizionario a **383 chiavi su
+  383 chieste**, zero mancanti, zero orfane, zero doppie. `calcolatori.html` (142 stringhe)
+  coi 7 moduli `calcolatori-*.js`, `moves_editor` (52), `roster_editor` (26),
+  `items_editor` (43), `abilities_editor` (47), `regulations_list` (33),
+  `regulation_editor` (42), `team_form`, `base.html`.
+- ⚠️ **`team_form.html` non era nel censimento delle 453 stringhe** del 12/08: buco del
+  conteggio, non una scelta. Recuperato.
+- ✅ **`tf()` esiste ora anche in Jinja**, gemella di quella in `base.html`. Prima stava
+  **solo nel JS**, ed è il motivo per cui «1 team salvati» era rotto: nei template le
+  frasi coi numeri si spezzavano in due pezzi che nessun dizionario può rimettere
+  nell'ordine inglese. Il plurale è chiuso **senza** insegnare i plurali a `tf()`: la
+  frase italiana è ora `Team salvati: {n}`, che non si flette in nessuna delle due lingue.
+- ✅ **Il pulsante lingua è su tutte le pagine** e la shell è tradotta, deciso da Davide.
+  Era la scelta obbligata una volta tradotta l'interfaccia: confinarlo sotto `/pokemon/*`
+  lasciava chi mette EN e poi va su Gaming **senza un modo per tornare indietro**.
+- ✅ **I tipi si traducono solo a schermo**: il `value` delle tendine resta italiano perché
+  è la chiave di `TYPE_CHART` e `TYPE_CLR_IT`. Le abbreviazioni della tabella di
+  riferimento seguono la lingua (Norm/Fire/Wate in EN), verificato che a 4 lettere non
+  nasca nessuna collisione.
+- ✅ **Due cose corrette anche in italiano**, senza le quali «tradotto» sarebbe stata una
+  bugia: lo Stat Preview mostrava i tipi coi nomi inglesi grezzi di `/api/pokemon`
+  (`Grass/Poison` invece di `Erba/Veleno`) e le abilità con la chiave inglese.
+
+**Il baco che Davide ha trovato, e la lezione**
+
+- ⚠️ ✅ **La tabella dell'editor mosse era vuota — regressione introdotta lo stesso
+  giorno.** `t()` e `tf()` stavano in fondo a `base.html`, ma `moves_editor.html` chiude
+  il suo script con `renderTable()`, che gira **durante il parsing**: la chiamata trovava
+  `tf is not defined`, l'eccezione moriva dentro lo script della pagina e le **919 righe**
+  sparivano **senza dire niente**. Ora `window.T`, `t()` e `tf()` sono in un `<script>` nel
+  **`<head>`**, quindi esistono prima di qualunque script di un figlio: tolta la classe di
+  baco, non solo il caso.
+- ⚠️ **La lezione, che vale più della correzione: lo sweep statico non basta.**
+  `new Function()` su script e handler dava **zero errori** mentre la tabella era vuota,
+  perché la sintassi era valida e a lanciare era il runtime. Da oggi ogni giro si chiude
+  **caricando davvero le pagine e contando le righe** che compaiono.
+- ⚠️ ✅ **`|tojson` dentro un attributo a doppie**, la stessa trappola del 12/08, rifatta e
+  ripresa dallo sweep. Corretta con gli apici singoli.
+
+**Gli editor che non seguivano la lingua**
+
+- ✅ **Segnalato da Davide provando la web app**, e il quadro era **il rovescio esatto sui
+  tre editor**: mosse (`Absorb`) e oggetti (`Black Belt`) sempre in inglese — 10 chiavi su
+  919 e 37 su 397 coincidono col `nome_it` — e **abilità sempre in italiano**, perché lì
+  le chiavi *sono* italiane (`Abillegame` ha `nome_en: Skill Link`): **386 su 386**. Una
+  correzione scritta pensando «la chiave è inglese» avrebbe sistemato due editor e
+  peggiorato il terzo. Ora il nome tradotto in grande e **la chiave sotto**, perché è
+  l'identità della voce e quello che si scrive nel JSON lì accanto. Estesi anche ricerca e
+  ordinamento al nome tradotto. `catalog_editor` sistemato **lato server**: `_riga_indice()`
+  già distingueva `nome` da `chiave`.
+- ✅ **`nomeVis()`, `tipoIT()`, `tipoVis()` e `TIPI_EN_IT` deduplicati** nel `<head>` di
+  `base.html`, una copia sola: servivano anche agli editor, che i moduli del calcolatore
+  non caricano. Tolte le copie in `calcolatori-data.js` (`nomeVis`, `LANG`,
+  `TYPE_EN_TO_IT`) e in `calcolatori-core.js`.
+
+**Decisioni prese da Davide**
+
+- ✅ **Le descrizioni restano in italiano** (13/08/2026). Contate prima di decidere:
+  **1584 `desc`** fra mosse (823), oggetti (378) e abilità (383), di cui 1458 con una
+  controparte ufficiale su cui pescare. Davide ha scelto di **non tradurle**: «facilitano
+  il tutto». Quindi in inglese si legge un nome inglese con sotto una descrizione
+  italiana, **ed è previsto** — `desc_en` non esiste e non va aggiunto. I **nomi** restano
+  bilingui al 100%.
+
+**Strumenti**
+
+- ✅ **`controlla_traduzioni.py` trova ora le chiavi doppie.** Non poteva vederle: usa
+  `json.load()`, che **tiene l'ultima e butta la prima in silenzio**, quindi correggere la
+  traduzione sbagliata non cambierebbe niente a schermo. Il controllo legge il file
+  grezzo. Ne aveva già accumulate **6**, e ne ha prese altre **2** al primo giro dopo.
+
+**Aperto dalla giornata**
+
+- ⬜ Con la shell in inglese ovunque, **Gaming, Arduino, PC Builder, Python, Dashboard,
+  login e utenti** mostrano contenuto italiano sotto un'interfaccia inglese: lavoro che
+  prima non esisteva, ed è più grosso del blocco Pokémon.
+- ⬜ **Il calendario delle uscite** per Gaming, chiesto da Davide: `games` non ha nessuna
+  data di uscita (`date_start`/`date_end` sono quando *hai giocato*), e le uscite future
+  non vanno in quella tabella. Fonti da verificare: IGDB, RAWG; su Opera GX **non risulta
+  un'API pubblica documentata**.
+
+---
+
 ## 12/08/2026
 
 **Dati Pokémon**

@@ -38,6 +38,7 @@ Non sono storia: sono le cose che questo progetto ha già pagato e che tornano a
 | ⚠️ **Lo sweep statico non basta** | `new Function()` su script e handler dice che la **sintassi** è valida, **non** che il codice giri. Il 13/08 la tabella dell'editor mosse è rimasta **vuota** con lo sweep a zero errori: `renderTable()` lanciava `tf is not defined` a runtime. Ogni giro di verifica va chiuso **caricando davvero** le pagine e contando le righe che compaiono — 919 mosse, 1343 tag del roster, 397 oggetti, 386 abilità. Una tabella vuota non dà errore a schermo |
 | **`t`/`tf` e l'ordine degli script** | Sono definite in un `<script>` nel **`<head>`** di `base.html`, e devono restarci. Più di un template le chiama **durante il parsing** e non dentro un evento (`moves_editor.html` chiude il suo script con `renderTable()`): con la definizione in fondo alla pagina, come era fino al 13/08, quella chiamata non le trova |
 | **Variabili mancanti nei template** | Jinja rende una variabile che non è nel contesto come **stringa vuota**, senza dire niente. `items_editor.html` usava `{{ regulation }}`, che quella route non ha **mai** passato: la conferma di archiviazione ha sempre detto «Archivia gli oggetti correnti ()?» con le parentesi vuote. Se ne è accorto solo `\|tojson`, che su `Undefined` solleva invece di tacere |
+| ⚠️ **Le `desc` sono italiane per scelta** | **Non è un lavoro rimasto a metà.** Le 1584 descrizioni di mosse, oggetti e abilità restano **solo in italiano** per decisione di Davide del 13/08/2026, presa dopo aver visto il conto: i **nomi** sono bilingui al 100%, le descrizioni no e non lo diventeranno. Quindi in modalità inglese si legge un nome inglese con sotto una descrizione italiana, ed **è previsto**. `desc_en` non esiste e non va aggiunto; non serve nessun import da PokéAPI né una gemella di `nome_vis()` per i testi |
 | **Una parola italiana, due inglesi** | La chiave del dizionario **è la frase italiana**, quindi una parola che in inglese cambia col contesto non è esprimibile. Caso vivo: `Abilità` è la linguetta del catalogo (→ *Abilities*) **e** l'etichetta di un campo singolo nel team builder e nello Stat Preview, dove dovrebbe essere *Ability*. Oggi vince il plurale. Si risolve solo cambiando la frase **italiana** in uno dei due punti, e va fatto se e quando dà fastidio: storpiare l'italiano per aggiustare l'inglese è un cattivo affare |
 | **Default del DB** | `extensions.py:143` crea la colonna con `regulation_id TEXT DEFAULT 'ma'`. Non è un residuo dei 14 letterali tolti l'11/08: è il default del **DB**, e cambiarlo richiede una migrazione. Oggi non fa danno perché `_team_upsert()` passa sempre un valore esplicito |
 
@@ -272,7 +273,7 @@ riscrivere la guida due volte.
 
 ## 2. I lavori a metà
 
-### 2.1 🟨 Switch lingua — il secondo blocco, le stringhe dell'interfaccia
+### 2.1 🟨 Switch lingua — la sezione Pokémon è chiusa, restano le altre
 
 Il primo blocco (i **nomi dei dati**) è chiuso l'11/08. Questo è l'**interfaccia**.
 
@@ -342,97 +343,16 @@ motivo per cui il plurale era rotto: nei template le frasi coi numeri si spezzav
 nell'ordine inglese. Sostituzione a mano e non `str.format()`, perché le frasi contengono
 graffe che non sono segnaposto (i blocchi `effect` mostrati negli editor).
 
-### ✅ Gli editor seguono la lingua — chiuso il 13/08/2026
-
-Segnalato da Davide provando la web app: cambiando lingua le voci dentro gli editor non
-cambiavano. Non era un baco nuovo — stampavano la **chiave** del catalogo, non il nome —
-e il quadro era il rovescio esatto su tutti e tre:
-
-| Editor | Prima | Chiavi identiche al `nome_it` |
-|---|---|---|
-| **Mosse** | `Absorb`, `Acid Spray` — sempre inglese | **10** su 919 |
-| **Oggetti** | `Black Belt`, `Charcoal` — sempre inglese | **37** su 397 |
-| **Abilità** | `Abillegame`, `Acceleratore` — **sempre italiano** | **386 su 386** |
-
-⚠️ Le abilità erano il caso opposto: chiavi *italiane* (`Abillegame` ha
-`nome_en: Skill Link`), quindi in inglese quell'editor restava in italiano. Una
-correzione scritta pensando «la chiave è inglese» avrebbe sistemato mosse e oggetti e
-**peggiorato** le abilità.
-
-**Com'è stato fatto.** Il nome tradotto in grande e **la chiave sotto**, in monospace
-piccolo, mostrata solo quando dice qualcosa in più del nome: la chiave non si può
-sostituire, è l'identità della voce e **quello che si scrive nel JSON lì accanto**.
-Il dato per farlo c'era già in pagina — ogni voce porta `nome_it` e `nome_en`.
-
-- `nomeVis()`, `tipoIT()`, `tipoVis()` e `TIPI_EN_IT` stanno ora nel **`<head>` di
-  `base.html`**, in **una copia sola**: servivano anche agli editor, che i moduli
-  `calcolatori-*.js` non li caricano. Tolte da lì le copie di `nomeVis`, `LANG` e
-  `TYPE_EN_TO_IT`, più quella locale che avevo messo in `roster_editor`
-- **anche la ricerca cerca su entrambe le lingue**: da quando la tabella mostra
-  «Assorbimento», poter cercare solo `Absorb` sarebbe stata una trappola. Stessa cosa per
-  l'ordinamento, che ora segue il nome mostrato
-- `catalog_editor` si sistema **lato server**: `_riga_indice()` già distingueva `nome` da
-  `chiave`, e ora il primo passa da `nome_vis()`. Sul catalogo Pokémon la chiave è lo
-  slug minuscolo, quindi si nasconde quando differisce solo per maiuscole e trattini
-
-Resta aperto il pezzo delle **descrizioni**, che è §2.2.
+✅ **Gli editor seguono la lingua** dal 13/08/2026: nome tradotto in grande, chiave sotto.
+✅ **Le descrizioni restano in italiano**, per decisione di Davide dello stesso giorno —
+vedi la riga nelle trappole in cima. Dettagli di entrambe in `STORICO.md`.
 
 > ⚠️ Conseguenza già visibile: in italiano il calcolatore scrive **`Privazione`, non
 > `Knock Off`**, e `Cinturanera` invece di `Black Belt`. È quello che la voce chiedeva, ma
 > se per abitudine VGC preferisci l'inglese anche in italiano si cambia in un punto solo
-> (`nomeVis`).
+> (`nomeVis`, ora nel `<head>` di `base.html`).
 
-### 2.2 ⬜ Le descrizioni dei dati, tutte e 1584 (chiesto da Davide il 13/08/2026)
-
-**Chiesto esplicitamente**: tradurre **mosse, abilità, oggetti e tutte le loro
-descrizioni**. La prima metà è già fatta — i **nomi** sono bilingui dall'11/08, `nome_it`
-e `nome_en` su **919 mosse, 397 oggetti, 386 abilità e 1026 Pokémon**, cioè il 100% di
-tutti e quattro i database. Quello che manca sono le **`desc`**, che oggi sono **solo in
-italiano**: `desc_en` non esiste su nessuna voce di nessun database.
-
-**Quanto è grande, contato il 13/08/2026 sul catalogo vero:**
-
-| Database | Voci | Con `desc` | Con controparte ufficiale | Senza |
-|---|---|---|---|---|
-| Mosse | 919 | **823** | 813 | 10 |
-| Oggetti | 397 | **378** | 341 | 37 |
-| Abilità | 386 | **383** | 304 | 79 |
-| **Totale** | | **1584** | **1458** | **126** |
-
-⚠️ **La colonna «senza» è un limite superiore, non un conto esatto.** Il criterio è
-`nome_it == nome_en`, cioè «l'import dei nomi non ha saputo agganciare niente» — ma per
-gli oggetti quella condizione è vera anche per le **Megapietre e i cristalli Z**, che in
-italiano si scrivono davvero uguale e una controparte ufficiale ce l'hanno. Il numero
-vero delle voci da decidere a mano si sa solo provando l'import.
-
-**Come va fatto**, e sono le stesse regole già pagate su nomi e roster:
-
-1. **La fonte è PokéAPI**, `flavor_text_entries`, che ha già l'italiano e l'inglese della
-   stessa voce: è la stessa strada di `importa_nomi_lingua.py`, e il grosso della cache in
-   `data/cache/pokeapi/` c'è già. ⚠️ PokéAPI risponde **403 senza `User-Agent`**
-2. **Non si sovrascrive l'italiano esistente.** Le `desc` di questo catalogo **non sono
-   tutte di PokéAPI**: molte sono curate a mano e descrivono l'effetto **applicato
-   davvero** dal calcolatore, non la formula generica — è esattamente il motivo per cui
-   la fusione delle abilità dell'11/08 ha tenuto la `desc` della voce vecchia. Lo script
-   deve **aggiungere `desc_en`** e lasciare `desc` dov'è
-3. **Le voci senza fonte si dichiarano, non si inventano.** Le abilità di Champions
-   (`Nervosismo`, `Sforzo`, `Tiratore`…) e le forme inventate non stanno su PokéAPI: per
-   quelle la descrizione inglese o la scrive Davide o non c'è. Una `desc_en` plausibile e
-   falsa è peggio di una lacuna dichiarata — regola #3
-4. **Dove le due fonti non concordano, si segnala e basta**, come `importa_nomi_wiki.py`
-   con le 11 voci in disaccordo
-
-**E poi va consumato**, che è la metà che sui nomi è già risolta e qui no: `nome_vis()`
-sceglie fra `nome_it` e `nome_en`, ma per le descrizioni **non esiste niente di
-equivalente**. Serve la funzione gemella — lato Python e lato JS — e poi vanno cambiati i
-punti che oggi leggono `desc` dritto: i `title` delle tendine abilità nel calcolatore, la
-colonna Descrizione dei tre editor, la modale del catalogo.
-
-> Da fare **dopo** il secondo blocco dell'interfaccia (§2.1): è un lavoro sui **dati**,
-> con un import e una copia di sicurezza, e mescolarlo alle stringhe dei template
-> significherebbe non sapere quale dei due ha rotto cosa.
-
-### 2.3 ⬜ Le 103 abilità da fondere — gli effetti stanno dalla parte sbagliata
+### 2.2 ⬜ Le 103 abilità da fondere — gli effetti stanno dalla parte sbagliata
 
 24 coppie sono state fuse l'11/08 (415 → 391 voci). **Restano 103 voci**, e il problema
 **non è di traduzione**: la wiki ne recuperava solo 5, confermando che sono identiche nelle
@@ -461,7 +381,7 @@ calcolatore è la voce vecchia; a essere collegata ai Pokémon è quella ufficia
 > descrizione. Fuori anche le **7** senza traduzione ma appese a un Pokémon (`Download`,
 > `Libero`, `Punk Rock`, `Teravolt`, `Transistor`, `Eelevate`, `Fire Mane`).
 
-### 2.4 ⬜ Mosse per regulation — le quattro cose che richiedono una fonte
+### 2.3 ⬜ Mosse per regulation — le quattro cose che richiedono una fonte
 
 Il meccanismo è chiuso (calcolatore, team builder, Speed Tier). Manca **il dato**, e le
 quattro cose richiedono **fonti diverse**:
