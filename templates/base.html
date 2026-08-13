@@ -152,6 +152,44 @@ function tf(s, valori){
   for (const k in valori) out = out.split('{' + k + '}').join(valori[k]);
   return out;
 }
+
+// `t`/`tf` traducono le **etichette**; le due qui sotto traducono i **dati**.
+// Stanno qui e non in calcolatori-data.js perche' servono anche agli editor, che
+// quei moduli non li caricano: averle in un posto solo evita la seconda copia.
+
+// Il nome di una voce del catalogo nella lingua attiva. ⚠️ La CHIAVE non cambia
+// mai: e' l'identita' della voce — la usano i filtri delle regulation, il motore
+// degli effetti e i team salvati nel DB. Gemella di `nome_vis()` in extensions.py.
+function nomeVis(voce, chiave){
+  if (voce && typeof voce === 'object') {
+    return voce['nome_' + window.LANG] || voce.name || chiave || '';
+  }
+  return chiave || '';
+}
+
+// I 18 tipi. PokeAPI e il campo `type` delle mosse li danno in inglese minuscolo,
+// mentre TYPE_CHART, TYPE_CLR_IT e i `value` delle tendine sono indicizzati sul
+// nome **italiano**: questa mappa porta dagli uni agli altri, e `tipoVis` aggiunge
+// la traduzione per quello che si legge. Unica copia, perche' due tabelle uguali
+// che possono divergere in silenzio sono gia' state un problema qui (TYPE_CHART,
+// deduplicata l'08/08/2026).
+const TIPI_EN_IT = {
+  "normal":"Normale","fire":"Fuoco","water":"Acqua","electric":"Elettro",
+  "grass":"Erba","ice":"Ghiaccio","fighting":"Lotta","poison":"Veleno",
+  "ground":"Terra","flying":"Volante","psychic":"Psico","bug":"Coleottero",
+  "rock":"Roccia","ghost":"Spettro","dragon":"Drago","dark":"Buio",
+  "steel":"Acciaio","fairy":"Folletto"
+};
+// Il nome italiano del tipo, qualunque cosa arrivi (inglese o gia' italiano).
+function tipoIT(tipo){
+  if (!tipo) return '';
+  return TIPI_EN_IT[String(tipo).toLowerCase()] || tipo;
+}
+// Il tipo **da mostrare**, nella lingua attiva.
+function tipoVis(tipo){
+  const it = tipoIT(tipo);
+  return it ? t(it) : '';
+}
 </script>
 {# extra_head sta FUORI dallo <style>: i template ci mettono <style> o <link> propri.
    Prima era dentro, quindi il primo </style> del template figlio chiudeva questo

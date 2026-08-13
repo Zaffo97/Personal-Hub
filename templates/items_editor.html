@@ -170,15 +170,25 @@ const CAT_LABELS={berry:'Berry',choice:'Choice',conditional:t('Condizionale'),da
 function renderTable(){
   const search=(document.getElementById('it_search').value||'').toLowerCase();
   const catF=document.getElementById('it_cat_f').value;
+  // Si cerca e si ordina sul nome tradotto oltre che sulla chiave: la tabella ora
+  // mostra "Cinturanera", e poter cercare solo "Black Belt" sarebbe una trappola.
+  const vis = (name, it) => nomeVis(it, name);
   const rows=Object.entries(itemsData.items||{}).filter(([name,it])=>{
-    if(search&&!name.toLowerCase().includes(search))return false;
+    if(search && !name.toLowerCase().includes(search)
+              && !vis(name,it).toLowerCase().includes(search)) return false;
     if(catF&&it.category!==catF)return false;
     return true;
-  }).sort((a,b)=>sortMode==='cat'?(a[1].category||'').localeCompare(b[1].category||'')||a[0].localeCompare(b[0]):a[0].localeCompare(b[0]));
+  }).sort((a,b)=>sortMode==='cat'
+      ? (a[1].category||'').localeCompare(b[1].category||'') || vis(a[0],a[1]).localeCompare(vis(b[0],b[1]), window.LANG)
+      : vis(a[0],a[1]).localeCompare(vis(b[0],b[1]), window.LANG));
   document.getElementById('it_count').textContent=tf('{n} oggetti',{n:rows.length});
   document.getElementById('itemsJsonArea').value=JSON.stringify(itemsData,null,2);
   document.getElementById('it_tbody').innerHTML=rows.map(([name,it])=>
-    '<tr data-row="'+name.replace(/"/g,'&quot;')+'"><td><strong>'+name+'</strong></td>'+
+    // Nome tradotto sopra, CHIAVE sotto: e' l'identita' della voce e quella che si
+    // scrive nel JSON qui accanto, quindi resta visibile.
+    '<tr data-row="'+name.replace(/"/g,'&quot;')+'"><td><strong>'+vis(name,it)+'</strong>'+
+    (vis(name,it)===name ? '' :
+     '<div style="font-size:.62rem;color:var(--text-faint);font-family:monospace">'+name+'</div>')+'</td>'+
     '<td><span class="cat-badge cat-'+(it.category||'utility')+'">'+(CAT_LABELS[it.category]||it.category||'')+'</span></td>'+
     '<td>'+(it.modifier!=null?'<span class="mod-badge">x'+it.modifier+'</span>':'—')+'</td>'+
     '<td style="font-size:.72rem;color:var(--text-muted)">'+(it.desc||'')+'</td>'+

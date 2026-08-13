@@ -342,34 +342,40 @@ motivo per cui il plurale era rotto: nei template le frasi coi numeri si spezzav
 nell'ordine inglese. Sostituzione a mano e non `str.format()`, perché le frasi contengono
 graffe che non sono segnaposto (i blocchi `effect` mostrati negli editor).
 
-### ⬜ Gli editor non seguono la lingua (segnalato da Davide il 13/08/2026)
+### ✅ Gli editor seguono la lingua — chiuso il 13/08/2026
 
-**Provato dalla web app**: cambiando lingua, le voci dentro gli editor di mosse, abilità
-e oggetti non cambiano. **Non è un baco nuovo** — quegli editor stampano la **chiave** del
-catalogo, non il nome — ma va chiuso, e il quadro è il rovescio esatto su tutti e tre.
-Contato il 13/08/2026:
+Segnalato da Davide provando la web app: cambiando lingua le voci dentro gli editor non
+cambiavano. Non era un baco nuovo — stampavano la **chiave** del catalogo, non il nome —
+e il quadro era il rovescio esatto su tutti e tre:
 
-| Editor | Cosa si legge | Chiavi identiche al `nome_it` |
+| Editor | Prima | Chiavi identiche al `nome_it` |
 |---|---|---|
-| **Mosse** | `Absorb`, `Acid Spray` — **sempre inglese** | **10** su 919 |
-| **Oggetti** | `Black Belt`, `Charcoal` — **sempre inglese** | **37** su 397 |
+| **Mosse** | `Absorb`, `Acid Spray` — sempre inglese | **10** su 919 |
+| **Oggetti** | `Black Belt`, `Charcoal` — sempre inglese | **37** su 397 |
 | **Abilità** | `Abillegame`, `Acceleratore` — **sempre italiano** | **386 su 386** |
 
-⚠️ **Le abilità sono il caso opposto, e va saputo prima di scrivere il codice**: le loro
-chiavi sono *italiane* (`Abillegame` ha `nome_en: Skill Link`, `Acceleratore` ha
-`Speed Boost`), quindi in modalità inglese quell'editor resta in italiano. Una correzione
-scritta pensando «la chiave è inglese, mostro `nome_it` in italiano» funzionerebbe su
-mosse e oggetti e **peggiorerebbe** le abilità.
+⚠️ Le abilità erano il caso opposto: chiavi *italiane* (`Abillegame` ha
+`nome_en: Skill Link`), quindi in inglese quell'editor restava in italiano. Una
+correzione scritta pensando «la chiave è inglese» avrebbe sistemato mosse e oggetti e
+**peggiorato** le abilità.
 
-**Il vincolo che rende la cosa non banale**: la chiave **non si può sostituire** con il
-nome tradotto. È l'identità della voce — la usano i filtri delle regulation, il motore
-degli effetti, `ABILITIES_DATA` e i team salvati nel DB — ed è anche **quello che si
-scrive** nell'editor JSON lì accanto e nel campo Nome della modale. Una tabella che
-mostra «Assorbimento» mentre il JSON dice `Absorb` sarebbe peggio di adesso.
+**Com'è stato fatto.** Il nome tradotto in grande e **la chiave sotto**, in monospace
+piccolo, mostrata solo quando dice qualcosa in più del nome: la chiave non si può
+sostituire, è l'identità della voce e **quello che si scrive nel JSON lì accanto**.
+Il dato per farlo c'era già in pagina — ogni voce porta `nome_it` e `nome_en`.
 
-Quindi vanno mostrate **entrambe**, e la forma è da decidere: nome tradotto in grande con
-la chiave sotto in `<code>`, o una colonna in più. Da fare insieme a §2.2, che tocca gli
-stessi tre editor per le descrizioni.
+- `nomeVis()`, `tipoIT()`, `tipoVis()` e `TIPI_EN_IT` stanno ora nel **`<head>` di
+  `base.html`**, in **una copia sola**: servivano anche agli editor, che i moduli
+  `calcolatori-*.js` non li caricano. Tolte da lì le copie di `nomeVis`, `LANG` e
+  `TYPE_EN_TO_IT`, più quella locale che avevo messo in `roster_editor`
+- **anche la ricerca cerca su entrambe le lingue**: da quando la tabella mostra
+  «Assorbimento», poter cercare solo `Absorb` sarebbe stata una trappola. Stessa cosa per
+  l'ordinamento, che ora segue il nome mostrato
+- `catalog_editor` si sistema **lato server**: `_riga_indice()` già distingueva `nome` da
+  `chiave`, e ora il primo passa da `nome_vis()`. Sul catalogo Pokémon la chiave è lo
+  slug minuscolo, quindi si nasconde quando differisce solo per maiuscole e trattini
+
+Resta aperto il pezzo delle **descrizioni**, che è §2.2.
 
 > ⚠️ Conseguenza già visibile: in italiano il calcolatore scrive **`Privazione`, non
 > `Knock Off`**, e `Cinturanera` invece di `Black Belt`. È quello che la voce chiedeva, ma

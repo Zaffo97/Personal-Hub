@@ -205,11 +205,15 @@ function renderTable(){
   const typeF=document.getElementById('mv_type_f').value;
   const rows=Object.entries(movesData.moves||{})
     .filter(([name,m])=>{
-      if(search&&!name.toLowerCase().includes(search))return false;
+      // Si cerca sia per chiave sia per nome tradotto: da quando la tabella mostra
+      // "Assorbimento", poter cercare solo "Absorb" sarebbe una trappola.
+      if(search && !name.toLowerCase().includes(search)
+                && !nomeVis(m,name).toLowerCase().includes(search)) return false;
       if(catF&&m.category!==catF)return false;
       if(typeF&&m.type!==typeF)return false;
       return true;
-    }).sort((a,b)=>a[0].localeCompare(b[0]));
+    }).sort((a,b)=>nomeVis(movesData.moves[a[0]],a[0])
+                     .localeCompare(nomeVis(movesData.moves[b[0]],b[0]), window.LANG));
   document.getElementById('mv_count').textContent=tf('{n} mosse',{n:rows.length});
   const FLAG_LABELS={contact:'🤜'+t('Contatto'),protect:'🛡'+t('Scudo'),punch:'👊'+t('Pugno'),
     sound:'🔊'+t('Suono'),bite:'🦷'+t('Morso'),bullet:'🔵'+t('Proiettile'),ballistic:'🏹'+t('Balistico'),
@@ -257,9 +261,13 @@ function renderTable(){
     const typeBg=TYPE_CLR[m.type]||'#888';
     const catCls='cat-badge cat-'+m.category;
     const actionBtns='<button onclick="deleteMove(\''+name.replace(/'/g,"\\'")+'\')" style="background:color-mix(in oklch,#E8622C 15%,transparent);color:#a04010;border:none;border-radius:4px;padding:.2rem .4rem;cursor:pointer;font-size:.72rem">🗑</button>';
+    // Il nome tradotto sopra e la CHIAVE sotto: la chiave resta l'identita' della
+    // voce ed e' quella che si scrive nel JSON qui accanto, quindi non si nasconde.
     return '<tr>'+
-      '<td><strong style="font-size:.78rem">'+name+'</strong></td>'+
-      '<td><span class="type-badge" style="background:'+typeBg+'">'+m.type+'</span></td>'+
+      '<td><strong style="font-size:.78rem">'+nomeVis(m,name)+'</strong>'+
+        (nomeVis(m,name)===name ? '' :
+         '<div style="font-size:.62rem;color:var(--text-faint);font-family:monospace">'+name+'</div>')+'</td>'+
+      '<td><span class="type-badge" style="background:'+typeBg+'">'+tipoVis(m.type)+'</span></td>'+
       '<td><span class="'+catCls+'">'+catIcon[m.category]+'</span></td>'+
       '<td><strong>'+( m.bp||'—' )+'</strong></td>'+
       '<td style="text-align:center"><span style="font-size:.72rem;font-weight:600;color:var(--text-muted)">'+( m.accuracy !== undefined && m.accuracy !== null ? m.accuracy+'%' : '<span title="'+t('Sempre colpisce')+'" style="color:var(--text-muted)">—</span>' )+'</span></td>'+

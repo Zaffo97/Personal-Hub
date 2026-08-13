@@ -190,23 +190,29 @@ def salva_catalogo(db, voci):
 
 def _riga_indice(db, nome, voce):
     """Riga compatta per la tabella dell'editor: evita di mandare al browser
-    449 KB di catalogo quando servono quattro campi per riga."""
+    449 KB di catalogo quando servono quattro campi per riga.
+
+    `nome` è quello che si **legge**, nella lingua attiva; `chiave` è l'identità
+    della voce e non cambia mai — è quella che il template usa per aprire, salvare
+    ed eliminare, ed è quella che si scrive nel JSON.
+    """
+    vis = nome_vis(voce, nome)
     if db == "pokemon":
         bs = voce.get("base_stats") or {}
-        return {"nome": voce.get("name") or nome, "chiave": nome,
+        return {"nome": vis, "chiave": nome,
                 "info": " · ".join(voce.get("types") or []),
                 "numero": sum(bs.values()) if bs else 0,
                 "extra": f"{len(voce.get('forms') or {})} forme" if voce.get("forms") else ""}
     if db == "moves":
-        return {"nome": nome, "chiave": nome,
+        return {"nome": vis, "chiave": nome,
                 "info": f"{voce.get('type', '')} · {voce.get('category', '')}",
                 "numero": voce.get("bp") or 0,
                 "extra": ", ".join(voce.get("flags") or [])}
     if db == "abilities":
         fx = (voce.get("effect") or {}).get("type", "none")
-        return {"nome": nome, "chiave": nome, "info": voce.get("category", ""),
+        return {"nome": vis, "chiave": nome, "info": voce.get("category", ""),
                 "numero": 0, "extra": "" if fx == "none" else f"● {fx}"}
-    return {"nome": nome, "chiave": nome, "info": voce.get("category", ""),
+    return {"nome": vis, "chiave": nome, "info": voce.get("category", ""),
             "numero": voce.get("modifier") or 0,
             "extra": voce.get("categoria_pokeapi", "")}
 

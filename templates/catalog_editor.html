@@ -115,9 +115,19 @@ let nomeOriginale = null;
 function esc(s){ return String(s == null ? '' : s)
   .replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;'); }
 
+// `true` se nome e chiave sono la stessa cosa a meno di maiuscole, spazi e trattini.
+function stessaCosa(a, b){
+  const n = s => String(s || '').toLowerCase().replace(/[\s_-]/g, '');
+  return n(a) === n(b);
+}
+
 function rendi(){
   const q = document.getElementById('cerca').value.toLowerCase();
+  // `r.nome` e' il nome tradotto, `r.chiave` l'identita' della voce: si cerca su
+  // entrambi, altrimenti da quando la tabella mostra "Assorbimento" non si
+  // troverebbe piu' scrivendo "Absorb".
   const filtrate = q ? INDICE.filter(r => r.nome.toLowerCase().includes(q)
+                                       || (r.chiave || '').toLowerCase().includes(q)
                                        || (r.info || '').toLowerCase().includes(q)) : INDICE;
   const mostrate = filtrate.slice(0, MAX_RIGHE);
   document.getElementById('conteggio').textContent = filtrate.length + ' ' + t('voci');
@@ -130,7 +140,14 @@ function rendi(){
 
   document.getElementById('corpo').innerHTML = mostrate.map(r =>
     '<tr>'
-    + '<td><strong>' + esc(r.nome) + '</strong></td>'
+    // La chiave si mostra solo quando dice qualcosa in piu' del nome. Sul catalogo
+    // Pokemon e' lo slug minuscolo ("Abomasnow" / "abomasnow"): ripeterlo su 1026
+    // righe sarebbe rumore, quindi il confronto ignora maiuscole e spazi.
+    + '<td><strong>' + esc(r.nome) + '</strong>'
+    + (stessaCosa(r.nome, r.chiave) ? '' :
+       '<div style="font-size:.62rem;color:var(--text-faint);font-family:monospace">'
+       + esc(r.chiave) + '</div>')
+    + '</td>'
     + '<td class="text-muted" style="font-size:.72rem">' + esc(r.info) + '</td>'
     + '<td style="text-align:right">' + (r.numero || '') + '</td>'
     + '<td class="text-muted" style="font-size:.68rem">' + esc(r.extra) + '</td>'

@@ -1,20 +1,8 @@
 // calcolatori-core.js — formule, risoluzione nomi, motore abilita' e motore meteo.
 // Serve calcolatori-data.js caricato prima.
 
-// Unico punto di traduzione tipo EN->IT. Accetta qualsiasi capitalizzazione e
-// lascia passare i tipi gia' in italiano.
-function tipoIT(t){
-  if(!t) return '';
-  return TYPE_EN_TO_IT[String(t).toLowerCase()] || t;
-}
-// Il tipo **da mostrare**, nella lingua attiva. La chiave resta sempre quella
-// italiana: TYPE_CHART, TYPE_CLR_IT e i `value` delle tendine sono indicizzati
-// cosi', ed e' la stessa regola delle chiavi del catalogo — cambia solo cio' che
-// si legge. Accetta anche i tipi inglesi che arrivano da /api/pokemon.
-function tipoVis(tipo){
-  const it = tipoIT(tipo);
-  return it ? t(it) : '';
-}
+// `tipoIT()` e `tipoVis()` erano qui: ora stanno nel <head> di base.html insieme a
+// `TIPI_EN_IT`, perche' servono anche agli editor. Comportamento identico.
 // ── Utility ───────────────────────────────────────────────────────────────────
 function calcSt(base, ev, iv, lvl, nm, isHP) {
   const b = parseInt(base, 10) || 0;

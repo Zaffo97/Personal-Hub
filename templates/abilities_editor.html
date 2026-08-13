@@ -190,13 +190,18 @@ let editingDesc = null;
 function renderTable(){
   const q = document.getElementById('ab_search').value.toLowerCase();
   const catF = document.getElementById('ab_cat_f').value;
+  // ⚠️ Qui le chiavi sono ITALIANE (`Abillegame` ha `nome_en: Skill Link`): senza
+  // questo, l'editor abilita' restava in italiano anche in modalita' inglese — il
+  // caso opposto a mosse e oggetti. Si cerca su entrambe le lingue.
   const rows = Object.entries(abData.abilities || {})
     .filter(([name, ab]) => {
-      if(q && !name.toLowerCase().includes(q)) return false;
+      if(q && !name.toLowerCase().includes(q)
+           && !nomeVis(ab,name).toLowerCase().includes(q)) return false;
       if(catF && (ab.category||'other') !== catF) return false;
       return true;
     })
-    .sort((a, b) => a[0].localeCompare(b[0]));
+    .sort((a, b) => nomeVis(abData.abilities[a[0]],a[0])
+                      .localeCompare(nomeVis(abData.abilities[b[0]],b[0]), window.LANG));
 
   document.getElementById('ab_count').textContent = tf('{n} abilità', {n: rows.length});
 
@@ -227,7 +232,9 @@ function renderTable(){
       'style="background:color-mix(in oklch,var(--error,#e05555) 15%,transparent);color:var(--error,#e05555);border:none;border-radius:4px;padding:.2rem .4rem;cursor:pointer;font-size:.72rem">🗑</button>';
 
     return '<tr>'+
-      '<td><strong style="font-size:.78rem">'+name+'</strong></td>'+
+      '<td><strong style="font-size:.78rem">'+nomeVis(ab,name)+'</strong>'+
+        (nomeVis(ab,name)===name ? '' :
+         '<div style="font-size:.62rem;color:var(--text-faint);font-family:monospace">'+name+'</div>')+'</td>'+
       '<td><span class="cat-badge cat-'+cat+'">'+cat+'</span></td>'+
       '<td>'+descCell+'</td>'+
       '<td>'+delBtn+'</td>'+

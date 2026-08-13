@@ -12,17 +12,11 @@ const REG_ID            = CALC_BOOTSTRAP.reg_id;      // current_reg.id
 const CHAMPIONS_BST     = CALC_BOOTSTRAP.champions;   // pokemon_catalog.json, 174 voci
 const NATURES           = CALC_BOOTSTRAP.natures;     // NATURES di data.py, 25 in ordine
 
-// Lingua attiva, dallo stesso cookie che legge Flask (vedi extensions.lingua_attiva).
-// Le CHIAVI del catalogo non cambiano mai con la lingua: cambia solo cio' che si legge
-// a schermo. Ogni voce porta `nome_it` e `nome_en` dall'import di PokeAPI.
-const LANG = (document.cookie.match(/(?:^|;\s*)hub_lang=(it|en)/) || [])[1] || 'it';
-
-function nomeVis(voce, chiave) {
-  if (voce && typeof voce === 'object') {
-    return voce['nome_' + LANG] || voce.name || chiave || '';
-  }
-  return chiave || '';
-}
+// `LANG`, `nomeVis()`, `tipoIT()` e `tipoVis()` stanno nel <head> di base.html: le
+// usano anche gli editor, che questi moduli non li caricano, e tenerne una copia
+// anche qui vorrebbe dire due definizioni che possono divergere. `LANG` in
+// particolare ora arriva dal server invece di essere riletta dal cookie: e' la
+// stessa cosa, ma decisa in un punto solo.
 
 // Moltiplicatori degli stage, gli stessi per Attacco, Difesa e Velocita'. Stavano
 // dentro calcDamage() come funzione annidata: ricopiarli nello Speed Tier avrebbe
@@ -32,13 +26,7 @@ const STAGE_MULT = {'-6':0.25,'-5':0.286,'-4':0.333,'-3':0.4,'-2':0.5,'-1':0.667
                     '0':1,'1':1.5,'2':2,'3':2.5,'4':3,'5':3.5,'6':4};
 function stageMult(stage){ return STAGE_MULT[String(stage)] ?? 1; }
 
-const TYPE_EN_TO_IT = {
-  "normal":"Normale","fire":"Fuoco","water":"Acqua","electric":"Elettro",
-  "grass":"Erba","ice":"Ghiaccio","fighting":"Lotta","poison":"Veleno",
-  "ground":"Terra","flying":"Volante","psychic":"Psico","bug":"Coleottero",
-  "rock":"Roccia","ghost":"Spettro","dragon":"Drago","dark":"Buio",
-  "steel":"Acciaio","fairy":"Folletto"
-};
+// TYPE_EN_TO_IT era qui: ora e' `TIPI_EN_IT` nel <head> di base.html, unica copia.
 const NM={
   "Lonely":{atk:1.1,def:0.9},"Brave":{atk:1.1,spe:0.9},"Adamant":{atk:1.1,spa:0.9},"Naughty":{atk:1.1,spd:0.9},
   "Bold":{def:1.1,atk:0.9},"Relaxed":{def:1.1,spe:0.9},"Impish":{def:1.1,spa:0.9},"Lax":{def:1.1,spd:0.9},

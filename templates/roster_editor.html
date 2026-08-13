@@ -182,7 +182,7 @@ async function addPkmn() {
     const d = await res.json();
     const tag = document.createElement('span');
     tag.className = 'tag'; tag.dataset.name = name;
-    const types = (d.types || []).map(tipoVisRoster).join('/');
+    const types = (d.types || []).map(tipoVis).join('/');
     if (types) tag.title = t('Tipi:') + ' ' + types;
     tag.innerHTML = name + ' <button onclick="removeTag(this)" title="' + t('Rimuovi') + '">✕</button>';
     document.getElementById('pkmnTags').appendChild(tag);
@@ -194,19 +194,6 @@ async function addPkmn() {
   } finally {
     btn.textContent = '+'; btn.disabled = false;
   }
-}
-
-// Qui non c'e' calcolatori-core.js, quindi niente tipoVis(): i tipi arrivano da
-// /api/pokemon in inglese e vanno mostrati nella lingua attiva. In inglese sono
-// gia' giusti cosi' come sono; in italiano si passa dal dizionario, che ha i 18
-// tipi con la **chiave italiana**, quindi serve prima la mappa EN -> IT.
-const TIPI_EN_IT = {normal:'Normale',fire:'Fuoco',water:'Acqua',electric:'Elettro',
-  grass:'Erba',ice:'Ghiaccio',fighting:'Lotta',poison:'Veleno',ground:'Terra',
-  flying:'Volante',psychic:'Psico',bug:'Coleottero',rock:'Roccia',ghost:'Spettro',
-  dragon:'Drago',dark:'Buio',steel:'Acciaio',fairy:'Folletto'};
-function tipoVisRoster(tipo){
-  const it = TIPI_EN_IT[String(tipo).toLowerCase()] || tipo;
-  return t(it);
 }
 
 function removeTag(btn) {
