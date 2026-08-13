@@ -336,20 +336,66 @@ motivo per cui il plurale era rotto: nei template le frasi coi numeri si spezzav
 nell'ordine inglese. Sostituzione a mano e non `str.format()`, perché le frasi contengono
 graffe che non sono segnaposto (i blocchi `effect` mostrati negli editor).
 
-⬜ **Due cose che lo switch non copre ancora:**
-
-- **gli editor** (`/pokemon/catalogo`, roster, mosse, oggetti) mostrano ancora la **chiave**,
-  non il nome tradotto. Lì la chiave è l'identità della voce, quindi va deciso se e come
-  mostrarle entrambe
-- **le descrizioni** sono solo in italiano: `desc` non è stato toccato, serve un secondo
-  giro di import per i testi inglesi
+⬜ **Una cosa che lo switch non copre**: **gli editor** (`/pokemon/catalogo`, roster,
+mosse, oggetti) mostrano ancora la **chiave**, non il nome tradotto. Lì la chiave è
+l'identità della voce, quindi va deciso se e come mostrarle entrambe.
 
 > ⚠️ Conseguenza già visibile: in italiano il calcolatore scrive **`Privazione`, non
 > `Knock Off`**, e `Cinturanera` invece di `Black Belt`. È quello che la voce chiedeva, ma
 > se per abitudine VGC preferisci l'inglese anche in italiano si cambia in un punto solo
 > (`nomeVis`).
 
-### 2.2 ⬜ Le 103 abilità da fondere — gli effetti stanno dalla parte sbagliata
+### 2.2 ⬜ Le descrizioni dei dati, tutte e 1584 (chiesto da Davide il 13/08/2026)
+
+**Chiesto esplicitamente**: tradurre **mosse, abilità, oggetti e tutte le loro
+descrizioni**. La prima metà è già fatta — i **nomi** sono bilingui dall'11/08, `nome_it`
+e `nome_en` su **919 mosse, 397 oggetti, 386 abilità e 1026 Pokémon**, cioè il 100% di
+tutti e quattro i database. Quello che manca sono le **`desc`**, che oggi sono **solo in
+italiano**: `desc_en` non esiste su nessuna voce di nessun database.
+
+**Quanto è grande, contato il 13/08/2026 sul catalogo vero:**
+
+| Database | Voci | Con `desc` | Con controparte ufficiale | Senza |
+|---|---|---|---|---|
+| Mosse | 919 | **823** | 813 | 10 |
+| Oggetti | 397 | **378** | 341 | 37 |
+| Abilità | 386 | **383** | 304 | 79 |
+| **Totale** | | **1584** | **1458** | **126** |
+
+⚠️ **La colonna «senza» è un limite superiore, non un conto esatto.** Il criterio è
+`nome_it == nome_en`, cioè «l'import dei nomi non ha saputo agganciare niente» — ma per
+gli oggetti quella condizione è vera anche per le **Megapietre e i cristalli Z**, che in
+italiano si scrivono davvero uguale e una controparte ufficiale ce l'hanno. Il numero
+vero delle voci da decidere a mano si sa solo provando l'import.
+
+**Come va fatto**, e sono le stesse regole già pagate su nomi e roster:
+
+1. **La fonte è PokéAPI**, `flavor_text_entries`, che ha già l'italiano e l'inglese della
+   stessa voce: è la stessa strada di `importa_nomi_lingua.py`, e il grosso della cache in
+   `data/cache/pokeapi/` c'è già. ⚠️ PokéAPI risponde **403 senza `User-Agent`**
+2. **Non si sovrascrive l'italiano esistente.** Le `desc` di questo catalogo **non sono
+   tutte di PokéAPI**: molte sono curate a mano e descrivono l'effetto **applicato
+   davvero** dal calcolatore, non la formula generica — è esattamente il motivo per cui
+   la fusione delle abilità dell'11/08 ha tenuto la `desc` della voce vecchia. Lo script
+   deve **aggiungere `desc_en`** e lasciare `desc` dov'è
+3. **Le voci senza fonte si dichiarano, non si inventano.** Le abilità di Champions
+   (`Nervosismo`, `Sforzo`, `Tiratore`…) e le forme inventate non stanno su PokéAPI: per
+   quelle la descrizione inglese o la scrive Davide o non c'è. Una `desc_en` plausibile e
+   falsa è peggio di una lacuna dichiarata — regola #3
+4. **Dove le due fonti non concordano, si segnala e basta**, come `importa_nomi_wiki.py`
+   con le 11 voci in disaccordo
+
+**E poi va consumato**, che è la metà che sui nomi è già risolta e qui no: `nome_vis()`
+sceglie fra `nome_it` e `nome_en`, ma per le descrizioni **non esiste niente di
+equivalente**. Serve la funzione gemella — lato Python e lato JS — e poi vanno cambiati i
+punti che oggi leggono `desc` dritto: i `title` delle tendine abilità nel calcolatore, la
+colonna Descrizione dei tre editor, la modale del catalogo.
+
+> Da fare **dopo** il secondo blocco dell'interfaccia (§2.1): è un lavoro sui **dati**,
+> con un import e una copia di sicurezza, e mescolarlo alle stringhe dei template
+> significherebbe non sapere quale dei due ha rotto cosa.
+
+### 2.3 ⬜ Le 103 abilità da fondere — gli effetti stanno dalla parte sbagliata
 
 24 coppie sono state fuse l'11/08 (415 → 391 voci). **Restano 103 voci**, e il problema
 **non è di traduzione**: la wiki ne recuperava solo 5, confermando che sono identiche nelle
@@ -378,7 +424,7 @@ calcolatore è la voce vecchia; a essere collegata ai Pokémon è quella ufficia
 > descrizione. Fuori anche le **7** senza traduzione ma appese a un Pokémon (`Download`,
 > `Libero`, `Punk Rock`, `Teravolt`, `Transistor`, `Eelevate`, `Fire Mane`).
 
-### 2.3 ⬜ Mosse per regulation — le quattro cose che richiedono una fonte
+### 2.4 ⬜ Mosse per regulation — le quattro cose che richiedono una fonte
 
 Il meccanismo è chiuso (calcolatore, team builder, Speed Tier). Manca **il dato**, e le
 quattro cose richiedono **fonti diverse**:
@@ -402,7 +448,6 @@ quattro cose richiedono **fonti diverse**:
 |---|---|---|
 | ⚠️ | **`build_catalog.py` oggi distruggerebbe il catalogo** | Trovato il 12/08, **non corretto** perché fuori scope. Legge come base i **file storici** (174 voci contro le 1026 di oggi, nessun `nome_it`/`nome_en`, Mega ancora convertite) e scrive in `data/catalog/`. Peggio: `MEGA_BONUS` riapplicherebbe il `+75 HP / +20` che la deconversione dell'11/08 ha tolto. Rieseguirlo **riporterebbe indietro il catalogo di quattro giorni di lavoro, in silenzio**. Va fatto leggere `data/catalog/` quando esiste, e `MEGA_BONUS` va tolto. Fino ad allora **non eseguirlo** |
 | ⬜ | **Il calcolatore non impedisce di scrivere una mossa illegale** | La segnala e basta. **È voluto per ora**: un blocco duro sulle voci senza elenco sarebbe un falso divieto |
-| ⬜ | **`1 team salvati` / `1 saved teams`** | Plurale sbagliato in entrambe le lingue, vedi §2.1 |
 
 ---
 
