@@ -5,7 +5,8 @@ Ogni area funzionale vive in blueprints/.
 import os
 import json
 from flask import Flask
-from extensions import init_db, lingua_attiva, nome_vis, t, tf, traduzioni
+from extensions import (init_db, lingua_attiva, nome_vis, t, tf, traduzioni,
+                        categorie)
 from data import SEZIONI, BLUEPRINT_SEZIONE
 
 def create_app():
@@ -25,6 +26,7 @@ def create_app():
         # in italiano anche in modalità inglese. In italiano è `{}`, cioè niente.
         lingua = lingua_attiva()
         return {"lang": lingua, "nome_vis": nome_vis, "t": t, "tf": tf,
+                "categorie": categorie,
                 "traduzioni_json": json.dumps(traduzioni(lingua), ensure_ascii=False)}
 
     # La sidebar mostra solo le sezioni permesse. È un context processor e non un

@@ -58,19 +58,9 @@ textarea.code-area{min-height:380px}
           <input id="ab_search" class="form-control" style="max-width:180px;font-size:.78rem" placeholder="🔍 {{ t('Cerca...') }}" oninput="renderTable()">
           <select id="ab_cat_f" class="form-control" style="max-width:180px;font-size:.78rem" onchange="renderTable()">
             <option value="">{{ t('Tutte le categorie') }}</option>
-            <option value="none">none</option>
-            <option value="weather_override">weather_override</option>
-            <option value="weather_setter">weather_setter</option>
-            <option value="weather_boost">weather_boost</option>
-            <option value="type_immunity">type_immunity</option>
-            <option value="damage_reduction">damage_reduction</option>
-            <option value="stab_boost">stab_boost</option>
-            <option value="stat_modifier">stat_modifier</option>
-            <option value="power_boost">power_boost</option>
-            <option value="speed_boost">speed_boost</option>
-            <option value="status_boost">status_boost</option>
-            <option value="stat_boost_low_hp">stat_boost_low_hp</option>
-            <option value="other">other</option>
+            {% for chiave, etichetta in categorie('abilities').items() %}
+            <option value="{{ chiave }}">{{ etichetta }}</option>
+            {% endfor %}
           </select>
           <span id="ab_count" class="text-xs text-muted"></span>
         </div>
@@ -150,20 +140,13 @@ textarea.code-area{min-height:380px}
     </div>
     <div class="form-group">
       <label>{{ t('Categoria') }} *</label>
+      {# `other` in cima perche' e' il default di una voce nuova, come prima. #}
       <select id="new_cat" class="form-control">
-        <option value="other">other</option>
-        <option value="none">none</option>
-        <option value="weather_override">weather_override</option>
-        <option value="weather_setter">weather_setter</option>
-        <option value="weather_boost">weather_boost</option>
-        <option value="type_immunity">type_immunity</option>
-        <option value="damage_reduction">damage_reduction</option>
-        <option value="stab_boost">stab_boost</option>
-        <option value="stat_modifier">stat_modifier</option>
-        <option value="power_boost">power_boost</option>
-        <option value="speed_boost">speed_boost</option>
-        <option value="status_boost">status_boost</option>
-        <option value="stat_boost_low_hp">stat_boost_low_hp</option>
+        {% set cat = categorie('abilities') %}
+        <option value="other">{{ cat['other'] }}</option>
+        {% for chiave, etichetta in cat.items() if chiave != 'other' %}
+        <option value="{{ chiave }}">{{ etichetta }}</option>
+        {% endfor %}
       </select>
     </div>
     <div class="form-group">
@@ -185,6 +168,9 @@ textarea.code-area{min-height:380px}
 <script>
 let abData = JSON.parse(document.getElementById('abJson').value);
 let editingDesc = null;
+// Etichette gia' tradotte, stessa sorgente delle tendine qui sopra: prima il badge
+// stampava la chiave grezza (`weather_override`) in tutte e due le lingue.
+const CAT_LABELS = {{ categorie('abilities')|tojson }};
 
 // ── Render tabella ──────────────────────────────────────────
 function renderTable(){
@@ -235,7 +221,7 @@ function renderTable(){
       '<td><strong style="font-size:.78rem">'+nomeVis(ab,name)+'</strong>'+
         (nomeVis(ab,name)===name ? '' :
          '<div style="font-size:.62rem;color:var(--text-faint);font-family:monospace">'+name+'</div>')+'</td>'+
-      '<td><span class="cat-badge cat-'+cat+'">'+cat+'</span></td>'+
+      '<td><span class="cat-badge cat-'+cat+'" title="'+cat+'">'+(CAT_LABELS[cat]||cat)+'</span></td>'+
       '<td>'+descCell+'</td>'+
       '<td>'+delBtn+'</td>'+
       '</tr>';

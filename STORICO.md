@@ -59,6 +59,17 @@ pagina ed esegue `new Function()` su ogni blocco `<script>` **e** su ogni handle
   inviato — quindi tradurle senza aggiungerlo avrebbe salvato «Paused» al posto di
   «Pausa». Verificato: in inglese il filtro «On hold» chiama `?status=Pausa` e trova i
   suoi **33 giochi**.
+- ✅ **Anche le categorie di oggetti e abilità seguono la lingua** (segnalato da Davide).
+  Erano ferme su due livelli diversi: negli oggetti metà erano parole inglesi lasciate lì
+  (`Berry`, `Healing`, `Orb`), nelle abilità le **chiavi grezze** (`weather_override`).
+  La mappa chiave → etichetta italiana sta ora in `data.py` e passa da `categorie()` in
+  `extensions.py`: **una sola sorgente** per le tendine, i badge delle tabelle e la
+  colonna Info del catalogo, dove prima erano tre elenchi scritti a mano. La chiave resta
+  il dato, e sul badge è rimasta come `title`.
+- ⚠️ **Trovato traducendo: `other` non era fra le categorie degli oggetti**, ed è **339
+  voci su 397** — l'86% del catalogo. Il badge cadeva sulla chiave grezza e quella
+  categoria non si poteva filtrare. Aggiunta. Resta aperto che la tendina ne offre **6
+  che non hanno nemmeno una voce**: vedi i bachi noti.
 - ✅ **`controlla_traduzioni.py` legge anche `blueprints/`**: da quando alcune frasi
   nascono in Python, senza quella cartella le loro voci nel dizionario sarebbero sembrate
   **orfane** e qualcuno le avrebbe cancellate. ⚠️ In Python le frasi vanno su **una riga

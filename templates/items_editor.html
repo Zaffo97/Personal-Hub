@@ -79,19 +79,9 @@ textarea.code-area{min-height:320px}
         <input id="it_search" class="form-control" style="max-width:180px;font-size:.78rem" placeholder="🔍 {{ t('Cerca...') }}">
         <select id="it_cat_f" class="form-control" style="max-width:160px;font-size:.78rem">
           <option value="">{{ t('Tutte le categorie') }}</option>
-          <option value="berry">Berry</option>
-          <option value="choice">Choice</option>
-          <option value="conditional">{{ t('Condizionale') }}</option>
-          <option value="damage">{{ t('Danno') }}</option>
-          <option value="defensive">{{ t('Difensivo') }}</option>
-          <option value="healing">Healing</option>
-          <option value="orb">Orb</option>
-          <option value="support">Support</option>
-          <option value="survival">Survival</option>
-          <option value="terrain">Terrain</option>
-          <option value="type_boost">{{ t('Tipo Boost') }}</option>
-          <option value="utility">Utility</option>
-          <option value="weather">{{ t('Meteo') }}</option>
+          {% for chiave, etichetta in categorie('items').items() %}
+          <option value="{{ chiave }}">{{ etichetta }}</option>
+          {% endfor %}
         </select>
         <button class="btn btn-secondary btn-sm" id="sortName">{{ t('Nome') }} ↕</button>
         <button class="btn btn-secondary btn-sm" id="sortCat">{{ t('Cat') }} ↕</button>
@@ -136,19 +126,9 @@ textarea.code-area{min-height:320px}
     <div class="form-row">
       <div class="form-group"><label>{{ t('Categoria') }} *</label>
         <select id="new_cat" class="form-control">
-          <option value="berry">Berry</option>
-          <option value="choice">Choice</option>
-          <option value="conditional">{{ t('Condizionale') }}</option>
-          <option value="damage">{{ t('Danno') }}</option>
-          <option value="defensive">{{ t('Difensivo') }}</option>
-          <option value="healing">Healing</option>
-          <option value="orb">Orb</option>
-          <option value="support">Support</option>
-          <option value="survival">Survival</option>
-          <option value="terrain">Terrain</option>
-          <option value="type_boost">{{ t('Tipo Boost') }}</option>
-          <option value="utility">Utility</option>
-          <option value="weather">{{ t('Meteo') }}</option>
+          {% for chiave, etichetta in categorie('items').items() %}
+          <option value="{{ chiave }}">{{ etichetta }}</option>
+          {% endfor %}
         </select>
       </div>
       <div class="form-group"><label>{{ t('Modificatore') }}</label><input id="new_mod" type="number" step="0.01" class="form-control"></div>
@@ -165,8 +145,11 @@ textarea.code-area{min-height:320px}
 let itemsData={items:JSON.parse(document.getElementById('items-data').textContent)};
 let sortMode='name';
 let editingName=null;
-// Le chiavi restano quelle del dato; cambia solo l'etichetta.
-const CAT_LABELS={berry:'Berry',choice:'Choice',conditional:t('Condizionale'),damage:t('Danno'),defensive:t('Difensivo'),healing:'Healing',orb:'Orb',support:'Support',survival:'Survival',terrain:'Terrain',type_boost:t('Tipo Boost'),utility:'Utility',weather:t('Meteo')};
+// Le etichette arrivano gia' tradotte da `categorie()` in extensions.py, che e' la
+// stessa sorgente delle tendine qui sopra e della colonna Info del catalogo: prima
+// erano un secondo elenco scritto a mano, con meta' voci rimaste in inglese.
+// Le CHIAVI restano quelle del dato.
+const CAT_LABELS={{ categorie('items')|tojson }};
 function renderTable(){
   const search=(document.getElementById('it_search').value||'').toLowerCase();
   const catF=document.getElementById('it_cat_f').value;

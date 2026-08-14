@@ -79,6 +79,46 @@ SEZIONI_SLUG = [s[0] for s in SEZIONI]
 # blueprint -> sezione, ricavata da SEZIONI così le due non possono divergere
 BLUEPRINT_SEZIONE = {bp: slug for slug, _, _, bps in SEZIONI for bp in bps}
 
+# ── Categorie di oggetti e abilità ───────────────────────────────────────────
+# ⚠️ La **chiave** è il dato: sta in `category` dentro il catalogo, è il `value` delle
+# tendine e il suffisso delle classi CSS (`cat-berry`, `cat-weather_override`). Non si
+# tocca. Qui c'è solo l'etichetta italiana, che poi passa da `t()` come tutto il resto.
+# Sta in un posto solo perché la usano tre schermate: i due editor e il catalogo.
+CATEGORIE_OGGETTI = {
+    "berry":      "Bacca",
+    "choice":     "Scelta obbligata",
+    "conditional": "Condizionale",
+    "damage":     "Danno",
+    "defensive":  "Difensivo",
+    "healing":    "Cura",
+    "orb":        "Sfera",
+    "support":    "Supporto",
+    "survival":   "Sopravvivenza",
+    "terrain":    "Terreno",
+    "type_boost": "Bonus di tipo",
+    "utility":    "Utilità",
+    "weather":    "Meteo",
+    # ⚠️ `other` mancava, ed è **339 oggetti su 397**: la categoria di gran lunga più
+    # comune. Senza, il badge e il filtro ricadevano sulla chiave grezza, e la tendina
+    # non permetteva di filtrare l'86% del catalogo. Trovato il 13/08/2026 traducendo.
+    "other":      "altro",
+}
+CATEGORIE_ABILITA = {
+    "none":              "nessun effetto",
+    "weather_override":  "impone il meteo",
+    "weather_setter":    "evoca il meteo",
+    "weather_boost":     "bonus col meteo",
+    "type_immunity":     "immunità di tipo",
+    "damage_reduction":  "riduzione del danno",
+    "stab_boost":        "bonus STAB",
+    "stat_modifier":     "modifica una stat",
+    "power_boost":       "bonus di potenza",
+    "speed_boost":       "bonus di Velocità",
+    "status_boost":      "bonus con lo stato",
+    "stat_boost_low_hp": "bonus a PS bassi",
+    "other":             "altro",
+}
+
 GAME_STATUSES    = ["In corso","Completato","Pausa","Wishlist","Abbandonato"]
 GAME_PLATFORMS   = ["PC","PlayStation 5","PlayStation 4","Nintendo Switch","Xbox","Mobile","Altro"]
 ARDUINO_STATUSES = ["Idea","In sviluppo","Completato","Pubblicato"]

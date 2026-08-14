@@ -2,7 +2,7 @@ import json
 import os
 from datetime import datetime
 from flask import Blueprint, render_template, request, redirect, url_for, flash, jsonify
-from extensions import get_db, login_required, _i, nome_vis
+from extensions import get_db, login_required, _i, nome_vis, categorie
 from data import (
     DATA_DIR,
     regulation_default,
@@ -208,11 +208,16 @@ def _riga_indice(db, nome, voce):
                 "info": f"{voce.get('type', '')} · {voce.get('category', '')}",
                 "numero": voce.get("bp") or 0,
                 "extra": ", ".join(voce.get("flags") or [])}
+    # La categoria si legge tradotta, ma il **valore** resta la chiave: `effect.type`
+    # nella colonna extra invece no, e' un valore tecnico che si legge nel JSON.
     if db == "abilities":
         fx = (voce.get("effect") or {}).get("type", "none")
-        return {"nome": vis, "chiave": nome, "info": voce.get("category", ""),
+        cat = voce.get("category", "")
+        return {"nome": vis, "chiave": nome,
+                "info": categorie("abilities").get(cat, cat),
                 "numero": 0, "extra": "" if fx == "none" else f"● {fx}"}
-    return {"nome": vis, "chiave": nome, "info": voce.get("category", ""),
+    cat = voce.get("category", "")
+    return {"nome": vis, "chiave": nome, "info": categorie("items").get(cat, cat),
             "numero": voce.get("modifier") or 0,
             "extra": voce.get("categoria_pokeapi", "")}
 

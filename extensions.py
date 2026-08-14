@@ -96,6 +96,19 @@ def tf(testo, valori=None, lingua=None):
     return out
 
 
+def categorie(db, lingua=None):
+    """`{chiave: etichetta tradotta}` per le categorie di oggetti o abilità.
+
+    Una funzione sola perché la stessa mappa serve a tre schermate — i due editor e
+    il catalogo — e in due posti per ognuna: le tendine rese da Jinja e le tabelle
+    che il browser costruisce da sé, che se la prendono già tradotta con `|tojson`.
+    ⚠️ La **chiave** non compare qui perché non cambia mai: è il dato.
+    """
+    from data import CATEGORIE_OGGETTI, CATEGORIE_ABILITA
+    mappa = CATEGORIE_ABILITA if db in ("abilities", "abilita") else CATEGORIE_OGGETTI
+    return {chiave: t(etichetta, lingua) for chiave, etichetta in mappa.items()}
+
+
 def get_db():
     db = sqlite3.connect(DB)
     db.row_factory = sqlite3.Row
