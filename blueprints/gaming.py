@@ -9,7 +9,7 @@ import urllib.parse
 import urllib.request
 
 from flask import Blueprint, render_template, request, redirect, url_for, flash, jsonify
-from extensions import get_db, login_required, _i, _f
+from extensions import get_db, login_required, _i, _f, t, tf
 from data import GAME_STATUSES, GAME_PLATFORMS
 
 bp = Blueprint("gaming", __name__, url_prefix="/gaming")
@@ -458,22 +458,27 @@ def suggerimenti(giochi, quanti=4, id_ancora=None):
     # "Pausa" il ripiego sul più giocato può capitare su un gioco poco caratterizzato,
     # e senza poterlo cambiare la funzione resterebbe muta.
     ancora = next((g for g in giochi if g["id"] == id_ancora), None)
-    motivo = "scelto da te" if ancora else ""
+    # Le frasi passano da t()/tf(): sono etichette, e la sezione Gaming è tradotta.
+    # Restano **intere** nel dizionario invece di essere spezzate in pezzi da
+    # concatenare, così l'inglese può metterne le parole in un altro ordine.
+    motivo = t("scelto da te") if ancora else ""
     if ancora is None:
         in_corso = [g for g in giochi if g["status"] == "In corso"]
         if in_corso:
             ancora = max(in_corso, key=lambda g: g["hours_played"] or 0)
-            motivo = "perché lo stai giocando"
+            motivo = t("perché lo stai giocando")
         else:
             con_ore = [g for g in giochi if (g["hours_played"] or 0) > 0]
             if not con_ore:
                 return None, "", [], ""
             ancora = max(con_ore, key=lambda g: g["hours_played"] or 0)
-            motivo = "il più giocato — nessun gioco è «In corso»"
+            motivo = t("il più giocato — nessun gioco è «In corso»")
 
     generi_ancora = _segnali(ancora)
     if not generi_ancora:
-        return ancora, motivo, [], f"{ancora['title']} non ha generi in catalogo: non c'è su cosa confrontarlo."
+        return ancora, motivo, [], tf(
+            "{titolo} non ha generi in catalogo: non c'è su cosa confrontarlo.",
+            {"titolo": ancora["title"]})
 
     # Quanti giochi hanno ciascun genere: è il denominatore della rarità.
     quanti_hanno = {}
@@ -499,15 +504,25 @@ def suggerimenti(giochi, quanti=4, id_ancora=None):
     classifica.sort(key=lambda r: (-r[1], r[0]["hours_played"] or 0))
 
     if not classifica:
-        return ancora, motivo, [], f"Nessun altro gioco condivide un genere con {ancora['title']}."
+        return ancora, motivo, [], tf(
+            "Nessun altro gioco condivide un genere con {titolo}.",
+            {"titolo": ancora["title"]})
     if classifica[0][1] < SOGLIA_SEGNALE:
         comuni_deboli = ", ".join(f"«{_etichetta(n)}»" for n in sorted(generi_ancora))
-        return ancora, motivo, [], (
-            f"{ancora['title']} ha solo {comuni_deboli}, che in libreria "
-            f"{'hanno' if len(generi_ancora) > 1 else 'ha'} "
-            f"{max(quanti_hanno[n] for n in generi_ancora)} giochi su {totale}: "
-            "troppo comune per distinguere qualcosa. Scegli un altro gioco qui sopra."
-        )
+        # Singolare e plurale sono due frasi **intere** e non un pezzo cucito in mezzo:
+        # in inglese il verbo non sta dove sta in italiano. E vanno scritte dentro la
+        # chiamata a tf(), non passate da una variabile, altrimenti
+        # controlla_traduzioni.py non le vede e le segnala come orfane.
+        valori = {"titolo": ancora["title"], "generi": comuni_deboli,
+                  "quanti": max(quanti_hanno[n] for n in generi_ancora),
+                  "totale": totale}
+        # ⚠️ Su UNA riga ciascuna, per quanto lunghe: `controlla_traduzioni.py` legge il
+        # sorgente con una regex e la concatenazione implicita di Python ("a" "b") la
+        # troncherebbe al primo pezzo, chiedendo una traduzione per mezza frase.
+        nota = (tf("{titolo} ha solo {generi}, che in libreria hanno {quanti} giochi su {totale}: troppo comune per distinguere qualcosa. Scegli un altro gioco qui sopra.", valori)
+                if len(generi_ancora) > 1 else
+                tf("{titolo} ha solo {generi}, che in libreria ha {quanti} giochi su {totale}: troppo comune per distinguere qualcosa. Scegli un altro gioco qui sopra.", valori))
+        return ancora, motivo, [], nota
     return ancora, motivo, classifica[:quanti], ""
 
 

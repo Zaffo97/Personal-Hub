@@ -44,9 +44,25 @@ pagina ed esegue `new Function()` su ogni blocco `<script>` **e** su ogni handle
   frasi coi numeri si spezzavano in due pezzi che nessun dizionario può rimettere
   nell'ordine inglese. Il plurale è chiuso **senza** insegnare i plurali a `tf()`: la
   frase italiana è ora `Team salvati: {n}`, che non si flette in nessuna delle due lingue.
-- ✅ **Il pulsante lingua è su tutte le pagine** e la shell è tradotta, deciso da Davide.
-  Era la scelta obbligata una volta tradotta l'interfaccia: confinarlo sotto `/pokemon/*`
-  lasciava chi mette EN e poi va su Gaming **senza un modo per tornare indietro**.
+- ✅ **Quali sezioni si traducono: Pokémon e Gaming, e basta.** Deciso da Davide dopo due
+  ripensamenti nella stessa giornata — prima il pulsante ovunque con la shell tradotta,
+  poi solo Pokémon, infine Pokémon **e Gaming**, «alla fine è ciò che conta anche per gli
+  utenti non admin». Arduino, Python, PC Builder, Dashboard, login e utenti restano in
+  italiano, **e la sidebar con loro**: il pulsante compare solo dove la sezione è
+  tradotta, e con una shell inglese chi andasse su Arduino resterebbe senza un modo per
+  tornare indietro. L'elenco è `sezioni_tradotte` in `base.html`, unico punto da toccare.
+- ✅ **Gaming tradotto**: `gaming.html`, `game_form.html`, `steam_import.html` e le frasi
+  dei suggerimenti in `gaming.py`. Dizionario da 383 a **489 chiavi**.
+  ⚠️ **Stati e piattaforme sono valori salvati** in `games.status`/`games.platform` e
+  finiscono negli URL dei filtri: il valore resta italiano, si traduce solo l'etichetta.
+  In `game_form.html` le `<option>` **non avevano un `value`** — il testo *era* il valore
+  inviato — quindi tradurle senza aggiungerlo avrebbe salvato «Paused» al posto di
+  «Pausa». Verificato: in inglese il filtro «On hold» chiama `?status=Pausa` e trova i
+  suoi **33 giochi**.
+- ✅ **`controlla_traduzioni.py` legge anche `blueprints/`**: da quando alcune frasi
+  nascono in Python, senza quella cartella le loro voci nel dizionario sarebbero sembrate
+  **orfane** e qualcuno le avrebbe cancellate. ⚠️ In Python le frasi vanno su **una riga
+  sola**: la concatenazione implicita (`"a" "b"`) veniva troncata al primo pezzo.
 - ✅ **I tipi si traducono solo a schermo**: il `value` delle tendine resta italiano perché
   è la chiave di `TYPE_CHART` e `TYPE_CLR_IT`. Le abbreviazioni della tabella di
   riferimento seguono la lingua (Norm/Fire/Wate in EN), verificato che a 4 lettere non
@@ -105,9 +121,6 @@ pagina ed esegue `new Function()` su ogni blocco `<script>` **e** su ogni handle
 
 **Aperto dalla giornata**
 
-- ⬜ Con la shell in inglese ovunque, **Gaming, Arduino, PC Builder, Python, Dashboard,
-  login e utenti** mostrano contenuto italiano sotto un'interfaccia inglese: lavoro che
-  prima non esisteva, ed è più grosso del blocco Pokémon.
 - ⬜ **Il calendario delle uscite** per Gaming, chiesto da Davide: `games` non ha nessuna
   data di uscita (`date_start`/`date_end` sono quando *hai giocato*), e le uscite future
   non vanno in quella tabella. Fonti da verificare: IGDB, RAWG; su Opera GX **non risulta

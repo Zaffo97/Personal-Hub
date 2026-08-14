@@ -1,11 +1,14 @@
 {% extends "base.html" %}
-{% block title %}{% if game %}Modifica{% else %}Nuovo{% endif %} gioco – Hub{% endblock %}
-{% block topbar_title %}{% if game %}&#9998; Modifica gioco{% else %}&#10133; Nuovo gioco{% endif %}{% endblock %}
+{% block title %}{% if game %}{{ t('Modifica gioco') }}{% else %}{{ t('Nuovo gioco') }}{% endif %} – Hub{% endblock %}
+{% block topbar_title %}{% if game %}&#9998; {{ t('Modifica gioco') }}{% else %}&#10133; {{ t('Nuovo gioco') }}{% endif %}{% endblock %}
 {% block content %}
+{# Stati e piattaforme sono **valori salvati** in `games`: il `value` dell'option e'
+   il testo stesso, quindi qui NON si traduce cio' che viene inviato. Si traduce solo
+   l'etichetta, e per farlo serve un `value` esplicito. #}
 <div class="page-header">
   <div class="flex items-center gap-2">
-    <a href="/gaming" class="btn btn-secondary btn-sm">&#8592; Indietro</a>
-    <h1>{% if game %}Modifica: {{ game.title }}{% else %}Nuovo gioco{% endif %}</h1>
+    <a href="/gaming" class="btn btn-secondary btn-sm">&#8592; {{ t('Indietro') }}</a>
+    <h1>{% if game %}{{ tf('Modifica: {titolo}', {'titolo': game.title}) }}{% else %}{{ t('Nuovo gioco') }}{% endif %}</h1>
   </div>
 </div>
 <div class="card" style="max-width:680px">
@@ -13,10 +16,10 @@
 
     <div id="steam_box" style="background:var(--surface-off);border-radius:var(--radius-md);padding:.85rem;margin-bottom:1rem">
       <div class="text-xs font-700 text-muted mb-2" style="text-transform:uppercase;letter-spacing:.05em">
-        &#127918; Cerca su Steam <span class="text-muted" style="font-weight:400;text-transform:none;letter-spacing:0">&mdash; compila titolo, genere e copertina</span>
+        &#127918; {{ t('Cerca su Steam') }} <span class="text-muted" style="font-weight:400;text-transform:none;letter-spacing:0">&mdash; {{ t('compila titolo, genere e copertina') }}</span>
       </div>
       <input id="steam_q" class="form-control" autocomplete="off"
-             placeholder="Scrivi almeno 2 lettere del titolo...">
+             placeholder="{{ t('Scrivi almeno 2 lettere del titolo...') }}">
       <div id="steam_stato" class="text-xs text-muted mt-1"></div>
       <div id="steam_risultati" style="margin-top:.5rem"></div>
     </div>
@@ -25,26 +28,26 @@
       <input type="hidden" name="steam_appid" id="steam_appid"
              value="{{ game.steam_appid if game and game.steam_appid else '' }}">
       <div class="form-row">
-        <div class="form-group"><label>Titolo *</label>
-          <input name="title" class="form-control" required value="{{ game.title if game else '' }}" placeholder="Nome del gioco"></div>
-        <div class="form-group"><label>Piattaforma</label>
+        <div class="form-group"><label>{{ t('Titolo') }} *</label>
+          <input name="title" class="form-control" required value="{{ game.title if game else '' }}" placeholder="{{ t('Nome del gioco') }}"></div>
+        <div class="form-group"><label>{{ t('Piattaforma') }}</label>
           <select name="platform" class="form-control">
-            {% for p in platforms %}<option {% if game and game.platform==p %}selected{% endif %}>{{ p }}</option>{% endfor %}
+            {% for p in platforms %}<option value="{{ p }}" {% if game and game.platform==p %}selected{% endif %}>{{ t(p) }}</option>{% endfor %}
           </select></div>
       </div>
       <div class="form-row">
-        <div class="form-group"><label>Genere</label>
-          <input name="genre" class="form-control" value="{{ game.genre if game else '' }}" placeholder="RPG, FPS, Strategia..."></div>
-        <div class="form-group"><label>Stato</label>
+        <div class="form-group"><label>{{ t('Genere') }}</label>
+          <input name="genre" class="form-control" value="{{ game.genre if game else '' }}" placeholder="{{ t('RPG, FPS, Strategia...') }}"></div>
+        <div class="form-group"><label>{{ t('Stato') }}</label>
           <select name="status" class="form-control">
-            {% for s in statuses %}<option {% if game and game.status==s %}selected{% endif %}>{{ s }}</option>{% endfor %}
+            {% for s in statuses %}<option value="{{ s }}" {% if game and game.status==s %}selected{% endif %}>{{ t(s) }}</option>{% endfor %}
           </select></div>
       </div>
       <div class="form-row">
-        <div class="form-group"><label>Ore giocate</label>
+        <div class="form-group"><label>{{ t('Ore giocate') }}</label>
           <input name="hours_played" type="number" step="0.1" class="form-control"
-            value="{{ game.hours_played if game and game.hours_played else '' }}" placeholder="da Steam"></div>
-        <div class="form-group"><label>HLTB (ore)</label>
+            value="{{ game.hours_played if game and game.hours_played else '' }}" placeholder="{{ t('da Steam') }}"></div>
+        <div class="form-group"><label>{{ t('HLTB (ore)') }}</label>
           <input name="hours_hltb" type="number" step="0.5" class="form-control"
             value="{{ game.hours_hltb if game and game.hours_hltb else '' }}" placeholder="40"></div>
       </div>
@@ -54,11 +57,11 @@
             value="{{ game.cover_url if game and game.cover_url else '' }}" placeholder="https://..."></div>
       </div>
       <div style="background:var(--surface-off);border-radius:var(--radius-md);padding:.85rem;margin-bottom:.75rem">
-        <div class="text-xs font-700 text-muted mb-2" style="text-transform:uppercase;letter-spacing:.05em">Avanzamento %</div>
+        <div class="text-xs font-700 text-muted mb-2" style="text-transform:uppercase;letter-spacing:.05em">{{ t('Avanzamento %') }}</div>
         <div style="display:grid;grid-template-columns:1fr 1fr 1fr;gap:.75rem">
           {% for field,label in [('prog_story','Storia'),('prog_side','Side'),('prog_collect','Collezionismo')] %}
           <div class="form-group mb-0">
-            <label>{{ label }}</label>
+            <label>{{ t(label) }}</label>
             <input name="{{ field }}" type="range" min="0" max="100"
               value="{{ game[field] if game else 0 }}"
               oninput="document.getElementById('v_{{ field }}').textContent=this.value+'%'">
@@ -68,19 +71,19 @@
         </div>
       </div>
       <div class="form-row">
-        <div class="form-group"><label>Data inizio</label>
+        <div class="form-group"><label>{{ t('Data inizio') }}</label>
           <input name="date_start" type="date" class="form-control"
             value="{{ game.date_start if game and game.date_start else '' }}"></div>
-        <div class="form-group"><label>Data fine</label>
+        <div class="form-group"><label>{{ t('Data fine') }}</label>
           <input name="date_end" type="date" class="form-control"
             value="{{ game.date_end if game and game.date_end else '' }}"></div>
       </div>
-      <div class="form-group"><label>Note</label>
+      <div class="form-group"><label>{{ t('Note') }}</label>
         <textarea name="notes" class="form-control" rows="3"
-          placeholder="Impressioni, tips, link...">{{ game.notes if game and game.notes else '' }}</textarea></div>
+          placeholder="{{ t('Impressioni, tips, link...') }}">{{ game.notes if game and game.notes else '' }}</textarea></div>
       <div class="flex gap-2">
-        <button type="submit" class="btn btn-primary">&#128190; Salva</button>
-        <a href="/gaming" class="btn btn-secondary">Annulla</a>
+        <button type="submit" class="btn btn-primary">&#128190; {{ t('Salva') }}</button>
+        <a href="/gaming" class="btn btn-secondary">{{ t('Annulla') }}</a>
       </div>
     </form>
   </div>
@@ -94,7 +97,8 @@
   const campoApp = document.getElementById('steam_appid');
   let timer = null, ultimaRicerca = 0;
 
-  function msg(t) { stato.textContent = t || ''; }
+  // `testo` e non `t`: il parametro ombrava la funzione t() delle traduzioni.
+  function msg(testo) { stato.textContent = testo || ''; }
 
   function collegato(appid, nome) {
     lista.innerHTML = '';
@@ -109,24 +113,24 @@
     const x = document.createElement('button');
     x.type = 'button';
     x.className = 'btn btn-secondary btn-sm';
-    x.textContent = 'Scollega';
+    x.textContent = t('Scollega');
     x.addEventListener('click', function () {
       campoApp.value = '';
       lista.innerHTML = '';
-      msg('Scollegato da Steam. I campi restano come sono.');
+      msg(t('Scollegato da Steam. I campi restano come sono.'));
     });
     d.append(b, n, x);
     lista.appendChild(d);
   }
 
   async function scegli(appid, nomeRicerca) {
-    msg('Carico i dettagli...');
+    msg(t('Carico i dettagli...'));
     let g;
     try {
       const r = await fetch('/gaming/api/steam/gioco/' + appid);
       g = await r.json();
-      if (!r.ok) { msg('⚠️ ' + (g.errore || 'errore')); return; }
-    } catch (e) { msg('⚠️ Rete non disponibile'); return; }
+      if (!r.ok) { msg('⚠️ ' + (g.errore || t('errore'))); return; }
+    } catch (e) { msg('⚠️ ' + t('Rete non disponibile')); return; }
 
     document.querySelector('[name=title]').value = g.titolo || nomeRicerca;
     if (g.genere) document.querySelector('[name=genre]').value = g.genere;
@@ -137,22 +141,22 @@
 
     aggiornaAnteprima();
     collegato(appid, g.titolo || nomeRicerca);
-    msg(g.uscita ? 'Uscita: ' + g.uscita : '');
+    msg(g.uscita ? tf('Uscita: {data}', {data: g.uscita}) : '');
   }
 
   async function cerca(testo) {
     const mio = ++ultimaRicerca;
-    msg('Cerco...');
+    msg(t('Cerco...'));
     let d;
     try {
       const r = await fetch('/gaming/api/steam/cerca?q=' + encodeURIComponent(testo));
       d = await r.json();
       if (mio !== ultimaRicerca) return;          // risposta sorpassata
-      if (!r.ok) { msg('⚠️ ' + (d.errore || 'errore')); return; }
-    } catch (e) { msg('⚠️ Rete non disponibile'); return; }
+      if (!r.ok) { msg('⚠️ ' + (d.errore || t('errore'))); return; }
+    } catch (e) { msg('⚠️ ' + t('Rete non disponibile')); return; }
 
     lista.innerHTML = '';
-    if (!d.risultati.length) { msg('Nessun risultato'); return; }
+    if (!d.risultati.length) { msg(t('Nessun risultato')); return; }
     msg('');
     d.risultati.forEach(function (it) {
       const b = document.createElement('button');
@@ -166,10 +170,11 @@
         img.style.cssText = 'width:78px;height:30px;object-fit:cover;border-radius:3px;flex:none';
         b.appendChild(img);
       }
-      const t = document.createElement('span');
-      t.className = 'text-sm';
-      t.textContent = it.nome;
-      b.appendChild(t);
+      // `etichetta` e non `t`: stessa ragione di msg() qui sopra.
+      const etichetta = document.createElement('span');
+      etichetta.className = 'text-sm';
+      etichetta.textContent = it.nome;
+      b.appendChild(etichetta);
       b.addEventListener('click', function () { scegli(it.appid, it.nome); });
       lista.appendChild(b);
     });

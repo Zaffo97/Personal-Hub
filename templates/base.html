@@ -207,8 +207,12 @@ function tipoVis(tipo){
     Personal Hub
   </div>
   <div style="padding:.5rem .4rem .2rem">
-    <div class="sidebar-section">{{ t('Menu') }}</div>
-    <a href="/" class="nav-item {% if request.endpoint=='dashboard' %}active{% endif %}"><em>📊</em> {{ t('Dashboard') }}</a>
+    {# ⚠️ La sidebar resta in **italiano**, e non e' una dimenticanza: e' la meta'
+       della decisione sul pulsante qui sotto. Tradurla mostrerebbe una shell
+       inglese anche su Arduino, Python e PC Builder, dove il pulsante non c'e' e
+       quindi non si tornerebbe indietro. #}
+    <div class="sidebar-section">Menu</div>
+    <a href="/" class="nav-item {% if request.endpoint=='dashboard' %}active{% endif %}"><em>📊</em> Dashboard</a>
     {# Solo le sezioni permesse. `sezioni_permesse` arriva dal context processor in
        app.py, lo stesso elenco che usa il controllo delle richieste: mostrare qui una
        voce che poi risponde "non permesso" sarebbe peggio che non mostrarla. #}
@@ -228,10 +232,10 @@ function tipoVis(tipo){
     <a href="/pcbuilder" class="nav-item {% if request.endpoint and 'pcbuilder' in request.endpoint %}active{% endif %}"><em>🖥️</em> PC Builder</a>
     {% endif %}
 
-<div class="sidebar-section" style="margin-top:.6rem">{{ t('Strumenti') }}</div>
-<a href="/export" class="nav-item"><em>💾</em> {{ t('Esporta JSON') }}</a>
+<div class="sidebar-section" style="margin-top:.6rem">Tools</div>
+<a href="/export" class="nav-item"><em>💾</em> Esporta JSON</a>
 {% if e_admin %}
-<a href="/admin/utenti" class="nav-item {% if request.blueprint=='admin' %}active{% endif %}"><em>👥</em> {{ t('Utenti') }}</a>
+<a href="/admin/utenti" class="nav-item {% if request.blueprint=='admin' %}active{% endif %}"><em>👥</em> Utenti</a>
 {% endif %}
   </div>
   <div class="sidebar-bottom">
@@ -239,7 +243,7 @@ function tipoVis(tipo){
       <div class="avatar">{{ session.get('display_name','?')[0]|upper }}</div>
       <span>{{ session.get('display_name','') }}</span>
     </div>
-    <a href="/logout" class="btn-icon" title="{{ t('Logout') }}">
+    <a href="/logout" class="btn-icon" title="Logout">
       <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2">
         <path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4"/>
         <polyline points="16 17 21 12 16 7"/><line x1="21" y1="12" x2="9" y2="12"/>
@@ -258,12 +262,26 @@ function tipoVis(tipo){
       <span class="topbar-title">{% block topbar_title %}{% endblock %}</span>
     </div>
     <div class="topbar-actions">
-      {# Il pulsante sta su **tutte** le pagine dal 13/08/2026, per decisione di Davide.
-         Prima compariva solo sotto /pokemon/* perche' li' cambiava solo i nomi dei
-         dati; ora traduce anche l'interfaccia, e tenerlo confinato avrebbe lasciato
-         chi mette EN e poi va su Gaming **senza un modo per tornare indietro**.
+      {# ⚠️ Il pulsante compare **solo dove la sezione e' tradotta**: Pokemon e
+         Gaming. Deciso il 13/08/2026 — sono le due sezioni che contano anche per
+         gli utenti non amministratori. Arduino, Python e PC Builder restano fuori.
+
+         Il motivo per cui non basta "lasciarlo ovunque tanto non fa danno": la
+         lingua sta in un **cookie** e vale per tutto il sito, quindi chi mettesse
+         EN e poi andasse su Arduino troverebbe una pagina che l'inglese non ce
+         l'ha. Per lo stesso motivo la **sidebar resta in italiano**: se fosse
+         tradotta, da Arduino si vedrebbe una shell inglese **senza un modo per
+         tornare indietro**. Pulsante confinato e shell italiana sono la **stessa**
+         decisione: si cambiano insieme o per niente.
+
+         ⚠️ `ELENCO_SEZIONI_TRADOTTE` sta qui e non sparso: quando una sezione nuova
+         viene tradotta, si aggiunge **un prefisso a questa lista** e il pulsante
+         compare da solo.
+
          Bandiera della lingua **attiva**, disegnata inline: le emoji bandiera su
          Windows non vengono renderizzate come tali e si leggerebbero "IT"/"GB". #}
+      {% set sezioni_tradotte = ('/pokemon', '/gaming') %}
+      {% if request.path.startswith(sezioni_tradotte) %}
       <button class="btn-icon" onclick="toggleLingua()" id="langBtn" data-lang="{{ lang }}"
               title="{% if lang == 'it' %}Switch to English{% else %}Passa all'italiano{% endif %}"
               style="padding:0 .35rem">
@@ -283,7 +301,8 @@ function tipoVis(tipo){
         </svg>
         {% endif %}
       </button>
-      <button class="btn-icon" onclick="toggleTheme()" id="themeBtn" title="{{ t('Cambia tema') }}">
+      {% endif %}
+      <button class="btn-icon" onclick="toggleTheme()" id="themeBtn" title="Cambia tema">
         <svg id="themeIcon" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
           <path d="M21 12.79A9 9 0 1 1 11.21 3 7 7 0 0 0 21 12.79z"/>
         </svg>

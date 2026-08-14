@@ -2,12 +2,16 @@
 {% block title %}Gaming – Hub{% endblock %}
 {% block topbar_title %}&#127918; Gaming{% endblock %}
 {% block content %}
+{# ⚠️ Stati e piattaforme sono **valori salvati** in `games.status` e `games.platform`,
+   e finiscono anche negli URL dei filtri: il valore resta italiano, si traduce solo
+   cio' che si legge. Le frasi passano da t() con una variabile, quindi lo script di
+   controllo non le vede dentro la chiamata e sono dichiarate in `_dinamiche`. #}
 <div class="page-header">
   <div class="flex items-center justify-between flex-wrap gap-2">
-    <div><h1>&#127918; Gaming Tracker</h1><p class="text-muted text-sm">La tua libreria di giochi</p></div>
+    <div><h1>&#127918; Gaming Tracker</h1><p class="text-muted text-sm">{{ t('La tua libreria di giochi') }}</p></div>
     <div class="flex gap-2">
-      <a href="/gaming/steam" class="btn btn-secondary">&#11015; Importa da Steam</a>
-      <a href="/gaming/new" class="btn btn-primary">+ Aggiungi gioco</a>
+      <a href="/gaming/steam" class="btn btn-secondary">&#11015; {{ t('Importa da Steam') }}</a>
+      <a href="/gaming/new" class="btn btn-primary">+ {{ t('Aggiungi gioco') }}</a>
     </div>
   </div>
 </div>
@@ -16,9 +20,9 @@
    cambiare stato li azzerava tutti, ed erano solo due (stato e ricerca). #}
 {% set coda %}{% if q %}&amp;q={{ q|urlencode }}{% endif %}{% if genre %}&amp;genre={{ genre|urlencode }}{% endif %}{% if platform %}&amp;platform={{ platform|urlencode }}{% endif %}{% if sort %}&amp;sort={{ sort|urlencode }}{% endif %}{% endset %}
 <div class="flex gap-1 flex-wrap mb-3">
-  <a href="/gaming?status={{ coda }}" class="btn btn-sm {% if not current_filter %}btn-primary{% else %}btn-secondary{% endif %}">Tutti ({{ counts.Tutti }})</a>
+  <a href="/gaming?status={{ coda }}" class="btn btn-sm {% if not current_filter %}btn-primary{% else %}btn-secondary{% endif %}">{{ t('Tutti') }} ({{ counts.Tutti }})</a>
   {% for s in statuses %}
-  <a href="/gaming?status={{ s|urlencode }}{{ coda }}" class="btn btn-sm {% if current_filter==s %}btn-primary{% else %}btn-secondary{% endif %}">{{ s }} ({{ counts[s] }})</a>
+  <a href="/gaming?status={{ s|urlencode }}{{ coda }}" class="btn btn-sm {% if current_filter==s %}btn-primary{% else %}btn-secondary{% endif %}">{{ t(s) }} ({{ counts[s] }})</a>
   {% endfor %}
 </div>
 
@@ -34,9 +38,10 @@
         {% if genre %}<input type="hidden" name="genre" value="{{ genre }}">{% endif %}
         {% if platform %}<input type="hidden" name="platform" value="{{ platform }}">{% endif %}
         {% if sort %}<input type="hidden" name="sort" value="{{ sort }}">{% endif %}
-        <span class="font-600">&#127919; Se ti è piaciuto</span>
+        <span class="font-600">&#127919; {{ t('Se ti è piaciuto') }}</span>
+        {# `gioco` e non `t`: la variabile di ciclo ombrerebbe la funzione t(). #}
         <select name="simile_a" class="form-control" style="max-width:250px" onchange="this.form.submit()">
-          {% for t in tutti %}<option value="{{ t.id }}" {% if t.id==ancora.id %}selected{% endif %}>{{ t.title }}</option>{% endfor %}
+          {% for gioco in tutti %}<option value="{{ gioco.id }}" {% if gioco.id==ancora.id %}selected{% endif %}>{{ gioco.title }}</option>{% endfor %}
         </select>
       </form>
       <span class="text-muted text-xs">{{ motivo_ancora }}</span>
@@ -54,7 +59,7 @@
           <div style="min-width:0">
             <div class="text-sm font-600" style="white-space:nowrap;overflow:hidden;text-overflow:ellipsis">{{ g.title }}</div>
             <div class="text-xs text-muted" style="white-space:nowrap;overflow:hidden;text-overflow:ellipsis"
-                 title="In comune: {{ comuni|join(', ') }}">{{ comuni[:4]|join(' · ') }}{% if comuni|length > 4 %} +{{ comuni|length - 4 }}{% endif %}</div>
+                 title="{{ t('In comune:') }} {{ comuni|join(', ') }}">{{ comuni[:4]|join(' · ') }}{% if comuni|length > 4 %} +{{ comuni|length - 4 }}{% endif %}</div>
           </div>
         </div>
       </a>
@@ -62,9 +67,7 @@
     </div>
     {% if suggeriti %}
     <div class="text-xs text-muted" style="margin-top:.5rem">
-      Dalla tua libreria, per <strong>tag</strong> e generi in comune &mdash; quelli rari
-      pesano più di quelli che hanno quasi tutti. I tag vengono da SteamSpy e sono in
-      inglese; chi non ne ha viene confrontato sui generi. Completati e abbandonati restano fuori.
+      {{ t('Dalla tua libreria, per <strong>tag</strong> e generi in comune — quelli rari pesano più di quelli che hanno quasi tutti. I tag vengono da SteamSpy e sono in inglese; chi non ne ha viene confrontato sui generi. Completati e abbandonati restano fuori.')|safe }}
     </div>
     {% endif %}
   </div>
@@ -76,29 +79,29 @@
    passa di qui come campo nascosto. #}
 <form method="GET" class="mb-3 flex gap-2 flex-wrap items-center">
   {% if current_filter %}<input type="hidden" name="status" value="{{ current_filter }}">{% endif %}
-  <input name="q" value="{{ q }}" class="form-control" style="max-width:260px" placeholder="Cerca gioco...">
+  <input name="q" value="{{ q }}" class="form-control" style="max-width:260px" placeholder="{{ t('Cerca gioco...') }}">
   {% if generi %}
   <select name="genre" class="form-control" style="max-width:170px" onchange="this.form.submit()">
-    <option value="">Tutti i generi</option>
+    <option value="">{{ t('Tutti i generi') }}</option>
     {% for gen in generi %}<option value="{{ gen }}" {% if gen==genre %}selected{% endif %}>{{ gen }}</option>{% endfor %}
   </select>
   {% endif %}
   {% if piattaforme %}
   <select name="platform" class="form-control" style="max-width:150px" onchange="this.form.submit()">
-    <option value="">Tutte le piattaforme</option>
-    {% for p in piattaforme %}<option value="{{ p }}" {% if p==platform %}selected{% endif %}>{{ p }}</option>{% endfor %}
+    <option value="">{{ t('Tutte le piattaforme') }}</option>
+    {% for p in piattaforme %}<option value="{{ p }}" {% if p==platform %}selected{% endif %}>{{ t(p) }}</option>{% endfor %}
   </select>
   {% endif %}
   <select name="sort" class="form-control" style="max-width:180px" onchange="this.form.submit()">
     {% for chiave, etichetta in ordinamenti %}
-    <option value="{{ chiave }}" {% if chiave==sort or (not sort and chiave=='recenti') %}selected{% endif %}>{{ etichetta }}</option>
+    <option value="{{ chiave }}" {% if chiave==sort or (not sort and chiave=='recenti') %}selected{% endif %}>{{ t(etichetta) }}</option>
     {% endfor %}
   </select>
   <button class="btn btn-secondary" type="submit">&#128269;</button>
   {% if q or genre or platform or sort %}
-  <a href="/gaming{% if current_filter %}?status={{ current_filter }}{% endif %}" class="btn btn-secondary" title="Azzera ricerca, filtri e ordinamento">&#x2715;</a>
+  <a href="/gaming{% if current_filter %}?status={{ current_filter }}{% endif %}" class="btn btn-secondary" title="{{ t('Azzera ricerca, filtri e ordinamento') }}">&#x2715;</a>
   {% endif %}
-  <span class="text-muted text-sm" style="margin-left:auto">{{ games|length }} su {{ counts.Tutti }}</span>
+  <span class="text-muted text-sm" style="margin-left:auto">{{ tf('{n} su {tot}', {'n': games|length, 'tot': counts.Tutti}) }}</span>
 </form>
 
 {% if games %}
@@ -113,23 +116,23 @@
       <div style="display:flex;align-items:center;justify-content:center;height:100%;font-size:2rem">&#127918;</div>
     {% endif %}
     <span style="position:absolute;top:6px;right:6px"
-          class="badge {% if g.status=='Completato' %}badge-success{% elif g.status=='In corso' %}badge-primary{% elif g.status=='Wishlist' %}badge-warning{% else %}badge-neutral{% endif %}">{{ g.status }}</span>
+          class="badge {% if g.status=='Completato' %}badge-success{% elif g.status=='In corso' %}badge-primary{% elif g.status=='Wishlist' %}badge-warning{% else %}badge-neutral{% endif %}">{{ t(g.status) }}</span>
   </div>
   <div style="padding:.75rem .85rem">
     <div class="font-600 text-sm mb-1" style="white-space:nowrap;overflow:hidden;text-overflow:ellipsis">{{ g.title }}</div>
-    <div class="text-xs text-muted mb-2">{{ g.platform }}{% if g.genre %} &middot; {{ g.genre }}{% endif %}</div>
+    <div class="text-xs text-muted mb-2">{{ t(g.platform) }}{% if g.genre %} &middot; {{ g.genre }}{% endif %}</div>
     {% if g.status in ['In corso','Completato'] %}
     <div class="progress-bar mb-2"><div class="progress-fill" style="width:{{ g.prog_story }}%"></div></div>
     {% endif %}
     {% if g.hours_played or g.hours_hltb %}
     <div class="text-xs text-muted mb-2" style="display:flex;gap:.6rem;flex-wrap:wrap">
-      {% if g.hours_played %}<span title="Ore giocate su Steam">&#127918; {{ '%g'|format(g.hours_played) }}h giocate</span>{% endif %}
-      {% if g.hours_hltb %}<span title="Durata stimata HowLongToBeat">&#9201; HLTB {{ g.hours_hltb|int }}h</span>{% endif %}
+      {% if g.hours_played %}<span title="{{ t('Ore giocate su Steam') }}">&#127918; {{ tf('{n}h giocate', {'n': '%g'|format(g.hours_played)}) }}</span>{% endif %}
+      {% if g.hours_hltb %}<span title="{{ t('Durata stimata HowLongToBeat') }}">&#9201; HLTB {{ g.hours_hltb|int }}h</span>{% endif %}
     </div>
     {% endif %}
     <div class="flex gap-1">
       <a href="/gaming/{{ g.id }}/edit" class="btn btn-secondary btn-sm">&#9998;</a>
-      <form method="POST" action="/gaming/{{ g.id }}/delete" onsubmit="return confirm('Eliminare?')">
+      <form method="POST" action="/gaming/{{ g.id }}/delete" onsubmit="return confirm(t('Eliminare?'))">
         <button class="btn btn-danger btn-sm">&#128465;</button>
       </form>
     </div>
@@ -140,9 +143,9 @@
 {% else %}
 <div style="text-align:center;padding:4rem 1rem;color:var(--text-muted)">
   <div style="font-size:3rem;margin-bottom:.75rem">&#127918;</div>
-  <h3>Nessun gioco trovato</h3>
-  <p class="text-sm mt-1">{% if q %}Nessun risultato per "{{ q }}"{% else %}Aggiungi il tuo primo gioco!{% endif %}</p>
-  {% if not q %}<a href="/gaming/new" class="btn btn-primary mt-3">+ Aggiungi gioco</a>{% endif %}
+  <h3>{{ t('Nessun gioco trovato') }}</h3>
+  <p class="text-sm mt-1">{% if q %}{{ tf('Nessun risultato per "{q}"', {'q': q}) }}{% else %}{{ t('Aggiungi il tuo primo gioco!') }}{% endif %}</p>
+  {% if not q %}<a href="/gaming/new" class="btn btn-primary mt-3">+ {{ t('Aggiungi gioco') }}</a>{% endif %}
 </div>
 {% endif %}
 {% endblock %}

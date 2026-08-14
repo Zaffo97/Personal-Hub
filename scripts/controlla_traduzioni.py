@@ -25,6 +25,10 @@ import sys
 BASE = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 TEMPLATES = os.path.join(BASE, "templates")
 STATIC_JS = os.path.join(BASE, "static", "js")
+# Anche i blueprint: da quando la sezione Gaming è tradotta, alcune frasi nascono in
+# Python (i motivi dei suggerimenti). Senza questa cartella le loro voci nel
+# dizionario sembrerebbero **orfane** e qualcuno le cancellerebbe.
+BLUEPRINTS = os.path.join(BASE, "blueprints")
 I18N = os.path.join(BASE, "data", "i18n")
 
 # t('...') e tf('...', {...}) — sia in Jinja che in JavaScript. Le due forme di
@@ -35,7 +39,7 @@ CHIAMATA = re.compile(r"\bt f?\(|\btf?\(\s*(?P<q>['\"])(?P<testo>(?:\\.|(?!(?P=q
 def chiavi_nel_codice():
     """Ogni frase passata a t() o tf(), con i file in cui compare."""
     trovate = {}
-    cartelle = [(TEMPLATES, ".html"), (STATIC_JS, ".js")]
+    cartelle = [(TEMPLATES, ".html"), (STATIC_JS, ".js"), (BLUEPRINTS, ".py")]
     for cartella, est in cartelle:
         if not os.path.isdir(cartella):
             continue

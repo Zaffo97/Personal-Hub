@@ -38,6 +38,7 @@ Non sono storia: sono le cose che questo progetto ha già pagato e che tornano a
 | ⚠️ **Lo sweep statico non basta** | `new Function()` su script e handler dice che la **sintassi** è valida, **non** che il codice giri. Il 13/08 la tabella dell'editor mosse è rimasta **vuota** con lo sweep a zero errori: `renderTable()` lanciava `tf is not defined` a runtime. Ogni giro di verifica va chiuso **caricando davvero** le pagine e contando le righe che compaiono — 919 mosse, 1343 tag del roster, 397 oggetti, 386 abilità. Una tabella vuota non dà errore a schermo |
 | **`t`/`tf` e l'ordine degli script** | Sono definite in un `<script>` nel **`<head>`** di `base.html`, e devono restarci. Più di un template le chiama **durante il parsing** e non dentro un evento (`moves_editor.html` chiude il suo script con `renderTable()`): con la definizione in fondo alla pagina, come era fino al 13/08, quella chiamata non le trova |
 | **Variabili mancanti nei template** | Jinja rende una variabile che non è nel contesto come **stringa vuota**, senza dire niente. `items_editor.html` usava `{{ regulation }}`, che quella route non ha **mai** passato: la conferma di archiviazione ha sempre detto «Archivia gli oggetti correnti ()?» con le parentesi vuote. Se ne è accorto solo `\|tojson`, che su `Undefined` solleva invece di tacere |
+| ⚠️ **Solo Pokémon e Gaming sono tradotte** | Arduino, Python, PC Builder, Dashboard, login e utenti sono in italiano **per scelta** (13/08/2026), e la **sidebar con loro**. Il pulsante lingua compare solo dove la sezione è tradotta: l'elenco è `sezioni_tradotte` in `base.html`, unico punto. Pulsante confinato e shell italiana sono la **stessa** decisione — tradurre la sidebar lascerebbe chi mette EN e va su Arduino senza un modo per tornare indietro |
 | ⚠️ **Le `desc` sono italiane per scelta** | **Non è un lavoro rimasto a metà.** Le 1584 descrizioni di mosse, oggetti e abilità restano **solo in italiano** per decisione di Davide del 13/08/2026, presa dopo aver visto il conto: i **nomi** sono bilingui al 100%, le descrizioni no e non lo diventeranno. Quindi in modalità inglese si legge un nome inglese con sotto una descrizione italiana, ed **è previsto**. `desc_en` non esiste e non va aggiunto; non serve nessun import da PokéAPI né una gemella di `nome_vis()` per i testi |
 | **Una parola italiana, due inglesi** | La chiave del dizionario **è la frase italiana**, quindi una parola che in inglese cambia col contesto non è esprimibile. Caso vivo: `Abilità` è la linguetta del catalogo (→ *Abilities*) **e** l'etichetta di un campo singolo nel team builder e nello Stat Preview, dove dovrebbe essere *Ability*. Oggi vince il plurale. Si risolve solo cambiando la frase **italiana** in uno dei due punti, e va fatto se e quando dà fastidio: storpiare l'italiano per aggiustare l'inglese è un cattivo affare |
 | **Default del DB** | `extensions.py:143` crea la colonna con `regulation_id TEXT DEFAULT 'ma'`. Non è un residuo dei 14 letterali tolti l'11/08: è il default del **DB**, e cambiarlo richiede una migrazione. Oggi non fa danno perché `_team_upsert()` passa sempre un valore esplicito |
@@ -273,7 +274,7 @@ riscrivere la guida due volte.
 
 ## 2. I lavori a metà
 
-### 2.1 🟨 Switch lingua — la sezione Pokémon è chiusa, restano le altre
+### 2.1 ✅ Switch lingua — chiuso il 13/08/2026 (Pokémon e Gaming)
 
 Il primo blocco (i **nomi dei dati**) è chiuso l'11/08. Questo è l'**interfaccia**.
 
@@ -288,7 +289,11 @@ riceve in `window.T`. ⚠️ Il prezzo, dichiarato: **cambiare una parola italia
 template stacca la traduzione in silenzio** — per questo esiste
 `python scripts/controlla_traduzioni.py`, che elenca mancanti, vuote e orfane.
 
-✅ **Il blocco Pokémon è chiuso: 12 template su 12.** `pokemon.html` (16),
+✅ **Chiuso: 15 template**, i 12 della sezione Pokémon più `gaming.html`,
+`game_form.html` e `steam_import.html`, e le frasi dei suggerimenti in `gaming.py`.
+Dizionario a **489 chiavi su 489 chieste**.
+
+✅ **Il blocco Pokémon: 12 template su 12.** `pokemon.html` (16),
 `regulation_content.html` (15), `catalog_editor.html` (23) il 12/08; **`calcolatori.html`
 (142) più i 7 moduli `static/js/calcolatori-*.js`, `moves_editor.html` (52), `base.html`,
 `roster_editor.html` (26), `items_editor.html` (43), `abilities_editor.html` (47),
@@ -321,14 +326,21 @@ i nomi dei dati: confinare il pulsante sotto `/pokemon/*` avrebbe lasciato chi m
 poi va su Gaming **senza un modo per tornare indietro**. Tradotte sidebar, «Esporta
 JSON», «Utenti», «Cambia tema», e `<html lang>` ora segue la lingua attiva.
 
-### ⬜ Conseguenza aperta: le sezioni non-Pokémon
+### ✅ Quali sezioni sono tradotte, e perché non tutte
 
-Con la shell in inglese e il pulsante ovunque, **Gaming, Arduino, PC Builder, Python, la
-Dashboard, il login e la gestione utenti mostrano contenuto italiano sotto una shell
-inglese**. Non è una regressione — prima quelle pagine l'inglese non lo vedevano affatto
-— ma è un lavoro che prima non esisteva e ora sì, ed è più grande del blocco Pokémon:
-`steam_import` (303 righe), `pcbuilder` (267), `game_form` (194), `gaming` (144),
-`arduino` (128), `dashboard` (122), `admin_utenti` (100), `python` (71), `login` (60).
+**Deciso da Davide il 13/08/2026, dopo due ripensamenti: solo Pokémon e Gaming** — sono
+le due che contano anche per gli utenti non amministratori. Arduino, Python, PC Builder,
+Dashboard, login e gestione utenti **restano in italiano**, e non è un lavoro rimasto
+indietro.
+
+⚠️ **Il pulsante e la shell sono la stessa decisione, e si cambiano insieme o per
+niente.** Il pulsante compare **solo dove la sezione è tradotta**, e la **sidebar resta
+in italiano**: la lingua sta in un cookie e vale per tutto il sito, quindi con la shell
+tradotta chi mettesse EN e poi andasse su Arduino si troverebbe una pagina italiana sotto
+un'interfaccia inglese **senza un modo per tornare indietro**.
+
+> Per aggiungere una sezione: si traduce, e poi si aggiunge **un prefisso** a
+> `sezioni_tradotte` in `base.html` — il pulsante compare da solo. È l'unico punto.
 
 ✅ **Il plurale `1 team salvati` è chiuso**, e non è servito insegnare i plurali a `tf()`:
 la frase italiana è stata riscritta in una forma che non si flette — `Team salvati: {n}`
