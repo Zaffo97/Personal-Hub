@@ -435,6 +435,13 @@ quattro cose richiedono **fonti diverse**:
 
 ### 4.1 🟨 Gaming — il calendario delle uscite (chiesto il 13/08, costruito il 16/08/2026)
 
+> ⚠️ **Trappola nuova, pagata in questa sessione**: la cache vera usa `igdb_release_id`
+> fra **486664 e 954196**. Uno script di prova che cancellava «il mio intervallo»
+> 900000-910000 si è portato via **497 righe vere**. Non è grave — la cache si rifà col
+> pulsante — ma la regola vale in generale: **un id scelto a tavolino non è una prova di
+> proprietà**, un campo che scrive solo il test sì. E un test che condivide lo stato con
+> i dati veri misura anche quelli: la prova gira ora su una **copia** di `hub.db`.
+
 **Chiesto**: nella sezione Gaming una **barra o un calendario con le prossime uscite**,
 di **tutte le piattaforme** e non solo Steam, sul modello di quello di Opera GX.
 
@@ -452,25 +459,38 @@ non esistono, vedi §1.4 falla 3, e i filtri di Gaming viaggiano già tutti nell
 querystring; la **cache la aggiorni tu da un pulsante**, come ogni altro import qui, e
 l'aggiornamento automatico resta agganciato a §1.5, che è l'unico contesto in cui ha senso.
 
-**⬜ Cosa resta, ed è tutto sulla stessa cosa: il codice che parla con IGDB non è mai
-stato eseguito.** Servono le credenziali, che deve creare Davide:
+✅ **L'import è stato eseguito il 16/08 e funziona**: **6827 uscite** in cache, 4280
+giochi distinti su 29 piattaforme. Le domande che erano aperte hanno tutte una risposta
+misurata: **zero righe su 6827 con precisione «ignota»**, cioè il campo della precisione
+è stato letto per tutte (la doppia lettura `category` / `date_format` regge); 0 righe
+senza piattaforma e 0 senza URL IGDB; 196 su 6827 senza copertina (2,9%, sono giochi che
+su IGDB una copertina non ce l'hanno).
 
-1. [dev.twitch.tv/console/apps](https://dev.twitch.tv/console/apps) → *Register Your
-   Application*, OAuth Redirect URL `http://localhost`, categoria *Application Integration*
-2. `IGDB_CLIENT_ID` e `IGDB_CLIENT_SECRET` come variabili d'ambiente, come `STEAM_API_KEY`
-3. Poi `python scripts/sonda_igdb.py`, che stampa una risposta vera senza scrivere niente
+✅ **Le uscite multipiattaforma si fondono** (chiesto da Davide il 16/08): un gioco che
+esce lo stesso giorno su più piattaforme è **una riga sola**. Nei soli prossimi 90 giorni
+la fusione unisce **454 gruppi** — *Vampire Survivors: Legacy of the Bloodmoon* passa da
+9 righe a 1. Si fonde in **lettura** e **dopo il filtro**, mai in scrittura.
 
-⚠️ **Il punto su cui la sonda esiste**: `_mappa_uscita()` in `blueprints/gaming.py` legge
-la precisione della data da `category`, **oppure** da `date_format` se il primo non c'è —
-perché IGDB ha cambiato quel campo e non ho una risposta vera con cui decidere quale sia.
-Se sbagliassi campo non uscirebbe nessun errore: uscirebbero **date sbagliate**, spacciando
-il primo giorno di un trimestre per la data d'uscita. Per questo la funzione **scarta e
-conta** invece di riempire, e i motivi di scarto compaiono a schermo.
+**⬜ Cosa resta aperto, ed è una cosa sola ma reale: 4343 righe sono troppe.**
 
-**Da confermare sulla risposta vera, uno per uno:** il nome del campo della precisione ·
-che l'espansione `game.name` / `platform.name` sia accettata come scritta · che l'URL
-copertina `t_cover_small/<image_id>.jpg` risponda · quante uscite future ci sono davvero
-(decide se l'orizzonte di 540 giorni è giusto) · e il giro OAuth, mai eseguito.
+La cache contiene **tutto** IGDB, comprese centinaia di uscite minuscole. Misurato: senza
+tetto la pagina pesava **3,3 MB con 4224 immagini** su «tutto» e **994 KB con 1291
+immagini** già sulla finestra di default. C'è un tetto a **300 righe** (stesso rimedio
+dello Speed Tier), che porta la pagina a **225 KB e 292 immagini**.
+
+⚠️ **Ma il tetto ha un effetto collaterale, misurato e dichiarato a schermo: 300 righe
+coprono 11 giorni** (17–27 agosto), quindi con la cache piena **tutte e quattro le
+finestre mostrano gli stessi 11 giorni** e il selettore del periodo di fatto non fa
+niente. Funziona invece il filtro piattaforma: PS5 scende a 221 righe su 90 giorni, sotto
+il tetto; PC resta a 1115 e viene ancora tagliato.
+
+**La strada per risolverlo davvero non è alzare il tetto, è importare di meno.** Un
+calendario come quello di Opera GX mostra le uscite *che interessano*, non le 4343 di
+tutto il catalogo. IGDB ha campi che misurano l'attesa per un gioco (`hypes`, `follows`,
+`total_rating_count`): filtrare l'import su quelli taglierebbe la coda lunga alla fonte,
+e allora il tetto smetterebbe di mordere e le finestre tornerebbero a significare
+qualcosa. **È una decisione di Davide** — cambia quali dati entrano in cache — e per
+questo non l'ho presa io.
 
 > Modello già collaudato qui per gli import esterni, e vale anche per questo: lotti
 > piccoli, la chiave **solo** da variabile d'ambiente e mai nel repo, e l'import che

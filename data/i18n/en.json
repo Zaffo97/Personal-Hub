@@ -586,6 +586,9 @@
   "senza data": "with no date",
   "senza titolo": "with no title",
   "senza id": "with no id",
+  "{n} in calendario · {tot} uscite in cache": "{n} on the calendar · {tot} releases cached",
+  "prime {n} di {trovate} · {tot} uscite in cache": "first {n} of {trovate} · {tot} releases cached",
+  "Mostrate le {n} uscite più vicine su {trovate}: l'elenco intero renderebbe la pagina lentissima. <strong>Filtra per piattaforma</strong> per vedere il resto — restringere il periodo non basta, perché queste {n} coprono già solo i primi giorni.": "Showing the {n} nearest releases out of {trovate}: the full list would make this page crawl. <strong>Filter by platform</strong> to see the rest — narrowing the period is not enough, because these {n} already cover only the first few days.",
   "_dinamiche": [
     "Pokémon",
     "Mosse",

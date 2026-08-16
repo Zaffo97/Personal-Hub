@@ -91,13 +91,33 @@
   <a href="/gaming/uscite" class="btn btn-secondary" title="{{ t('Azzera i filtri') }}">&#x2715;</a>
   {% endif %}
   <span class="text-muted text-sm" style="margin-left:auto">
-    {{ tf('{n} su {tot}', {'n': quante, 'tot': totale}) }}
+    {# ⚠️ I numeri contano cose diverse e l'etichetta lo dice: `quante` sono le righe
+       mostrate **dopo** la fusione delle multipiattaforma, `trovate` quelle che
+       passano i filtri, `totale` le uscite grezze in cache, una per piattaforma.
+       Scriverli come «n su tot» avrebbe fatto sembrare che il filtro tagliasse più di
+       quanto taglia. #}
+    {% if trovate > quante %}
+    {{ tf('prime {n} di {trovate} · {tot} uscite in cache', {'n': quante, 'trovate': trovate, 'tot': totale}) }}
+    {% else %}
+    {{ tf('{n} in calendario · {tot} uscite in cache', {'n': quante, 'tot': totale}) }}
+    {% endif %}
     {% if aggiornata %}
     {# La cache dichiara la propria età: senza, è indistinguibile da un dato vero. #}
     &middot; <span title="{{ t('Ultimo aggiornamento della cache IGDB') }}">&#128260; {{ aggiornata[:16] }}</span>
     {% endif %}
   </span>
 </form>
+
+{# ⚠️ Un elenco tagliato che non dichiara di esserlo mente. Con la cache piena sono
+   4343 righe su «tutto» — 3,3 MB e 4224 immagini — quindi il tetto c'è, e si vede.
+   ⚠️ E l'avviso indica la **piattaforma**, non il periodo: misurato, 300 righe coprono
+   11 giorni, quindi restringere il periodo non cambia niente finché il tetto morde.
+   Il filtro piattaforma sì (PS5 scende a 221 righe su 90 giorni, sotto il tetto). #}
+{% if trovate > quante %}
+<div class="text-xs text-muted mb-2" style="padding:.45rem .6rem;border:1px solid var(--border);border-radius:var(--radius-md)">
+  &#9888;&#65039; {{ tf('Mostrate le {n} uscite più vicine su {trovate}: l\'elenco intero renderebbe la pagina lentissima. <strong>Filtra per piattaforma</strong> per vedere il resto — restringere il periodo non basta, perché queste {n} coprono già solo i primi giorni.', {'n': quante, 'trovate': trovate})|safe }}
+</div>
+{% endif %}
 
 {% if gruppi %}
 <div class="card mb-0">
@@ -118,7 +138,9 @@
       <div class="us-tit">
         <div class="font-600 text-sm">{{ u.title }}</div>
         <div class="text-xs text-muted">
-          {{ u.platform }}
+          {# Un gioco che esce lo stesso giorno su più piattaforme è **una riga sola**:
+             su IGDB sono righe separate, e in calendario sarebbero voci gemelle. #}
+          {{ u.piattaforme|join(' · ') }}
           {# ⚠️ `precisione` diversa da «giorno» vuol dire che IGDB sa solo il mese,
              il trimestre o l'anno: la riga è comunque ordinata, ma spacciare il
              primo giorno del periodo per la data d'uscita sarebbe un dato falso.

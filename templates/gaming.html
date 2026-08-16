@@ -37,7 +37,7 @@
         <div style="min-width:0">
           <div class="text-sm font-600" style="white-space:nowrap;overflow:hidden;text-overflow:ellipsis" title="{{ u.title }}">{{ u.title }}</div>
           <div class="text-xs text-muted" style="white-space:nowrap;overflow:hidden;text-overflow:ellipsis">
-            {{ u.quando }}{% if u.platform %} &middot; {{ u.platform }}{% endif %}</div>
+            {{ u.quando }}{% if u.piattaforme %} &middot; {{ u.piattaforme|join(', ') }}{% endif %}</div>
         </div>
       </div>
       {% endfor %}

@@ -631,9 +631,17 @@ ETICHETTE_FINESTRA = {"30": "Prossimi 30 giorni", "90": "Prossimi 3 mesi",
                       "365": "Prossimo anno", "tutto": "Tutto quello che c'è"}
 FINESTRA_DEFAULT = "90"
 
-# Quante uscite mostrare nella striscia in cima a /gaming. La pagina intera non ha
-# tetto: li' l'elenco e' il contenuto, qui e' un assaggio.
+# Quante uscite mostrare nella striscia in cima a /gaming: e' un assaggio, non l'elenco.
 STRISCIA = 6
+
+# ⚠️ Tetto alle righe della pagina, **misurato e non prudenziale**. Senza, con la cache
+# vera (6827 uscite, 4343 righe dopo la fusione) la pagina pesava **3,3 MB con 4224
+# immagini** su "tutto", e **994 KB con 1291 immagini** gia' sulla finestra di default.
+# Stesso rimedio dello Speed Tier, che dalle 1343 righe / 714 KB e' sceso a 300 / 159 KB.
+# Si tengono le **piu' vicine**: in un calendario delle uscite quello che si guarda e'
+# cosa esce adesso, non cosa esce fra due anni. Il conto pieno resta scritto sopra la
+# tabella, perche' un elenco tagliato che non dichiara di esserlo mente.
+TETTO_RIGHE = 300
 
 MESI_IT = ["gennaio", "febbraio", "marzo", "aprile", "maggio", "giugno", "luglio",
            "agosto", "settembre", "ottobre", "novembre", "dicembre"]
@@ -714,20 +722,89 @@ def raggruppa_per_mese(righe):
     return gruppi
 
 
+# Quanto e' precisa una data, dalla piu' alla meno precisa. Serve a fondere due righe
+# della stessa uscita che non concordano: se una fonte sa il giorno esatto e l'altra
+# solo il mese, il giorno esatto e' quello buono — non il contrario.
+ORDINE_PRECISIONE = ["giorno", "mese", "trimestre", "anno", "ignota"]
+
+
+def _quanto_precisa(valore):
+    """Posizione in `ORDINE_PRECISIONE`, e in fondo se e' un valore che non conosco.
+
+    `.index()` nudo solleverebbe `ValueError` su una precisione inattesa, e una
+    pagina che risponde 500 perche' in cache c'e' una parola che non mi aspettavo e'
+    un prezzo assurdo: una precisione sconosciuta va trattata come la meno affidabile,
+    non come un guasto.
+    """
+    try:
+        return ORDINE_PRECISIONE.index(valore or "ignota")
+    except ValueError:
+        return len(ORDINE_PRECISIONE)
+
+
+def unisci_multipiattaforma(righe):
+    """Una riga per **gioco e giorno**, con tutte le sue piattaforme dentro.
+
+    Su IGDB l'unita' del dato e' l'uscita **per piattaforma**: un gioco che esce lo
+    stesso giorno su PC, PS5 e Xbox sono **tre righe**. In un calendario diventano tre
+    voci identiche una sotto l'altra, che e' rumore: quello che si vuole leggere e'
+    «GTA VI — PlayStation 5, Xbox Series X|S».
+
+    ⚠️ Si fonde in **lettura**, non in scrittura. In cache le righe restano separate,
+    ed e' cio' che permette al filtro per piattaforma di funzionare e all'import di
+    restare rieseguibile sulla chiave `igdb_release_id`.
+
+    ⚠️ E si fonde **dopo** il filtro, non prima: cosi' quello che si vede corrisponde
+    sempre a quello che si e' chiesto. Filtrando su PS5 la riga elenca PS5 e basta,
+    anche se quel gioco esce anche altrove — mostrare piattaforme escluse dal filtro
+    farebbe sembrare che il filtro non funzioni.
+
+    La chiave e' `igdb_game_id`, non il titolo: due giochi diversi possono chiamarsi
+    uguale, e fonderli sarebbe inventare un'uscita che non esiste. Il titolo resta solo
+    come ripiego per le righe che un id non ce l'hanno.
+    """
+    fuse = {}
+    ordine = []
+    for r in righe:
+        v = dict(r)
+        chiave = (v["igdb_game_id"] or f"t:{v['title'].lower()}", v["release_date"])
+        if chiave not in fuse:
+            v["piattaforme"] = []
+            fuse[chiave] = v
+            ordine.append(chiave)
+        voce = fuse[chiave]
+        if v["platform"] and v["platform"] not in voce["piattaforme"]:
+            voce["piattaforme"].append(v["platform"])
+        # I campi che possono mancare su una riga e esserci su un'altra: si tiene il
+        # primo valorizzato invece di lasciare il buco della riga capofila.
+        for campo in ("cover_url", "igdb_url", "human"):
+            if not voce.get(campo) and v.get(campo):
+                voce[campo] = v[campo]
+        if _quanto_precisa(v.get("precisione")) < _quanto_precisa(voce.get("precisione")):
+            voce["precisione"] = v["precisione"]
+            voce["human"] = v["human"]
+    for chiave in ordine:
+        fuse[chiave]["piattaforme"].sort()
+    return [fuse[c] for c in ordine]
+
+
 def striscia_uscite():
     """Le prossime `STRISCIA` uscite per la striscia in cima a /gaming.
 
     Torna dizionari con un `quando` gia' composto ("16 ago"): nella striscia non c'e'
     l'intestazione del mese a fare da contesto, quindi la data se lo porta dietro.
     """
-    voci = []
-    for r in leggi_uscite(entro="tutto", limite=STRISCIA):
-        v = dict(r)
+    # ⚠️ Il limite si applica **dopo** la fusione, quindi qui se ne chiedono di piu':
+    # le righe grezze sono una per piattaforma, e tagliare a STRISCIA prima di fondere
+    # riempirebbe la striscia con lo stesso gioco ripetuto. Il margine copre un gioco
+    # che esce su tutte le piattaforme immaginabili lo stesso giorno; nel caso
+    # patologico si mostrerebbe qualche voce in meno, mai una sbagliata.
+    voci = unisci_multipiattaforma(leggi_uscite(entro="tutto", limite=STRISCIA * 12))
+    for v in voci[:STRISCIA]:
         v["quando"] = tf("{giorno} {mese}", {
             "giorno": int(v["release_date"][8:10]),
             "mese": t(MESI_IT[int(v["release_date"][5:7]) - 1])})
-        voci.append(v)
-    return voci
+    return voci[:STRISCIA]
 
 
 def piattaforme_in_cache():
@@ -916,12 +993,20 @@ def uscite():
     entro = request.args.get("entro", FINESTRA_DEFAULT)
     if entro not in dict(FINESTRE):
         entro = FINESTRA_DEFAULT
-    righe = leggi_uscite(piattaforma, entro)
+    righe = unisci_multipiattaforma(leggi_uscite(piattaforma, entro))
+    # Il taglio va **dopo** la fusione: tagliare prima riempirebbe il tetto con lo
+    # stesso gioco ripetuto una volta per piattaforma.
+    trovate = len(righe)
+    righe = righe[:TETTO_RIGHE]
     totale, aggiornata = stato_cache()
     return render_template(
         "uscite.html",
         gruppi=raggruppa_per_mese(righe),
-        quante=len(righe), totale=totale, aggiornata=aggiornata,
+        # Tre numeri diversi, e a schermo si dice quale e' quale: `quante` sono le
+        # righe **mostrate**, `trovate` quelle che passano i filtri (piu' grande se il
+        # tetto ha tagliato), `totale` le uscite grezze in cache, una per piattaforma.
+        quante=len(righe), trovate=trovate, tetto=TETTO_RIGHE,
+        totale=totale, aggiornata=aggiornata,
         piattaforme=piattaforme_in_cache(), platform=piattaforma, entro=entro,
         finestre=[(k, ETICHETTE_FINESTRA[k]) for k, _ in FINESTRE],
         # Se il default cambia, il pulsante "azzera" lo segue da solo: ricopiare

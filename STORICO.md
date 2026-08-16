@@ -58,12 +58,35 @@ pagina ed esegue `new Function()` su ogni blocco `<script>` **e** su ogni handle
   due parole inglesi. Abbreviando entrambi, uno avrebbe preso la parola dell'altro **senza
   nessun errore**. Rotto il pareggio dove costa meno: mesi per esteso («16 agosto» è
   italiano normale), giorni abbreviati, che in italiano si scrivono proprio così.
-- ⬜ **Resta la metà import**, e il motivo è uno solo: **il codice che parla con IGDB non
-  è mai stato eseguito** — servono le credenziali. `scripts/sonda_igdb.py` è pronto e non
-  scrive niente. Il punto delicato è che `_mappa_uscita()` legge la precisione da
-  `category` **oppure** da `date_format`: IGDB ha cambiato quel campo, e sbagliarlo non
-  darebbe un errore ma **date sbagliate**. Per questo la funzione **scarta e conta** invece
-  di riempire — provata su 8 risposte sintetiche, 4 mappate e 4 scartate col motivo giusto.
+- ✅ **L'import eseguito, e i dati veri hanno risposto alle domande aperte**: **6827
+  uscite**, 4280 giochi su 29 piattaforme. **Zero righe su 6827 con precisione «ignota»**
+  — il campo della precisione è stato letto per tutte, quindi la doppia lettura
+  `category` / `date_format` regge; 0 senza piattaforma, 0 senza URL, 196 senza copertina
+  (2,9%, giochi che su IGDB non ce l'hanno).
+- ✅ **Uscite multipiattaforma fuse in una riga sola**, chiesto da Davide lo stesso
+  giorno. Nei soli prossimi 90 giorni la fusione unisce **454 gruppi**: *Vampire
+  Survivors: Legacy of the Bloodmoon* da 9 righe a 1. Si fonde in **lettura** e **dopo il
+  filtro** — filtrando PS5 la riga elenca solo PS5, o sembrerebbe che il filtro non
+  funzioni. La chiave è `igdb_game_id` e non il titolo, così due giochi omonimi non si
+  fondono; le piattaforme si deduplicano, e serve davvero (*Romance of the Three Kingdoms
+  XIV* su IGDB ha la stessa piattaforma due volte, regioni diverse: a schermo esce una
+  volta). *EA Sports FC 27* resta **due** righe, 18 e 25 settembre, ed è corretto.
+  **38 controlli su 38.**
+- ⚠️ **Tetto a 300 righe, e l'effetto collaterale è dichiarato invece che nascosto.**
+  Senza tetto la pagina pesava **3,3 MB con 4224 immagini** su «tutto» e 994 KB con 1291
+  già sul default; col tetto **225 KB e 292 immagini** (stesso rimedio dello Speed Tier).
+  Ma 300 righe **coprono 11 giorni**, quindi con la cache piena le quattro finestre
+  mostrano lo stesso periodo e il selettore non fa niente: è scritto nell'avviso a
+  schermo, che indica il **filtro piattaforma** — l'unico che funziona davvero (PS5 a 221
+  righe, sotto il tetto). ⬜ La strada vera è **importare di meno**, filtrando su `hypes`
+  / `follows`: decisione di Davide, cambia quali dati entrano in cache.
+- ⚠️ **Due errori miei nello script di prova, entrambi della stessa famiglia.** La
+  pulizia cancellava `igdb_release_id` fra 900000 e 910000 «il mio intervallo»: gli id
+  veri stanno fra 486664 e 954196, e sono sparite **497 righe di cache vere** (rigenerabili
+  col pulsante, ma non doveva poter succedere). Poi il tetto ha fatto cadere fuori pagina
+  le righe finte, perché con 6827 uscite le prime 300 coprono pochi giorni. Stessa causa:
+  **un test che divide lo stato con i dati veri misura anche loro**. Ora gira su una
+  **copia** di `hub.db`, e la copia lo dimostra a fine giro.
 
 ---
 
