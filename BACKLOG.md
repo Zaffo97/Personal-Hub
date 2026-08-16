@@ -485,12 +485,71 @@ niente. Funziona invece il filtro piattaforma: PS5 scende a 221 righe su 90 gior
 il tetto; PC resta a 1115 e viene ancora tagliato.
 
 **La strada per risolverlo davvero non è alzare il tetto, è importare di meno.** Un
-calendario come quello di Opera GX mostra le uscite *che interessano*, non le 4343 di
-tutto il catalogo. IGDB ha campi che misurano l'attesa per un gioco (`hypes`, `follows`,
-`total_rating_count`): filtrare l'import su quelli taglierebbe la coda lunga alla fonte,
-e allora il tetto smetterebbe di mordere e le finestre tornerebbero a significare
-qualcosa. **È una decisione di Davide** — cambia quali dati entrano in cache — e per
-questo non l'ho presa io.
+calendario come quello di Opera GX mostra le uscite *che interessano*, non tutto il
+catalogo. Due strade, e la prima Davide l'ha già decisa il 16/08:
+
+#### ⬜ 4.1a — Tenere solo le piattaforme che interessano (deciso da Davide il 16/08/2026)
+
+**Si tengono**: PlayStation, Xbox, Switch e Switch 2, **tutti i VR**, PC. Tutto il resto
+si toglie, e va tolto **all'import**, non solo dai filtri: righe che non si guardano mai
+non devono nemmeno entrare in cache.
+
+**Quanto costa, misurato sulla cache vera** (7327 uscite, 4582 giochi):
+
+| | Righe | Giochi che sparirebbero del tutto |
+|---|---|---|
+| Resterebbero | **6141** | — |
+| Da buttare | **1186** (16%) | **42** |
+
+⚠️ **Il numero che rende la decisione facile: si perdono 1186 righe ma solo 42 giochi.**
+Quasi tutte le righe da buttare sono la versione Mac (570) o Linux (491) di un gioco che
+è **anche su PC**, quindi sparisce l'etichetta, non il gioco. I 42 giochi persi davvero
+sono quasi tutti solo-mobile: **21 iOS, 18 Android**, più 4 Playdate, 4 browser, 4 Wii.
+
+**Da togliere** (con le righe di oggi): Mac 570 · Linux 491 · Android 50 · iOS 44 ·
+Web browser 9 · Playdate 5 · Wii 4 · Arduboy 2, più undici uscite singole su console
+retro (Famicom, GBA, Neo Geo AES e MVS, NES, PS Vita, Mega Drive, Saturn, Wii U,
+Xbox 360, ZX Spectrum).
+
+**Tre casi che la regola non decide, da confermare prima di scrivere il codice:**
+
+1. **PlayStation 4 (108) e Xbox One (79)**: sono «playstation» e «xbox» alla lettera, ma
+   sono la generazione vecchia. Per come è scritta la regola **restano**
+2. **Wii (4), Wii U (1), Xbox 360 (1), PS Vita (1)**: stesse famiglie, ma sono retro.
+   Li darei per esclusi, e sono 7 righe in tutto
+3. **`visionOS` (1)**: è l'Apple Vision Pro, realtà mista. Se «tutti i VR» lo comprende
+   resta, altrimenti no
+
+> L'elenco va scritto **come lista di ciò che si tiene**, non di ciò che si esclude:
+> IGDB aggiunge piattaforme nel tempo, e una lista di esclusi **fallisce aperta** sulla
+> prossima che compare. È lo stesso ragionamento già fatto per le route degli editor
+> Pokémon in §1.2.
+>
+> ⚠️ E va deciso **cosa fare della cache già dentro**: o si svuota e si reimporta (il
+> pulsante «Svuota» c'è già), oppure la prima esecuzione con l'elenco nuovo cancella
+> anche le righe delle piattaforme escluse — altrimenti restano lì per sempre, perché
+> l'import aggiorna e inserisce ma non toglie.
+
+#### ⬜ 4.1b — Una barra di ricerca nel calendario (chiesto da Davide il 16/08/2026)
+
+Cercare un gioco per titolo fra le uscite importate, come si fa già nella libreria.
+
+- il posto è la stessa riga dei filtri di `/gaming/uscite`, e il valore viaggia **nella
+  querystring** come `platform` ed `entro`, così una ricerca si può mettere fra i preferiti
+- il modello è già in `gaming()`: `title LIKE ?` con i `%` messi dal codice
+- ⚠️ **La ricerca deve cercare in tutta la cache, non nelle 300 righe mostrate.** Col
+  tetto attivo cercare solo fra quelle darebbe «nessun risultato» per un gioco che c'è —
+  è un fallimento silenzioso della stessa famiglia già pagata più volte qui. Il filtro va
+  quindi nella query SQL, prima del tetto
+- ⚠️ e con una ricerca attiva il tetto quasi sempre non morde più: l'avviso «mostrate le
+  prime N» non deve comparire quando non serve
+
+#### ⬜ 4.1c — Il resto della coda lunga
+
+Anche tolte le piattaforme, restano ~6141 righe: la maggior parte sono giochi minuscoli.
+IGDB ha campi che misurano l'attesa (`hypes`, `follows`, `total_rating_count`), e
+filtrare su quelli è ciò che farebbe tornare a significare qualcosa il selettore del
+periodo. Da valutare **dopo** 4.1a, che da solo potrebbe già bastare.
 
 > Modello già collaudato qui per gli import esterni, e vale anche per questo: lotti
 > piccoli, la chiave **solo** da variabile d'ambiente e mai nel repo, e l'import che
