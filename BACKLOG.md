@@ -433,47 +433,48 @@ quattro cose richiedono **fonti diverse**:
 | 🐍 **Python** | ⬜ Spazio per inserire i propri progetti e testarli · ⬜ idee per rendere la sezione più utile |
 | 🐾 **Pokémon** | ⬜ Creare i JSON di una regulation nuova dalla web app (vedi §1.3) |
 
-### 4.1 ⬜ Gaming — il calendario delle uscite (chiesto da Davide il 13/08/2026)
+### 4.1 🟨 Gaming — il calendario delle uscite (chiesto il 13/08, costruito il 16/08/2026)
 
 **Chiesto**: nella sezione Gaming una **barra o un calendario con le prossime uscite**,
-di **tutte le piattaforme** e non solo Steam, sul modello di quello di Opera GX. Serve
-quindi agganciarsi a un servizio esterno.
+di **tutte le piattaforme** e non solo Steam, sul modello di quello di Opera GX.
 
-**Cosa c'è oggi, verificato sullo schema**: `games` ha `title`, `platform`, `genre`,
-`status`, `hours_hltb`, `cover_url`, `steam_tags`, `date_start` e `date_end`. ⚠️ **Non
-c'è nessuna data di uscita**: `date_start`/`date_end` sono quando *tu* hai iniziato e
-finito di giocare, non quando il gioco esce. Il dato non c'è proprio, va importato.
+✅ **Le decisioni sono prese e la metà lettura è chiusa e verificata** (dettagli in
+`STORICO.md`). **Fonte scelta: IGDB.** Il backlog dava RAWG come «più semplice da
+attaccare»: il 16/08/2026 RAWG rispondeva **522 da Cloudflare su API *e* sito**, tre
+tentativi, mentre dalla stessa macchina Steam rispondeva normalmente e IGDB dava un 401
+regolare con l'istruzione sugli header. Scrivere il client di un servizio irraggiungibile
+avrebbe significato non poterlo provare. Opera GX / GX Corner **non è stata cercata**: la
+domanda «esiste una API» resta aperta e ormai è accademica, la fonte è decisa.
 
-⚠️ **Le uscite future non sono la tua libreria, e non vanno messe in `games`.** Sono
-centinaia di titoli che non possiedi: finirebbero nei conteggi della sezione, nei filtri
-per genere e piattaforma, nel suggeritore e **nell'export**. Vanno in una tabella loro,
-riempita da una cache che si può buttare e rifare — la libreria resta quella che è.
+Le due decisioni che il backlog lasciava in sospeso: le **piattaforme sono un filtro
+nell'URL** (`?platform=`) e non una preferenza salvata — le preferenze per utente nel DB
+non esistono, vedi §1.4 falla 3, e i filtri di Gaming viaggiano già tutti nella
+querystring; la **cache la aggiorni tu da un pulsante**, come ogni altro import qui, e
+l'aggiornamento automatico resta agganciato a §1.5, che è l'unico contesto in cui ha senso.
 
-**Le fonti possibili, per quel che ne so io — e va verificato quando ci si mette,
-non dato per buono:**
+**⬜ Cosa resta, ed è tutto sulla stessa cosa: il codice che parla con IGDB non è mai
+stato eseguito.** Servono le credenziali, che deve creare Davide:
 
-| Fonte | Cosa darebbe | Il prezzo |
-|---|---|---|
-| **IGDB** (Twitch/Amazon) | La più completa che conosco per il **multi-piattaforma**: ha un endpoint di date d'uscita con piattaforma e regione, quindi è la candidata più seria per «tutte le piattaforme» | Gratis ma serve un'app sviluppatore Twitch e un giro OAuth per il token; c'è un limite di richieste al secondo |
-| **RAWG** | Stessa idea, più semplice da attaccare: chiave gratuita e basta, niente OAuth, con filtri per intervallo di date e piattaforma | Copertura e qualità dei dati da confrontare con IGDB su un campione vero |
-| **Steam** | ⚠️ **Solo Steam**, quindi da solo non risponde alla richiesta. Ma è già cablato qui (`storesearch` e `appdetails`, senza chiave) e `appdetails` porta la data d'uscita | Utile al massimo come complemento |
-| **Opera GX / GX Corner** | È la cosa che Davide ha in mente | ⚠️ **Non mi risulta esista un'API pubblica documentata**: è una funzione dentro il browser, non un servizio. Da controllare prima di contarci — se non c'è, il modello resta ma la fonte è un'altra |
+1. [dev.twitch.tv/console/apps](https://dev.twitch.tv/console/apps) → *Register Your
+   Application*, OAuth Redirect URL `http://localhost`, categoria *Application Integration*
+2. `IGDB_CLIENT_ID` e `IGDB_CLIENT_SECRET` come variabili d'ambiente, come `STEAM_API_KEY`
+3. Poi `python scripts/sonda_igdb.py`, che stampa una risposta vera senza scrivere niente
 
-**Le due cose da decidere prima di scrivere una riga:**
+⚠️ **Il punto su cui la sonda esiste**: `_mappa_uscita()` in `blueprints/gaming.py` legge
+la precisione della data da `category`, **oppure** da `date_format` se il primo non c'è —
+perché IGDB ha cambiato quel campo e non ho una risposta vera con cui decidere quale sia.
+Se sbagliassi campo non uscirebbe nessun errore: uscirebbero **date sbagliate**, spacciando
+il primo giorno di un trimestre per la data d'uscita. Per questo la funzione **scarta e
+conta** invece di riempire, e i motivi di scarto compaiono a schermo.
 
-1. **Quali piattaforme mostrare.** In libreria `platform` c'è già, quindi si può filtrare
-   il calendario su quelle che ti interessano invece di mostrarne 40. Da decidere se è un
-   filtro o una preferenza salvata
-2. **Chi aggiorna la cache, e quando.** Oggi ogni import di questa app **lo lanci tu da un
-   pulsante**. Un calendario che si aggiorna solo quando ci clicchi sopra è mezzo inutile,
-   ma un aggiornamento automatico ha senso solo quando l'app gira da qualche parte: da
-   incrociare con §1.5
+**Da confermare sulla risposta vera, uno per uno:** il nome del campo della precisione ·
+che l'espansione `game.name` / `platform.name` sia accettata come scritta · che l'URL
+copertina `t_cover_small/<image_id>.jpg` risponda · quante uscite future ci sono davvero
+(decide se l'orizzonte di 540 giorni è giusto) · e il giro OAuth, mai eseguito.
 
 > Modello già collaudato qui per gli import esterni, e vale anche per questo: lotti
-> piccoli con una pausa, la chiave **solo** da variabile d'ambiente e mai nel repo, e lo
-> script che **si ferma su ciò che non risolve** invece di indovinare. È come è stato
-> fatto per SteamSpy, dove il rispetto del limite era 6 richieste per volta con un secondo
-> di pausa.
+> piccoli, la chiave **solo** da variabile d'ambiente e mai nel repo, e l'import che
+> **si ferma su ciò che non risolve** invece di indovinare.
 
 ---
 

@@ -1,3 +1,4 @@
+import datetime
 import json
 import math
 import os
@@ -526,6 +527,409 @@ def suggerimenti(giochi, quanti=4, id_ancora=None):
     return ancora, motivo, classifica[:quanti], ""
 
 
+# --- IGDB -------------------------------------------------------------------
+# La fonte delle date d'uscita **multi-piattaforma**. Steam da' solo Steam, e la
+# richiesta era esplicitamente "tutte le piattaforme"; RAWG il 16/08/2026 rispondeva
+# 522 su API e sito, quindi scriverne il client sarebbe stato scrivere codice non
+# provabile.
+#
+# IGDB e' di Twitch, e l'autenticazione e' quella di Twitch: un'app registrata da'
+# Client ID + Secret, con cui si chiede un **token applicativo** (client_credentials)
+# che vale settimane. Le credenziali stanno **solo** in variabili d'ambiente, come
+# STEAM_API_KEY: mai su file, mai in git, mai chieste in un form.
+IGDB_TOKEN_URL = "https://id.twitch.tv/oauth2/token"
+IGDB_URL = "https://api.igdb.com/v4/{}"
+IGDB_TIMEOUT = 15
+# Margine sulla scadenza: un token che scade fra dieci secondi e' gia' scaduto per
+# una richiesta che deve ancora partire.
+IGDB_MARGINE = 300
+
+# Cache del token in memoria: `(token, scade_a_epoch)`. Non va su disco — e' una
+# credenziale, e su disco finirebbe in un backup o in un commit.
+_igdb_token_cache = (None, 0)
+
+
+def igdb_credenziali():
+    """`(client_id, client_secret)` dall'ambiente. Stringhe vuote se non impostate."""
+    return (os.environ.get("IGDB_CLIENT_ID", "").strip(),
+            os.environ.get("IGDB_CLIENT_SECRET", "").strip())
+
+
+def igdb_token():
+    """Token applicativo, preso una volta e riusato. Ritorna (token, errore)."""
+    global _igdb_token_cache
+    token, scade = _igdb_token_cache
+    if token and time.time() < scade - IGDB_MARGINE:
+        return token, None
+
+    cid, seg = igdb_credenziali()
+    if not cid or not seg:
+        return None, "IGDB_CLIENT_ID / IGDB_CLIENT_SECRET non impostate"
+
+    dati = urllib.parse.urlencode({
+        "client_id": cid, "client_secret": seg,
+        "grant_type": "client_credentials"}).encode()
+    req = urllib.request.Request(IGDB_TOKEN_URL, data=dati,
+                                 headers={"User-Agent": STEAM_UA})
+    try:
+        with urllib.request.urlopen(req, timeout=IGDB_TIMEOUT) as r:
+            d = json.loads(r.read())
+    except urllib.error.HTTPError as e:
+        # 401/403 qui vuol dire credenziali sbagliate, non un guasto di rete: va
+        # detto con parole diverse, o si cerca il problema dalla parte sbagliata.
+        if e.code in (400, 401, 403):
+            return None, "Twitch rifiuta le credenziali IGDB: Client ID o Secret errati"
+        return None, f"Twitch ha risposto {e.code}"
+    except (urllib.error.URLError, socket.timeout):
+        return None, "Twitch non raggiungibile"
+    except json.JSONDecodeError:
+        return None, "Risposta di Twitch non leggibile"
+
+    token = d.get("access_token")
+    if not token:
+        return None, "Twitch non ha restituito un token"
+    _igdb_token_cache = (token, time.time() + (d.get("expires_in") or 0))
+    return token, None
+
+
+def igdb_query(endpoint, query):
+    """POST Apicalypse su IGDB. Ritorna (dati, errore).
+
+    ⚠️ IGDB **non** usa la querystring: la richiesta e' un POST col corpo in
+    Apicalypse (`fields …; where …; limit …;`), e senza gli header `Client-ID` e
+    `Authorization: Bearer` risponde 401 con un messaggio che spiega quale manca.
+    """
+    token, errore = igdb_token()
+    if errore:
+        return None, errore
+    req = urllib.request.Request(
+        IGDB_URL.format(endpoint), data=query.encode(),
+        headers={"Client-ID": igdb_credenziali()[0],
+                 "Authorization": f"Bearer {token}",
+                 "User-Agent": STEAM_UA, "Accept": "application/json"})
+    try:
+        with urllib.request.urlopen(req, timeout=IGDB_TIMEOUT) as r:
+            return json.loads(r.read()), None
+    except urllib.error.HTTPError as e:
+        if e.code == 429:
+            return None, "IGDB ha risposto 429: troppe richieste, riprova fra poco"
+        return None, f"IGDB ha risposto {e.code}"
+    except (urllib.error.URLError, socket.timeout):
+        return None, "IGDB non raggiungibile"
+    except json.JSONDecodeError:
+        return None, "Risposta di IGDB non leggibile"
+
+
+# --- Calendario uscite ------------------------------------------------------
+# Le uscite future stanno in `game_releases`, che e' una **cache** e non la libreria:
+# il perche' sta nel commento della tabella in `extensions.py`.
+#
+# Finestre offerte dal filtro. La chiave e' quella che viaggia nell'URL, il valore e'
+# quanti giorni in avanti guardare. `None` = tutto quello che c'e' in cache.
+FINESTRE = [("30", 30), ("90", 90), ("365", 365), ("tutto", None)]
+ETICHETTE_FINESTRA = {"30": "Prossimi 30 giorni", "90": "Prossimi 3 mesi",
+                      "365": "Prossimo anno", "tutto": "Tutto quello che c'è"}
+FINESTRA_DEFAULT = "90"
+
+# Quante uscite mostrare nella striscia in cima a /gaming. La pagina intera non ha
+# tetto: li' l'elenco e' il contenuto, qui e' un assaggio.
+STRISCIA = 6
+
+MESI_IT = ["gennaio", "febbraio", "marzo", "aprile", "maggio", "giugno", "luglio",
+           "agosto", "settembre", "ottobre", "novembre", "dicembre"]
+# ⚠️ **I mesi NON si abbreviano, e non e' una scelta estetica.** La chiave del
+# dizionario e' la frase italiana, quindi `mar` puo' avere **una** traduzione sola —
+# ma in italiano `mar` e' sia *marzo* (`Mar`) sia *martedi'* (`Tue`). Abbreviando
+# entrambi, uno dei due riceverebbe la parola inglese dell'altro **senza nessun
+# errore**: e' la trappola "una parola italiana, due inglesi" gia' descritta in
+# CLAUDE.md. Si rompe il pareggio dove costa meno: "16 agosto" per esteso e' italiano
+# normale, mentre i giorni della settimana in italiano si abbreviano proprio cosi'.
+# ⚠️ Indicizzati come `datetime.weekday()`: 0 = lunedì. `time.strftime('%A')` darebbe
+# il nome nella lingua del **sistema operativo**, che qui non c'entra niente: la
+# lingua della pagina sta nel cookie `hub_lang`, e il giorno deve seguire quella.
+GIORNI_IT = ["lun", "mar", "mer", "gio", "ven", "sab", "dom"]
+
+
+def _oggi():
+    return time.strftime("%Y-%m-%d")
+
+
+def _fra_giorni(n):
+    return time.strftime("%Y-%m-%d", time.localtime(time.time() + n * 86400))
+
+
+def leggi_uscite(piattaforma="", entro=FINESTRA_DEFAULT, limite=None):
+    """Le uscite in cache da oggi in avanti, gia' ordinate per data.
+
+    ⚠️ Il confine e' **oggi compreso**, non "da domani": un gioco che esce oggi e'
+    esattamente quello che uno vuole vedere in un calendario delle uscite.
+
+    Le date sono stringhe `YYYY-MM-DD`, quindi il confronto lessicografico di SQLite
+    e' anche quello cronologico: non serve nessuna conversione. Le righe **senza**
+    data restano fuori — una riga in un calendario senza sapere quando e' rumore.
+    """
+    giorni = dict(FINESTRE).get(entro, dict(FINESTRE)[FINESTRA_DEFAULT])
+    sql = ("SELECT * FROM game_releases WHERE release_date IS NOT NULL"
+           " AND release_date >= ?")
+    params = [_oggi()]
+    if giorni is not None:
+        sql += " AND release_date <= ?"
+        params.append(_fra_giorni(giorni))
+    if piattaforma:
+        sql += " AND platform = ?"
+        params.append(piattaforma)
+    sql += " ORDER BY release_date ASC, title COLLATE NOCASE ASC"
+    if limite:
+        sql += " LIMIT ?"
+        params.append(limite)
+    db = get_db()
+    righe = db.execute(sql, params).fetchall()
+    db.close()
+    return righe
+
+
+def raggruppa_per_mese(righe):
+    """`[(etichetta_mese, [voce, …]), …]`, nell'ordine in cui arrivano.
+
+    Il raggruppamento si fa qui e non nel template: Jinja sa fare `groupby`, ma
+    l'etichetta del mese va tradotta e composta, e farlo nel template significherebbe
+    spezzarla in pezzi che l'inglese rimetterebbe in un altro ordine.
+
+    Le righe diventano **dizionari** perche' ci si aggiunge `dow`, il giorno della
+    settimana: una `sqlite3.Row` non si puo' arricchire.
+    """
+    gruppi = []
+    for r in righe:
+        voce = dict(r)
+        anno, mese, giorno = (int(voce["release_date"][:4]),
+                              int(voce["release_date"][5:7]),
+                              int(voce["release_date"][8:10]))
+        # Frase intera in una chiamata sola, non "mese" + " " + "anno": cosi' l'inglese
+        # puo' metterne le parole in un altro ordine se serve.
+        etichetta = tf("{mese} {anno}", {"mese": t(MESI_IT[mese - 1]), "anno": anno})
+        voce["dow"] = t(GIORNI_IT[datetime.date(anno, mese, giorno).weekday()])
+        if not gruppi or gruppi[-1][0] != etichetta:
+            gruppi.append((etichetta, []))
+        gruppi[-1][1].append(voce)
+    return gruppi
+
+
+def striscia_uscite():
+    """Le prossime `STRISCIA` uscite per la striscia in cima a /gaming.
+
+    Torna dizionari con un `quando` gia' composto ("16 ago"): nella striscia non c'e'
+    l'intestazione del mese a fare da contesto, quindi la data se lo porta dietro.
+    """
+    voci = []
+    for r in leggi_uscite(entro="tutto", limite=STRISCIA):
+        v = dict(r)
+        v["quando"] = tf("{giorno} {mese}", {
+            "giorno": int(v["release_date"][8:10]),
+            "mese": t(MESI_IT[int(v["release_date"][5:7]) - 1])})
+        voci.append(v)
+    return voci
+
+
+def piattaforme_in_cache():
+    """Solo le piattaforme che hanno almeno un'uscita: una lista fissa offrirebbe
+    filtri che non danno mai risultati, come gia' per i generi della libreria."""
+    db = get_db()
+    righe = sorted({r[0] for r in db.execute(
+        "SELECT DISTINCT platform FROM game_releases"
+        " WHERE platform IS NOT NULL AND platform <> ''")})
+    db.close()
+    return righe
+
+
+def stato_cache():
+    """`(quante_uscite_future, quando_e_stata_aggiornata)`. Serve a dire a schermo se
+    quello che si sta guardando e' fresco: una cache che non dichiara la propria eta'
+    e' indistinguibile da un dato vero, ed e' la stessa trappola del grafo."""
+    db = get_db()
+    n = db.execute("SELECT COUNT(*) FROM game_releases WHERE release_date >= ?",
+                   (_oggi(),)).fetchone()[0]
+    quando = db.execute("SELECT MAX(updated_at) FROM game_releases").fetchone()[0]
+    db.close()
+    return n, quando
+
+
+# Quante uscite chiedere per giro. IGDB accetta al massimo 500 per richiesta, ed e'
+# anche un buon lotto per una richiesta HTTP: il client richiama finche' non ha finito.
+IGDB_LOTTO = 500
+# Fin dove guardare in avanti. Oltre l'anno e mezzo le date su IGDB sono quasi tutte
+# "2028" o "TBD", cioe' righe che il calendario mostrerebbe senza dire niente di utile.
+IGDB_ORIZZONTE = 540
+
+# `category` di IGDB dice **quanto e' precisa** la data. Questa e' la tabella
+# dell'enum; il nome del campo va confermato dalla sonda, e per questo il codice
+# accetta sia `category` sia `date_format` e non da' per scontato nessuno dei due.
+# ⚠️ La riga con precisione diversa da "giorno" ha comunque un `date` valorizzato: e'
+# l'**inizio** del periodo. Ordinare va bene, mostrarlo come data d'uscita no — a
+# schermo si mostra allora `human`, che e' come IGDB stessa la scrive.
+IGDB_PRECISIONE = {
+    0: "giorno", 1: "mese", 2: "anno", 3: "trimestre", 4: "trimestre",
+    5: "trimestre", 6: "trimestre", 7: "ignota",
+}
+
+
+def _mappa_uscita(voce):
+    """Da una voce IGDB alla riga da scrivere. Ritorna (riga, motivo_scarto).
+
+    ⚠️ **Scarta invece di riempire.** Una riga senza data o senza titolo non e' una
+    riga da salvare con dei NULL dentro: e' una riga che non sappiamo leggere, e in un
+    calendario diventerebbe una voce muta. La si conta e la si dichiara a schermo.
+    """
+    rid = voce.get("id")
+    quando = voce.get("date")
+    gioco = voce.get("game") or {}
+    titolo = (gioco.get("name") or "").strip() if isinstance(gioco, dict) else ""
+
+    if not rid:
+        return None, "senza id"
+    if not quando:
+        return None, "senza data"
+    if not titolo:
+        return None, "senza titolo"
+
+    # `category` sul vecchio schema, `date_format` sul nuovo: si prende quello che
+    # c'e'. Se non c'e' nessuno dei due la precisione resta **dichiarata ignota**,
+    # che e' diverso da "giorno" — dare per esatta una data che non lo e' sarebbe
+    # inventare un dato.
+    codice = voce.get("category")
+    if codice is None:
+        codice = voce.get("date_format")
+    precisione = IGDB_PRECISIONE.get(codice, "ignota")
+
+    piattaforma = voce.get("platform") or {}
+    if not isinstance(piattaforma, dict):
+        piattaforma = {}
+
+    copertina = ""
+    cover = gioco.get("cover") if isinstance(gioco, dict) else None
+    if isinstance(cover, dict) and cover.get("image_id"):
+        # `t_cover_small` e' 90x128: qui la copertina sta in un riquadro da 92x43,
+        # non serve di piu' e sono meno byte per riga.
+        copertina = ("https://images.igdb.com/igdb/image/upload/"
+                     f"t_cover_small/{cover['image_id']}.jpg")
+
+    return {
+        "igdb_release_id": rid,
+        "igdb_game_id": gioco.get("id"),
+        "title": titolo[:300],
+        "platform": (piattaforma.get("name") or "").strip(),
+        "platform_abbr": (piattaforma.get("abbreviation") or "").strip(),
+        # IGDB da' un epoch UTC. La data si prende in UTC e **non** in ora locale:
+        # `localtime()` su un timestamp di mezzanotte UTC sposterebbe l'uscita al
+        # giorno prima o dopo a seconda del fuso, che e' un baco silenzioso.
+        "release_date": time.strftime("%Y-%m-%d", time.gmtime(quando)),
+        "precisione": precisione,
+        "human": (voce.get("human") or "").strip(),
+        "cover_url": copertina,
+        "igdb_url": (gioco.get("url") or "") if isinstance(gioco, dict) else "",
+        "region": str(voce.get("region") or ""),
+    }, None
+
+
+@bp.route("/uscite/aggiorna", methods=["POST"])
+@login_required
+def uscite_aggiorna():
+    """Un lotto di uscite future da IGDB. Il client richiama finche' `finito`.
+
+    Rieseguibile: l'UPSERT e' su `igdb_release_id`, quindi rilanciarlo aggiorna le
+    righe che ci sono invece di duplicarle — una data che si sposta e' il caso normale
+    per un'uscita futura, ed e' il motivo per cui questo pulsante esiste.
+    """
+    payload = request.get_json(silent=True) or {}
+    offset = max(0, _i(payload.get("offset")))
+
+    adesso = int(time.time())
+    fino_a = adesso + IGDB_ORIZZONTE * 86400
+    # Una richiesta sola per lotto: i campi espansi (`game.name`, `platform.name`)
+    # evitano il giro supplementare per ogni gioco e ogni piattaforma.
+    # ⚠️ `sort id asc` e non `sort date asc`: con l'offset che avanza serve un ordine
+    # **stabile**, e le date cambiano proprio mentre si sta paginando. Ordinare per
+    # data farebbe scivolare le righe fra un lotto e l'altro, saltandone alcune.
+    query = ("fields id, date, human, category, date_format, region, "
+             "game.id, game.name, game.url, game.cover.image_id, "
+             "platform.name, platform.abbreviation; "
+             f"where date > {adesso} & date < {fino_a}; "
+             f"sort id asc; limit {IGDB_LOTTO}; offset {offset};")
+    dati, errore = igdb_query("release_dates", query)
+    if errore:
+        return jsonify({"errore": errore, "offset": offset}), 502
+    if not isinstance(dati, list):
+        return jsonify({"errore": "IGDB non ha restituito un elenco",
+                        "offset": offset}), 502
+
+    db = get_db()
+    nuovi = aggiornati = 0
+    scarti = {}
+    quando = time.strftime("%Y-%m-%d %H:%M:%S")     # ora locale, come la legge Davide
+    for voce in dati:
+        riga, motivo = _mappa_uscita(voce)
+        if motivo:
+            scarti[motivo] = scarti.get(motivo, 0) + 1
+            continue
+        gia = db.execute("SELECT id FROM game_releases WHERE igdb_release_id=?",
+                         (riga["igdb_release_id"],)).fetchone()
+        campi = list(riga) + ["updated_at"]
+        valori = [riga[c] for c in riga] + [quando]
+        if gia:
+            db.execute("UPDATE game_releases SET "
+                       + ", ".join(f"{c}=?" for c in campi)
+                       + " WHERE igdb_release_id=?",
+                       valori + [riga["igdb_release_id"]])
+            aggiornati += 1
+        else:
+            db.execute(f"INSERT INTO game_releases({', '.join(campi)})"
+                       f" VALUES({', '.join('?' * len(campi))})", valori)
+            nuovi += 1
+    db.commit()
+    db.close()
+
+    presi = len(dati)
+    return jsonify({
+        "presi": presi, "nuovi": nuovi, "aggiornati": aggiornati,
+        "scarti": scarti,
+        "offset": offset + presi,
+        # Un lotto piu' corto del massimo vuol dire che IGDB ha finito le righe.
+        "finito": presi < IGDB_LOTTO,
+    })
+
+
+@bp.route("/uscite/svuota", methods=["POST"])
+@login_required
+def uscite_svuota():
+    """Butta la cache. E' rigenerabile per definizione, quindi non c'e' niente da
+    archiviare prima: e' l'unica tabella di questo progetto per cui vale."""
+    db = get_db()
+    n = db.execute("DELETE FROM game_releases").rowcount
+    db.commit()
+    db.close()
+    return jsonify({"tolte": n})
+
+
+@bp.route("/uscite")
+@login_required
+def uscite():
+    piattaforma = request.args.get("platform", "")
+    entro = request.args.get("entro", FINESTRA_DEFAULT)
+    if entro not in dict(FINESTRE):
+        entro = FINESTRA_DEFAULT
+    righe = leggi_uscite(piattaforma, entro)
+    totale, aggiornata = stato_cache()
+    return render_template(
+        "uscite.html",
+        gruppi=raggruppa_per_mese(righe),
+        quante=len(righe), totale=totale, aggiornata=aggiornata,
+        piattaforme=piattaforme_in_cache(), platform=piattaforma, entro=entro,
+        finestre=[(k, ETICHETTE_FINESTRA[k]) for k, _ in FINESTRE],
+        # Se il default cambia, il pulsante "azzera" lo segue da solo: ricopiare
+        # `'90'` nel template lo lascerebbe indietro in silenzio.
+        filtri_attivi=bool(piattaforma or entro != FINESTRA_DEFAULT),
+        chiavi_presenti=all(igdb_credenziali()))
+
+
 @bp.route("/")
 @login_required
 def gaming():
@@ -567,12 +971,15 @@ def gaming():
     ancora, motivo_ancora, suggeriti, nota_sugg = suggerimenti(
         tutti, id_ancora=_i(request.args.get("simile_a")) or None)
     db.close()
+    # La striscia delle prossime uscite: un assaggio del calendario, non il calendario.
+    # ⚠️ Non tocca `games` e non entra in nessuno dei conteggi qui sopra — sono giochi
+    # che non possiedi, e mischiarli alla libreria era proprio la cosa da non fare.
     return render_template("gaming.html", games=games, statuses=GAME_STATUSES,
                            platforms=GAME_PLATFORMS, current_filter=filt, q=q, counts=counts,
                            generi=generi, piattaforme=piattaforme, genre=genere,
                            platform=piattaforma, sort=ordine, ordinamenti=ETICHETTE_ORDINE,
                            ancora=ancora, motivo_ancora=motivo_ancora, suggeriti=suggeriti,
-                           nota_sugg=nota_sugg, tutti=tutti)
+                           nota_sugg=nota_sugg, tutti=tutti, prossime=striscia_uscite())
 
 
 @bp.route("/new", methods=["GET", "POST"])

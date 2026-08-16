@@ -10,11 +10,41 @@
   <div class="flex items-center justify-between flex-wrap gap-2">
     <div><h1>&#127918; Gaming Tracker</h1><p class="text-muted text-sm">{{ t('La tua libreria di giochi') }}</p></div>
     <div class="flex gap-2">
+      <a href="/gaming/uscite" class="btn btn-secondary">&#128197; {{ t('Prossime uscite') }}</a>
       <a href="/gaming/steam" class="btn btn-secondary">&#11015; {{ t('Importa da Steam') }}</a>
       <a href="/gaming/new" class="btn btn-primary">+ {{ t('Aggiungi gioco') }}</a>
     </div>
   </div>
 </div>
+
+{# Striscia delle prossime uscite: un assaggio, il calendario intero sta in /uscite.
+   ⚠️ Non sono giochi della libreria — vengono da `game_releases`, che è una cache di
+   IGDB — quindi qui non c'è nessun pulsante di modifica: non c'è niente da modificare.
+   Compare solo se la cache ha qualcosa: una striscia vuota sarebbe solo rumore. #}
+{% if prossime %}
+<div class="card mb-3">
+  <div class="card-body" style="padding:.6rem .75rem">
+    <div class="flex items-center justify-between gap-2 mb-2">
+      <span class="font-600 text-sm">&#128197; {{ t('In uscita') }}</span>
+      <a href="/gaming/uscite" class="text-xs">{{ t('vedi tutte') }} &rarr;</a>
+    </div>
+    <div style="display:grid;grid-template-columns:repeat(auto-fill,minmax(185px,1fr));gap:.6rem">
+      {% for u in prossime %}
+      <div style="display:flex;gap:.55rem;align-items:center;padding:.45rem;border:1px solid var(--border);border-radius:8px">
+        <div style="width:52px;height:26px;flex:0 0 auto;overflow:hidden;background:var(--surface-off);border-radius:4px">
+          {% if u.cover_url %}<img src="{{ u.cover_url }}" style="width:100%;height:100%;object-fit:cover" loading="lazy" alt="{{ u.title }}">{% endif %}
+        </div>
+        <div style="min-width:0">
+          <div class="text-sm font-600" style="white-space:nowrap;overflow:hidden;text-overflow:ellipsis" title="{{ u.title }}">{{ u.title }}</div>
+          <div class="text-xs text-muted" style="white-space:nowrap;overflow:hidden;text-overflow:ellipsis">
+            {{ u.quando }}{% if u.platform %} &middot; {{ u.platform }}{% endif %}</div>
+        </div>
+      </div>
+      {% endfor %}
+    </div>
+  </div>
+</div>
+{% endif %}
 
 {# I pulsanti di stato portano con sé ricerca, filtri e ordinamento: prima
    cambiare stato li azzerava tutti, ed erano solo due (stato e ricerca). #}

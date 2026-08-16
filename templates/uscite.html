@@ -1,0 +1,220 @@
+{% extends "base.html" %}
+{% block title %}{{ t('Prossime uscite') }} – Hub{% endblock %}
+{% block topbar_title %}&#128197; {{ t('Prossime uscite') }}{% endblock %}
+{% block extra_head %}
+<style>
+.us-riga{display:flex;align-items:center;gap:.7rem;padding:.45rem .55rem;border-bottom:1px solid var(--border)}
+.us-riga:last-child{border-bottom:none}
+.us-riga:hover{background:var(--surface-off)}
+.us-riga img{width:92px;height:43px;object-fit:cover;border-radius:3px;flex:none;background:var(--surface-off)}
+.us-vuota{width:92px;height:43px;flex:none;background:var(--surface-off);border-radius:3px;
+          display:flex;align-items:center;justify-content:center;font-size:1.1rem}
+/* Il giorno in cifre grandi: in un calendario è la colonna che si legge per prima,
+   e allineata a destra con cifre tabulari le date restano incolonnate. */
+.us-giorno{flex:none;width:2.4rem;text-align:right;font-variant-numeric:tabular-nums;
+           font-weight:600;font-size:1.05rem;line-height:1}
+.us-dow{font-size:.62rem;color:var(--text-muted);text-transform:uppercase;letter-spacing:.03em}
+.us-tit{min-width:0;flex:1}
+.us-tit>div{white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.us-mese{position:sticky;top:0;z-index:1;background:var(--surface);padding:.45rem .55rem;
+         border-bottom:1px solid var(--border);font-weight:600;font-size:.85rem;
+         text-transform:capitalize}
+.us-guida code{background:var(--surface-off);padding:.1rem .3rem;border-radius:3px;font-size:.78rem}
+.us-guida li{margin-bottom:.5rem;font-size:.83rem;line-height:1.5}
+</style>
+{% endblock %}
+{% block content %}
+<div class="page-header">
+  <div class="flex items-center justify-between flex-wrap gap-2">
+    <div class="flex items-center gap-2">
+      <a href="/gaming/" class="btn btn-secondary btn-sm">&#8592; Gaming</a>
+      <div>
+        <h1>&#128197; {{ t('Prossime uscite') }}</h1>
+        <p class="text-muted text-sm">{{ t('Da IGDB, tutte le piattaforme — non è la tua libreria') }}</p>
+      </div>
+    </div>
+    {% if chiavi_presenti %}
+    <div class="flex gap-2">
+      {% if totale %}
+      <button id="btn_svuota" class="btn btn-secondary" title="{{ t('La cache si rigenera premendo «Aggiorna»: non c\'è niente da archiviare') }}">&#128465; {{ t('Svuota') }}</button>
+      {% endif %}
+      <button id="btn_aggiorna" class="btn btn-primary">&#128260; {{ t('Aggiorna il calendario') }}</button>
+    </div>
+    {% endif %}
+  </div>
+</div>
+
+{% if not chiavi_presenti %}
+{# Stessa forma della guida di steam_import.html: se manca la chiave la pagina spiega
+   come ottenerla invece di limitarsi a essere vuota. #}
+<div class="card" style="max-width:780px;border-color:var(--warning,#d97706)">
+  <div class="card-body us-guida">
+    <h3 style="margin-bottom:.6rem">&#9888;&#65039; {{ t('Mancano le credenziali IGDB') }}</h3>
+    <p class="text-sm text-muted mb-3">
+      {{ t('Le date d\'uscita di <strong>tutte</strong> le piattaforme vengono da IGDB, che è di Twitch: serve registrare un\'applicazione una volta sola. Steam da solo darebbe solo i giochi Steam.')|safe }}
+    </p>
+    <ol style="padding-left:1.2rem">
+      <li>{{ t('Vai su <code>https://dev.twitch.tv/console/apps</code> e fai <em>Register Your Application</em>. Nome a piacere, <strong>OAuth Redirect URL</strong> <code>http://localhost</code>, categoria <em>Application Integration</em>.')|safe }}</li>
+      <li>{{ t('Copia il <strong>Client ID</strong>, poi <em>New Secret</em> per ottenere il <strong>Client Secret</strong>.')|safe }}</li>
+      <li>{{ t('Apri PowerShell e incolla, mettendo i tuoi valori al posto dei segnaposto:')|safe }}
+        <div style="margin:.35rem 0">
+          <code>[Environment]::SetEnvironmentVariable("IGDB_CLIENT_ID","IL_TUO_ID","User")</code><br>
+          <code>[Environment]::SetEnvironmentVariable("IGDB_CLIENT_SECRET","IL_TUO_SECRET","User")</code>
+        </div>
+      </li>
+      <li>{{ t('<strong>Chiudi e riapri</strong> il terminale, poi riavvia la web app: le variabili d\'ambiente vengono lette all\'avvio.')|safe }}</li>
+    </ol>
+    <p class="text-xs text-muted mt-2" style="border-top:1px solid var(--border);padding-top:.6rem">
+      {{ t('Le credenziali stanno <strong>solo</strong> nelle variabili d\'ambiente: non finiscono in un file del progetto, non entrano in git e questa pagina non te le chiede mai in un campo di testo.')|safe }}
+    </p>
+  </div>
+</div>
+{% endif %}
+
+<div id="agg_stato" class="text-sm text-muted mb-2"></div>
+
+{# Filtri: viaggiano nell'URL come tutti quelli di Gaming, così un calendario
+   filtrato si può mettere fra i preferiti. #}
+<form method="GET" class="mb-3 flex gap-2 flex-wrap items-center">
+  {% if piattaforme %}
+  <select name="platform" class="form-control" style="max-width:220px" onchange="this.form.submit()">
+    <option value="">{{ t('Tutte le piattaforme') }}</option>
+    {% for p in piattaforme %}<option value="{{ p }}" {% if p==platform %}selected{% endif %}>{{ p }}</option>{% endfor %}
+  </select>
+  {% endif %}
+  <select name="entro" class="form-control" style="max-width:200px" onchange="this.form.submit()">
+    {% for chiave, etichetta in finestre %}
+    <option value="{{ chiave }}" {% if chiave==entro %}selected{% endif %}>{{ t(etichetta) }}</option>
+    {% endfor %}
+  </select>
+  {% if filtri_attivi %}
+  <a href="/gaming/uscite" class="btn btn-secondary" title="{{ t('Azzera i filtri') }}">&#x2715;</a>
+  {% endif %}
+  <span class="text-muted text-sm" style="margin-left:auto">
+    {{ tf('{n} su {tot}', {'n': quante, 'tot': totale}) }}
+    {% if aggiornata %}
+    {# La cache dichiara la propria età: senza, è indistinguibile da un dato vero. #}
+    &middot; <span title="{{ t('Ultimo aggiornamento della cache IGDB') }}">&#128260; {{ aggiornata[:16] }}</span>
+    {% endif %}
+  </span>
+</form>
+
+{% if gruppi %}
+<div class="card mb-0">
+  <div class="card-body" style="padding:0">
+    {% for etichetta, righe in gruppi %}
+    <div class="us-mese">{{ etichetta }}</div>
+    {% for u in righe %}
+    <div class="us-riga">
+      <div class="us-giorno">
+        {{ u.release_date[8:10] }}
+        <div class="us-dow">{{ u.dow }}</div>
+      </div>
+      {% if u.cover_url %}
+        <img src="{{ u.cover_url }}" loading="lazy" alt="{{ u.title }}">
+      {% else %}
+        <div class="us-vuota">&#127918;</div>
+      {% endif %}
+      <div class="us-tit">
+        <div class="font-600 text-sm">{{ u.title }}</div>
+        <div class="text-xs text-muted">
+          {{ u.platform }}
+          {# ⚠️ `precisione` diversa da «giorno» vuol dire che IGDB sa solo il mese,
+             il trimestre o l'anno: la riga è comunque ordinata, ma spacciare il
+             primo giorno del periodo per la data d'uscita sarebbe un dato falso.
+             Si mostra allora la forma con cui IGDB stessa la scrive. #}
+          {% if u.precisione and u.precisione != 'giorno' %}
+          &middot; <span class="badge badge-warning" title="{{ t('IGDB non ha una data esatta') }}">~ {{ u.human }}</span>
+          {% endif %}
+        </div>
+      </div>
+      {% if u.igdb_url %}
+      <a href="{{ u.igdb_url }}" target="_blank" rel="noopener noreferrer"
+         class="btn btn-secondary btn-sm" title="{{ t('Apri su IGDB') }}">&#8599;</a>
+      {% endif %}
+    </div>
+    {% endfor %}
+    {% endfor %}
+  </div>
+</div>
+{% else %}
+<div style="text-align:center;padding:3.5rem 1rem;color:var(--text-muted)">
+  <div style="font-size:3rem;margin-bottom:.75rem">&#128197;</div>
+  <h3>{{ t('Nessuna uscita in calendario') }}</h3>
+  <p class="text-sm mt-1">
+    {% if totale %}{{ t('Nessuna uscita con questi filtri: prova ad allargare il periodo.') }}
+    {% elif chiavi_presenti %}{{ t('La cache è vuota: premi «Aggiorna il calendario».') }}
+    {% else %}{{ t('Imposta le credenziali IGDB qui sopra, poi aggiorna il calendario.') }}{% endif %}
+  </p>
+</div>
+{% endif %}
+
+{% if chiavi_presenti %}
+<script>
+// Aggiornamento a lotti, stesso schema dei due «Completa» di steam_import.html: il
+// server fa un pezzo e dice da dove ripartire, il client richiama finché non ha
+// finito. Così nessuna singola richiesta HTTP resta appesa per minuti.
+(function () {
+  const btn = document.getElementById('btn_aggiorna');
+  const st  = document.getElementById('agg_stato');
+  let fermato = false;
+
+  btn.addEventListener('click', async function () {
+    if (btn.dataset.attivo) { fermato = true; return; }
+    btn.dataset.attivo = '1'; fermato = false;
+    btn.textContent = '⏹ ' + t('Ferma');
+    let nuovi = 0, aggiornati = 0, offset = 0;
+    const scarti = {};
+    while (!fermato) {
+      let d;
+      try {
+        const r = await fetch('/gaming/uscite/aggiorna', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ offset: offset })
+        });
+        d = await r.json();
+        if (!r.ok) { st.textContent = '⚠️ ' + (d.errore || t('errore')); break; }
+      } catch (e) { st.textContent = '⚠️ ' + t('Rete non disponibile'); break; }
+      nuovi += d.nuovi; aggiornati += d.aggiornati; offset = d.offset;
+      // Le righe scartate si sommano per motivo e si dicono a schermo: una riga che
+      // IGDB non sa descrivere è un buco del dato, e un buco taciuto è indistinguibile
+      // da un dato che non esiste.
+      for (const motivo in (d.scarti || {})) {
+        scarti[motivo] = (scarti[motivo] || 0) + d.scarti[motivo];
+      }
+      st.textContent = tf('{n} uscite nuove', {n: nuovi})
+                     + (aggiornati ? ', ' + tf('{n} aggiornate', {n: aggiornati}) : '')
+                     + (d.finito ? ' — ' + t('finito.') : ' — ' + tf('lette {n}...', {n: offset}));
+      if (d.finito) break;
+    }
+    const scartate = Object.keys(scarti);
+    if (scartate.length) {
+      st.textContent += ' ⚠️ ' + tf('{n} righe scartate da IGDB ({motivi}).', {
+        n: scartate.reduce((s, k) => s + scarti[k], 0),
+        motivi: scartate.map(k => scarti[k] + ' ' + t(k)).join(', ')
+      });
+    }
+    if (fermato) st.textContent += ' ' + t('(fermato)');
+    btn.dataset.attivo = ''; btn.textContent = '🔄 ' + t('Aggiorna il calendario');
+    // La pagina mostra la cache: finito l'aggiornamento va riletta, altrimenti si
+    // continua a guardare quella di prima credendola nuova.
+    if (!fermato) setTimeout(function () { location.reload(); }, 900);
+  });
+
+  // Svuota la cache. Chiede conferma perché è comunque una cancellazione, ma non
+  // archivia niente: è l'unica tabella qui dentro che si rifà premendo un pulsante.
+  const btnSvuota = document.getElementById('btn_svuota');
+  if (btnSvuota) btnSvuota.addEventListener('click', async function () {
+    if (!confirm(t('Svuotare la cache delle uscite? Si rigenera con «Aggiorna il calendario».'))) return;
+    try {
+      const r = await fetch('/gaming/uscite/svuota', { method: 'POST' });
+      const d = await r.json();
+      st.textContent = tf('{n} uscite rimosse dalla cache.', {n: d.tolte});
+      setTimeout(function () { location.reload(); }, 700);
+    } catch (e) { st.textContent = '⚠️ ' + t('Rete non disponibile'); }
+  });
+})();
+</script>
+{% endif %}
+{% endblock %}

@@ -18,6 +18,55 @@ pagina ed esegue `new Function()` su ogni blocco `<script>` **e** su ogni handle
 
 ---
 
+## 16/08/2026
+
+**Calendario uscite in Gaming — la metà lettura, chiusa e verificata**
+
+- ✅ **Fonte decisa: IGDB, e la scelta è stata misurata, non presa dal backlog.** Il
+  backlog dava RAWG come «più semplice da attaccare»; il 16/08 RAWG rispondeva **522 da
+  Cloudflare su API *e* sito**, tre tentativi di fila, mentre dalla stessa macchina Steam
+  rispondeva normalmente e IGDB dava un **401 regolare** con l'istruzione sugli header —
+  cioè era viva e voleva solo il token. Scrivere il client di un servizio irraggiungibile
+  sarebbe stato scrivere codice non provabile.
+- ✅ **`game_releases`, tabella sua e fuori dall'export.** Le uscite future **non** sono
+  la libreria: dentro `games` sarebbero finite nei conteggi, nei filtri, nel suggeritore e
+  nell'export. Verificato che non ci finiscano: con 6 uscite di prova in cache, `games`
+  resta a **33** righe e il contatore della sezione dice ancora «Tutti (33)». La tabella
+  è **fuori da `TABELLE` di `esporta_dati.py` per scelta** — ed è scritto nel codice,
+  perché `regulations` oggi è fuori **per caso** ed è una falla nota (§1.4).
+- ✅ **Pagina `/gaming/uscite`** con raggruppamento per mese, giorno della settimana,
+  filtro piattaforma, quattro finestre (30gg / 3 mesi / 1 anno / tutto) e la cache che
+  **dichiara la propria età**. Più una **striscia** delle 6 prossime in cima a `/gaming`.
+- ✅ **29 controlli su 29** sul test client, con righe finte inserite e poi rimosse (stesso
+  metodo dei filtri Gaming del 12/08): oggi è incluso e ieri no, le righe **senza data
+  restano fuori**, le tre finestre tagliano dove devono, `?entro=pippo` ricade sul default
+  invece di esplodere, `?platform=' OR 1=1--` dà zero righe, e una data imprecisa mostra
+  **`~ Q1 2027`** invece di spacciare il primo giorno del trimestre per l'uscita.
+- ⚠️ **Sweep fatto in un modo diverso, e va detto: su questa macchina non c'è Node**,
+  quindi `new Function()` come nelle sessioni precedenti non era lanciabile. Al suo posto
+  le pagine sono state rese su file e aperte in un **browser vero** — controllo più forte,
+  perché vede anche il runtime. Esito: **4 pagine, 3 script inline sulla pagina uscite e 2
+  su gaming, zero messaggi in console**, `t`/`tf` funzioni, il pulsante col suo listener,
+  e titoli con apostrofi, `&`, virgolette doppie e `<tag>` resi senza rompere niente.
+  ⚠️ Al primo giro il blocco `<script>` **non era nemmeno stato reso** (sta dentro
+  `{% if chiavi_presenti %}`): rifatto con credenziali finte, che fanno comparire il
+  pulsante senza chiamare nessuno. Uno sweep che non rende il codice non lo prova.
+- ✅ **Le due lingue**, 565 chiavi su 565, zero mancanti, zero orfane, zero doppie: mesi
+  (`agosto 2026` → `August 2026`), giorni (`16 dom` → `16 Sun`), finestre e frasi del JS.
+- ⚠️ **Trappola intercettata prima di pagarla**: `mar` in italiano è **marzo** *e*
+  **martedì**, e la chiave del dizionario è la frase italiana — una traduzione sola per
+  due parole inglesi. Abbreviando entrambi, uno avrebbe preso la parola dell'altro **senza
+  nessun errore**. Rotto il pareggio dove costa meno: mesi per esteso («16 agosto» è
+  italiano normale), giorni abbreviati, che in italiano si scrivono proprio così.
+- ⬜ **Resta la metà import**, e il motivo è uno solo: **il codice che parla con IGDB non
+  è mai stato eseguito** — servono le credenziali. `scripts/sonda_igdb.py` è pronto e non
+  scrive niente. Il punto delicato è che `_mappa_uscita()` legge la precisione da
+  `category` **oppure** da `date_format`: IGDB ha cambiato quel campo, e sbagliarlo non
+  darebbe un errore ma **date sbagliate**. Per questo la funzione **scarta e conta** invece
+  di riempire — provata su 8 risposte sintetiche, 4 mappate e 4 scartate col motivo giusto.
+
+---
+
 ## 13/08/2026
 
 **Il backlog potato in due**

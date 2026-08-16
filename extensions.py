@@ -242,6 +242,43 @@ def init_db():
             db.commit()
         except Exception:
             pass
+
+    # --- Calendario uscite ---------------------------------------------------
+    # ⚠️ **Non e' la tua libreria, e non va in `games`.** Sono centinaia di titoli che
+    # non possiedi: dentro `games` finirebbero nei conteggi della sezione, nei filtri
+    # per genere e piattaforma, nel suggeritore "se ti e' piaciuto" e nell'export.
+    # Sta in una tabella sua, che si puo' **buttare e rifare** senza perdere niente:
+    # e' una cache di IGDB, non un dato curato.
+    #
+    # Per questo `game_releases` **non e' in `TABELLE` di `esporta_dati.py`**, e qui la
+    # differenza va detta: `regulations` e' fuori dall'export **per caso** (vedi il
+    # backlog), questa e' fuori **per scelta**. Esportare una cache rigenerabile
+    # gonfierebbe il diff a ogni aggiornamento senza aggiungere niente da salvare.
+    #
+    # `igdb_release_id` e' UNIQUE perche' l'unita' del dato e' l'**uscita**, non il
+    # gioco: lo stesso titolo esce su cinque piattaforme, e su IGDB sono cinque righe
+    # con cinque date che possono essere diverse. E' anche cio' che rende l'import
+    # rieseguibile senza duplicare (UPSERT su quella chiave).
+    db.executescript("""
+        CREATE TABLE IF NOT EXISTS game_releases(
+            id INTEGER PRIMARY KEY,
+            igdb_release_id INTEGER UNIQUE,
+            igdb_game_id INTEGER,
+            title TEXT NOT NULL,
+            platform TEXT,
+            platform_abbr TEXT,
+            release_date TEXT,
+            precisione TEXT,
+            human TEXT,
+            cover_url TEXT,
+            igdb_url TEXT,
+            region TEXT,
+            updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+        );
+        CREATE INDEX IF NOT EXISTS ix_releases_data ON game_releases(release_date);
+        CREATE INDEX IF NOT EXISTS ix_releases_piattaforma ON game_releases(platform);
+    """)
+    db.commit()
     db.close()
 
 
