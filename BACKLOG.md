@@ -232,7 +232,8 @@ chiudere o essere sospeso, e oggi `esporta_dati.py` lo lancio io a mano da qui.
 | File | Righe | Cos'è, davvero |
 |---|---|---|
 | `DOCUMENTAZIONE_PersonalHub.md` | 303 | La più vicina alla guida n. 1. **Ferma al 07/08/2026**, «v16.2» |
-| `PROJECT_CONTEXT.md` | 656 | Dettagli tecnici, convenzioni, log delle sessioni. Aggiornato |
+| `PROJECT_CONTEXT.md` | 578 | Dettagli tecnici, convenzioni, log delle sessioni. Aggiornato al 13/08/2026 |
+| `STORICO.md` | 431 | Una riga per lavoro chiuso, dal 13/08/2026. Non è una guida: è la memoria |
 | `README.md` | 133 | Stack e struttura. Dice **«v11.1a»** |
 | `README-GitHub.md` | 104 | La vetrina coi badge |
 | `howtouse.txt` | 22 | Appunti a mano. È il germe della guida n. 2 |

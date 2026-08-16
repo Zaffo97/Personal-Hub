@@ -141,9 +141,11 @@ app.run(host="0.0.0.0", debug=True, port=5000)
   `abilityIncideSulDanno()` in `calcolatori-core.js`, leggendo il blocco `effect`
 - `CHAMPIONS_BST` → caricato da `_load_champions_bst()` → legge `data/pokemon_catalog.json`
   - Struttura: `{nome: {base_stats: {hp, atk, def, spa, spd, spe}, types: [...], abilities: [...], forms: {...}}}`
-  - ⚠️ **non** c'è un campo `moves`: questo file lo documentava, ma **zero specie su 1026**
-    hanno un elenco mosse, e non ce l'aveva nemmeno il vecchio `pokemon_catalog.json`.
-    Il progetto non sa quali mosse un Pokémon possa imparare — vedi `BACKLOG.md`
+  - ⚠️ **non** c'è un campo `moves` **dentro questa struttura**, e non ci sarà: gli elenchi
+    mosse per specie vivono in un file a parte, `data/catalog/pokemon_moves.json`,
+    importato il 12/08/2026. Ogni voce ha **due elenchi** — `main` per `pokedex` e
+    `champions` per `ma`/`mb` — perché non coincidono: Incineroar in Champions non ha
+    Knock Off. Si leggono con `load_moveset()` e `mosse_legali()` in `blueprints/pokemon.py`
   - ⚠️ Sono **base stat grezze** — la conversione a stat Lv.50 avviene in `calc_stat_champions()`
 
 ---
@@ -165,11 +167,43 @@ COOKIE_LINGUA = "hub_lang"
 def lingua_attiva()          # → 'it' | 'en' dal cookie; 'it' fuori da una richiesta
 def nome_vis(voce, chiave)   # → il nome da mostrare, `nome_it` o `nome_en`, con
                              #   fallback sulla chiave: mai una stringa vuota
+def traduzioni(lingua)       # → dizionario italiano→lingua, cache sull'mtime.
+                             #   Per l'italiano è {}: è la fonte
+def t(testo)                 # → la stringa d'interfaccia tradotta, o l'italiano
+def tf(testo, valori)        # → come t(), coi segnaposto {nome} sostituiti
+def categorie(db)            # → {chiave: etichetta tradotta} per le categorie di
+                             #   oggetti o abilità (mappa in data.py)
 ```
 
 > ⚠️ La lingua sta in un **cookie** e non in `localStorage` perché la deve leggere
 > anche Flask: roster, mosse e oggetti nelle tendine li renderizza il server.
-> `create_app()` espone `lang` e `nome_vis` a ogni template con un `context_processor`.
+> `create_app()` espone `lang`, `nome_vis`, `t`, `tf` e `categorie` a ogni template
+> con un `context_processor`.
+
+> **Le stringhe dell'interfaccia: la chiave del dizionario è la frase italiana stessa**,
+> non un codice tipo `btn.salva`. Il template resta leggibile e una traduzione mancante
+> ricade sull'italiano, che è sempre giusto, invece di mostrare a schermo il nome della
+> chiave. Il dizionario è `data/i18n/en.json`. Il prezzo è che cambiare una parola
+> italiana in un template **stacca la traduzione in silenzio**: per questo esiste
+> `python scripts/controlla_traduzioni.py`, che elenca mancanti, vuote, orfane e
+> **doppie** (`json.load()` tiene l'ultima e butta la prima senza dire niente).
+
+> ⚠️ **`t()` e `tf()` hanno una gemella in JS, definita nel `<head>` di `base.html`**
+> insieme a `nomeVis()`, `tipoIT()`, `tipoVis()` e `TIPI_EN_IT`. Devono stare nel
+> `<head>` e non in fondo alla pagina: più di un template le chiama **durante il
+> parsing** (`moves_editor.html` chiude il suo script con `renderTable()`), e con la
+> definizione in fondo quella chiamata non le trova — la tabella resta vuota **senza
+> dare errore a schermo**. Stanno lì anche perché servono agli editor, che i moduli
+> `calcolatori-*.js` non li caricano: una copia sola, non due che possono divergere.
+
+> ⚠️ **Quali sezioni sono tradotte: solo Pokémon e Gaming.** L'elenco è
+> `sezioni_tradotte` in `base.html`, ed è anche la condizione che mostra il pulsante
+> lingua. Il resto — Arduino, Python, PC Builder, Dashboard, login, utenti — **e la
+> sidebar** restano in italiano per scelta: la lingua è un cookie e vale per tutto il
+> sito, quindi con la shell tradotta chi mettesse EN e andasse su Arduino resterebbe
+> senza un modo per tornare indietro. Pulsante confinato e shell italiana sono la
+> **stessa** decisione. Le **descrizioni** dei dati restano in italiano, anch'esse per
+> scelta.
 
 > ⚠️ **`calc_stat_champions()` non esiste più** (rimossa 07/08/2026). Era definita ma **mai chiamata** da nessun file, e usava una terza convenzione SP (`base + sp`) diversa sia dal JS sia dalla documentazione. Il calcolo delle stat vive **solo** in `calcSt()` in `calcolatori.html`.
 
@@ -583,6 +617,10 @@ Usare `SLUG_OVERRIDES` da `data.py` per tutte le forme speciali (regionali, Roto
 | Arduino Projects | ✅ | |
 | Python Tracker | ✅ | |
 | PC Builder + DxDiag import | ✅ | Il 500 trovato l'11/08/2026 (`sqlite3.Row` passata a `\|tojson` con una build salvata) è chiuso lo stesso giorno: la vista costruisce `dict(b)`. Modale Modifica provato in browser |
+| Switch lingua IT ⇄ EN | ✅ | Chiuso il 13/08/2026. **Nomi dei dati** bilingui al 100% (11/08) e **interfaccia** di Pokémon e Gaming tradotta: 15 template, dizionario `data/i18n/en.json` a **510 chiavi**. Il pulsante compare solo dove la sezione è tradotta — `sezioni_tradotte` in `base.html` |
+| Sezioni **non** tradotte | 🚩 | Arduino, Python, PC Builder, Dashboard, login, utenti **e la sidebar**: in italiano **per scelta**, non per lavoro rimasto indietro. Idem le **descrizioni** dei dati. Vedi le trappole in `BACKLOG.md` prima di "sistemarle" |
+| Utenti e permessi per sezione | ✅ | `/admin/utenti`, controllo in un `before_request` su `request.blueprint`. Password in scrypt |
+| Elenchi mosse per specie | ✅ | `data/catalog/pokemon_moves.json`, due elenchi per voce (`main` e `champions`). Consumato da calcolatore, team builder e Speed Tier |
 
 ---
 
@@ -615,6 +653,10 @@ Di conseguenza tutto ciò che questa tabella dava per "funzionante" non era mai 
 
 | Data | Contenuto |
 |------|-----------|
+| 2026-08-13 | **Anche le categorie di oggetti e abilità seguono la lingua.** Erano ferme su due livelli diversi: negli oggetti metà erano parole inglesi lasciate lì (`Berry`, `Healing`, `Orb`), nelle abilità le **chiavi grezze** (`weather_override`). La causa è che gli elenchi erano scritti a mano in **tre posti** — le tendine, la mappa JS del badge, la colonna Info del catalogo — e per questo metà erano rimaste indietro. Ora la mappa chiave → etichetta italiana sta in `data.py` (`CATEGORIE_OGGETTI`, `CATEGORIE_ABILITA`) e passa da `categorie()` in `extensions.py`: **una sola sorgente**. La chiave resta il dato — `value` delle tendine, suffisso delle classi CSS, campo `category` nel JSON — e sul badge delle abilità è rimasta come `title`. ⚠️ **Traducendo è saltato fuori un difetto di contenuto, non di lingua**: `other` **non era fra le categorie degli oggetti**, ed è **339 voci su 397**, l'86% del catalogo — il badge cadeva sulla chiave grezza e quella categoria non si poteva filtrare. Aggiunta. ⬜ Resta segnalato a backlog che la tendina ne offre 13 mentre i dati ne usano 7: **6 sono filtri che non danno mai risultati**, l'opposto di come sono fatte le tendine di Gaming, e sistemarlo è una ricategorizzazione dei dati, non una riga di codice. Verifica: 510 chiavi su 510, 38 pagine × 2 lingue rese 200, sweep 110 script / 3830 handler zero errori, tabelle ancora piene (386 abilità, 397 oggetti), regola #8 esatta |
+| 2026-08-13 | **Switch lingua: Pokémon e Gaming, e basta.** Deciso da Davide dopo due ripensamenti nella stessa giornata — prima il pulsante ovunque con la shell tradotta, poi solo Pokémon, infine Pokémon **e Gaming**, «alla fine è ciò che conta anche per gli utenti non admin». ⚠️ **Il pulsante e la shell sono la stessa decisione**: il pulsante compare solo dove la sezione è tradotta (`sezioni_tradotte` in `base.html`, unico punto), e la **sidebar resta in italiano** perché la lingua è un cookie e vale per tutto il sito — con la shell tradotta, chi mettesse EN e andasse su Arduino resterebbe senza un modo per tornare indietro. Tradotto Gaming: `gaming.html`, `game_form.html`, `steam_import.html` e le frasi dei suggerimenti in `gaming.py`; dizionario da 383 a **489** chiavi. ⚠️ **Stati e piattaforme sono valori salvati** in `games.status`/`games.platform` e finiscono negli URL dei filtri: il valore resta italiano e si traduce solo l'etichetta. In `game_form.html` le `<option>` **non avevano un `value`** — il testo *era* il valore inviato — quindi tradurle senza aggiungerlo avrebbe salvato «Paused» al posto di «Pausa», cioè dati sbagliati nel DB. Verificato: in inglese il filtro «On hold» chiama `?status=Pausa` e trova i suoi **33 giochi**. `controlla_traduzioni.py` legge ora anche `blueprints/`, altrimenti le voci delle frasi in Python sembrerebbero orfane; ⚠️ e in Python le frasi vanno su **una riga sola**, perché la concatenazione implicita (`"a" "b"`) veniva troncata al primo pezzo. **Le descrizioni dei dati restano in italiano** per scelta di Davide: 1584 `desc` contate, non si traducono, e `desc_en` non va aggiunto |
+| 2026-08-13 | **L'interfaccia Pokémon parla inglese: 12 template su 12, più gli editor che seguono la lingua.** Secondo blocco dello switch: `calcolatori.html` (142 stringhe) coi 7 moduli `calcolatori-*.js`, i quattro editor, `regulations_list`, `regulation_editor`, `team_form` e `base.html`. **`tf()` ora esiste anche in Jinja**, gemella di quella JS: prima stava solo nel browser, ed è il motivo per cui «1 team salvati» era rotto — nei template le frasi coi numeri si spezzavano in due pezzi che nessun dizionario può rimettere nell'ordine inglese; risolto riscrivendo la frase italiana in `Team salvati: {n}`, che non si flette. I **tipi** si traducono solo a schermo: il `value` resta italiano perché è la chiave di `TYPE_CHART`. Gli **editor** mostravano la chiave del catalogo, e il quadro era il **rovescio esatto sui tre** — mosse e oggetti sempre in inglese (10 chiavi su 919 e 37 su 397 coincidono col `nome_it`), **abilità sempre in italiano** perché lì le chiavi *sono* italiane (386 su 386): una correzione scritta pensando «la chiave è inglese» avrebbe sistemato due editor e peggiorato il terzo. Ora nome tradotto sopra e chiave sotto, con ricerca e ordinamento estesi al nome mostrato. ⚠️⚠️ **Regressione mia, trovata da Davide**: la tabella dell'editor mosse era **vuota** — `t()`/`tf()` stavano in fondo a `base.html` ma `moves_editor.html` chiude il suo script con `renderTable()`, che gira durante il parsing; l'eccezione moriva dentro lo script della pagina e le 919 righe sparivano senza dire niente. Spostate nel `<head>`: tolta la classe di baco, non solo il caso. ⚠️ **La lezione che vale più della correzione: lo sweep statico non basta** — `new Function()` dava zero errori mentre la tabella era vuota, perché la sintassi era valida e a lanciare era il runtime. Da oggi ogni giro si chiude **caricando davvero le pagine e contando le righe**. Deduplicati nel `<head>` anche `nomeVis`, `tipoIT`, `tipoVis` e `TIPI_EN_IT`, tolte le copie dai moduli del calcolatore |
+| 2026-08-13 | **Backlog potato in due file.** `BACKLOG.md` da **1967 a ~370 righe** (144 KB → 30 KB, il 21%): dentro resta solo ciò che è aperto, più le trappole che vanno rilette prima di toccare una zona. Le voci chiuse sono diventate **`STORICO.md`**, una riga per lavoro con la data e i numeri, che si apre solo per rispondere a «questo l'avevamo già fatto?». Tolti i doppioni contati: i cinque bachi piccoli dell'11/08 stavano anche in «Emerso dal codice», le quattro voci di regulation comparivano sia chiuse sia nella versione «com'erano state aperte», le abilità doppie in tre punti, Mega Machamp in tre sezioni. Corrette due voci **stale**: «`main` diverge da `origin/main`» (riallineati l'11/08) e «`reference.html` è noto come orfano» (rimosso l'11/08). `CLAUDE.md` dice ora dove leggere e dove scrivere: il backlog a inizio sessione, lo storico solo su domanda, e **le voci chiuse si spostano invece di restare** — senza quella regola il file torna a gonfiarsi da solo |
 | 2026-08-12 | **Mega Zygarde deconvertita — e non era «rotta a sé».** Applicata la formula standard per decisione di Davide: `291/90/111/236/105/120` → **`216/70/91/216/85/100`**, BST 778. ⚠️ Nel farlo si è capito **perché** sembrava un caso a sé: `deconverti_mega_catalogo.py` cercava la firma `+75 HP` contro la sola voce di testa della specie, e Zygarde 50% ha 108 HP mentre la Mega ne ha 291 — ma la `Zygarde (Complete Forme)` ne ha **216**, e 216 + 75 = 291. Era convertita a partire da quella: nessuna anomalia, solo il confronto sbagliato. Ora la firma si cerca contro **tutte le forme non-Mega della specie**, e lo script resta idempotente (riesecuzione: 0 deconvertite, 96 lasciate stare). ⚠️ **Corretto un numero sbagliato in BACKLOG.md**: diceva che SpA 216 sarebbe stato «il più alto del catalogo di 43 punti, contro Xurkitree con 173», ma quel confronto guardava solo le **specie** e non le forme — il massimo vero era **Mega Mewtwo Y con 194**, quindi lo scarto è 22. E il BST di 778 è in linea con le altre Mega leggendarie (Mewtwo X/Y e Rayquaza a 780). Verificato dall'API: stat corrette, Velocità a Lv.50 = **120** da base 100, presente nel roster dello Speed Tier e raggiungibile dalla `mega_map`. Niente sweep in questo blocco: **zero file `.html` e `.js` toccati**, quindi vale l'ultimo |
 | 2026-08-12 | **Le decisioni sui dati Pokémon — tre chiuse su quattro.** (1) **`pokedex` ora ha una `mega_map`**, e non serviva una decisione: il collegamento Mega → specie base è deducibile, e `completa_mega_map.py` lo faceva già per MA e MB. Bastava insegnargli che su `pokedex` il roster è `null`, cioè tutto il catalogo (stessa convenzione di `_load_roster()`), perché lo leggeva come roster vuoto. Risultato **91 basi, 97 Mega, 97 su 97 raggiungibili**, e il selettore Mega del team builder funziona finalmente sulla regulation di default — Charizard offre X e Y, Absol offre anche `Mega Absol Z`. Lo script si è **fermato su 7 forme inventate invece di indovinarle**: il suffisso `Z` è entrato nella regola di X e Y, le 4 con la convenzione `Mega <Forma> <Specie>` sono scritte a mano in `BASE_A_MANO`. Corretto anche un `TypeError` nel riepilogo che su roster `null` esplodeva **dopo** aver scritto il file. (2) **32 Gigantamax ereditano il moveset dalla specie base**: non è un'invenzione, il Gigantamax è una trasformazione temporanea e non una forma con un learnset proprio — ogni voce lo dichiara con `eredita_da`, e `pokedex` passa da 1291 a **1323** voci su 1343. (3) **`Pawmot` chiarito**: è un buco del dump, non un errore nostro — nel version group Champions ci sono solo le evoluzioni finali, e di quella linea mancano tutti e tre (Pawmi, Pawmo, Pawmot); resta senza elenco con l'avviso, invece di ricevere il moveset dei giochi principali che su Champions non sarebbe legale. ⬜ Resta **Mega Zygarde**, che ha bisogno dei valori di Davide. ⚠️ Nota di metodo: una sostituzione a colpi di stringa su `importa_mosse_specie.py` ha **distrutto il file** (242 891 righe inserite); ripristinato da git e rifatto con l'editor |
 | 2026-08-12 | **Aperta a backlog: i dati non hanno un proprietario.** Trovata da Davide provando la web app — un team Pokémon salvato da un utente **lo vedono tutti**, e lo stesso per giochi, progetti Arduino e build PC. I permessi per sezione chiusi oggi decidono **quali sezioni** vedi, non **di chi sono i dati** dentro: sono due cose ortogonali e finora ne esisteva una sola. Contato, non stimato: **68 query** toccano le tabelle di contenuto (`games` 29, `teams` 10, `arduino_projects` 7, `pc_builds` 7, `python_topics` 6, `team_members` 5, `pc_components` 4), su 6 blueprint. Decisioni da prendere prima: il proprietario va **solo sulle quattro tabelle radice** (i figli lo ereditano con una join, duplicarlo lo farebbe divergere); ⚠️ **`python_topics` è il caso storto** — non è contenuto dell'utente ma un elenco fisso di 53 voci seminato in `init_db()` con la spunta sulla riga stessa, quindi serve una `python_progress(user_id, topic_id, done)` che lasci il catalogo condiviso; le righe esistenti vanno assegnate ad `admin` con una migrazione dichiarata; e serve un meccanismo che **fallisca chiuso**, perché con 68 query dimenticarne una mostra i dati di un altro senza che nulla lo segnali — è lo stesso rischio per cui oggi `/export` e la Dashboard erano rimasti scoperti |
