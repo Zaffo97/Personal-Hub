@@ -185,8 +185,9 @@
     if (btn.dataset.attivo) { fermato = true; return; }
     btn.dataset.attivo = '1'; fermato = false;
     btn.textContent = '⏹ ' + t('Ferma');
-    let nuovi = 0, aggiornati = 0, offset = 0;
+    let nuovi = 0, aggiornati = 0, offset = 0, ripulite = 0;
     const scarti = {};
+    const escluse = {};
     while (!fermato) {
       let d;
       try {
@@ -205,6 +206,14 @@
       for (const motivo in (d.scarti || {})) {
         scarti[motivo] = (scarti[motivo] || 0) + d.scarti[motivo];
       }
+      // Le piattaforme escluse si contano **per nome**: sono righe che IGDB descrive
+      // benissimo e che abbiamo deciso noi di non tenere. Un nome inatteso qui dentro
+      // è il solo modo per accorgersi che IGDB ha una piattaforma nuova, visto che
+      // l'elenco di `PIATTAFORME_TENUTE` fallisce chiuso.
+      for (const nome in (d.escluse || {})) {
+        escluse[nome] = (escluse[nome] || 0) + d.escluse[nome];
+      }
+      ripulite += (d.ripulite || 0);
       st.textContent = tf('{n} uscite nuove', {n: nuovi})
                      + (aggiornati ? ', ' + tf('{n} aggiornate', {n: aggiornati}) : '')
                      + (d.finito ? ' — ' + t('finito.') : ' — ' + tf('lette {n}...', {n: offset}));
@@ -217,6 +226,22 @@
         motivi: scartate.map(k => scarti[k] + ' ' + t(k)).join(', ')
       });
     }
+    // Le piattaforme tenute sono un elenco chiuso: quello che resta fuori si dice,
+    // altrimenti un gioco assente dal calendario sembra un buco di IGDB. In riga ne
+    // stanno poche — le più numerose — e l'elenco intero va nel titolo, perché è lì
+    // che si andrà a cercare il nome di una piattaforma nuova.
+    const nomiEsclusi = Object.keys(escluse).sort((a, b) => escluse[b] - escluse[a]);
+    if (nomiEsclusi.length) {
+      const conto = n => n + ' ' + escluse[n];
+      st.textContent += ' ' + tf('{n} righe di piattaforme escluse ({elenco}).', {
+        n: nomiEsclusi.reduce((s, k) => s + escluse[k], 0),
+        elenco: nomiEsclusi.slice(0, 6).map(conto).join(', ')
+                + (nomiEsclusi.length > 6
+                   ? ' ' + tf('e altre {n}', {n: nomiEsclusi.length - 6}) : '')
+      });
+      st.title = nomiEsclusi.map(conto).join('\n');
+    }
+    if (ripulite) st.textContent += ' ' + tf('{n} righe vecchie di piattaforme escluse tolte dalla cache.', {n: ripulite});
     if (fermato) st.textContent += ' ' + t('(fermato)');
     btn.dataset.attivo = ''; btn.textContent = '🔄 ' + t('Aggiorna il calendario');
     // La pagina mostra la cache: finito l'aggiornamento va riletta, altrimenti si

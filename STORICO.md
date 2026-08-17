@@ -18,6 +18,47 @@ pagina ed esegue `new Function()` su ogni blocco `<script>` **e** su ogni handle
 
 ---
 
+## 17/08/2026
+
+**Calendario uscite — in cache entrano solo le piattaforme che interessano (§4.1a)**
+
+- ✅ **`PIATTAFORME_TENUTE` in `blueprints/gaming.py`**: PC, PlayStation 5, Xbox Series X|S,
+  Switch e Switch 2, e i VR (SteamVR, Meta Quest 2 e 3, Oculus Quest, PlayStation VR2,
+  visionOS). **Le console vecchie restano fuori** — deciso da Davide il 17/08, che ha
+  scartato PlayStation 4 e Xbox One insieme a 360, Vita, Wii e Wii U: il backlog le dava
+  per «restano» applicando la regola alla lettera, ed è l'unico punto in cui la decisione
+  di oggi si discosta da quella del 16/08.
+- ✅ **Misurato sulla cache vera (7327 righe, 4582 giochi): −1373 righe (18,7%), ma solo
+  45 giochi spariscono del tutto.** Quasi tutto il taglio è la versione Mac (570) o Linux
+  (491) di un gioco che è **anche su PC**: sparisce l'etichetta, non il gioco. Dei 45
+  persi davvero: 21 iOS, 18 Android, 4 Playdate, 4 browser, 4 Wii, **3 solo-PS4, 1
+  solo-Xbox One**, e undici uscite su console retro.
+- ✅ **Elenco di inclusi e non di esclusi**, che fallisce **chiuso** sulla prossima
+  piattaforma che IGDB aggiunge. Il prezzo — una console nuova scartata in silenzio — è
+  pagato contando le righe escluse **per nome** e dicendole a schermo: nella prova la
+  finta `PlayStation 6` è comparsa fra le escluse col suo nome, che è il segnale per
+  aggiungerla all'elenco.
+- ✅ **La cache vecchia si pota da sola**: `DELETE` al primo lotto dell'import, non alla
+  fine, così gira anche se l'aggiornamento viene fermato a metà. Provato **su una copia di
+  `hub.db`**: 7327 → 5954 righe, 11 piattaforme rimaste, seconda passata 0 righe
+  (idempotente).
+- ✅ **La route provata davvero**, con un finto IGDB e su una copia del DB: 4 uscite in
+  ingresso → 1 salvata, 3 escluse per nome (`Mac`, `PlayStation 4`, `PlayStation 6`),
+  0 scarti, 1373 righe potate.
+- ✅ **Sweep a zero errori** su 18 fra blocchi `<script>` e handler inline di
+  `/gaming/uscite` (due varianti di filtro), e le pagine rese e contate col test client:
+  300 righe e 293 immagini in 228 KB, il tetto è intatto.
+- ⚠️ **Il tetto delle 300 righe morde esattamente come prima, ed era prevedibile**: dopo
+  il filtro la finestra di default passa da 4649 a **4598** voci fuse (−51), perché
+  togliere Mac e Linux toglie etichette, non giochi. La 300esima resta il **27/08**, cioè
+  11 giorni, quindi il selettore del periodo continua a non cambiare niente. **Il rimedio
+  vero resta §4.1c** (la coda lunga), non questo.
+- ⚠️ **Fino al prossimo «Aggiorna il calendario» la cache contiene ancora le 1373 righe
+  escluse**: la potatura è dentro l'import, non è un lavoro fatto al posto di Davide.
+- ✅ Dizionario EN a **572 chiavi su 572**, zero mancanti, zero orfane, zero doppie.
+
+---
+
 ## 16/08/2026
 
 **Calendario uscite in Gaming — la metà lettura, chiusa e verificata**

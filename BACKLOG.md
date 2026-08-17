@@ -2,7 +2,7 @@
 
 > **Qui c'è solo ciò che è aperto.** Le voci chiuse stanno in [`STORICO.md`](STORICO.md),
 > una riga per lavoro con la data e i numeri della verifica.
-> Aggiornato: **13/08/2026**. Fonte storica: `Nuove implementazioni.docx` (verde = fatto).
+> Aggiornato: **17/08/2026**. Fonte storica: `Nuove implementazioni.docx` (verde = fatto).
 
 Legenda: ⬜ da fare · 🟨 parziale · ⚠️ trappola nota, da rileggere prima di toccare la zona
 
@@ -41,6 +41,7 @@ Non sono storia: sono le cose che questo progetto ha già pagato e che tornano a
 | ⚠️ **Solo Pokémon e Gaming sono tradotte** | Arduino, Python, PC Builder, Dashboard, login e utenti sono in italiano **per scelta** (13/08/2026), e la **sidebar con loro**. Il pulsante lingua compare solo dove la sezione è tradotta: l'elenco è `sezioni_tradotte` in `base.html`, unico punto. Pulsante confinato e shell italiana sono la **stessa** decisione — tradurre la sidebar lascerebbe chi mette EN e va su Arduino senza un modo per tornare indietro |
 | ⚠️ **Le `desc` sono italiane per scelta** | **Non è un lavoro rimasto a metà.** Le 1584 descrizioni di mosse, oggetti e abilità restano **solo in italiano** per decisione di Davide del 13/08/2026, presa dopo aver visto il conto: i **nomi** sono bilingui al 100%, le descrizioni no e non lo diventeranno. Quindi in modalità inglese si legge un nome inglese con sotto una descrizione italiana, ed **è previsto**. `desc_en` non esiste e non va aggiunto; non serve nessun import da PokéAPI né una gemella di `nome_vis()` per i testi |
 | **Una parola italiana, due inglesi** | La chiave del dizionario **è la frase italiana**, quindi una parola che in inglese cambia col contesto non è esprimibile. Caso vivo: `Abilità` è la linguetta del catalogo (→ *Abilities*) **e** l'etichetta di un campo singolo nel team builder e nello Stat Preview, dove dovrebbe essere *Ability*. Oggi vince il plurale. Si risolve solo cambiando la frase **italiana** in uno dei due punti, e va fatto se e quando dà fastidio: storpiare l'italiano per aggiustare l'inglese è un cattivo affare |
+| **Le piattaforme del calendario** | `PIATTAFORME_TENUTE` in `blueprints/gaming.py` è un elenco di **inclusi**, quindi **fallisce chiuso**: una piattaforma che IGDB aggiunge domani non entra in cache finché nessuno la scrive lì. È voluto, ma il silenzio no — l'unico segnale è l'elenco delle **escluse per nome** che l'import scrive a fine giro. Un nome che non ti aspetti lì dentro vuol dire «aggiungimi». I nomi sono le stringhe esatte di IGDB (`PC (Microsoft Windows)`, `Xbox Series X\|S`), non si indovinano |
 | **Default del DB** | `extensions.py:143` crea la colonna con `regulation_id TEXT DEFAULT 'ma'`. Non è un residuo dei 14 letterali tolti l'11/08: è il default del **DB**, e cambiarlo richiede una migrazione. Oggi non fa danno perché `_team_upsert()` passa sempre un valore esplicito |
 
 ---
@@ -435,7 +436,7 @@ quattro cose richiedono **fonti diverse**:
 
 ### 4.1 🟨 Gaming — il calendario delle uscite (chiesto il 13/08, costruito il 16/08/2026)
 
-> ⚠️ **Trappola nuova, pagata in questa sessione**: la cache vera usa `igdb_release_id`
+> ⚠️ **Trappola pagata il 16/08/2026**: la cache vera usa `igdb_release_id`
 > fra **486664 e 954196**. Uno script di prova che cancellava «il mio intervallo»
 > 900000-910000 si è portato via **497 righe vere**. Non è grave — la cache si rifà col
 > pulsante — ma la regola vale in generale: **un id scelto a tavolino non è una prova di
@@ -471,64 +472,26 @@ esce lo stesso giorno su più piattaforme è **una riga sola**. Nei soli prossim
 la fusione unisce **454 gruppi** — *Vampire Survivors: Legacy of the Bloodmoon* passa da
 9 righe a 1. Si fonde in **lettura** e **dopo il filtro**, mai in scrittura.
 
-**⬜ Cosa resta aperto, ed è una cosa sola ma reale: 4343 righe sono troppe.**
+✅ **4.1a è chiuso il 17/08/2026** — in cache entrano solo PC, PS5, Xbox Series, Switch e
+Switch 2 e i VR; le console vecchie (PS4, Xbox One, 360, Vita, Wii) le ha escluse Davide
+lo stesso giorno. −1373 righe su 7327, e solo 45 giochi persi. Numeri e prove in
+`STORICO.md`; la trappola dell'elenco che fallisce chiuso è in cima a questo file.
 
-La cache contiene **tutto** IGDB, comprese centinaia di uscite minuscole. Misurato: senza
-tetto la pagina pesava **3,3 MB con 4224 immagini** su «tutto» e **994 KB con 1291
-immagini** già sulla finestra di default. C'è un tetto a **300 righe** (stesso rimedio
-dello Speed Tier), che porta la pagina a **225 KB e 292 immagini**.
+**⬜ Cosa resta aperto: il tetto morde ancora, e 4.1a non l'ha smosso.**
 
-⚠️ **Ma il tetto ha un effetto collaterale, misurato e dichiarato a schermo: 300 righe
-coprono 11 giorni** (17–27 agosto), quindi con la cache piena **tutte e quattro le
-finestre mostrano gli stessi 11 giorni** e il selettore del periodo di fatto non fa
-niente. Funziona invece il filtro piattaforma: PS5 scende a 221 righe su 90 giorni, sotto
-il tetto; PC resta a 1115 e viene ancora tagliato.
+C'è un tetto a **300 righe** (stesso rimedio dello Speed Tier), che tiene la pagina a
+**228 KB e 293 immagini**: senza, con la cache piena erano **3,3 MB e 4224 immagini** su
+«tutto» e **994 KB** già sulla finestra di default.
 
-**La strada per risolverlo davvero non è alzare il tetto, è importare di meno.** Un
-calendario come quello di Opera GX mostra le uscite *che interessano*, non tutto il
-catalogo. Due strade, e la prima Davide l'ha già decisa il 16/08:
+⚠️ **Il tetto ha un effetto collaterale misurato e dichiarato a schermo: 300 righe coprono
+11 giorni**, quindi tutte e quattro le finestre mostrano gli stessi giorni e il selettore
+del periodo di fatto non fa niente.
 
-#### ⬜ 4.1a — Tenere solo le piattaforme che interessano (deciso da Davide il 16/08/2026)
-
-**Si tengono**: PlayStation, Xbox, Switch e Switch 2, **tutti i VR**, PC. Tutto il resto
-si toglie, e va tolto **all'import**, non solo dai filtri: righe che non si guardano mai
-non devono nemmeno entrare in cache.
-
-**Quanto costa, misurato sulla cache vera** (7327 uscite, 4582 giochi):
-
-| | Righe | Giochi che sparirebbero del tutto |
-|---|---|---|
-| Resterebbero | **6141** | — |
-| Da buttare | **1186** (16%) | **42** |
-
-⚠️ **Il numero che rende la decisione facile: si perdono 1186 righe ma solo 42 giochi.**
-Quasi tutte le righe da buttare sono la versione Mac (570) o Linux (491) di un gioco che
-è **anche su PC**, quindi sparisce l'etichetta, non il gioco. I 42 giochi persi davvero
-sono quasi tutti solo-mobile: **21 iOS, 18 Android**, più 4 Playdate, 4 browser, 4 Wii.
-
-**Da togliere** (con le righe di oggi): Mac 570 · Linux 491 · Android 50 · iOS 44 ·
-Web browser 9 · Playdate 5 · Wii 4 · Arduboy 2, più undici uscite singole su console
-retro (Famicom, GBA, Neo Geo AES e MVS, NES, PS Vita, Mega Drive, Saturn, Wii U,
-Xbox 360, ZX Spectrum).
-
-**Tre casi che la regola non decide, da confermare prima di scrivere il codice:**
-
-1. **PlayStation 4 (108) e Xbox One (79)**: sono «playstation» e «xbox» alla lettera, ma
-   sono la generazione vecchia. Per come è scritta la regola **restano**
-2. **Wii (4), Wii U (1), Xbox 360 (1), PS Vita (1)**: stesse famiglie, ma sono retro.
-   Li darei per esclusi, e sono 7 righe in tutto
-3. **`visionOS` (1)**: è l'Apple Vision Pro, realtà mista. Se «tutti i VR» lo comprende
-   resta, altrimenti no
-
-> L'elenco va scritto **come lista di ciò che si tiene**, non di ciò che si esclude:
-> IGDB aggiunge piattaforme nel tempo, e una lista di esclusi **fallisce aperta** sulla
-> prossima che compare. È lo stesso ragionamento già fatto per le route degli editor
-> Pokémon in §1.2.
->
-> ⚠️ E va deciso **cosa fare della cache già dentro**: o si svuota e si reimporta (il
-> pulsante «Svuota» c'è già), oppure la prima esecuzione con l'elenco nuovo cancella
-> anche le righe delle piattaforme escluse — altrimenti restano lì per sempre, perché
-> l'import aggiorna e inserisce ma non toglie.
+⚠️ **E il filtro piattaforme non l'ha risolto: misurato dopo 4.1a, la finestra di default
+passa da 4649 a 4598 voci fuse (−51) e la 300esima resta il 27/08.** Il motivo è quello
+per cui 4.1a costava poco: Mac e Linux erano **etichette** di giochi che restano. A
+riempire i primi giorni è **PC, da solo 1200 righe su 90 giorni**; PS5 ne ha 239, sotto
+il tetto. Funziona quindi ancora solo il filtro piattaforma, ed è 4.1c la strada vera.
 
 #### ⬜ 4.1b — Una barra di ricerca nel calendario (chiesto da Davide il 16/08/2026)
 

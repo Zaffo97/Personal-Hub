@@ -667,5 +667,9 @@
     "senza data",
     "senza titolo",
     "senza id"
-  ]
+  ],
+  "e altre {n}": "and {n} more",
+  "senza piattaforma": "no platform",
+  "{n} righe di piattaforme escluse ({elenco}).": "{n} rows from excluded platforms ({elenco}).",
+  "{n} righe vecchie di piattaforme escluse tolte dalla cache.": "{n} old rows from excluded platforms removed from the cache."
 }

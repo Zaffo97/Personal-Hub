@@ -837,6 +837,41 @@ IGDB_LOTTO = 500
 # "2028" o "TBD", cioe' righe che il calendario mostrerebbe senza dire niente di utile.
 IGDB_ORIZZONTE = 540
 
+# ⚠️ **Le piattaforme che entrano in cache, scritte come elenco di cio' che si TIENE.**
+# Deciso da Davide il 16/08, con l'esclusione delle console vecchie confermata il
+# 17/08/2026: PlayStation e Xbox solo nella generazione corrente, Switch e Switch 2,
+# tutti i VR, PC. Misurato sulla cache di allora: **-1373 righe su 7327 (18,7%), ma solo
+# 45 giochi spariscono del tutto** su 4582 — quasi tutte le righe buttate sono la
+# versione Mac (570) o Linux (491) di un gioco che e' **anche su PC**, quindi sparisce
+# l'etichetta, non il gioco. Dei 45 persi davvero: 21 iOS, 18 Android, 4 Playdate,
+# 4 browser, 4 Wii, 3 solo-PS4, 1 solo-Xbox One, e undici uscite su console retro.
+#
+# ⚠️ **Elenco di inclusi e non di esclusi, e non e' una preferenza di stile**: IGDB
+# aggiunge piattaforme nel tempo, e una lista di esclusi **fallirebbe aperta** sulla
+# prima che compare — la prossima console entrerebbe in cache senza che nessuno l'abbia
+# decisa. Cosi' fallisce **chiusa**: quello che non e' qui dentro resta fuori. E' lo
+# stesso ragionamento delle route degli editor Pokemon in BACKLOG §1.2.
+#
+# ⚠️ Il prezzo di fallire chiusa e' che una piattaforma **nuova** (una PlayStation 6,
+# un visore che oggi non esiste) verrebbe scartata **in silenzio**. Per questo l'import
+# conta le righe escluse **per nome** e le dice a schermo: un nome sconosciuto
+# nell'elenco delle escluse e' il segnale che qui va aggiunta una riga. I nomi sono
+# quelli esatti di IGDB, presi dalla cache vera e non indovinati.
+PIATTAFORME_TENUTE = frozenset({
+    "PC (Microsoft Windows)",
+    "PlayStation 5",
+    "Xbox Series X|S",
+    "Nintendo Switch",
+    "Nintendo Switch 2",
+    # I VR presenti in cache il 17/08/2026. `visionOS` e' l'Apple Vision Pro: sta qui
+    # perche' "tutti i VR" comprende la realta' mista, ed e' **una** riga.
+    # I visori piu' vecchi (PlayStation VR di prima generazione, Rift, Vive) oggi non
+    # hanno nessuna uscita futura: non sono scritti qui perche' non si inventano nomi
+    # IGDB non verificati, e se compariranno l'elenco delle escluse li segnalera'.
+    "SteamVR", "Meta Quest 2", "Meta Quest 3", "Oculus Quest", "PlayStation VR2",
+    "visionOS",
+})
+
 # `category` di IGDB dice **quanto e' precisa** la data. Questa e' la tabella
 # dell'enum; il nome del campo va confermato dalla sonda, e per questo il codice
 # accetta sia `category` sia `date_format` e non da' per scontato nessuno dei due.
@@ -941,11 +976,31 @@ def uscite_aggiorna():
     db = get_db()
     nuovi = aggiornati = 0
     scarti = {}
+    escluse = {}
+    # ⚠️ La cache scritta **prima** che l'elenco esistesse contiene le piattaforme che
+    # ora sono fuori, e l'import aggiorna e inserisce ma **non toglie**: senza questa
+    # potatura resterebbero li' per sempre. Si fa al primo lotto e non alla fine, cosi'
+    # gira anche se l'aggiornamento viene fermato a meta'.
+    ripulite = 0
+    if offset == 0:
+        ripulite = db.execute(
+            "DELETE FROM game_releases WHERE platform IS NULL OR platform NOT IN"
+            f" ({', '.join('?' * len(PIATTAFORME_TENUTE))})",
+            sorted(PIATTAFORME_TENUTE)).rowcount
     quando = time.strftime("%Y-%m-%d %H:%M:%S")     # ora locale, come la legge Davide
     for voce in dati:
         riga, motivo = _mappa_uscita(voce)
         if motivo:
             scarti[motivo] = scarti.get(motivo, 0) + 1
+            continue
+        # Il filtro sta qui e non in `_mappa_uscita` perche' non e' la stessa cosa:
+        # la' si scartano le righe che **non sappiamo leggere**, qui quelle che
+        # sappiamo leggere benissimo e abbiamo **deciso** di non tenere. Si contano
+        # per nome, non per motivo, perche' e' il nome a dire se e' una piattaforma
+        # che non interessa o una nuova da aggiungere all'elenco.
+        if riga["platform"] not in PIATTAFORME_TENUTE:
+            nome = riga["platform"] or t("senza piattaforma")
+            escluse[nome] = escluse.get(nome, 0) + 1
             continue
         gia = db.execute("SELECT id FROM game_releases WHERE igdb_release_id=?",
                          (riga["igdb_release_id"],)).fetchone()
@@ -968,6 +1023,9 @@ def uscite_aggiorna():
     return jsonify({
         "presi": presi, "nuovi": nuovi, "aggiornati": aggiornati,
         "scarti": scarti,
+        # Due conti diversi e tenuti separati: `scarti` sono le righe che IGDB non
+        # descrive abbastanza da poterle salvare, `escluse` quelle rifiutate da noi.
+        "escluse": escluse, "ripulite": ripulite,
         "offset": offset + presi,
         # Un lotto piu' corto del massimo vuol dire che IGDB ha finito le righe.
         "finito": presi < IGDB_LOTTO,
