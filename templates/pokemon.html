@@ -36,13 +36,19 @@
 <!-- Barra strumenti -->
 <div class="tool-bar mb-3">
   <span class="tool-bar-label">🛠️ {{ t('Strumenti:') }}</span>
-  <a href="/pokemon/catalogo" class="btn btn-primary btn-sm">📚 {{ t('Catalogo') }}</a>
+  {# Gli editor scrivono sul catalogo condiviso da tutti, quindi sono solo per gli
+     amministratori. Nasconderli e' **cosmesi**: il controllo vero e' il
+     before_request in blueprints/pokemon.py, che risponde anche a chi digita l'URL.
+     Due blocchi e non uno, per non cambiare l'ordine dei pulsanti a chi e' admin. #}
+  {% if e_admin %}<a href="/pokemon/catalogo" class="btn btn-primary btn-sm">📚 {{ t('Catalogo') }}</a>{% endif %}
   <a href="/pokemon/calcolatori" class="btn btn-secondary btn-sm">📊 {{ t('Calcolatori VGC') }}</a>
+  {% if e_admin %}
   <a href="/pokemon/regulations" class="btn btn-secondary btn-sm">📌 {{ t('Editor Regulation') }}</a>
   <a href="/pokemon/mosse" class="btn btn-secondary btn-sm">⚔️ {{ t('Editor Mosse') }}</a>
   <a href="/pokemon/oggetti" class="btn btn-secondary btn-sm">🎒 {{ t('Editor Oggetti') }}</a>
   <a href="/pokemon/roster" class="btn btn-secondary btn-sm">📋 {{ t('Editor Roster') }}</a>
   <a href="/pokemon/abilita" class="btn btn-secondary btn-sm">🧬 {{ t('Editor Abilità') }}</a>
+  {% endif %}
 </div>
 
 {% if not teams %}

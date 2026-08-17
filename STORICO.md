@@ -20,6 +20,45 @@ pagina ed esegue `new Function()` su ogni blocco `<script>` **e** su ogni handle
 
 ## 17/08/2026
 
+**Gli editor Pokémon solo per gli admin — 30 route su 36 chiuse a chiave (§1.2)**
+
+- ✅ **La lista è quella del permesso, non del divieto**, ed è la decisione che regge tutto.
+  `APERTE_A_TUTTI` in `blueprints/pokemon.py` elenca le **6** viste d'uso — `pokemon`,
+  `calcolatori`, `team_new`, `team_edit`, `team_delete`, `api_regulations_list` — e un
+  `before_request` chiude le altre **30**. Il verso opposto (elencare il vietato) fallirebbe
+  **aperto** sulla prossima route dimenticata, e la dimenticanza non darebbe nessun segnale.
+- ✅ **Le route sono 36, non 28** come diceva il backlog: contate sulla `url_map`, non stimate.
+- ✅ **Verifica: 36 route × 2 ruoli.** Utente normale con la sezione `pokemon`: **30
+  bloccate, 6 aperte**, e l'insieme delle aperte coincide **esattamente** con
+  `APERTE_A_TUTTI`. Amministratore: **0 bloccate**. Ogni route di scrittura fuori
+  dall'elenco è bloccata (`True`).
+- ✅ **End-to-end con due account veri** sul test client: le 9 pagine degli editor
+  rispondono **302 → `/pokemon/`** all'utente e **200** all'admin; `/pokemon/calcolatori`,
+  `/pokemon/team/new` e `/pokemon/api/regulations` rispondono **200 a entrambi**.
+- ✅ **La prova che il divieto arriva prima della scrittura**: 8 API di scrittura chiamate
+  **direttamente** dall'utente normale con payload distruttivi (salva una voce vuota,
+  elimina Incineroar, `regulations: []`) → **403 su 8 su 8**, e
+  `data/catalog/pokemon.json` **invariato** per mtime e dimensione. Più 5 form POST di
+  archiviazione → 302, nessun archivio creato.
+- ✅ **Risposta giusta al chiamante giusto**: 403 JSON `{"ok": false, "error": …}` a chi
+  chiama un path con `/api/` o una delle tre viste che rispondono in JSON senza averlo nel
+  path (`*_archives`); redirect con flash a chi naviga. Un redirect dentro una `fetch()`
+  darebbe un errore di parsing invece di un messaggio — stesso ragionamento di `app.py`.
+- ✅ **E poi il pulsante**, che è cosmesi e viene dopo: i **6** link agli editor in
+  `pokemon.html` sotto `{% if e_admin %}`. Reso e contato: **0/6 all'utente, 6/6
+  all'admin**, con «Calcolatori VGC» e «Nuovo Team» presenti per entrambi. Due blocchi
+  `{% if %}` e non uno, per non cambiare l'ordine dei pulsanti a chi è admin.
+- ⚠️ **Sweep fatto in un motore JS vero, ma non con Node**: su questa macchina Node non
+  c'è (già annotato il 16/08). Le pagine sono state rese col test client per **entrambi i
+  ruoli** e i pezzi estratti sono passati a `new Function()` **nel browser** —
+  **14 pezzi su 14, zero errori**. Traduzioni **587 su 587**, zero mancanti e zero orfane.
+- ⚠️ **Test su una copia di `hub.db`**, come dal 16/08: i due utenti di prova non sono mai
+  esistiti nel DB vero, e la copia è stata cancellata a fine giro.
+- ⚠️ **Due cose trovate censendo le route e non corrette** (fuori scope, sono in
+  `BACKLOG.md` §3): `/api/team/<id>` **non esiste** — `calcolatori-ui.js:9` lo chiama e
+  prende 404 dentro un `catch` muto, quindi il pulsante «Analizza» non carica il team; e
+  `/pokemon/api/abilities` (GET) **non lo chiama nessuno**.
+
 **Calendario uscite — il filtro «quanto è atteso», e il periodo che torna a servire (§4.1c)**
 
 - ✅ **Dei tre campi che il backlog proponeva ne funziona uno solo, e si è visto misurando**

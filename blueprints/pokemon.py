@@ -1,7 +1,8 @@
 import json
 import os
 from datetime import datetime
-from flask import Blueprint, render_template, request, redirect, url_for, flash, jsonify
+from flask import (Blueprint, render_template, request, redirect, url_for, flash,
+                   jsonify, session)
 from extensions import get_db, login_required, _i, nome_vis, categorie
 from data import (
     DATA_DIR,
@@ -253,6 +254,53 @@ def _nomi_catalogo_pokemon(catalogo):
 
 
 bp = Blueprint("pokemon", __name__, url_prefix="/pokemon")
+
+
+# --- Chi può toccare i dati condivisi ---------------------------------------
+# Il permesso di sezione decide **se** vedi Pokémon, non **cosa** puoi scriverci:
+# catalogo, mosse, oggetti, abilità, roster e regulation sono un dato solo per
+# tutti gli utenti, e finora chiunque avesse la sezione poteva riscriverlo.
+#
+# ⚠️ L'elenco qui sotto è quello del **permesso**, non del divieto, ed è la scelta
+# che conta. Una lista di route vietate fallirebbe **aperta**: la prossima route di
+# scrittura che qualcuno aggiunge nascerebbe libera per tutti, e la dimenticanza non
+# darebbe nessun segnale. Così invece una route nuova nasce riservata agli
+# amministratori, e chi la vuole aperta deve scriverlo qui — dove la dimenticanza si
+# vede subito, perché la pagina non si apre.
+#
+# I nomi sono quelli delle viste (`request.endpoint` senza il prefisso `pokemon.`).
+APERTE_A_TUTTI = {
+    "pokemon",               # /pokemon — l'elenco dei team
+    "calcolatori",           # /pokemon/calcolatori
+    "team_new",              # creare, modificare ed eliminare i propri team
+    "team_edit",
+    "team_delete",
+    # GET: la tendina delle regulation nel team builder (team_form.html) e in
+    # regulation_editor. Legge e basta — il salvataggio è `api_regulations_save`.
+    "api_regulations_list",
+}
+
+# Le viste che rispondono in JSON a una `fetch()`: a loro va detto 403, non un
+# redirect a una pagina HTML, che nel browser diventerebbe un errore di parsing
+# invece di un messaggio. Le altre stanno tutte sotto un path con `/api/`; queste
+# tre no, e sono l'unico caso — stesso ragionamento del controllo in `app.py`.
+RISPONDONO_JSON = {"abilities_archives", "catalog_archives", "roster_archives"}
+
+
+@bp.before_request
+def _solo_admin_sugli_editor():
+    """Il controllo sta qui e non sulle singole viste: una route nuova nasce protetta."""
+    if "username" not in session:
+        return None                     # non loggato: ci pensa `login_required`
+    if request.endpoint is None:
+        return None                     # 404 dentro /pokemon/*: lascia fare a Flask
+    vista = request.endpoint.split(".", 1)[-1]
+    if vista in APERTE_A_TUTTI or session.get("role") == "admin":
+        return None
+    if vista in RISPONDONO_JSON or "/api/" in request.path:
+        return jsonify({"ok": False, "error": "Serve un account amministratore."}), 403
+    flash("Serve un account amministratore.", "error")
+    return redirect(url_for("pokemon.pokemon"))
 
 
 def _list_regulation_files():
