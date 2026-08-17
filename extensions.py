@@ -273,11 +273,24 @@ def init_db():
             cover_url TEXT,
             igdb_url TEXT,
             region TEXT,
+            hypes INTEGER,
             updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
         );
         CREATE INDEX IF NOT EXISTS ix_releases_data ON game_releases(release_date);
         CREATE INDEX IF NOT EXISTS ix_releases_piattaforma ON game_releases(platform);
     """)
+    # `hypes` e' quante persone su IGDB hanno messo in lista d'attesa il gioco, ed e'
+    # l'unica misura dell'attesa che quel dump abbia davvero: misurato il 17/08/2026 su
+    # 5954 uscite future, `follows` e' vuoto su **tutte** e `total_rating_count` e'
+    # valorizzato sul 2% e conta i voti dei giochi **gia' usciti** (Elden Ring 2251),
+    # cioe' non misura l'attesa. `hypes` c'e' sul 39% delle righe, fino a 982.
+    # ⚠️ Aggiunta dopo, quindi serve l'ALTER per i DB che esistono gia': la CREATE TABLE
+    # qui sopra tocca solo i DB nuovi. Stessa forma delle colonne aggiunte a `games`.
+    try:
+        db.execute("ALTER TABLE game_releases ADD COLUMN hypes INTEGER")
+        db.commit()
+    except Exception:
+        pass
     db.commit()
     db.close()
 

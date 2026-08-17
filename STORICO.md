@@ -20,6 +20,48 @@ pagina ed esegue `new Function()` su ogni blocco `<script>` **e** su ogni handle
 
 ## 17/08/2026
 
+**Calendario uscite — il filtro «quanto è atteso», e il periodo che torna a servire (§4.1c)**
+
+- ✅ **Dei tre campi che il backlog proponeva ne funziona uno solo, e si è visto misurando**
+  (sonda di sola lettura su 5954 uscite future): **`follows` è vuoto su tutte e 5954** —
+  il campo esiste ancora nell'API, la risposta no; **`total_rating_count` è valorizzato sul
+  2%** e conta i voti dei giochi **già usciti** (Elden Ring 2251, Minecraft 557), cioè
+  misura un'altra cosa; **`hypes`** — quante persone hanno messo il gioco in lista d'attesa
+  — c'è sul **39%** delle righe, fino a 982.
+- ✅ **Soglie scelte sui conti, non a occhio.** Nei prossimi 90 giorni: senza filtro 4598
+  voci fuse (e il tetto le taglia agli **11 giorni** più vicini); `hypes ≥ 2` → **317 voci**;
+  `hypes ≥ 10` → 126. Tendina a tre posizioni — «Tutte le uscite», «Quelle un po' attese»
+  (default, soglia 2), «Solo le più attese» (10).
+- ✅ **Il risultato è quello che la voce chiedeva**: con il default le 300 righe della
+  pagina coprono **tre mesi (31 giorni distinti, agosto→ottobre)** invece di **undici
+  giorni di solo agosto**. Il selettore del periodo torna a fare qualcosa.
+- ✅ **Nuova colonna `hypes` in `game_releases`**, con `ALTER TABLE` per i DB che esistono
+  già (la `CREATE TABLE` tocca solo i nuovi) — provato su una copia: colonna assente →
+  presente dopo `init_db()`. Il numero si vede **anche sulla riga** (👀 289), perché una
+  soglia il cui valore non si legge da nessuna parte è una decisione presa al buio.
+- ⚠️ ✅ **Il filtro dichiara quanto nasconde** («Nascoste 1109 uscite che su IGDB non
+  aspetta quasi nessuno» + «Mostrale tutte»), e **si spegne da solo** se la cache non ha
+  ancora il dato, dicendolo. La prova è stata fatta nello stato reale di oggi (colonna
+  migrata, tutta `NULL`): 300 righe mostrate, tendina assente, avviso presente — invece di
+  un calendario vuoto. Le righe con `hypes` a `None` **restano dentro**: mancante non è
+  zero, ed è la stessa regola di `moves: null`.
+- ✅ **Import provato contro IGDB vero, scrivendo su una copia di `hub.db`**: 500 uscite
+  lette, 389 righe aggiornate col nuovo campo, **210 con attesa maggiore di zero**, 1373
+  righe potate dalle piattaforme escluse, 0 scarti.
+- ✅ **Verifica: 19 controlli**, fra cui il gioco con `hypes` 0 (*10 Hours Before Sunrise*)
+  che sparisce col default e torna con «tutte», la ricerca che continua a trovare i molto
+  attesi, `?attesa=pippo` che ricade sul default, «azzera filtri» che compare solo quando
+  un filtro c'è davvero, e l'inglese. ⚠️ Due prove erano **sbagliate le prove, non il
+  codice**: una cercava un titolo che ha `hypes` esattamente 2 (quindi passa la soglia), e
+  l'altra puntava a un DB non migrato a metà processo. Rifatte per bene.
+- ✅ **Sweep 60 su 60** su sei varianti della pagina. Dizionario EN a **587 chiavi su 587**,
+  con le tre etichette della tendina dichiarate in `_dinamiche` (sono tradotte da un `t()`
+  che il controllore non può vedere, come già quelle del periodo).
+
+---
+
+## 17/08/2026
+
 **Calendario uscite — la ricerca per titolo (§4.1b)**
 
 - ✅ **`?q=` nella riga dei filtri di `/gaming/uscite`**, come `platform` ed `entro`:

@@ -631,6 +631,22 @@ ETICHETTE_FINESTRA = {"30": "Prossimi 30 giorni", "90": "Prossimi 3 mesi",
                       "365": "Prossimo anno", "tutto": "Tutto quello che c'è"}
 FINESTRA_DEFAULT = "90"
 
+# Quanto dev'essere atteso un gioco per comparire. La chiave viaggia nell'URL, il valore
+# e' la soglia su `hypes`, cioe' quante persone su IGDB l'hanno messo in lista d'attesa.
+#
+# ⚠️ **Le soglie sono misurate, non scelte a occhio** (17/08/2026, su 5954 uscite future
+# dopo il filtro piattaforme). Nei prossimi 90 giorni:
+#   tutte  4598 voci fuse su 11 giorni prima che il tetto tagli  → il periodo non serve
+#   >= 2    286 voci fuse su 53 giorni distinti, **sotto il tetto**
+#   >= 10    93 voci fuse su 38 giorni
+# `hypes` e' valorizzato sul **39%** delle righe: il default nasconde qualcosa, quindi la
+# pagina **dice quanto** e offre il ritorno a "tutte". Un filtro che taglia in silenzio
+# sarebbe la stessa trappola dello Speed Tier che ricadeva sulla lista statica.
+ATTESE = [("tutte", 0), ("attese", 2), ("molto", 10)]
+ETICHETTE_ATTESA = {"tutte": "Tutte le uscite", "attese": "Quelle un po' attese",
+                    "molto": "Solo le più attese"}
+ATTESA_DEFAULT = "attese"
+
 # Quante uscite mostrare nella striscia in cima a /gaming: e' un assaggio, non l'elenco.
 STRISCIA = 6
 
@@ -789,7 +805,10 @@ def unisci_multipiattaforma(righe):
             voce["piattaforme"].append(v["platform"])
         # I campi che possono mancare su una riga e esserci su un'altra: si tiene il
         # primo valorizzato invece di lasciare il buco della riga capofila.
-        for campo in ("cover_url", "igdb_url", "human"):
+        # `hypes` sta qui perche' e' un dato del **gioco**: tutte le righe ne portano lo
+        # stesso valore, tranne quando una e' vecchia di un import e l'altra no — e in
+        # quel caso il numero che c'e' vale piu' del buco.
+        for campo in ("cover_url", "igdb_url", "human", "hypes"):
             if not voce.get(campo) and v.get(campo):
                 voce[campo] = v[campo]
         if _quanto_precisa(v.get("precisione")) < _quanto_precisa(voce.get("precisione")):
@@ -817,6 +836,38 @@ def striscia_uscite():
             "giorno": int(v["release_date"][8:10]),
             "mese": t(MESI_IT[int(v["release_date"][5:7]) - 1])})
     return voci[:STRISCIA]
+
+
+def filtra_per_attesa(voci, soglia):
+    """Le voci con almeno `soglia` persone in attesa su IGDB.
+
+    ⚠️ Si filtra **dopo la fusione** e non in SQL, ed e' equivalente: `hypes` sta sul
+    **gioco**, quindi tutte le righe di uno stesso gioco portano lo stesso valore e
+    tagliare prima o dopo da' lo stesso insieme. Farlo qui permette pero' di avere sotto
+    mano **anche** il conto di quelle nascoste, che e' cio' che la pagina deve dichiarare:
+    con due query separate i due numeri potrebbero raccontare cose diverse.
+
+    ⚠️ `hypes` a `None` vuol dire «non lo sappiamo», non «zero»: sono le righe entrate in
+    cache prima che questa colonna esistesse. Restano **dentro** — nascondere per un dato
+    mancante e' il modo di far sparire un gioco senza dirlo. Le righe importate dopo hanno
+    sempre un numero, `0` compreso.
+    """
+    if not soglia:
+        return voci
+    return [v for v in voci if v.get("hypes") is None or v["hypes"] >= soglia]
+
+
+def cache_ha_attesa():
+    """`True` se almeno una riga porta il dato dell'attesa.
+
+    Serve a non far scomparire tutto il calendario sulle cache scritte prima del
+    17/08/2026: li' `hypes` e' `NULL` ovunque, il filtro non ha su cosa lavorare e la
+    pagina lo dice invece di mostrare un elenco che sembra vuoto per caso.
+    """
+    db = get_db()
+    n = db.execute("SELECT COUNT(*) FROM game_releases WHERE hypes IS NOT NULL").fetchone()[0]
+    db.close()
+    return n > 0
 
 
 def piattaforme_in_cache():
@@ -951,6 +1002,11 @@ def _mappa_uscita(voce):
         "cover_url": copertina,
         "igdb_url": (gioco.get("url") or "") if isinstance(gioco, dict) else "",
         "region": str(voce.get("region") or ""),
+        # Quante persone su IGDB aspettano questo gioco. Assente vuol dire **zero**
+        # attese registrate, non "non lo sappiamo": qui la risposta l'abbiamo letta, ed
+        # e' IGDB a omettere il campo quando il conto e' 0. Il `None` in colonna vuol
+        # dire un'altra cosa — riga entrata prima che la colonna esistesse.
+        "hypes": int(gioco.get("hypes") or 0) if isinstance(gioco, dict) else 0,
     }, None
 
 
@@ -973,8 +1029,11 @@ def uscite_aggiorna():
     # ⚠️ `sort id asc` e non `sort date asc`: con l'offset che avanza serve un ordine
     # **stabile**, e le date cambiano proprio mentre si sta paginando. Ordinare per
     # data farebbe scivolare le righe fra un lotto e l'altro, saltandone alcune.
+    # ⚠️ `game.hypes` e non `game.follows`: provati entrambi il 17/08/2026 su 5954 uscite
+    # future, `follows` torna vuoto su **tutte**. `total_rating_count` e' valorizzato sul
+    # 2% e conta i voti di giochi gia' usciti, cioe' misura un'altra cosa.
     query = ("fields id, date, human, category, date_format, region, "
-             "game.id, game.name, game.url, game.cover.image_id, "
+             "game.id, game.name, game.url, game.cover.image_id, game.hypes, "
              "platform.name, platform.abbreviation; "
              f"where date > {adesso} & date < {fino_a}; "
              f"sort id asc; limit {IGDB_LOTTO}; offset {offset};")
@@ -1064,7 +1123,20 @@ def uscite():
     entro = request.args.get("entro", FINESTRA_DEFAULT)
     if entro not in dict(FINESTRE):
         entro = FINESTRA_DEFAULT
-    righe = unisci_multipiattaforma(leggi_uscite(piattaforma, entro, cerca=cerca))
+    attesa = request.args.get("attesa", ATTESA_DEFAULT)
+    if attesa not in dict(ATTESE):
+        attesa = ATTESA_DEFAULT
+    # ⚠️ Su una cache scritta prima che `hypes` esistesse il filtro non ha su cosa
+    # lavorare: si spegne da solo e la pagina lo dice. Filtrare lo stesso avrebbe
+    # svuotato il calendario, che e' il modo peggiore di far sapere che manca un dato.
+    attesa_pronta = cache_ha_attesa()
+    soglia = dict(ATTESE)[attesa] if attesa_pronta else 0
+
+    tutte = unisci_multipiattaforma(leggi_uscite(piattaforma, entro, cerca=cerca))
+    righe = filtra_per_attesa(tutte, soglia)
+    # Quante ne ha nascoste il filtro dell'attesa: la pagina lo dichiara, come fa il
+    # tetto. I due numeri vengono dalla **stessa** lettura, quindi sono confrontabili.
+    nascoste_attesa = len(tutte) - len(righe)
 
     # ⚠️ La finestra temporale e' un filtro come gli altri, ma con una ricerca attiva
     # diventa una trappola: si cerca *Hollow Knight* e si legge "nessun risultato"
@@ -1075,8 +1147,10 @@ def uscite():
     # La lettura in piu' si fa solo con una ricerca attiva, dove le righe sono poche.
     fuori_periodo = 0
     if cerca and entro != "tutto":
-        fuori_periodo = len(unisci_multipiattaforma(
-            leggi_uscite(piattaforma, "tutto", cerca=cerca))) - len(righe)
+        # Stessa soglia di attesa, altrimenti il conto prometterebbe uscite che poi il
+        # filtro nasconde di nuovo.
+        fuori_periodo = len(filtra_per_attesa(unisci_multipiattaforma(
+            leggi_uscite(piattaforma, "tutto", cerca=cerca)), soglia)) - len(righe)
     # Il taglio va **dopo** la fusione: tagliare prima riempirebbe il tetto con lo
     # stesso gioco ripetuto una volta per piattaforma.
     trovate = len(righe)
@@ -1091,11 +1165,14 @@ def uscite():
         quante=len(righe), trovate=trovate, tetto=TETTO_RIGHE,
         totale=totale, aggiornata=aggiornata, fuori_periodo=fuori_periodo,
         piattaforme=piattaforme_in_cache(), platform=piattaforma, entro=entro,
-        q=cerca,
+        q=cerca, attesa=attesa, attesa_pronta=attesa_pronta,
+        nascoste_attesa=nascoste_attesa,
         finestre=[(k, ETICHETTE_FINESTRA[k]) for k, _ in FINESTRE],
+        attese=[(k, ETICHETTE_ATTESA[k]) for k, _ in ATTESE],
         # Se il default cambia, il pulsante "azzera" lo segue da solo: ricopiare
         # `'90'` nel template lo lascerebbe indietro in silenzio.
-        filtri_attivi=bool(piattaforma or cerca or entro != FINESTRA_DEFAULT),
+        filtri_attivi=bool(piattaforma or cerca or entro != FINESTRA_DEFAULT
+                           or attesa != ATTESA_DEFAULT),
         chiavi_presenti=all(igdb_credenziali()))
 
 

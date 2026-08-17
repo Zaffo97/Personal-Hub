@@ -588,7 +588,6 @@
   "senza id": "with no id",
   "{n} in calendario · {tot} uscite in cache": "{n} on the calendar · {tot} releases cached",
   "prime {n} di {trovate} · {tot} uscite in cache": "first {n} of {trovate} · {tot} releases cached",
-  "Mostrate le {n} uscite più vicine su {trovate}: l'elenco intero renderebbe la pagina lentissima. <strong>Filtra per piattaforma</strong> per vedere il resto — restringere il periodo non basta, perché queste {n} coprono già solo i primi giorni.": "Showing the {n} nearest releases out of {trovate}: the full list would make this page crawl. <strong>Filter by platform</strong> to see the rest — narrowing the period is not enough, because these {n} already cover only the first few days.",
   "_dinamiche": [
     "Pokémon",
     "Mosse",
@@ -666,7 +665,10 @@
     "dom",
     "senza data",
     "senza titolo",
-    "senza id"
+    "senza id",
+    "Tutte le uscite",
+    "Quelle un po' attese",
+    "Solo le più attese"
   ],
   "e altre {n}": "and {n} more",
   "senza piattaforma": "no platform",
@@ -678,5 +680,14 @@
   "Altre {n} uscite con questo titolo sono fuori dal periodo scelto.": "{n} more releases with this title fall outside the chosen period.",
   "Nessuna uscita con «{q}» nel periodo scelto: sono tutte più in là, il collegamento qui sopra le mostra.": "No release matching “{q}” in the chosen period: they are all further ahead, and the link above shows them.",
   "Nessuna uscita con «{q}» su {p}. Prova a togliere il filtro piattaforma.": "No release matching “{q}” on {p}. Try removing the platform filter.",
-  "Nessuna uscita con «{q}» in tutta la cache. Il calendario tiene solo da oggi in avanti: un gioco già uscito non c'è.": "No release matching “{q}” anywhere in the cache. The calendar only keeps today onwards: a game that is already out is not there."
+  "Nessuna uscita con «{q}» in tutta la cache. Il calendario tiene solo da oggi in avanti: un gioco già uscito non c'è.": "No release matching “{q}” anywhere in the cache. The calendar only keeps today onwards: a game that is already out is not there.",
+  "Tutte le uscite": "All releases",
+  "Quelle un po' attese": "The somewhat awaited",
+  "Solo le più attese": "Only the most awaited",
+  "Mostrale tutte": "Show them all",
+  "Quante persone aspettano questo gioco su IGDB": "How many people are waiting for this game on IGDB",
+  "Nascoste {n} uscite che su IGDB non aspetta quasi nessuno.": "{n} releases hidden that almost nobody is waiting for on IGDB.",
+  "Le {n} uscite di questo periodo sono tutte poco attese su IGDB: il collegamento qui sopra le mostra.": "All {n} releases in this period are barely awaited on IGDB: the link above shows them.",
+  "Il filtro «quanto è atteso» è spento: questa cache è stata scritta prima che il dato esistesse. Premi «Aggiorna il calendario» per averlo.": "The “how awaited” filter is off: this cache was written before that value existed. Press “Refresh the calendar” to get it.",
+  "Mostrate le {n} uscite più vicine su {trovate}: l'elenco intero renderebbe la pagina lentissima. Restringi con <strong>quanto è atteso</strong> o con la <strong>piattaforma</strong> — accorciare il periodo non basta, perché queste {n} coprono già solo i primi giorni.": "Showing the {n} closest releases out of {trovate}: the whole list would make the page crawl. Narrow it down with <strong>how awaited</strong> or with the <strong>platform</strong> — shortening the period is not enough, because these {n} already cover only the first few days."
 }

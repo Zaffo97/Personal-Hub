@@ -87,6 +87,15 @@
     <option value="{{ chiave }}" {% if chiave==entro %}selected{% endif %}>{{ t(etichetta) }}</option>
     {% endfor %}
   </select>
+  {# Quanto dev'essere atteso un gioco per comparire. Compare solo se la cache ha il
+     dato: offrire un filtro che non può funzionare è peggio che non offrirlo. #}
+  {% if attesa_pronta %}
+  <select name="attesa" class="form-control" style="max-width:200px" onchange="this.form.submit()">
+    {% for chiave, etichetta in attese %}
+    <option value="{{ chiave }}" {% if chiave==attesa %}selected{% endif %}>{{ t(etichetta) }}</option>
+    {% endfor %}
+  </select>
+  {% endif %}
   {# La ricerca cerca in **tutta la cache** e non fra le righe mostrate: il filtro è in
      SQL, prima del tetto. Niente `onchange`, perché qui si scrive e si invia col tasto
      Invio — un submit a ogni tasto ricaricherebbe la pagina a metà parola. #}
@@ -114,14 +123,33 @@
   </span>
 </form>
 
-{# ⚠️ Un elenco tagliato che non dichiara di esserlo mente. Con la cache piena sono
-   4343 righe su «tutto» — 3,3 MB e 4224 immagini — quindi il tetto c'è, e si vede.
-   ⚠️ E l'avviso indica la **piattaforma**, non il periodo: misurato, 300 righe coprono
-   11 giorni, quindi restringere il periodo non cambia niente finché il tetto morde.
-   Il filtro piattaforma sì (PS5 scende a 221 righe su 90 giorni, sotto il tetto). #}
+{# ⚠️ Un elenco tagliato che non dichiara di esserlo mente: senza tetto la pagina pesava
+   3,3 MB con 4224 immagini.
+   ⚠️ Il consiglio è cambiato il 17/08 insieme al filtro dell'attesa, e non è cosmesi:
+   prima l'unico rimedio era la piattaforma, perché 300 righe coprivano 11 giorni e
+   restringere il periodo non cambiava niente. Ora «quelle un po' attese» porta i 90
+   giorni a 286 voci — sotto il tetto — quindi è quello il primo consiglio da dare. #}
 {% if trovate > quante %}
 <div class="text-xs text-muted mb-2" style="padding:.45rem .6rem;border:1px solid var(--border);border-radius:var(--radius-md)">
-  &#9888;&#65039; {{ tf('Mostrate le {n} uscite più vicine su {trovate}: l\'elenco intero renderebbe la pagina lentissima. <strong>Filtra per piattaforma</strong> per vedere il resto — restringere il periodo non basta, perché queste {n} coprono già solo i primi giorni.', {'n': quante, 'trovate': trovate})|safe }}
+  &#9888;&#65039; {{ tf('Mostrate le {n} uscite più vicine su {trovate}: l\'elenco intero renderebbe la pagina lentissima. Restringi con <strong>quanto è atteso</strong> o con la <strong>piattaforma</strong> — accorciare il periodo non basta, perché queste {n} coprono già solo i primi giorni.', {'n': quante, 'trovate': trovate})|safe }}
+</div>
+{% endif %}
+
+{# ⚠️ Il filtro dell'attesa nasconde delle uscite, quindi **dice quante** e offre il
+   ritorno a «tutte» in un clic: `hypes` è valorizzato solo sul 39% delle righe, e un
+   calendario che tace su ciò che ha tolto è indistinguibile da uno incompleto. #}
+{% if nascoste_attesa > 0 %}
+<div class="text-xs text-muted mb-2" style="padding:.45rem .6rem;border:1px solid var(--border);border-radius:var(--radius-md)">
+  &#128064; {{ tf('Nascoste {n} uscite che su IGDB non aspetta quasi nessuno.', {'n': nascoste_attesa}) }}
+  <a href="{{ url_for('gaming.uscite', q=q or none, platform=platform or none, entro=entro, attesa='tutte') }}">{{ t('Mostrale tutte') }}</a>
+</div>
+{% endif %}
+
+{# La cache scritta prima del 17/08/2026 non ha il dato dell'attesa: il filtro è spento
+   e va detto, altrimenti sembra che non funzioni. #}
+{% if not attesa_pronta and totale %}
+<div class="text-xs text-muted mb-2" style="padding:.45rem .6rem;border:1px solid var(--border);border-radius:var(--radius-md)">
+  &#128064; {{ t('Il filtro «quanto è atteso» è spento: questa cache è stata scritta prima che il dato esistesse. Premi «Aggiorna il calendario» per averlo.') }}
 </div>
 {% endif %}
 
@@ -134,7 +162,7 @@
   &#128269; {{ tf('Altre {n} uscite con questo titolo sono fuori dal periodo scelto.', {'n': fuori_periodo}) }}
   {# `or none`: un parametro vuoto `url_for` lo scrive lo stesso (`&platform=`), e un
      collegamento che si porta dietro filtri che nessuno ha messo è confuso da leggere. #}
-  <a href="{{ url_for('gaming.uscite', q=q, platform=platform or none, entro='tutto') }}">{{ t('Cerca in tutto quello che c\'è') }}</a>
+  <a href="{{ url_for('gaming.uscite', q=q, platform=platform or none, entro='tutto', attesa=attesa) }}">{{ t('Cerca in tutto quello che c\'è') }}</a>
 </div>
 {% endif %}
 
@@ -167,6 +195,11 @@
           {% if u.precisione and u.precisione != 'giorno' %}
           &middot; <span class="badge badge-warning" title="{{ t('IGDB non ha una data esatta') }}">~ {{ u.human }}</span>
           {% endif %}
+          {# Il numero su cui lavora il filtro, in chiaro accanto alla riga: senza, la
+             soglia sarebbe una decisione presa al buio da chi guarda la pagina. #}
+          {% if u.hypes %}
+          &middot; <span title="{{ t('Quante persone aspettano questo gioco su IGDB') }}">&#128064; {{ u.hypes }}</span>
+          {% endif %}
         </div>
       </div>
       {% if u.igdb_url %}
@@ -188,7 +221,10 @@
        proprio assente dalla cache — e allora va detto **perché** può esserlo, cioè che
        il calendario tiene solo da oggi in avanti. Una frase generica manderebbe ad
        allargare il periodo chi ha già guardato dappertutto. #}
-    {% if totale and q and fuori_periodo %}{{ tf('Nessuna uscita con «{q}» nel periodo scelto: sono tutte più in là, il collegamento qui sopra le mostra.', {'q': q}) }}
+    {# Se a svuotare l'elenco è stato il filtro dell'attesa lo si dice per primo: è il
+       filtro che l'utente non ha messo, quindi è quello che non si aspetta. #}
+    {% if totale and nascoste_attesa %}{{ tf('Le {n} uscite di questo periodo sono tutte poco attese su IGDB: il collegamento qui sopra le mostra.', {'n': nascoste_attesa}) }}
+    {% elif totale and q and fuori_periodo %}{{ tf('Nessuna uscita con «{q}» nel periodo scelto: sono tutte più in là, il collegamento qui sopra le mostra.', {'q': q}) }}
     {# ⚠️ Con una piattaforma scelta non si può dire «non c'è in cache»: la ricerca ha
        guardato solo lì dentro, e il gioco potrebbe uscire altrove. #}
     {% elif totale and q and platform %}{{ tf('Nessuna uscita con «{q}» su {p}. Prova a togliere il filtro piattaforma.', {'q': q, 'p': platform}) }}

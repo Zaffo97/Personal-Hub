@@ -477,44 +477,32 @@ Switch 2 e i VR; le console vecchie (PS4, Xbox One, 360, Vita, Wii) le ha esclus
 lo stesso giorno. −1373 righe su 7327, e solo 45 giochi persi. Numeri e prove in
 `STORICO.md`; la trappola dell'elenco che fallisce chiuso è in cima a questo file.
 
-**⬜ Cosa resta aperto: il tetto morde ancora, e 4.1a non l'ha smosso.**
-
-C'è un tetto a **300 righe** (stesso rimedio dello Speed Tier), che tiene la pagina a
-**228 KB e 293 immagini**: senza, con la cache piena erano **3,3 MB e 4224 immagini** su
-«tutto» e **994 KB** già sulla finestra di default.
-
-⚠️ **Il tetto ha un effetto collaterale misurato e dichiarato a schermo: 300 righe coprono
-11 giorni**, quindi tutte e quattro le finestre mostrano gli stessi giorni e il selettore
-del periodo di fatto non fa niente.
-
-⚠️ **E il filtro piattaforme non l'ha risolto: misurato dopo 4.1a, la finestra di default
-passa da 4649 a 4598 voci fuse (−51) e la 300esima resta il 27/08.** Il motivo è quello
-per cui 4.1a costava poco: Mac e Linux erano **etichette** di giochi che restano. A
-riempire i primi giorni è **PC, da solo 1200 righe su 90 giorni**; PS5 ne ha 239, sotto
-il tetto. Funziona quindi ancora solo il filtro piattaforma, ed è 4.1c la strada vera.
-
 ✅ **4.1b è chiuso il 17/08/2026** — la ricerca per titolo è nella riga dei filtri, viaggia
 come `?q=` e filtra **in SQL prima del tetto**, quindi trova anche ciò che il tetto taglia.
 In più dice quante uscite col titolo cercato cadono **fuori dal periodo scelto**, che era
 la trappola rimasta: il periodo è un filtro esplicito, ma con una ricerca attiva un
 «nessun risultato» sarebbe stato letto come «non c'è». Numeri e prove in `STORICO.md`.
 
-#### ⬜ 4.1c — Il resto della coda lunga
+✅ **4.1c è chiuso il 17/08/2026** — filtro «quanto è atteso» su `hypes`, con la finestra
+di default che passa da 11 giorni a **tre mesi** di calendario. Numeri e prove in
+`STORICO.md`.
 
-Anche tolte le piattaforme restano **5954 righe** (4598 voci fuse), e la maggior parte
-sono giochi minuscoli. IGDB ha campi che misurano l'attesa (`hypes`, `follows`,
-`total_rating_count`), e filtrare su quelli è ciò che farebbe tornare a significare
-qualcosa il selettore del periodo.
+**Il tetto delle 300 righe resta, ed è giusto che resti**: senza, la pagina pesava
+**3,3 MB con 4224 immagini**. Quello che è cambiato è **quanto calendario ci sta dentro**:
+con «quelle un po' attese» le 300 righe coprono **tre mesi** invece di undici giorni, e
+sulla finestra di default le voci che passano i filtri sono **317** — il tetto sfiora
+appena. Le tre leve sono ora l'attesa, la piattaforma e la ricerca; il periodo da solo
+non basta mai, e l'avviso a schermo lo dice.
 
-⚠️ **Adesso è l'unica strada rimasta, e non è più «da valutare»**: 4.1a è stato fatto e
-il tetto non si è spostato di un giorno (−51 voci fuse, la 300esima sempre il 27/08).
-A riempire i primi giorni è **PC da solo, 1200 righe su 90 giorni**. La ricerca di 4.1b
-copre il caso «so cosa cerco»; questa voce copre l'altro, cioè **sfogliare** il
-calendario, che oggi si ferma agli undici giorni più vicini.
+**⬜ Cosa resta, ed è piccolo:**
 
-> Modello già collaudato qui per gli import esterni, e vale anche per questo: lotti
-> piccoli, la chiave **solo** da variabile d'ambiente e mai nel repo, e l'import che
-> **si ferma su ciò che non risolve** invece di indovinare.
+- ⬜ **La cache va aggiornata una volta** perché il dato dell'attesa entri: fino ad allora
+  il filtro è spento e la pagina lo dice. È un'azione di Davide, non un lavoro
+- ⬜ **La striscia in cima a `/gaming`** mostra ancora le **6 uscite più vicine**, senza
+  guardare l'attesa: è un assaggio e va bene così, ma se dà fastidio vedere lì un gioco
+  che non conosce nessuno si applica la stessa soglia (`filtra_per_attesa` è già scritta)
+- ⬜ **Le soglie sono due numeri fissi** (2 e 10) scelti sui conti del 17/08. Se in cache
+  entrasse molto altro andrebbero rimisurate, non ritoccate a occhio
 
 ---
 
