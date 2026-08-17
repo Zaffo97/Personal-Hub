@@ -87,6 +87,12 @@
     <option value="{{ chiave }}" {% if chiave==entro %}selected{% endif %}>{{ t(etichetta) }}</option>
     {% endfor %}
   </select>
+  {# La ricerca cerca in **tutta la cache** e non fra le righe mostrate: il filtro è in
+     SQL, prima del tetto. Niente `onchange`, perché qui si scrive e si invia col tasto
+     Invio — un submit a ogni tasto ricaricherebbe la pagina a metà parola. #}
+  <input type="search" name="q" value="{{ q }}" class="form-control" style="max-width:240px"
+         placeholder="{{ t('Cerca un titolo…') }}">
+  <button type="submit" class="btn btn-secondary" title="{{ t('Cerca') }}">&#128269;</button>
   {% if filtri_attivi %}
   <a href="/gaming/uscite" class="btn btn-secondary" title="{{ t('Azzera i filtri') }}">&#x2715;</a>
   {% endif %}
@@ -116,6 +122,19 @@
 {% if trovate > quante %}
 <div class="text-xs text-muted mb-2" style="padding:.45rem .6rem;border:1px solid var(--border);border-radius:var(--radius-md)">
   &#9888;&#65039; {{ tf('Mostrate le {n} uscite più vicine su {trovate}: l\'elenco intero renderebbe la pagina lentissima. <strong>Filtra per piattaforma</strong> per vedere il resto — restringere il periodo non basta, perché queste {n} coprono già solo i primi giorni.', {'n': quante, 'trovate': trovate})|safe }}
+</div>
+{% endif %}
+
+{# ⚠️ Il periodo è un filtro come gli altri, ma con una ricerca attiva diventa una
+   trappola: cercare un gioco che esce fra otto mesi risponderebbe «nessun risultato»
+   pur avendolo in cache. Il collegamento porta alla stessa ricerca senza limite di
+   tempo, tenendo la piattaforma scelta. #}
+{% if fuori_periodo > 0 %}
+<div class="text-xs mb-2" style="padding:.45rem .6rem;border:1px solid var(--warning,#d97706);border-radius:var(--radius-md)">
+  &#128269; {{ tf('Altre {n} uscite con questo titolo sono fuori dal periodo scelto.', {'n': fuori_periodo}) }}
+  {# `or none`: un parametro vuoto `url_for` lo scrive lo stesso (`&platform=`), e un
+     collegamento che si porta dietro filtri che nessuno ha messo è confuso da leggere. #}
+  <a href="{{ url_for('gaming.uscite', q=q, platform=platform or none, entro='tutto') }}">{{ t('Cerca in tutto quello che c\'è') }}</a>
 </div>
 {% endif %}
 
@@ -164,7 +183,17 @@
   <div style="font-size:3rem;margin-bottom:.75rem">&#128197;</div>
   <h3>{{ t('Nessuna uscita in calendario') }}</h3>
   <p class="text-sm mt-1">
-    {% if totale %}{{ t('Nessuna uscita con questi filtri: prova ad allargare il periodo.') }}
+    {# ⚠️ Tre frasi diverse e non una sola, perché «non trovato» ha tre significati
+       diversi: fuori dal periodo (e il collegamento qui sopra lo dice già), oppure
+       proprio assente dalla cache — e allora va detto **perché** può esserlo, cioè che
+       il calendario tiene solo da oggi in avanti. Una frase generica manderebbe ad
+       allargare il periodo chi ha già guardato dappertutto. #}
+    {% if totale and q and fuori_periodo %}{{ tf('Nessuna uscita con «{q}» nel periodo scelto: sono tutte più in là, il collegamento qui sopra le mostra.', {'q': q}) }}
+    {# ⚠️ Con una piattaforma scelta non si può dire «non c'è in cache»: la ricerca ha
+       guardato solo lì dentro, e il gioco potrebbe uscire altrove. #}
+    {% elif totale and q and platform %}{{ tf('Nessuna uscita con «{q}» su {p}. Prova a togliere il filtro piattaforma.', {'q': q, 'p': platform}) }}
+    {% elif totale and q %}{{ tf('Nessuna uscita con «{q}» in tutta la cache. Il calendario tiene solo da oggi in avanti: un gioco già uscito non c\'è.', {'q': q}) }}
+    {% elif totale %}{{ t('Nessuna uscita con questi filtri: prova ad allargare il periodo.') }}
     {% elif chiavi_presenti %}{{ t('La cache è vuota: premi «Aggiorna il calendario».') }}
     {% else %}{{ t('Imposta le credenziali IGDB qui sopra, poi aggiorna il calendario.') }}{% endif %}
   </p>

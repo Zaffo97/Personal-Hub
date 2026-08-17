@@ -671,5 +671,12 @@
   "e altre {n}": "and {n} more",
   "senza piattaforma": "no platform",
   "{n} righe di piattaforme escluse ({elenco}).": "{n} rows from excluded platforms ({elenco}).",
-  "{n} righe vecchie di piattaforme escluse tolte dalla cache.": "{n} old rows from excluded platforms removed from the cache."
+  "{n} righe vecchie di piattaforme escluse tolte dalla cache.": "{n} old rows from excluded platforms removed from the cache.",
+  "Cerca": "Search",
+  "Cerca un titolo…": "Search a title…",
+  "Cerca in tutto quello che c'è": "Search everything there is",
+  "Altre {n} uscite con questo titolo sono fuori dal periodo scelto.": "{n} more releases with this title fall outside the chosen period.",
+  "Nessuna uscita con «{q}» nel periodo scelto: sono tutte più in là, il collegamento qui sopra le mostra.": "No release matching “{q}” in the chosen period: they are all further ahead, and the link above shows them.",
+  "Nessuna uscita con «{q}» su {p}. Prova a togliere il filtro piattaforma.": "No release matching “{q}” on {p}. Try removing the platform filter.",
+  "Nessuna uscita con «{q}» in tutta la cache. Il calendario tiene solo da oggi in avanti: un gioco già uscito non c'è.": "No release matching “{q}” anywhere in the cache. The calendar only keeps today onwards: a game that is already out is not there."
 }

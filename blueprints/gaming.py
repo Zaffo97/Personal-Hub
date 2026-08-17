@@ -666,7 +666,7 @@ def _fra_giorni(n):
     return time.strftime("%Y-%m-%d", time.localtime(time.time() + n * 86400))
 
 
-def leggi_uscite(piattaforma="", entro=FINESTRA_DEFAULT, limite=None):
+def leggi_uscite(piattaforma="", entro=FINESTRA_DEFAULT, limite=None, cerca=""):
     """Le uscite in cache da oggi in avanti, gia' ordinate per data.
 
     ⚠️ Il confine e' **oggi compreso**, non "da domani": un gioco che esce oggi e'
@@ -675,6 +675,11 @@ def leggi_uscite(piattaforma="", entro=FINESTRA_DEFAULT, limite=None):
     Le date sono stringhe `YYYY-MM-DD`, quindi il confronto lessicografico di SQLite
     e' anche quello cronologico: non serve nessuna conversione. Le righe **senza**
     data restano fuori — una riga in un calendario senza sapere quando e' rumore.
+
+    ⚠️ `cerca` filtra **qui, in SQL**, e non fra le righe gia' pescate: la pagina ne
+    mostra al massimo `TETTO_RIGHE`, quindi cercare fra quelle direbbe "nessun
+    risultato" per un gioco che in cache **c'e'** — un fallimento silenzioso della
+    stessa famiglia gia' pagata piu' volte qui.
     """
     giorni = dict(FINESTRE).get(entro, dict(FINESTRE)[FINESTRA_DEFAULT])
     sql = ("SELECT * FROM game_releases WHERE release_date IS NOT NULL"
@@ -686,6 +691,13 @@ def leggi_uscite(piattaforma="", entro=FINESTRA_DEFAULT, limite=None):
     if piattaforma:
         sql += " AND platform = ?"
         params.append(piattaforma)
+    if cerca:
+        # Stesso modello della ricerca della libreria in `gaming()`: i `%` li mette il
+        # codice, il testo dell'utente resta un **parametro** e non entra mai nella
+        # query. (Come li', un `%` o un `_` digitati restano jolly di LIKE: e' il
+        # comportamento gia' in uso qui, non una svista.)
+        sql += " AND title LIKE ?"
+        params.append(f"%{cerca}%")
     sql += " ORDER BY release_date ASC, title COLLATE NOCASE ASC"
     if limite:
         sql += " LIMIT ?"
@@ -1048,10 +1060,23 @@ def uscite_svuota():
 @login_required
 def uscite():
     piattaforma = request.args.get("platform", "")
+    cerca = request.args.get("q", "").strip()
     entro = request.args.get("entro", FINESTRA_DEFAULT)
     if entro not in dict(FINESTRE):
         entro = FINESTRA_DEFAULT
-    righe = unisci_multipiattaforma(leggi_uscite(piattaforma, entro))
+    righe = unisci_multipiattaforma(leggi_uscite(piattaforma, entro, cerca=cerca))
+
+    # ⚠️ La finestra temporale e' un filtro come gli altri, ma con una ricerca attiva
+    # diventa una trappola: si cerca *Hollow Knight* e si legge "nessun risultato"
+    # perche' esce fra otto mesi, cioe' la risposta giusta a una domanda che nessuno ha
+    # fatto. Allora si conta quanto trova la **stessa** ricerca senza limite di tempo, e
+    # se e' di piu' lo si dice offrendo il periodo intero. Il conto e' sulle voci fuse,
+    # come quello mostrato: due numeri accanto che contano cose diverse mentirebbero.
+    # La lettura in piu' si fa solo con una ricerca attiva, dove le righe sono poche.
+    fuori_periodo = 0
+    if cerca and entro != "tutto":
+        fuori_periodo = len(unisci_multipiattaforma(
+            leggi_uscite(piattaforma, "tutto", cerca=cerca))) - len(righe)
     # Il taglio va **dopo** la fusione: tagliare prima riempirebbe il tetto con lo
     # stesso gioco ripetuto una volta per piattaforma.
     trovate = len(righe)
@@ -1064,12 +1089,13 @@ def uscite():
         # righe **mostrate**, `trovate` quelle che passano i filtri (piu' grande se il
         # tetto ha tagliato), `totale` le uscite grezze in cache, una per piattaforma.
         quante=len(righe), trovate=trovate, tetto=TETTO_RIGHE,
-        totale=totale, aggiornata=aggiornata,
+        totale=totale, aggiornata=aggiornata, fuori_periodo=fuori_periodo,
         piattaforme=piattaforme_in_cache(), platform=piattaforma, entro=entro,
+        q=cerca,
         finestre=[(k, ETICHETTE_FINESTRA[k]) for k, _ in FINESTRE],
         # Se il default cambia, il pulsante "azzera" lo segue da solo: ricopiare
         # `'90'` nel template lo lascerebbe indietro in silenzio.
-        filtri_attivi=bool(piattaforma or entro != FINESTRA_DEFAULT),
+        filtri_attivi=bool(piattaforma or cerca or entro != FINESTRA_DEFAULT),
         chiavi_presenti=all(igdb_credenziali()))
 
 

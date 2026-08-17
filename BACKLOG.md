@@ -493,26 +493,24 @@ per cui 4.1a costava poco: Mac e Linux erano **etichette** di giochi che restano
 riempire i primi giorni è **PC, da solo 1200 righe su 90 giorni**; PS5 ne ha 239, sotto
 il tetto. Funziona quindi ancora solo il filtro piattaforma, ed è 4.1c la strada vera.
 
-#### ⬜ 4.1b — Una barra di ricerca nel calendario (chiesto da Davide il 16/08/2026)
-
-Cercare un gioco per titolo fra le uscite importate, come si fa già nella libreria.
-
-- il posto è la stessa riga dei filtri di `/gaming/uscite`, e il valore viaggia **nella
-  querystring** come `platform` ed `entro`, così una ricerca si può mettere fra i preferiti
-- il modello è già in `gaming()`: `title LIKE ?` con i `%` messi dal codice
-- ⚠️ **La ricerca deve cercare in tutta la cache, non nelle 300 righe mostrate.** Col
-  tetto attivo cercare solo fra quelle darebbe «nessun risultato» per un gioco che c'è —
-  è un fallimento silenzioso della stessa famiglia già pagata più volte qui. Il filtro va
-  quindi nella query SQL, prima del tetto
-- ⚠️ e con una ricerca attiva il tetto quasi sempre non morde più: l'avviso «mostrate le
-  prime N» non deve comparire quando non serve
+✅ **4.1b è chiuso il 17/08/2026** — la ricerca per titolo è nella riga dei filtri, viaggia
+come `?q=` e filtra **in SQL prima del tetto**, quindi trova anche ciò che il tetto taglia.
+In più dice quante uscite col titolo cercato cadono **fuori dal periodo scelto**, che era
+la trappola rimasta: il periodo è un filtro esplicito, ma con una ricerca attiva un
+«nessun risultato» sarebbe stato letto come «non c'è». Numeri e prove in `STORICO.md`.
 
 #### ⬜ 4.1c — Il resto della coda lunga
 
-Anche tolte le piattaforme, restano ~6141 righe: la maggior parte sono giochi minuscoli.
-IGDB ha campi che misurano l'attesa (`hypes`, `follows`, `total_rating_count`), e
-filtrare su quelli è ciò che farebbe tornare a significare qualcosa il selettore del
-periodo. Da valutare **dopo** 4.1a, che da solo potrebbe già bastare.
+Anche tolte le piattaforme restano **5954 righe** (4598 voci fuse), e la maggior parte
+sono giochi minuscoli. IGDB ha campi che misurano l'attesa (`hypes`, `follows`,
+`total_rating_count`), e filtrare su quelli è ciò che farebbe tornare a significare
+qualcosa il selettore del periodo.
+
+⚠️ **Adesso è l'unica strada rimasta, e non è più «da valutare»**: 4.1a è stato fatto e
+il tetto non si è spostato di un giorno (−51 voci fuse, la 300esima sempre il 27/08).
+A riempire i primi giorni è **PC da solo, 1200 righe su 90 giorni**. La ricerca di 4.1b
+copre il caso «so cosa cerco»; questa voce copre l'altro, cioè **sfogliare** il
+calendario, che oggi si ferma agli undici giorni più vicini.
 
 > Modello già collaudato qui per gli import esterni, e vale anche per questo: lotti
 > piccoli, la chiave **solo** da variabile d'ambiente e mai nel repo, e l'import che

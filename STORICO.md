@@ -20,6 +20,36 @@ pagina ed esegue `new Function()` su ogni blocco `<script>` **e** su ogni handle
 
 ## 17/08/2026
 
+**Calendario uscite — la ricerca per titolo (§4.1b)**
+
+- ✅ **`?q=` nella riga dei filtri di `/gaming/uscite`**, come `platform` ed `entro`:
+  una ricerca si mette fra i preferiti. Filtro **in SQL, prima del tetto** — provato col
+  caso che lo dimostra: *Liminal Shroud* è la **500esima** voce della finestra di default,
+  quindi la pagina senza ricerca **non la contiene** (300 righe), e cercandola compare.
+- ✅ **Il buco che restava era il periodo, non il tetto.** Il periodo è un filtro
+  esplicito, ma con una ricerca attiva «nessun risultato» si legge come «non c'è»: ora la
+  pagina conta quante uscite col titolo cercato cadono **fuori** dal periodo e offre il
+  collegamento alla stessa ricerca senza limiti (tenendo la piattaforma scelta). Il conto
+  è sulle **voci fuse**, come quello mostrato accanto, e la lettura in più si fa **solo**
+  con una ricerca attiva.
+- ✅ **Quattro frasi diverse per l'elenco vuoto**, perché «non trovato» ha significati
+  diversi: fuori periodo, assente **su quella piattaforma** (con una piattaforma scelta
+  non si può dire «non c'è in cache»), assente del tutto (e allora si dice **perché**: il
+  calendario tiene solo da oggi in avanti), oppure nessun filtro attivo.
+- ✅ **Verifica: 14 casi su 14** col test client — il titolo oltre il tetto, quello che
+  esce oltre i 90 giorni (elenco vuoto ma «altre 1 fuori dal periodo», e con `entro=tutto`
+  compare), ricerca + piattaforma, titolo inesistente, **apostrofo** (`Hero's Hand`),
+  `' OR 1=1--` → 0 righe, `%` che resta jolly come nella libreria, ricerca vuota e soli
+  spazi che non filtrano nulla, e la pagina in inglese. Più: valore che resta nel campo,
+  «azzera filtri» che compare solo se un filtro c'è, striscia di `/gaming` intatta.
+- ✅ **Sweep 45 su 45** fra blocchi `<script>` e handler inline su cinque varianti della
+  pagina. Dizionario EN a **579 chiavi su 579**, e i segnaposto `{…}` combaciano su tutte
+  e 601 le voci del dizionario.
+
+---
+
+## 17/08/2026
+
 **Calendario uscite — in cache entrano solo le piattaforme che interessano (§4.1a)**
 
 - ✅ **`PIATTAFORME_TENUTE` in `blueprints/gaming.py`**: PC, PlayStation 5, Xbox Series X|S,
