@@ -33,11 +33,14 @@ def create_app():
     # calcolo dentro base.html perché la stessa risposta serve al controllo qui sotto.
     @app.context_processor
     def _permessi():
-        from extensions import sezioni_utente
+        from extensions import sezioni_utente, e_admin
         from flask import session
         permesse = sezioni_utente() if "username" in session else []
+        # `e_admin` era ricalcolato qui a mano. Ora la definizione è una sola, in
+        # `extensions.py`: la stessa che decide **di chi** sono le righe, e due
+        # copie della stessa domanda sono due copie che possono divergere.
         return {"sezioni": SEZIONI, "sezioni_permesse": permesse,
-                "e_admin": session.get("role") == "admin"}
+                "e_admin": e_admin()}
 
     # ⚠️ Il controllo sta **qui**, su `request.blueprint`, e non su un decoratore da
     # mettere sulle singole viste: le sezioni hanno decine di route ciascuna — solo

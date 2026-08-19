@@ -689,5 +689,8 @@
   "Nascoste {n} uscite che su IGDB non aspetta quasi nessuno.": "{n} releases hidden that almost nobody is waiting for on IGDB.",
   "Le {n} uscite di questo periodo sono tutte poco attese su IGDB: il collegamento qui sopra le mostra.": "All {n} releases in this period are barely awaited on IGDB: the link above shows them.",
   "Il filtro «quanto è atteso» è spento: questa cache è stata scritta prima che il dato esistesse. Premi «Aggiorna il calendario» per averlo.": "The “how awaited” filter is off: this cache was written before that value existed. Press “Refresh the calendar” to get it.",
-  "Mostrate le {n} uscite più vicine su {trovate}: l'elenco intero renderebbe la pagina lentissima. Restringi con <strong>quanto è atteso</strong> o con la <strong>piattaforma</strong> — accorciare il periodo non basta, perché queste {n} coprono già solo i primi giorni.": "Showing the {n} closest releases out of {trovate}: the whole list would make the page crawl. Narrow it down with <strong>how awaited</strong> or with the <strong>platform</strong> — shortening the period is not enough, because these {n} already cover only the first few days."
+  "Mostrate le {n} uscite più vicine su {trovate}: l'elenco intero renderebbe la pagina lentissima. Restringi con <strong>quanto è atteso</strong> o con la <strong>piattaforma</strong> — accorciare il periodo non basta, perché queste {n} coprono già solo i primi giorni.": "Showing the {n} closest releases out of {trovate}: the whole list would make the page crawl. Narrow it down with <strong>how awaited</strong> or with the <strong>platform</strong> — shortening the period is not enough, because these {n} already cover only the first few days.",
+  "Utente:": "User:",
+  "senza proprietario": "no owner",
+  "Nessun team per questo utente.": "No teams for this user."
 }

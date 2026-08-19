@@ -243,6 +243,30 @@ def init_db():
         except Exception:
             pass
 
+    # --- Proprietario delle righe (19/08/2026) -------------------------------
+    # Fino a qui i contenuti non erano di nessuno: un team salvato da un utente lo
+    # vedevano tutti. La colonna sta **solo sulle quattro tabelle radice**;
+    # `team_members` e `pc_components` il proprietario lo ereditano dal padre con una
+    # join, perche' ripeterlo sui figli vuol dire poterlo far divergere.
+    #
+    # ⚠️ Il travaso ad `admin` gira **solo nel giro in cui la colonna nasce**, non a
+    # ogni avvio. Un `UPDATE ... WHERE user_id IS NULL` permanente sarebbe il solito
+    # fallback silenzioso: una riga scritta domani senza proprietario diventerebbe
+    # dell'admin da sola, e nessuno lo saprebbe. Cosi' invece resta `NULL`, e una riga
+    # `NULL` non la vede nessuno — sbagliato in modo **visibile**, che e' il verso
+    # giusto.
+    for tabella in ("games", "teams", "arduino_projects", "pc_builds"):
+        try:
+            db.execute(f"ALTER TABLE {tabella} ADD COLUMN user_id INTEGER REFERENCES users(id)")
+            db.commit()
+        except Exception:
+            continue                     # la colonna c'e' gia': niente da travasare
+        admin = db.execute(
+            "SELECT id FROM users WHERE role='admin' ORDER BY id LIMIT 1").fetchone()
+        if admin:
+            db.execute(f"UPDATE {tabella} SET user_id=? WHERE user_id IS NULL", (admin["id"],))
+            db.commit()
+
     # --- Calendario uscite ---------------------------------------------------
     # ⚠️ **Non e' la tua libreria, e non va in `games`.** Sono centinaia di titoli che
     # non possiedi: dentro `games` finirebbero nei conteggi della sezione, nei filtri
@@ -379,6 +403,67 @@ def sezioni_utente(username=None):
 def puo_vedere(slug):
     """L'utente in sessione può vedere questa sezione?"""
     return slug in sezioni_utente()
+
+
+# --- Proprietario delle righe -----------------------------------------------
+# I permessi per sezione qui sopra dicono **quali sezioni** vedi. Questi dicono
+# **di chi sono i dati** dentro, ed è una domanda diversa: un utente con la sezione
+# Pokémon deve vedere i propri team, non quelli di tutti.
+
+def utente_id():
+    """L'id numerico dell'utente in sessione, o `None` se non c'è nessuno.
+
+    ⚠️ Fino al 19/08/2026 in sessione c'erano solo `username`, `display_name` e
+    `role`. Il cookie sopravvive al riavvio dell'app, quindi le sessioni già aperte
+    non hanno `user_id` e non l'avrebbero mai: si ripesca **per nome una volta
+    sola** e lo si scrive in sessione. Senza questo ramo, chi era già dentro si
+    vedrebbe la sezione vuota senza capire perché.
+    """
+    if session.get("user_id"):
+        return session["user_id"]
+    nome = session.get("username")
+    if not nome:
+        return None
+    db = get_db()
+    r = db.execute("SELECT id FROM users WHERE username=?", (nome,)).fetchone()
+    db.close()
+    if not r:
+        return None
+    session["user_id"] = r["id"]
+    return r["id"]
+
+
+def e_admin():
+    """L'utente in sessione è un amministratore?"""
+    return (session.get("role") or "") == "admin"
+
+
+def ambito_utente(colonna="user_id", di=None):
+    """Condizione SQL e parametri che limitano una query a chi la sta facendo.
+
+    Torna **sempre una condizione**, mai la stringa vuota, così il punto di chiamata
+    la compone allo stesso modo ovunque e non deve sapere chi sta guardando::
+
+        cond, par = ambito_utente()
+        db.execute(f"SELECT * FROM teams WHERE {cond} ORDER BY created_at DESC", par)
+
+    - utente normale → le sue righe e basta;
+    - amministratore → tutto (`1=1`), e con `di=<id utente>` filtra su uno solo;
+    - ⚠️ **nessuna sessione → niente** (`0=1`), ed è il ramo che deve fallire chiuso.
+      Una condizione vuota qui vorrebbe dire «mostra tutto» proprio nel caso in cui
+      non sappiamo a chi stiamo rispondendo.
+
+    `colonna` serve per le query con un alias (`t.user_id`). Non arriva mai
+    dall'utente: è scritta nel codice, come il resto della query.
+    """
+    if e_admin():
+        if di:
+            return f"{colonna}=?", [di]
+        return "1=1", []
+    uid = utente_id()
+    if not uid:
+        return "0=1", []
+    return f"{colonna}=?", [uid]
 
 
 def _i(v, d=0):

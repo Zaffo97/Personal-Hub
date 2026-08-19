@@ -3,7 +3,8 @@ import os
 from datetime import datetime
 from flask import (Blueprint, render_template, request, redirect, url_for, flash,
                    jsonify, session)
-from extensions import get_db, login_required, _i, nome_vis, categorie
+from extensions import (get_db, login_required, _i, nome_vis, categorie,
+                        ambito_utente, utente_id, e_admin)
 from data import (
     DATA_DIR,
     regulation_default,
@@ -501,14 +502,25 @@ def _team_upsert(tid=None):
     )
 
     if tid:
-        db.execute(
-            "UPDATE teams SET name=?,format=?,record=?,description=?,notes=?,regulation_id=? WHERE id=?",
-            vals + (tid,)
+        # ⚠️ Il proprietario **non** si riscrive in aggiornamento: un admin che
+        # corregge il team di un altro non se lo intesta.
+        cond, par = ambito_utente()
+        cur = db.execute(
+            "UPDATE teams SET name=?,format=?,record=?,description=?,notes=?,regulation_id=? "
+            f"WHERE id=? AND {cond}",
+            vals + (tid,) + tuple(par)
         )
+        if cur.rowcount == 0:
+            # Il team non è di chi sta salvando. Si esce **prima** di toccare i
+            # membri: senza questo ritorno il DELETE qui sotto svuoterebbe la
+            # squadra di un altro, e l'UPDATE a vuoto non avrebbe detto niente.
+            db.close()
+            return None
     else:
         cur = db.execute(
-            "INSERT INTO teams(name,format,record,description,notes,regulation_id) VALUES(?,?,?,?,?,?)",
-            vals
+            "INSERT INTO teams(name,format,record,description,notes,regulation_id,user_id) "
+            "VALUES(?,?,?,?,?,?,?)",
+            vals + (utente_id(),)
         )
         tid = cur.lastrowid
 
@@ -1125,13 +1137,31 @@ def api_regulations_delete(reg_id):
 @login_required
 def pokemon():
     db = get_db()
+    # Chi guarda vede i **suoi** team. L'amministratore li vede tutti, con scritto
+    # di chi sono, e con `?utente=<id>` ne isola uno solo: la tendina qui sotto.
+    di = _i(request.args.get("utente")) or None
+    cond, par = ambito_utente("t.user_id", di=di)
     teams = []
-    for t in db.execute("SELECT * FROM teams ORDER BY created_at DESC").fetchall():
+    for t in db.execute(
+            "SELECT t.*, u.username AS proprietario FROM teams t "
+            f"LEFT JOIN users u ON u.id=t.user_id WHERE {cond} ORDER BY t.created_at DESC",
+            par).fetchall():
+        # I membri non hanno un proprietario loro: lo ereditano dal team, che qui
+        # è già stato filtrato. Ripeterlo sulla riga figlia vorrebbe dire poterlo
+        # far divergere da quello del padre.
         members = db.execute(
             "SELECT * FROM team_members WHERE team_id=? ORDER BY slot",
             (t["id"],)
         ).fetchall()
         teams.append({"data": t, "members": list(members)})
+    # La tendina del filtro esiste solo per l'admin, e nomina solo chi ha davvero
+    # dei team: un elenco di utenti senza niente dentro sarebbe rumore.
+    proprietari = []
+    if e_admin():
+        proprietari = [dict(r) for r in db.execute(
+            "SELECT u.id, u.username, COUNT(t.id) AS quanti FROM users u "
+            "JOIN teams t ON t.user_id=u.id GROUP BY u.id, u.username "
+            "ORDER BY u.username").fetchall()]
     db.close()
 
     teams_json = json.dumps(
@@ -1145,7 +1175,8 @@ def pokemon():
         ensure_ascii=False,
         default=str
     )
-    return render_template("pokemon.html", teams=teams, teams_json=teams_json)
+    return render_template("pokemon.html", teams=teams, teams_json=teams_json,
+                           proprietari=proprietari, filtro_utente=di)
 
 
 @bp.route("/team/new", methods=["GET", "POST"])
@@ -1183,7 +1214,11 @@ def team_new():
 @login_required
 def team_edit(tid):
     db = get_db()
-    team = db.execute("SELECT * FROM teams WHERE id=?", (tid,)).fetchone()
+    cond, par = ambito_utente()
+    team = db.execute(f"SELECT * FROM teams WHERE id=? AND {cond}",
+                      (tid,) + tuple(par)).fetchone()
+    # Un team che non è tuo risponde «non trovato», non «vietato»: chi prova un id
+    # a caso non deve poter capire quali esistono.
     if not team:
         flash("Non trovato", "error")
         db.close()
@@ -1196,8 +1231,10 @@ def team_edit(tid):
     members = members + [None] * (6 - len(members))
 
     if request.method == "POST":
-        _team_upsert(tid)
         db.close()
+        if _team_upsert(tid) is None:
+            flash("Non trovato", "error")
+            return redirect(url_for("pokemon.pokemon"))
         flash("Aggiornato!", "success")
         return redirect(url_for("pokemon.team_edit", tid=tid))
 
@@ -1229,10 +1266,16 @@ def team_edit(tid):
 @login_required
 def team_delete(tid):
     db = get_db()
-    db.execute("DELETE FROM teams WHERE id=?", (tid,))
+    cond, par = ambito_utente()
+    cur = db.execute(f"DELETE FROM teams WHERE id=? AND {cond}", (tid,) + tuple(par))
     db.commit()
     db.close()
-    flash("Eliminato", "success")
+    # I membri se ne vanno con la cascata della chiave esterna, che `get_db()`
+    # accende con PRAGMA foreign_keys.
+    if cur.rowcount == 0:
+        flash("Non trovato", "error")
+    else:
+        flash("Eliminato", "success")
     return redirect(url_for("pokemon.pokemon"))
 
 

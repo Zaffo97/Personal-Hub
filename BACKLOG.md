@@ -43,6 +43,9 @@ Non sono storia: sono le cose che questo progetto ha già pagato e che tornano a
 | **Una parola italiana, due inglesi** | La chiave del dizionario **è la frase italiana**, quindi una parola che in inglese cambia col contesto non è esprimibile. Caso vivo: `Abilità` è la linguetta del catalogo (→ *Abilities*) **e** l'etichetta di un campo singolo nel team builder e nello Stat Preview, dove dovrebbe essere *Ability*. Oggi vince il plurale. Si risolve solo cambiando la frase **italiana** in uno dei due punti, e va fatto se e quando dà fastidio: storpiare l'italiano per aggiustare l'inglese è un cattivo affare |
 | **Le piattaforme del calendario** | `PIATTAFORME_TENUTE` in `blueprints/gaming.py` è un elenco di **inclusi**, quindi **fallisce chiuso**: una piattaforma che IGDB aggiunge domani non entra in cache finché nessuno la scrive lì. È voluto, ma il silenzio no — l'unico segnale è l'elenco delle **escluse per nome** che l'import scrive a fine giro. Un nome che non ti aspetti lì dentro vuol dire «aggiungimi». I nomi sono le stringhe esatte di IGDB (`PC (Microsoft Windows)`, `Xbox Series X\|S`), non si indovinano |
 | ⚠️ **Una route nuova sotto `/pokemon/*` nasce chiusa** | Dal 17/08/2026 c'è un `before_request` in `blueprints/pokemon.py` che lascia passare **solo** le viste elencate in `APERTE_A_TUTTI`; per tutte le altre serve un amministratore. È il verso giusto — una lista del vietato fallirebbe **aperta** — ma vuol dire che una route nuova destinata a tutti **non funzionerà** finché non la si scrive lì, e il sintomo è un redirect a `/pokemon` con un flash, o un 403 JSON se il path contiene `/api/`. I nomi nell'elenco sono quelli delle **viste**, non gli URL |
+| ⚠️ **Una query nuova sui contenuti nasce scoperta** | Al contrario delle route sotto `/pokemon/*`, che dal 17/08 nascono **chiuse**, una `SELECT` nuova su `games`, `teams`, `arduino_projects` o `pc_builds` non filtra per proprietario finché non lo si scrive, e mostrare la riga di un altro **non dà nessun errore**. L'unico segnale è `python scripts/controlla_proprietario.py`, che va eseguito dopo aver toccato una query: dice **filtrata**, **dichiarata**, **a tabella calcolata** o **scoperta**, ed esce con 1 se resta una scoperta. Le eccezioni si dichiarano lì dentro **con il testo della query**: se la query cambia, l'eccezione smette di combaciare ed è voluto |
+| ⚠️ **`rowcount` sulle scritture filtrate** | Un `UPDATE`/`DELETE` con la condizione del proprietario che non tocca niente **non dà errore**: il codice sotto continua. In `_team_upsert()` questo avrebbe svuotato i membri della squadra di un altro dopo un UPDATE andato a vuoto. Ogni scrittura filtrata deve guardare il `rowcount` e uscire |
+| **`user_id` a `NULL`** | Il travaso ad `admin` gira **solo nel giro in cui la colonna nasce**, non a ogni avvio: è voluto, perché un `WHERE user_id IS NULL` permanente intesterebbe all'admin qualunque riga scritta male, in silenzio. Il prezzo: una riga senza proprietario **sparisce dalla vista del suo autore** — ma non è persa e non è invisibile a tutti, perché l'admin filtra `1=1` e la vede, col badge che dice «senza proprietario». È lì che si va a cercarla quando qualcuno dice «il dato è sparito» |
 | **Default del DB** | `extensions.py:143` crea la colonna con `regulation_id TEXT DEFAULT 'ma'`. Non è un residuo dei 14 letterali tolti l'11/08: è il default del **DB**, e cambiarlo richiede una migrazione. Oggi non fa danno perché `_team_upsert()` passa sempre un valore esplicito |
 
 ---
@@ -54,40 +57,63 @@ di richiamo, perché la regola che ha lasciato in eredità va letta prima di agg
 route. Tutti **misurati sul codice, non ipotizzati**. L'ordine consigliato è quello in cui
 sono scritti: 1.1 e 1.2 erano due metà della stessa domanda — *di chi* sono i dati e *chi*
 può cambiarli — e 1.5 dipende da entrambe. La metà rimasta è **1.1**, la più larga delle
-due (68 query contro 36 route), perché non basta dire «solo l'admin»: bisogna dire **di
-chi** è ogni riga.
+due (76 query contro 36 route), perché non basta dire «solo l'admin»: bisogna dire **di
+chi** è ogni riga. Dal 19/08/2026 è **a metà**: schema, rete e sezione Pokémon sono fatti,
+restano **56 query** nelle altre cinque sezioni.
 
-### 1.1 ⬜ I dati non hanno un proprietario
+### 1.1 🟨 I dati non hanno un proprietario — schema e rete fatti, 5 sezioni su 6 da fare
 
 **Trovata da Davide provando la web app.** Un team Pokémon salvato da un utente **lo
-vedono tutti**, e lo stesso vale per giochi, progetti Arduino e build PC. I permessi per
-sezione decidono **quali sezioni** vedi, non **di chi sono i dati** dentro.
+vedevano tutti**, e lo stesso vale per giochi, progetti Arduino e build PC. I permessi
+per sezione decidono **quali sezioni** vedi, non **di chi sono i dati** dentro.
 
-Serve: ogni riga sa chi l'ha creata · ogni utente vede solo le proprie · l'**admin vede
-tutto**, con scritto accanto chi ha inserito cosa e un filtro per utente.
+✅ **Il 19/08/2026 sono fatti lo schema, la rete e la sezione Pokémon.** Le quattro
+decisioni aperte sono state prese da Davide lo stesso giorno; numeri e prove in
+`STORICO.md`. In sintesi:
 
-**Quanto costa, contato**: **68 query** toccano le tabelle di contenuto — `games` 29,
-`teams` 10, `arduino_projects` 7, `pc_builds` 7, `python_topics` 6, `team_members` 5,
-`pc_components` 4. Per blueprint: `gaming.py` 24, `dashboard.py` 22, `pokemon.py` 12,
-`pcbuilder.py` 7, `arduino.py` 4, `python_tracker.py` 3.
+1. il proprietario è `user_id` **solo sulle quattro tabelle radice**; `team_members` e
+   `pc_components` lo ereditano dal padre con una join
+2. le righe che c'erano prima sono passate ad **`admin`** — 33 giochi, 3 team, 1 build,
+   zero orfane — in un travaso che gira **solo nel giro in cui la colonna nasce**
+3. `python_topics` diventerà una tabella **`python_progress(user_id, topic_id, done)`**:
+   l'elenco dei 53 argomenti resta uno e condiviso, la spunta è di chi la mette. ⬜ Da
+   fare quando tocca alla sezione Python — oggi la spunta è ancora di tutti
+4. eliminando un utente i suoi contenuti **passano all'amministratore**, non si
+   cancellano ✅ (fatto: `admin.py` li travasa prima della `DELETE`, che con le chiavi
+   esterne accese fallirebbe)
 
-**Le decisioni da prendere prima di partire:**
+**⬜ Cosa resta: 56 query su 76.** Il conto lo dà lo script, non una stima:
 
-1. **Dove mettere il proprietario**: solo sulle quattro tabelle radice (`games`, `teams`,
-   `arduino_projects`, `pc_builds`); `team_members` e `pc_components` lo ereditano con una
-   join. Metterlo anche sui figli sarebbe un dato ripetuto che può divergere
-2. ⚠️ **`python_topics` è il caso storto**: non è contenuto dell'utente, è un elenco fisso
-   di 53 voci seminato da `init_db()`, con la spunta `done` sulla riga stessa. Servono o 53
-   righe per utente, o — meglio — una tabella `python_progress(user_id, topic_id, done)`
-3. **Le righe esistenti**: assegnarle ad `admin` è l'unica scelta che non perde niente, ma
-   va fatta in una migrazione dichiarata
-4. ⚠️ **Come non lasciare buchi**: con 68 query, dimenticarne una significa mostrare i dati
-   di un altro **senza che nulla lo segnali**. Serve un meccanismo che **fallisca chiuso** —
-   un helper obbligatorio, o un test che elenchi le query e verifichi che ognuna filtri —
-   non `WHERE user_id=?` scritto a mano 68 volte
+```bash
+python scripts/controlla_proprietario.py
+```
 
-Da fare in un blocco suo. Si verifica creando due utenti e provando che nessuno veda le
-cose dell'altro.
+| Sezione | Query scoperte | Note |
+|---|---|---|
+| **Gaming** | 24 | la più grossa, e `games` è la tabella con più righe vere (33) |
+| **Dashboard** | 19 | conteggi e «ultimi inseriti» di **tutte** le sezioni insieme, più l'Esporta JSON |
+| **PC Builder** | 7 | `pc_builds` + `pc_components`, che eredita |
+| **Arduino** | 4 | la più piccola: 0 righe nel DB, quindi la più facile da convertire |
+| **Python** | 3 | ⚠️ va con la tabella `python_progress`, non è una semplice `WHERE` |
+
+⚠️ **Lo stato intermedio è visibile e va detto**: fino a che le altre sezioni non sono
+convertite, un utente non amministratore vede **0 team** nella pagina Pokémon ma la
+**dashboard gli conta ancora i team e i giochi di tutti** — sono due query diverse, e
+quella della dashboard è fra le 19 scoperte. Non è un baco nuovo: è il prezzo di
+convertire una sezione alla volta, ed è la ragione per cui il giro va finito.
+
+**Come si converte una sezione** (il modello è `blueprints/pokemon.py`):
+
+1. `cond, par = ambito_utente()` e la condizione si innesta nella query con una f-string
+2. sulla `INSERT` si scrive `user_id=utente_id()`
+3. ⚠️ su `UPDATE` e `DELETE` si controlla il **`rowcount`**: un `UPDATE` che non tocca
+   niente **non dà errore**, e il codice sotto continuerebbe a girare — è il buco che in
+   `_team_upsert()` avrebbe svuotato i membri della squadra di un altro
+4. per l'admin: badge del proprietario sulla riga e tendina `?utente=` per filtrare
+5. si chiude quando `controlla_proprietario.py` dice **0 scoperte** per quel file, e con
+   una prova a due utenti su una **copia** di `hub.db`
+
+Si verifica creando due utenti e provando che nessuno veda le cose dell'altro.
 
 ### 1.2 ✅ Gli editor Pokémon solo per gli admin — chiuso il 17/08/2026
 
@@ -418,6 +444,7 @@ quattro cose richiedono **fonti diverse**:
 | ⚠️ | **`build_catalog.py` oggi distruggerebbe il catalogo** | Trovato il 12/08, **non corretto** perché fuori scope. Legge come base i **file storici** (174 voci contro le 1026 di oggi, nessun `nome_it`/`nome_en`, Mega ancora convertite) e scrive in `data/catalog/`. Peggio: `MEGA_BONUS` riapplicherebbe il `+75 HP / +20` che la deconversione dell'11/08 ha tolto. Rieseguirlo **riporterebbe indietro il catalogo di quattro giorni di lavoro, in silenzio**. Va fatto leggere `data/catalog/` quando esiste, e `MEGA_BONUS` va tolto. Fino ad allora **non eseguirlo** |
 | ⬜ | **Il calcolatore non impedisce di scrivere una mossa illegale** | La segnala e basta. **È voluto per ora**: un blocco duro sulle voci senza elenco sarebbe un falso divieto |
 | ⚠️ | **Il pulsante «Analizza» di un team non carica niente: `/api/team/<id>` non esiste** | Trovato il 17/08/2026 censendo le route per §1.2, **non corretto** perché fuori scope. `calcolatori-ui.js:9` chiama `fetch('/api/team/'+tid)`, ma quella route **non è in `url_map`**: verificato, `/api/team/1` → **404**, e `[r for r in url_map if '/api/team' in r.rule]` è **vuoto**. L'errore muore in un `catch(e){console.warn(…)}`, quindi il pulsante 📊 sulle schede di `/pokemon` apre il calcolatore e **la barra dei sei Pokémon del team non compare, senza dire perché**. È il **quarto** endpoint fantasma dopo `/api/regulations`, `d.moves` e `d.regulation` — vedi la trappola in cima. Da decidere: o si scrive la route (i dati ci sono già, `_team_upsert()` legge le stesse tabelle), o si toglie il pulsante |
+| ⬜ | **`controlla_traduzioni.py` taglia le chiavi sull'apostrofo protetto** | Trovato il 19/08/2026 scrivendo una frase nuova, **non corretto** perché fuori scope. La regex `CHIAMATA` dovrebbe consumare `'` dentro una stringa fra apici singoli, e invece si ferma: `t('Nessun team per l'utente scelto.')` viene contato come la chiave «Nessun team per l», che nessun dizionario avrà mai. Il sintomo è una «mancante» storpiata, quindi si vede — ma se qualcuno la traducesse così com'è, la traduzione non comparirebbe mai a schermo. Aggirato riscrivendo la frase senza apostrofo; da correggere nella regex |
 | ⬜ | **`/pokemon/api/abilities` (GET) non lo chiama nessuno** | Trovato il 17/08/2026 con lo stesso censimento. Nessun `fetch`, nessun `url_for`, nessun link in `templates/` o `static/`: l'editor abilità usa il POST del form e `/pokemon/abilita/archives`. Candidato per l'inventario del codice morto (§5.3), non un baco. Dal 17/08 è comunque riservato agli amministratori, come tutto ciò che non è in `APERTE_A_TUTTI` |
 | ⚠️ | **La tendina categorie degli oggetti non corrisponde ai dati** | Saltato fuori il 13/08/2026 traducendo le categorie, ed è un difetto di contenuto, non di lingua. Contato sul catalogo: gli oggetti usano **7** categorie, le abilità 13. Ma la tendina degli oggetti ne offre 13, e **6 non hanno nemmeno una voce** (`conditional`, `damage`, `defensive`, `orb`, `support`, `terrain`, `weather`): sono filtri che non danno mai risultati, l'opposto di come sono fatte le tendine di Gaming. ✅ La metà urgente è chiusa: **`other` mancava del tutto ed è 339 oggetti su 397**, l'86% del catalogo, quindi il badge cadeva sulla chiave grezza e quella categoria non era filtrabile. Resta da decidere se togliere le 6 morte o assegnarci le voci giuste — è una ricategorizzazione dei dati, non una riga di codice |
 

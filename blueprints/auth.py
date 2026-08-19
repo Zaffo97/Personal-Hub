@@ -30,6 +30,11 @@ def login():
             session["username"] = utente["username"]
             session["display_name"] = utente["display_name"]
             session["role"] = utente["role"]
+            # L'id serve a `ambito_utente()`: e' con questo che si decide **di chi**
+            # sono le righe, non con lo username. Chi era gia' dentro quando la
+            # colonna e' entrata in servizio lo riceve da `utente_id()`, che lo
+            # ripesca per nome.
+            session["user_id"] = utente["id"]
             return redirect(url_for("dashboard.dashboard"))
         flash("Credenziali errate", "error")
     return render_template("login.html")

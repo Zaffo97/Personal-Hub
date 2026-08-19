@@ -15,6 +15,7 @@
 .record-badge{display:inline-block;padding:.1rem .55rem;border-radius:20px;font-size:.65rem;font-weight:600;background:var(--surface-off);color:var(--text-muted)}
 .tool-bar{display:flex;gap:.5rem;padding:.55rem .75rem;background:var(--surface-off);border-radius:var(--radius-lg);border:1px solid var(--border);align-items:center;flex-wrap:wrap}
 .tool-bar-label{font-size:.7rem;font-weight:700;color:var(--text-muted);margin-right:.25rem}
+.owner-badge{display:inline-block;padding:.1rem .55rem;border-radius:20px;font-size:.65rem;font-weight:600;background:var(--surface-off);color:var(--text-faint)}
 </style>
 {% endblock %}
 {% block content %}
@@ -29,7 +30,24 @@
          legge il file grezzo e le conterebbe come stringhe chieste dal codice. #}
       <p class="text-muted text-sm">{{ tf('Team salvati: {n}', {'n': teams|length}) }}</p>
     </div>
-    <a href="/pokemon/team/new" class="btn btn-primary">+ {{ t('Nuovo Team') }}</a>
+    <div class="flex items-center gap-2">
+      {# Solo l'amministratore vede i team di tutti, quindi solo lui ha una tendina
+         per isolarne uno. Il filtro viaggia nella querystring come quelli di Gaming:
+         qui non esistono preferenze salvate per utente. La variabile del ciclo si
+         chiama `p` e non `t` — `t` e' la funzione delle traduzioni, e un ciclo che
+         la ombra la spegne per il resto del blocco. #}
+      {% if e_admin and proprietari %}
+      <label class="text-xs text-muted">{{ t('Utente:') }}</label>
+      <select class="form-select" style="max-width:200px;font-size:.75rem"
+              onchange="location.href = this.value ? '/pokemon/?utente=' + this.value : '/pokemon/'">
+        <option value="">{{ t('Tutti') }}</option>
+        {% for p in proprietari %}
+        <option value="{{ p.id }}"{% if filtro_utente == p.id %} selected{% endif %}>{{ p.username }} ({{ p.quanti }})</option>
+        {% endfor %}
+      </select>
+      {% endif %}
+      <a href="/pokemon/team/new" class="btn btn-primary">+ {{ t('Nuovo Team') }}</a>
+    </div>
   </div>
 </div>
 
@@ -55,6 +73,7 @@
 <div style="text-align:center;padding:3rem;color:var(--text-muted)">
   <div style="font-size:3rem;margin-bottom:1rem">🏆</div>
   <h3>{{ t('Nessun team ancora') }}</h3>
+  {% if filtro_utente %}<p class="text-sm mt-1">{{ t('Nessun team per questo utente.') }}</p>{% endif %}
   <p class="text-sm mt-1">{{ t('Crea il tuo primo team VGC!') }}</p>
   <a href="/pokemon/team/new" class="btn btn-primary mt-2">+ {{ t('Crea Team') }}</a>
 </div>
@@ -67,6 +86,9 @@
         <span style="font-weight:700;font-size:1rem">{{ team.data.name }}</span>
         <span class="format-badge ml-1">{{ team.data.format or 'VGC' }}</span>
         {% if team.data.record %}<span class="record-badge ml-1">{{ team.data.record }}</span>{% endif %}
+        {# Chi non e' admin vede solo i propri team: dirgli "di te" a ogni riga
+           sarebbe rumore. Il badge compare solo dove c'e' qualcosa da distinguere. #}
+        {% if e_admin %}<span class="owner-badge ml-1">👤 {{ team.data.proprietario or t('senza proprietario') }}</span>{% endif %}
       </div>
       <div class="flex gap-1">
         <a href="/pokemon/team/{{ team.data.id }}/edit" class="btn btn-secondary btn-sm">✏️</a>

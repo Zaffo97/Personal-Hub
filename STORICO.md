@@ -18,6 +18,74 @@ pagina ed esegue `new Function()` su ogni blocco `<script>` **e** su ogni handle
 
 ---
 
+## 19/08/2026
+
+**I dati hanno un proprietario — schema, rete e la prima sezione (§1.1, primo blocco)**
+
+- ✅ **La colonna sta solo sulle quattro radici**: `user_id INTEGER REFERENCES users(id)` su
+  `games`, `teams`, `arduino_projects`, `pc_builds`. `team_members` e `pc_components` il
+  proprietario lo **ereditano** dal padre con una join: ripeterlo sui figli vuol dire poterlo
+  far divergere.
+- ✅ **Il travaso ad `admin` gira una volta sola**, nel giro in cui la colonna nasce, e non a
+  ogni avvio. Un `UPDATE … WHERE user_id IS NULL` permanente sarebbe il solito fallback
+  silenzioso: una riga scritta domani senza proprietario diventerebbe dell'admin da sola.
+  Così invece resta `NULL` e **non la vede nessuno** — sbagliato in modo visibile.
+  Sul DB vero: **33 giochi, 3 team, 1 build** intestati ad admin, **0 righe orfane**.
+- ✅ **`ambito_utente()` in `extensions.py`** torna *sempre* una condizione, mai la stringa
+  vuota: utente → le sue righe; admin → `1=1`, e con `di=<id>` un utente solo; **nessuna
+  sessione → `0=1`**, che è il ramo che deve fallire chiuso. Con `e_admin()` e `utente_id()`,
+  quest'ultima capace di ripescare l'id **per nome** per le sessioni già aperte quando la
+  colonna è entrata in servizio: il cookie sopravvive al riavvio, e senza quel ramo chi era
+  già dentro si sarebbe visto la sezione vuota senza capire perché.
+- ✅ **`e_admin` ha una definizione sola**: `app.py` la ricalcolava a mano nel context
+  processor, ora chiama quella di `extensions.py`.
+- ✅ **La rete: `scripts/controlla_proprietario.py`**, sul modello di
+  `controlla_traduzioni.py`. Legge i sorgenti con `ast` e mette ogni query sui contenuti in
+  una di quattro file: **filtrata** (nomina `user_id`, o innesta la condizione di
+  `ambito_utente()`), **dichiarata** (sta in `ECCEZIONI` con scritto perché), **a tabella
+  calcolata** (il nome della tabella non è nel testo: nessun controllo automatico può
+  giudicarla, va letta), **scoperta**. Esce con 1 se resta anche una scoperta.
+- ⚠️ **Tre trappole trovate scrivendo lo script stesso**, e tutte e tre erano silenzio: i
+  pezzi letterali di una f-string sono **anche** nodi `Constant` a sé, e ogni query composta
+  veniva contata due volte, una intera e una monca; la docstring di `ambito_utente()` mostra
+  una query d'esempio e veniva **contata come query vera** (lo stesso inciampo delle `t()`
+  citate nei commenti Jinja); e soprattutto una query che si costruisce il **nome della
+  tabella** — il travaso di `admin.py` gira sulle quattro radici in un ciclo — **non era vista
+  affatto**. Invisibile è peggio che scoperta: ora hanno una categoria loro.
+- ✅ **Pokémon è la prima sezione convertita**, ed è coperta: **7 query filtrate, 7
+  dichiarate, 0 scoperte**. Le dichiarate sono i due `team_members` che ereditano dal team
+  già verificato, i due dell'elenco già filtrato, e le **tre query sulle regulation** — che
+  sono dati condivisi in file, non in `hub.db`: chi ne cancella una deve sapere se la usa
+  **qualcuno**, non se la usa lui. Sono già route da amministratore da §1.2.
+- ⚠️ **Il buco vero non era la SELECT, era il salvataggio**: `_team_upsert()` cancella e
+  riscrive i membri **dopo** l'UPDATE del team. Con l'UPDATE filtrato ma senza controllo, un
+  `UPDATE` a vuoto non dice niente e il `DELETE FROM team_members` sotto avrebbe **svuotato la
+  squadra di un altro**. Ora si esce sul `rowcount == 0`, prima di toccare i membri.
+- ✅ **Verifica: 17 prove su 17**, su una **copia** di `hub.db` (la lezione del 16/08). Utente
+  nuovo: elenco vuoto, nessun badge, nessuna tendina; crea un team e lo vede, intestato a lui.
+  Digitando l'URL del team dell'admin: apertura respinta, eliminazione respinta (il team c'è
+  ancora), modifica respinta (il nome non diventa «RUBATO»), **membri non svuotati**.
+  Admin: **4 team su 4** con il badge del proprietario, filtro `?utente=` → **1** e **3**.
+  Eliminando l'utente, il suo team **resta** e passa all'admin: 4 team, nessuno perso.
+- ✅ **Eliminare un utente non porta via i suoi dati**: `admin.py` li travasa
+  all'amministratore **prima** della `DELETE`, che con le chiavi esterne accese fallirebbe.
+  Deciso il 19/08/2026, stessa scelta fatta per le righe preesistenti.
+- ✅ **Sweep: 0 errori su 11 pagine × 2 lingue** (22 rese, 30 blocchi `<script>` e 1572
+  handler inline per lingua). Tre falsi allarmi erano dello strumento, non delle pagine: un
+  `return` in cima a un handler è **legale** dentro `new Function()`; i blocchi
+  `type="application/json"` sono dati e non codice; e gli handler vanno cercati **fuori** dagli
+  `<script>`, perché dentro il JS ci sono stringhe che ne costruiscono a pezzi. Un quarto era
+  vero ma non nostro: `moves_editor.html` usa `d.damage_class?.name`, e l'optional chaining è
+  del 2020 mentre `esprima` è del 2018.
+- ✅ **Traduzioni: 590 chieste, 590 nel dizionario**, zero mancanti, vuote, orfane o doppie.
+  Tre voci nuove (`Utente:`, `senza proprietario`, `Nessun team per questo utente.`).
+  ⚠️ La frase è stata riscritta **senza apostrofo**: dentro `t('…')` andrebbe protetto, e la
+  regex di `controlla_traduzioni.py` **taglia la chiave sull'apostrofo protetto** — la chiave
+  finiva a «Nessun team per l».
+
+
+---
+
 ## 17/08/2026
 
 **Gli editor Pokémon solo per gli admin — 30 route su 36 chiuse a chiave (§1.2)**

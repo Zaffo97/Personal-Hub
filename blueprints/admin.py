@@ -177,7 +177,26 @@ def utente_elimina(uid):
         if rimasti == 0:
             db.close(); flash("Deve restare almeno un amministratore.", "error")
             return redirect(url_for("admin.utenti"))
+    # I contenuti dell'utente **passano all'amministratore**, non si cancellano:
+    # deciso il 19/08/2026. È la stessa scelta fatta per le righe che esistevano
+    # prima che il proprietario esistesse, e l'unica che non perde niente — oggi
+    # `hub_export.json` è la sola copia di `hub.db`, e la lancia Davide a mano.
+    # ⚠️ Va fatto **prima** della DELETE: `get_db()` accende le chiavi esterne e
+    # `user_id` punta a `users(id)`, quindi senza il travaso la cancellazione
+    # fallirebbe invece di lasciare righe orfane.
+    io_admin = db.execute("SELECT id FROM users WHERE username=?",
+                          (session.get("username"),)).fetchone()
+    passati = 0
+    if io_admin:
+        for tabella in ("games", "teams", "arduino_projects", "pc_builds"):
+            cur = db.execute(f"UPDATE {tabella} SET user_id=? WHERE user_id=?",
+                             (io_admin["id"], uid))
+            passati += cur.rowcount
     db.execute("DELETE FROM users WHERE id=?", (uid,))
     db.commit(); db.close()
-    flash(f"Utente «{r['username']}» eliminato.", "success")
+    if passati:
+        flash(f"Utente «{r['username']}» eliminato. {passati} righe di contenuto "
+              "sono passate a te.", "success")
+    else:
+        flash(f"Utente «{r['username']}» eliminato.", "success")
     return redirect(url_for("admin.utenti"))
