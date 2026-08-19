@@ -46,14 +46,40 @@ ESCLUSE = {"users": {"password"}}
 TABELLE = [
     "users", "games", "teams", "team_members",
     "arduino_projects", "python_topics", "pc_builds", "pc_components",
+    # ⚠️ Dal 19/08/2026 la spunta degli argomenti Python **non è più** su
+    # `python_topics`, è qui, una riga per utente e argomento. Senza questa tabella
+    # nell'elenco il backup perderebbe il progresso di tutti senza dire niente:
+    # `python_topics` verrebbe esportata comunque, ma con la sua colonna `done`
+    # ferma alla fotografia del giorno della migrazione.
+    "python_progress",
 ]
 
 
 def righe(db, tabella):
+    """Le righe di una tabella, in ordine stabile, senza le colonne escluse.
+
+    ⚠️ L'ordinamento **non può essere `id` e basta**: `python_progress` non ha un `id`,
+    ha una chiave doppia `(user_id, topic_id)`. Con `ORDER BY id` fisso la query
+    sollevava, l'errore finiva nello stesso ramo di «tabella non ancora creata», e
+    l'export dichiarava **assente** una tabella che c'era — perdendo in silenzio il
+    progresso Python di tutti. L'ordine si chiede allo schema, non lo si indovina.
+    """
     try:
-        cur = db.execute(f"SELECT * FROM {tabella} ORDER BY id")
+        schema = [(r[1], r[5]) for r in db.execute(f"PRAGMA table_info({tabella})")]
     except sqlite3.Error:
+        return None
+    if not schema:
         return None                      # tabella non ancora creata: non è un errore
+    nomi = [nome for nome, _ in schema]
+    if "id" in nomi:
+        ordine = "id"
+    else:
+        chiave = [nome for nome, pk in sorted(schema, key=lambda x: x[1]) if pk]
+        ordine = ", ".join(chiave) if chiave else nomi[0]
+    try:
+        cur = db.execute(f"SELECT * FROM {tabella} ORDER BY {ordine}")
+    except sqlite3.Error:
+        return None
     fuori = ESCLUSE.get(tabella, set())
     return [{k: r[k] for k in r.keys() if k not in fuori} for r in cur.fetchall()]
 

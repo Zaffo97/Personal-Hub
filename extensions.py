@@ -255,6 +255,37 @@ def init_db():
     # dell'admin da sola, e nessuno lo saprebbe. Cosi' invece resta `NULL`, e una riga
     # `NULL` non la vede nessuno — sbagliato in modo **visibile**, che e' il verso
     # giusto.
+    # --- Il progresso di Python e' di chi lo fa (19/08/2026) -----------------
+    # ⚠️ `python_topics` e' il caso storto: non e' contenuto dell'utente, e' un elenco
+    # fisso di 53 voci seminato qui sopra, con la spunta `done` **sulla riga stessa**.
+    # Quindi la spunta di uno era la spunta di tutti. La soluzione non e' un
+    # `user_id` sull'elenco — servirebbero 53 righe per utente, e aggiungere un
+    # argomento domani vorrebbe dire toccarle tutte — ma una tabella a parte: l'elenco
+    # resta uno e condiviso, il progresso e' di chi lo mette.
+    db.executescript("""
+        CREATE TABLE IF NOT EXISTS python_progress(
+            user_id INTEGER REFERENCES users(id),
+            topic_id INTEGER REFERENCES python_topics(id),
+            done INTEGER DEFAULT 0,
+            PRIMARY KEY (user_id, topic_id)
+        );
+    """)
+    db.commit()
+    # Il travaso delle spunte gia' messe, una volta sola: se la tabella e' vuota e
+    # nell'elenco ci sono spunte, sono dell'admin — e' l'unico utente che c'era
+    # quando `done` viveva sulla riga.
+    if db.execute("SELECT COUNT(*) FROM python_progress").fetchone()[0] == 0:
+        admin = db.execute(
+            "SELECT id FROM users WHERE role='admin' ORDER BY id LIMIT 1").fetchone()
+        if admin:
+            db.execute(
+                "INSERT OR IGNORE INTO python_progress(user_id, topic_id, done) "
+                "SELECT ?, id, 1 FROM python_topics WHERE done=1", (admin["id"],))
+            db.commit()
+    # ⚠️ La colonna `python_topics.done` **resta nel DB e nessuno la legge piu'**:
+    # toglierla e' una migrazione a se', da fare con l'inventario del codice morto.
+    # Fino ad allora e' la fotografia delle spunte dell'admin al 19/08/2026.
+
     for tabella in ("games", "teams", "arduino_projects", "pc_builds"):
         try:
             db.execute(f"ALTER TABLE {tabella} ADD COLUMN user_id INTEGER REFERENCES users(id)")
@@ -460,6 +491,24 @@ def ambito_utente(colonna="user_id", di=None):
         if di:
             return f"{colonna}=?", [di]
         return "1=1", []
+    uid = utente_id()
+    if not uid:
+        return "0=1", []
+    return f"{colonna}=?", [uid]
+
+
+def solo_mie(colonna="user_id"):
+    """Come `ambito_utente()`, ma **senza la deroga dell'amministratore**.
+
+    Serve dove «vedo tutto» sarebbe la risposta sbagliata: l'import da Steam cerca
+    quali appid ci sono **già** per non duplicarli, e se quell'elenco comprendesse
+    anche le righe altrui un admin che importa la propria libreria finirebbe a
+    **riscrivere le ore giocate di un altro utente** invece di crearsi la sua riga.
+    La regola, in una frase: si **legge** con `ambito_utente()`, si **importa** con
+    questa.
+
+    ⚠️ Anche qui nessuna sessione vuol dire `0=1`, non «tutte».
+    """
     uid = utente_id()
     if not uid:
         return "0=1", []

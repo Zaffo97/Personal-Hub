@@ -1,6 +1,7 @@
 import re
 from flask import Blueprint, render_template, request, redirect, url_for, flash, jsonify
-from extensions import get_db, login_required, _i, _f
+from extensions import (get_db, login_required, _i, _f,
+                        ambito_utente, utente_id, e_admin)
 from data import PC_CATEGORIES
 
 bp = Blueprint("pcbuilder", __name__, url_prefix="/pcbuilder")
@@ -10,7 +11,12 @@ bp = Blueprint("pcbuilder", __name__, url_prefix="/pcbuilder")
 @login_required
 def pcbuilder():
     db = get_db(); builds = []
-    for b in db.execute("SELECT * FROM pc_builds ORDER BY created_at DESC").fetchall():
+    # L'admin vede le build di tutti, con scritto di chi sono e la tendina
+    # `?utente=` per isolarne una; gli altri vedono le proprie.
+    di = _i(request.args.get("utente")) or None
+    cond, par = ambito_utente(di=di)
+    for b in db.execute(
+            f"SELECT * FROM pc_builds WHERE {cond} ORDER BY created_at DESC", par).fetchall():
         comps = db.execute("SELECT * FROM pc_components WHERE build_id=? ORDER BY category",
                            (b["id"],)).fetchall()
         # dict(b), non la Row: il template la passa a |tojson nell'onclick di
@@ -19,8 +25,18 @@ def pcbuilder():
         # costruisce teams_json con dict().
         builds.append({"data": dict(b), "components": [dict(c) for c in comps],
                         "total": sum(c["price"] for c in comps)})
+    nomi_utenti = {r["id"]: r["username"] for r in
+                   db.execute("SELECT id, username FROM users")} if e_admin() else {}
+    proprietari = []
+    if e_admin():
+        proprietari = [dict(r) for r in db.execute(
+            "SELECT u.id, u.username, COUNT(b.id) AS quanti FROM users u "
+            "JOIN pc_builds b ON b.user_id=u.id GROUP BY u.id, u.username "
+            "ORDER BY u.username").fetchall()]
     db.close()
-    return render_template("pcbuilder.html", builds=builds, categories=PC_CATEGORIES)
+    return render_template("pcbuilder.html", builds=builds, categories=PC_CATEGORIES,
+                           proprietari=proprietari, filtro_utente=di,
+                           nomi_utenti=nomi_utenti)
 
 
 @bp.route("/save", methods=["POST"])
@@ -28,11 +44,18 @@ def pcbuilder():
 def pcbuilder_save():
     f = request.form; bid = _i(f.get("build_id", 0)); db = get_db()
     if bid:
-        db.execute("UPDATE pc_builds SET name=?,notes=? WHERE id=?",
-                   (f.get("build_name", ""), f.get("build_notes", ""), bid))
+        cond, par = ambito_utente()
+        cur = db.execute(f"UPDATE pc_builds SET name=?,notes=? WHERE id=? AND {cond}",
+                         (f.get("build_name", ""), f.get("build_notes", ""), bid) + tuple(par))
+        if cur.rowcount == 0:
+            # ⚠️ Si esce **prima** del DELETE qui sotto: la build non e' di chi salva,
+            # e senza questo ritorno le si svuoterebbero i componenti lo stesso.
+            db.close(); flash("Non trovata", "error")
+            return redirect(url_for("pcbuilder.pcbuilder"))
     else:
-        cur = db.execute("INSERT INTO pc_builds(name,notes) VALUES(?,?)",
-                         (f.get("build_name", "Nuova Build"), f.get("build_notes", "")))
+        cur = db.execute("INSERT INTO pc_builds(name,notes,user_id) VALUES(?,?,?)",
+                         (f.get("build_name", "Nuova Build"), f.get("build_notes", ""),
+                          utente_id()))
         bid = cur.lastrowid
     db.execute("DELETE FROM pc_components WHERE build_id=?", (bid,))
     for cat, name, price, note in zip(
@@ -49,9 +72,13 @@ def pcbuilder_save():
 @bp.route("/<int:bid>/delete", methods=["POST"])
 @login_required
 def pcbuilder_delete(bid):
-    db = get_db(); db.execute("DELETE FROM pc_builds WHERE id=?", (bid,))
+    db = get_db()
+    cond, par = ambito_utente()
+    cur = db.execute(f"DELETE FROM pc_builds WHERE id=? AND {cond}", (bid,) + tuple(par))
     db.commit(); db.close()
-    flash("Eliminata", "success"); return redirect(url_for("pcbuilder.pcbuilder"))
+    flash("Eliminata" if cur.rowcount else "Non trovata",
+          "success" if cur.rowcount else "error")
+    return redirect(url_for("pcbuilder.pcbuilder"))
 
 
 @bp.route("/import_dxdiag", methods=["POST"])

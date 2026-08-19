@@ -22,7 +22,19 @@ textarea.code-area{min-height:260px}
   <div class="flex items-center justify-between flex-wrap gap-2">
     <div><h1>&#128268; Arduino Projects</h1>
       <p class="text-muted text-sm">I tuoi sketch e progetti microcontrollore</p></div>
-    <button class="btn btn-primary" onclick="openModal()">+ Nuovo progetto</button>
+    <div class="flex gap-2 items-center">
+      {% if e_admin and proprietari %}
+      <label class="text-xs text-muted">Utente:</label>
+      <select class="form-select" style="max-width:200px;font-size:.75rem"
+              onchange="location.href = this.value ? '/arduino/?utente=' + this.value : '/arduino/'">
+        <option value="">Tutti</option>
+        {% for pr in proprietari %}
+        <option value="{{ pr.id }}"{% if filtro_utente == pr.id %} selected{% endif %}>{{ pr.username }} ({{ pr.quanti }})</option>
+        {% endfor %}
+      </select>
+      {% endif %}
+      <button class="btn btn-primary" onclick="openModal()">+ Nuovo progetto</button>
+    </div>
   </div>
 </div>
 
@@ -34,6 +46,9 @@ textarea.code-area{min-height:260px}
     <div>
       <div class="card-title">{{ p.name }}</div>
       <div class="text-xs text-muted mt-1">{{ p.board }}</div>
+      {# Chi non e' admin vede solo i propri progetti: il badge comparirebbe su tutti
+         e non distinguerebbe niente. #}
+      {% if e_admin %}<div class="text-xs mt-1" style="color:var(--text-faint)">&#128100; {{ nomi_utenti.get(p.user_id) or 'senza proprietario' }}</div>{% endif %}
     </div>
     <span class="badge {% if p.status=='Completato' %}badge-success{% elif p.status=='In sviluppo' %}badge-warning{% elif p.status=='Pubblicato' %}badge-primary{% else %}badge-neutral{% endif %}">{{ p.status }}</span>
   </div>

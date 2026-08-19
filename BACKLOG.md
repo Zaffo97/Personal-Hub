@@ -44,77 +44,54 @@ Non sono storia: sono le cose che questo progetto ha già pagato e che tornano a
 | **Le piattaforme del calendario** | `PIATTAFORME_TENUTE` in `blueprints/gaming.py` è un elenco di **inclusi**, quindi **fallisce chiuso**: una piattaforma che IGDB aggiunge domani non entra in cache finché nessuno la scrive lì. È voluto, ma il silenzio no — l'unico segnale è l'elenco delle **escluse per nome** che l'import scrive a fine giro. Un nome che non ti aspetti lì dentro vuol dire «aggiungimi». I nomi sono le stringhe esatte di IGDB (`PC (Microsoft Windows)`, `Xbox Series X\|S`), non si indovinano |
 | ⚠️ **Una route nuova sotto `/pokemon/*` nasce chiusa** | Dal 17/08/2026 c'è un `before_request` in `blueprints/pokemon.py` che lascia passare **solo** le viste elencate in `APERTE_A_TUTTI`; per tutte le altre serve un amministratore. È il verso giusto — una lista del vietato fallirebbe **aperta** — ma vuol dire che una route nuova destinata a tutti **non funzionerà** finché non la si scrive lì, e il sintomo è un redirect a `/pokemon` con un flash, o un 403 JSON se il path contiene `/api/`. I nomi nell'elenco sono quelli delle **viste**, non gli URL |
 | ⚠️ **Una query nuova sui contenuti nasce scoperta** | Al contrario delle route sotto `/pokemon/*`, che dal 17/08 nascono **chiuse**, una `SELECT` nuova su `games`, `teams`, `arduino_projects` o `pc_builds` non filtra per proprietario finché non lo si scrive, e mostrare la riga di un altro **non dà nessun errore**. L'unico segnale è `python scripts/controlla_proprietario.py`, che va eseguito dopo aver toccato una query: dice **filtrata**, **dichiarata**, **a tabella calcolata** o **scoperta**, ed esce con 1 se resta una scoperta. Le eccezioni si dichiarano lì dentro **con il testo della query**: se la query cambia, l'eccezione smette di combaciare ed è voluto |
+| ⚠️ **Si legge con `ambito_utente()`, si scrive con `solo_mie()`** | Sono due domande diverse. Per **leggere**, l'amministratore vede tutto (`1=1`): giusto in elenco. Per **importare o arricchire**, quella deroga è un baco: l'import da Steam cerca gli appid già presenti per non duplicarli, e con l'elenco di tutti un admin che importa la propria libreria **riscriverebbe le ore giocate di un altro utente** invece di crearsi la riga sua. Misurato e provato il 19/08: la riga di admin resta a 104,1 ore e all'utente ne nasce una nuova |
 | ⚠️ **`rowcount` sulle scritture filtrate** | Un `UPDATE`/`DELETE` con la condizione del proprietario che non tocca niente **non dà errore**: il codice sotto continua. In `_team_upsert()` questo avrebbe svuotato i membri della squadra di un altro dopo un UPDATE andato a vuoto. Ogni scrittura filtrata deve guardare il `rowcount` e uscire |
 | **`user_id` a `NULL`** | Il travaso ad `admin` gira **solo nel giro in cui la colonna nasce**, non a ogni avvio: è voluto, perché un `WHERE user_id IS NULL` permanente intesterebbe all'admin qualunque riga scritta male, in silenzio. Il prezzo: una riga senza proprietario **sparisce dalla vista del suo autore** — ma non è persa e non è invisibile a tutti, perché l'admin filtra `1=1` e la vede, col badge che dice «senza proprietario». È lì che si va a cercarla quando qualcuno dice «il dato è sparito» |
 | **Default del DB** | `extensions.py:143` crea la colonna con `regulation_id TEXT DEFAULT 'ma'`. Non è un residuo dei 14 letterali tolti l'11/08: è il default del **DB**, e cambiarlo richiede una migrazione. Oggi non fa danno perché `_team_upsert()` passa sempre un valore esplicito |
 
 ---
 
-## 1. I cinque blocchi aperti
+## 1. I blocchi aperti (quattro su sei)
 
 Erano sei, aperti il 12/08/2026: **1.2 è chiuso il 17/08/2026** e resta qui solo come riga
 di richiamo, perché la regola che ha lasciato in eredità va letta prima di aggiungere una
 route. Tutti **misurati sul codice, non ipotizzati**. L'ordine consigliato è quello in cui
 sono scritti: 1.1 e 1.2 erano due metà della stessa domanda — *di chi* sono i dati e *chi*
-può cambiarli — e 1.5 dipende da entrambe. La metà rimasta è **1.1**, la più larga delle
-due (76 query contro 36 route), perché non basta dire «solo l'admin»: bisogna dire **di
-chi** è ogni riga. Dal 19/08/2026 è **a metà**: schema, rete e sezione Pokémon sono fatti,
-restano **56 query** nelle altre cinque sezioni.
+può cambiarli — e 1.5 dipende da entrambe. **Sono chiuse entrambe**: 1.2 il 17/08/2026
+(36 route), 1.1 il 19/08/2026 (78 query). Restano qui come righe di richiamo, perché
+tutte e due hanno lasciato una regola che va letta prima di scrivere codice nuovo:
+una route nuova sotto `/pokemon/*` nasce **chiusa**, una query nuova sui contenuti nasce
+**scoperta**.
 
-### 1.1 🟨 I dati non hanno un proprietario — schema e rete fatti, 5 sezioni su 6 da fare
+### 1.1 ✅ I dati hanno un proprietario — chiuso il 19/08/2026
 
-**Trovata da Davide provando la web app.** Un team Pokémon salvato da un utente **lo
-vedevano tutti**, e lo stesso vale per giochi, progetti Arduino e build PC. I permessi
-per sezione decidono **quali sezioni** vedi, non **di chi sono i dati** dentro.
+**Trovata da Davide provando la web app**: un team Pokémon salvato da un utente **lo
+vedevano tutti**, e lo stesso per giochi, progetti Arduino e build PC. I permessi per
+sezione dicono **quali sezioni** vedi, non **di chi sono i dati** dentro.
 
-✅ **Il 19/08/2026 sono fatti lo schema, la rete e la sezione Pokémon.** Le quattro
-decisioni aperte sono state prese da Davide lo stesso giorno; numeri e prove in
-`STORICO.md`. In sintesi:
+Chiuso in un blocco solo: `user_id` sulle quattro tabelle radice, `python_progress` per
+la sezione Python, e **78 query su 78** che ora sanno di chi parlano — 52 filtrate, 26
+dichiarate con la ragione scritta, **0 scoperte**. Numeri e prove in `STORICO.md`.
 
-1. il proprietario è `user_id` **solo sulle quattro tabelle radice**; `team_members` e
-   `pc_components` lo ereditano dal padre con una join
-2. le righe che c'erano prima sono passate ad **`admin`** — 33 giochi, 3 team, 1 build,
-   zero orfane — in un travaso che gira **solo nel giro in cui la colonna nasce**
-3. `python_topics` diventerà una tabella **`python_progress(user_id, topic_id, done)`**:
-   l'elenco dei 53 argomenti resta uno e condiviso, la spunta è di chi la mette. ⬜ Da
-   fare quando tocca alla sezione Python — oggi la spunta è ancora di tutti
-4. eliminando un utente i suoi contenuti **passano all'amministratore**, non si
-   cancellano ✅ (fatto: `admin.py` li travasa prima della `DELETE`, che con le chiavi
-   esterne accese fallirebbe)
+> ⚠️ **La regola che resta, e va letta prima di scrivere una query nuova**: una `SELECT`
+> nuova su `games`, `teams`, `arduino_projects` o `pc_builds` **non filtra da sola**, e
+> mostrare la riga di un altro non dà nessun errore. Si chiede la condizione a
+> `ambito_utente()` (o a `solo_mie()` se si sta **scrivendo**), e si controlla con
+> `python scripts/controlla_proprietario.py`, che esce con 1 se resta una query
+> scoperta. Le eccezioni si dichiarano lì dentro **con il testo della query**: se la
+> query cambia, l'eccezione smette di combaciare, ed è voluto.
 
-**⬜ Cosa resta: 56 query su 76.** Il conto lo dà lo script, non una stima:
+**⬜ Cosa resta aperto, ed è piccolo:**
 
-```bash
-python scripts/controlla_proprietario.py
-```
-
-| Sezione | Query scoperte | Note |
-|---|---|---|
-| **Gaming** | 24 | la più grossa, e `games` è la tabella con più righe vere (33) |
-| **Dashboard** | 19 | conteggi e «ultimi inseriti» di **tutte** le sezioni insieme, più l'Esporta JSON |
-| **PC Builder** | 7 | `pc_builds` + `pc_components`, che eredita |
-| **Arduino** | 4 | la più piccola: 0 righe nel DB, quindi la più facile da convertire |
-| **Python** | 3 | ⚠️ va con la tabella `python_progress`, non è una semplice `WHERE` |
-
-⚠️ **Lo stato intermedio è visibile e va detto**: fino a che le altre sezioni non sono
-convertite, un utente non amministratore vede **0 team** nella pagina Pokémon ma la
-**dashboard gli conta ancora i team e i giochi di tutti** — sono due query diverse, e
-quella della dashboard è fra le 19 scoperte. Non è un baco nuovo: è il prezzo di
-convertire una sezione alla volta, ed è la ragione per cui il giro va finito.
-
-**Come si converte una sezione** (il modello è `blueprints/pokemon.py`):
-
-1. `cond, par = ambito_utente()` e la condizione si innesta nella query con una f-string
-2. sulla `INSERT` si scrive `user_id=utente_id()`
-3. ⚠️ su `UPDATE` e `DELETE` si controlla il **`rowcount`**: un `UPDATE` che non tocca
-   niente **non dà errore**, e il codice sotto continuerebbe a girare — è il buco che in
-   `_team_upsert()` avrebbe svuotato i membri della squadra di un altro
-4. per l'admin: badge del proprietario sulla riga e tendina `?utente=` per filtrare
-5. si chiude quando `controlla_proprietario.py` dice **0 scoperte** per quel file, con
-   una prova a due utenti su una **copia** di `hub.db`, e con
-   `python scripts/sweep_pagine.py` a zero errori sulle pagine toccate
-
-Si verifica creando due utenti e provando che nessuno veda le cose dell'altro.
+- ⬜ **La colonna `python_topics.done` non la legge più nessuno.** È rimasta nel DB con
+  la fotografia delle spunte dell'admin al 19/08/2026; il progresso vero sta in
+  `python_progress`. Toglierla è una migrazione a sé — va con l'inventario del codice
+  morto (§5.3), non prima
+- ⬜ **Il proprietario non si può cambiare da interfaccia.** Se un giorno serve
+  «passa questo gioco a un altro utente», oggi si fa solo dal DB. Non è stato chiesto
+- ⬜ **I dati condivisi restano condivisi**: catalogo, regulation, mosse, oggetti e
+  abilità non hanno un proprietario e non devono averlo — sono di tutti, e a
+  proteggerli è §1.2, che li ha riservati agli amministratori
 
 ### 1.2 ✅ Gli editor Pokémon solo per gli admin — chiuso il 17/08/2026
 

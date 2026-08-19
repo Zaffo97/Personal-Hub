@@ -83,6 +83,58 @@ pagina ed esegue `new Function()` su ogni blocco `<script>` **e** su ogni handle
   regex di `controlla_traduzioni.py` **taglia la chiave sull'apostrofo protetto** — la chiave
   finiva a «Nessun team per l».
 
+**§1.1 chiusa lo stesso giorno: le altre cinque sezioni, 78 query su 78**
+
+- ✅ **Il conto finale**: **52 filtrate, 26 dichiarate, 0 scoperte**. Le dichiarate non
+  sono deroghe generiche: ognuna ha scritto **perché**, e sono di tre tipi soltanto —
+  la riga figlia che eredita dal padre già filtrato (`team_members`, `pc_components`),
+  il dato **condiviso di suo** (le tre query sulle regulation, l'elenco dei 53 argomenti
+  Python), e le due scritture a **tabella calcolata** che girano su tutte e quattro le
+  radici in un ciclo.
+- ⚠️ **Gaming ha richiesto un secondo helper, e non è una rifinitura.** `ambito_utente()`
+  all'amministratore risponde «vedi tutto», il che è giusto in lettura e **sbagliato in
+  scrittura**: l'import da Steam cerca gli appid già presenti per non duplicarli, e con
+  l'elenco di tutti un admin che importa la propria libreria **riscriverebbe le ore
+  giocate di un altro** invece di crearsi la riga sua. Da lì `solo_mie()`, senza deroga.
+  Provato: con la cavia *Call of Duty®* (appid 1938090) l'utente importa 999 ore, la riga
+  dell'admin **resta a 104,1**, e il secondo import aggiorna la sua senza duplicare.
+  La regola in una frase: **si legge con `ambito_utente()`, si scrive con `solo_mie()`**.
+- ✅ **Arricchimento generi e tag con la stessa regola**: ognuno lavora sulle proprie
+  righe, admin compreso, così il contatore «rimasti» dice esattamente ciò che il lotto
+  successivo toccherà. Provato: l'API ne conta 1, e 1 sono le sue.
+- ⚠️ **In Gaming il nome del proprietario si legge a parte, non con una join.** Gli
+  ordinamenti finiscono con `id DESC`, e in una join fra `games` e `users` `id` sarebbe
+  **ambiguo**: SQLite avrebbe sollevato. Due righe di dizionario costano meno del rischio.
+- ✅ **Python: la tabella nuova, non 53 righe per utente.** `python_progress(user_id,
+  topic_id, done)` con chiave primaria doppia; l'elenco dei 53 argomenti resta **uno e
+  condiviso**, e chi non ha ancora spuntato niente nasce a zero grazie alla LEFT JOIN,
+  senza seminare righe a ogni utente nuovo. Il travaso delle spunte già messe gira **una
+  volta sola**: provato su una copia con 7 spunte finte → **7 su 7 all'admin**, e un
+  secondo `init_db()` **non le raddoppia**.
+- ⚠️ **`python_topics.done` resta nel DB e non la legge più nessuno.** È la fotografia
+  delle spunte dell'admin al 19/08/2026: toglierla è una migrazione a sé, va con
+  l'inventario del codice morto. Nel frattempo `esporta_dati.py` ha **`python_progress`
+  in elenco** — senza, il backup avrebbe perso il progresso di tutti in silenzio,
+  esportando una colonna `done` ferma al giorno della migrazione.
+- ✅ **Dashboard: due filtri diversi per due domande diverse.** I permessi per sezione
+  dicono *cosa* si vede, il proprietario *di chi* sono le righe contate. Prima da lì un
+  utente leggeva quanti team e quanti giochi esistono in tutto — il numero che le altre
+  pagine gli nascondono. Lo scarico JSON idem, e il progresso Python esportato è quello
+  **di chi scarica**, non la colonna della riga.
+- ✅ **PC Builder ha lo stesso buco di `_team_upsert()`**, e la stessa cura: `save`
+  cancella i componenti **dopo** l'UPDATE della build. Provato: un utente che salva
+  sull'id della build dell'admin non ne cambia il nome e **non le svuota i 5 pezzi**.
+- ✅ **Verifica complessiva: 54 prove** su copie di `hub.db` — **17** su Pokémon, **18**
+  su Gaming, **19** su Arduino, PC Builder, Python e Dashboard. Più **sweep 0 errori** su
+  19 pagine × 2 lingue e **traduzioni 590/590**: le tre voci nuove degli elenchi Pokémon
+  e Gaming bastavano già, e in Arduino e PC Builder l'italiano è scritto in chiaro perché
+  quelle sezioni non sono tradotte per scelta.
+- ✅ **Lo sweep è diventato uno script**, `scripts/sweep_pagine.py`: il giro che si faceva
+  a mano ora è rieseguibile e ha un exit code. `requirements.txt` guadagna `esprima`,
+  dichiarato come dipendenza di **sola verifica** — node su questa macchina non c'è.
+
+
+
 
 ---
 

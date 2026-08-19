@@ -10,7 +10,8 @@ import urllib.parse
 import urllib.request
 
 from flask import Blueprint, render_template, request, redirect, url_for, flash, jsonify
-from extensions import get_db, login_required, _i, _f, t, tf
+from extensions import (get_db, login_required, _i, _f, t, tf,
+                        ambito_utente, solo_mie, utente_id, e_admin)
 from data import GAME_STATUSES, GAME_PLATFORMS
 
 bp = Blueprint("gaming", __name__, url_prefix="/gaming")
@@ -126,20 +127,28 @@ def _game_upsert(gid=None):
         _f(f.get("hours_played")) or None,
     )
     if gid:
-        db.execute(
+        # Il proprietario non si riscrive in aggiornamento: un admin che corregge il
+        # gioco di un altro non se lo intesta.
+        cond, par = ambito_utente()
+        cur = db.execute(
             "UPDATE games SET title=?,platform=?,genre=?,status=?,"
             "hours_hltb=?,cover_url=?,prog_story=?,prog_side=?,prog_collect=?,"
-            "date_start=?,date_end=?,notes=?,steam_appid=?,hours_played=? WHERE id=?",
-            vals + (gid,),
+            "date_start=?,date_end=?,notes=?,steam_appid=?,hours_played=? "
+            f"WHERE id=? AND {cond}",
+            vals + (gid,) + tuple(par),
         )
+        if cur.rowcount == 0:
+            db.close()
+            return False               # non e' tuo: non si scrive niente
     else:
         db.execute(
             "INSERT INTO games(title,platform,genre,status,hours_hltb,cover_url,"
             "prog_story,prog_side,prog_collect,date_start,date_end,notes,steam_appid,"
-            "hours_played) VALUES(?,?,?,?,?,?,?,?,?,?,?,?,?,?)",
-            vals,
+            "hours_played,user_id) VALUES(?,?,?,?,?,?,?,?,?,?,?,?,?,?,?)",
+            vals + (utente_id(),),
         )
     db.commit(); db.close()
+    return True
 
 
 def risolvi_profilo(testo):
@@ -211,8 +220,12 @@ def steam_libreria():
                         "profilo_privato": True}), 403
 
     db = get_db()
+    # ⚠️ `solo_mie()` e non `ambito_utente()`: il pallino «ce l'ho gia'» deve parlare
+    # della **tua** libreria. Con la deroga dell'admin, un amministratore vedrebbe
+    # segnati come gia' presenti i giochi di un altro utente.
+    cond, par = solo_mie()
     gia = {r["steam_appid"]: r["id"] for r in
-           db.execute("SELECT id, steam_appid FROM games WHERE steam_appid IS NOT NULL")}
+           db.execute(f"SELECT id, steam_appid FROM games WHERE steam_appid IS NOT NULL AND {cond}", par)}
     db.close()
 
     giochi = [{
@@ -236,8 +249,13 @@ def steam_importa():
         return jsonify({"errore": "Nessun gioco selezionato"}), 400
 
     db = get_db()
+    # ⚠️ Qui `solo_mie()` non e' una rifinitura, e' la differenza fra importare e
+    # sovrascrivere: se l'elenco degli appid gia' presenti comprendesse le righe
+    # altrui, importare la propria libreria **riscriverebbe le ore giocate di un
+    # altro utente** invece di creare la propria riga.
+    cond, par = solo_mie()
     esistenti = {r["steam_appid"]: r["id"] for r in
-                 db.execute("SELECT id, steam_appid FROM games WHERE steam_appid IS NOT NULL")}
+                 db.execute(f"SELECT id, steam_appid FROM games WHERE steam_appid IS NOT NULL AND {cond}", par)}
     nuovi = aggiornati = 0
     for g in scelti:
         appid = _i(g.get("appid"))
@@ -253,9 +271,10 @@ def steam_importa():
             aggiornati += 1
         else:
             db.execute(
-                "INSERT INTO games(title,platform,status,cover_url,steam_appid,hours_played)"
-                " VALUES(?,?,?,?,?,?)",
-                (g.get("titolo", "")[:200], "PC", stato, steam_cover(appid), appid, ore))
+                "INSERT INTO games(title,platform,status,cover_url,steam_appid,"
+                "hours_played,user_id) VALUES(?,?,?,?,?,?,?)",
+                (g.get("titolo", "")[:200], "PC", stato, steam_cover(appid), appid, ore,
+                 utente_id()))
             nuovi += 1
     db.commit(); db.close()
     return jsonify({"nuovi": nuovi, "aggiornati": aggiornati})
@@ -266,8 +285,9 @@ def steam_importa():
 def steam_da_arricchire():
     """Quanti giochi Steam sono senza genere. Nessuna chiave richiesta."""
     db = get_db()
+    cond, par = solo_mie()
     n = db.execute("SELECT COUNT(*) FROM games WHERE steam_appid IS NOT NULL"
-                   " AND (genre IS NULL OR genre='')").fetchone()[0]
+                   f" AND (genre IS NULL OR genre='') AND {cond}", par).fetchone()[0]
     db.close()
     return jsonify({"rimasti": n})
 
@@ -282,9 +302,14 @@ def steam_arricchisci():
     """
     LOTTO = 15
     db = get_db()
+    # ⚠️ Arricchire e' una scrittura, quindi vale la stessa regola dell'import:
+    # ognuno lavora sulle proprie righe, admin compreso. Cosi' il contatore
+    # «rimasti» dice esattamente cio' che il lotto successivo tocchera'.
+    cond, par = solo_mie()
     da_fare = db.execute(
         "SELECT id, steam_appid FROM games WHERE steam_appid IS NOT NULL"
-        " AND (genre IS NULL OR genre='') ORDER BY id LIMIT ?", (LOTTO,)).fetchall()
+        f" AND (genre IS NULL OR genre='') AND {cond} ORDER BY id LIMIT ?",
+        par + [LOTTO]).fetchall()
 
     fatti = falliti = 0
     errore_rete = None
@@ -311,7 +336,7 @@ def steam_arricchisci():
         time.sleep(0.2)                      # riguardo per il rate limit di Steam
     db.commit()
     rimasti = db.execute("SELECT COUNT(*) FROM games WHERE steam_appid IS NOT NULL"
-                         " AND (genre IS NULL OR genre='')").fetchone()[0]
+                         f" AND (genre IS NULL OR genre='') AND {cond}", par).fetchone()[0]
     db.close()
     if errore_rete and not fatti:
         return jsonify({"errore": errore_rete, "rimasti": rimasti}), 502
@@ -351,8 +376,9 @@ def _steamspy_tag(appid):
 def steam_tag_da_arricchire():
     """Quanti giochi Steam sono ancora senza tag."""
     db = get_db()
+    cond, par = solo_mie()
     n = db.execute("SELECT COUNT(*) FROM games WHERE steam_appid IS NOT NULL"
-                   " AND (steam_tags IS NULL OR steam_tags='')").fetchone()[0]
+                   f" AND (steam_tags IS NULL OR steam_tags='') AND {cond}", par).fetchone()[0]
     db.close()
     return jsonify({"rimasti": n})
 
@@ -367,9 +393,11 @@ def steam_arricchisci_tag():
     """
     LOTTO = 6
     db = get_db()
+    cond, par = solo_mie()
     da_fare = db.execute(
         "SELECT id, steam_appid FROM games WHERE steam_appid IS NOT NULL"
-        " AND (steam_tags IS NULL OR steam_tags='') ORDER BY id LIMIT ?", (LOTTO,)).fetchall()
+        f" AND (steam_tags IS NULL OR steam_tags='') AND {cond} ORDER BY id LIMIT ?",
+        par + [LOTTO]).fetchall()
 
     fatti = senza = 0
     errore_rete = None
@@ -389,7 +417,7 @@ def steam_arricchisci_tag():
         time.sleep(STEAMSPY_PAUSA)
     db.commit()
     rimasti = db.execute("SELECT COUNT(*) FROM games WHERE steam_appid IS NOT NULL"
-                         " AND (steam_tags IS NULL OR steam_tags='')").fetchone()[0]
+                         f" AND (steam_tags IS NULL OR steam_tags='') AND {cond}", par).fetchone()[0]
     db.close()
     if errore_rete and not fatti:
         return jsonify({"errore": errore_rete, "rimasti": rimasti}), 502
@@ -1186,7 +1214,13 @@ def gaming():
     piattaforma = request.args.get("platform", "")
     ordine = request.args.get("sort", "")
 
-    sql   = "SELECT * FROM games WHERE 1=1"; params = []
+    # L'admin vede la libreria di tutti, con scritto di chi e' ogni gioco e la
+    # tendina `?utente=` per isolarne uno; gli altri vedono la propria. La stessa
+    # condizione regge conteggi, tendine e suggerimenti: se filtrasse solo l'elenco,
+    # i numeri in cima parlerebbero di una libreria diversa da quella a schermo.
+    di = _i(request.args.get("utente")) or None
+    cond, par = ambito_utente(di=di)
+    sql   = f"SELECT * FROM games WHERE {cond}"; params = list(par)
     if filt: sql += " AND status=?";     params.append(filt)
     if q:    sql += " AND title LIKE ?"; params.append(f"%{q}%")
     # `genre` e' un elenco separato da virgole ("Action, RPG"), non un valore singolo:
@@ -1200,22 +1234,38 @@ def gaming():
     sql += " " + ORDINAMENTI.get(ordine, ORDINAMENTI[""])
     games  = db.execute(sql, params).fetchall()
 
-    counts = {s: db.execute("SELECT COUNT(*) FROM games WHERE status=?", (s,)).fetchone()[0]
+    counts = {s: db.execute(f"SELECT COUNT(*) FROM games WHERE status=? AND {cond}",
+                            [s] + list(par)).fetchone()[0]
               for s in GAME_STATUSES}
-    counts["Tutti"] = db.execute("SELECT COUNT(*) FROM games").fetchone()[0]
+    counts["Tutti"] = db.execute(f"SELECT COUNT(*) FROM games WHERE {cond}",
+                                 par).fetchone()[0]
 
     # Le tendine elencano solo i valori **presenti in libreria**: una lista fissa
     # offrirebbe filtri che non danno mai risultati.
     generi = sorted({g.strip() for (riga,) in db.execute(
-        "SELECT genre FROM games WHERE genre IS NOT NULL AND genre <> ''")
+        f"SELECT genre FROM games WHERE genre IS NOT NULL AND genre <> '' AND {cond}", par)
         for g in riga.split(",") if g.strip()})
     piattaforme = sorted({r[0] for r in db.execute(
-        "SELECT DISTINCT platform FROM games WHERE platform IS NOT NULL AND platform <> ''")})
+        "SELECT DISTINCT platform FROM games WHERE platform IS NOT NULL"
+        f" AND platform <> '' AND {cond}", par)})
     # I suggerimenti guardano **tutta** la libreria, non l'elenco filtrato: sono un
     # consiglio su cosa giocare, non un riassunto di quello che stai guardando.
-    tutti = db.execute("SELECT * FROM games ORDER BY title COLLATE NOCASE").fetchall()
+    tutti = db.execute(
+        f"SELECT * FROM games WHERE {cond} ORDER BY title COLLATE NOCASE", par).fetchall()
     ancora, motivo_ancora, suggeriti, nota_sugg = suggerimenti(
         tutti, id_ancora=_i(request.args.get("simile_a")) or None)
+    # ⚠️ Il nome del proprietario si legge a parte e **non** con una join su `users`:
+    # gli ordinamenti finiscono con `id DESC`, e in una join `id` sarebbe ambiguo fra
+    # le due tabelle. Sono due righe: costa meno del rischio.
+    nomi_utenti = {r["id"]: r["username"] for r in
+                   db.execute("SELECT id, username FROM users")} if e_admin() else {}
+    # La tendina del filtro esiste solo per l'admin, e nomina solo chi ha giochi.
+    proprietari = []
+    if e_admin():
+        proprietari = [dict(r) for r in db.execute(
+            "SELECT u.id, u.username, COUNT(g.id) AS quanti FROM users u "
+            "JOIN games g ON g.user_id=u.id GROUP BY u.id, u.username "
+            "ORDER BY u.username").fetchall()]
     db.close()
     # La striscia delle prossime uscite: un assaggio del calendario, non il calendario.
     # ⚠️ Non tocca `games` e non entra in nessuno dei conteggi qui sopra — sono giochi
@@ -1225,7 +1275,9 @@ def gaming():
                            generi=generi, piattaforme=piattaforme, genre=genere,
                            platform=piattaforma, sort=ordine, ordinamenti=ETICHETTE_ORDINE,
                            ancora=ancora, motivo_ancora=motivo_ancora, suggeriti=suggeriti,
-                           nota_sugg=nota_sugg, tutti=tutti, prossime=striscia_uscite())
+                           nota_sugg=nota_sugg, tutti=tutti, prossime=striscia_uscite(),
+                           proprietari=proprietari, filtro_utente=di,
+                           nomi_utenti=nomi_utenti)
 
 
 @bp.route("/new", methods=["GET", "POST"])
@@ -1242,12 +1294,18 @@ def game_new():
 @login_required
 def game_edit(gid):
     db   = get_db()
-    game = db.execute("SELECT * FROM games WHERE id=?", (gid,)).fetchone()
+    # Un gioco che non e' tuo risponde «non trovato», non «vietato»: chi prova un id
+    # a caso non deve poter capire quali esistono.
+    cond, par = ambito_utente()
+    game = db.execute(f"SELECT * FROM games WHERE id=? AND {cond}",
+                      [gid] + list(par)).fetchone()
     db.close()
     if not game:
         flash("Non trovato", "error"); return redirect(url_for("gaming.gaming"))
     if request.method == "POST":
-        _game_upsert(gid); flash("Aggiornato!", "success")
+        if not _game_upsert(gid):
+            flash("Non trovato", "error"); return redirect(url_for("gaming.gaming"))
+        flash("Aggiornato!", "success")
         return redirect(url_for("gaming.gaming"))
     return render_template("game_form.html", game=game,
                            statuses=GAME_STATUSES, platforms=GAME_PLATFORMS)
@@ -1256,6 +1314,10 @@ def game_edit(gid):
 @bp.route("/<int:gid>/delete", methods=["POST"])
 @login_required
 def game_delete(gid):
-    db = get_db(); db.execute("DELETE FROM games WHERE id=?", (gid,))
+    db = get_db()
+    cond, par = ambito_utente()
+    cur = db.execute(f"DELETE FROM games WHERE id=? AND {cond}", [gid] + list(par))
     db.commit(); db.close()
-    flash("Eliminato", "success"); return redirect(url_for("gaming.gaming"))
+    flash("Eliminato" if cur.rowcount else "Non trovato",
+          "success" if cur.rowcount else "error")
+    return redirect(url_for("gaming.gaming"))

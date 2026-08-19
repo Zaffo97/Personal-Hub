@@ -90,6 +90,46 @@ ECCEZIONI = {
     ("blueprints/pokemon.py", "regulations_list",
      "SELECT COUNT(*) FROM teams WHERE regulation_id=?"):
         "quanti team usano ogni regulation, di chiunque siano. Route da amministratore",
+    ("blueprints/dashboard.py", "dashboard",
+     "SELECT COUNT(*) FROM python_topics"):
+        "il totale dei 53 argomenti: l'elenco e' condiviso di suo, personale e' solo "
+        "la spunta, che sta in python_progress ed e' filtrata per utente",
+    ("blueprints/dashboard.py", "export_data",
+     "SELECT * FROM team_members WHERE team_id=? ORDER BY slot"):
+        "i team del ciclo sono gia' filtrati: qui si leggono i membri di quelli",
+    ("blueprints/dashboard.py", "export_data",
+     "SELECT * FROM pc_components WHERE build_id=?"):
+        "le build del ciclo sono gia' filtrate: qui si leggono i pezzi di quelle",
+    ("blueprints/python_tracker.py", "python_toggle",
+     "SELECT 1 FROM python_topics WHERE id=?"):
+        "controlla solo che l'argomento **esista**: l'elenco e' condiviso, e la spunta "
+        "che segue e' scritta su python_progress con l'id di chi la mette",
+    ("blueprints/pcbuilder.py", "pcbuilder",
+     "SELECT * FROM pc_components WHERE build_id=? ORDER BY category"):
+        "le build dell'elenco sono gia' filtrate: qui si leggono i pezzi di quelle",
+    ("blueprints/pcbuilder.py", "pcbuilder_save",
+     "DELETE FROM pc_components WHERE build_id=?"):
+        "i pezzi seguono la build, e la build e' stata appena verificata: se non e' di "
+        "chi salva, la funzione e' gia' uscita prima di arrivare qui",
+    ("blueprints/pcbuilder.py", "pcbuilder_save",
+     "INSERT INTO pc_components(build_id,category,name,price,notes) VALUES(?,?,?,?,?)"):
+        "stessa build appena verificata: il proprietario e' quello del padre",
+    ("blueprints/gaming.py", "steam_importa",
+     "UPDATE games SET hours_played=? WHERE id=?"):
+        "l'id viene dalla mappa degli appid gia' presenti, costruita con solo_mie(): "
+        "si aggiorna una riga propria o non si aggiorna niente",
+    ("blueprints/gaming.py", "steam_arricchisci",
+     "UPDATE games SET genre=? WHERE id=?"):
+        "l'id viene dal lotto pescato con solo_mie() poche righe sopra",
+    ("blueprints/gaming.py", "steam_arricchisci",
+     "UPDATE games SET genre='—' WHERE id=?"):
+        "stesso lotto: e' il ramo «Steam ha risposto ma non ha generi»",
+    ("blueprints/gaming.py", "steam_arricchisci_tag",
+     "UPDATE games SET steam_tags=? WHERE id=?"):
+        "l'id viene dal lotto pescato con solo_mie() poche righe sopra",
+    ("blueprints/gaming.py", "steam_arricchisci_tag",
+     "UPDATE games SET steam_tags='—' WHERE id=?"):
+        "stesso lotto: e' il ramo «SteamSpy non ha tag per questo gioco»",
     ("blueprints/admin.py", "utente_elimina",
      "UPDATE {…} SET user_id=? WHERE user_id=?"):
         "il travaso dei contenuti di un utente che viene eliminato: gira sulle "
@@ -174,7 +214,7 @@ def query_del_file(percorso):
     con_ambito = set()
     for n in ast.walk(albero):
         if (isinstance(n, ast.Call) and isinstance(n.func, ast.Name)
-                and n.func.id == "ambito_utente"):
+                and n.func.id in ("ambito_utente", "solo_mie")):
             con_ambito.add(funzione_di(n))
 
     fuori = []
