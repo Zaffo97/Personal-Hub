@@ -133,6 +133,41 @@ pagina ed esegue `new Function()` su ogni blocco `<script>` **e** su ogni handle
   a mano ora è rieseguibile e ha un exit code. `requirements.txt` guadagna `esprima`,
   dichiarato come dipendenza di **sola verifica** — node su questa macchina non c'è.
 
+**Il quarto endpoint fantasma: `/api/team/<id>` ora esiste**
+
+- ✅ **Il pulsante 📊 sulle schede di `/pokemon` funziona.** Apriva il calcolatore e la
+  barra dei sei Pokémon del team **non compariva**, senza dire perché: `calcolatori-ui.js`
+  chiamava `/api/team/<id>`, che **non era nella `url_map`**, e il 404 moriva dentro un
+  `catch(e){console.warn(…)}`.
+- ⚠️ **«Manca la route» era solo metà del baco.** Il contratto lo detta il client, che era
+  già scritto, e **due dei nomi che legge nel DB non esistono**:
+  - **`ev_*` ← `sp_*`**. Non sono gli EV del gioco vero (252 a stat, 510 in tutto): sono
+    gli **SP** di questo progetto, max 32 per stat e 66 in totale. Che sia la stessa cosa
+    è verificato su due punti indipendenti — i campi del calcolatore hanno `max="32"`, e
+    la regola #8 è scritta «32 SP atk». È una traduzione fra due nomi, non una conversione.
+  - **`mega_stone` è la colonna vecchia**, e su ogni riga salvata da quando esistono le
+    meccaniche vale `NULL`: oggi la Mega sta in `mechanic_type='mega'` + `mechanic_value`.
+    Si risponde con la colonna se c'è, altrimenti con la meccanica, così il client resta
+    com'è.
+- ✅ **Gli IV non si mandano, di proposito**: questo progetto non li salva, e il client fa
+  già la cosa giusta (`m[ivMap[s]]!==undefined ? … : 31`). Mandare uno zero sarebbe un
+  dato inventato che cambia i conti.
+- ✅ **Il team è di qualcuno**: la route legge con `ambito_utente()` come tutto il resto dal
+  19/08, e un team che non è tuo risponde **404 «non trovato»**, non «vietato».
+- ✅ **Verifica: 15 prove su 15** su una copia di `hub.db`, con un membro scritto apposta —
+  Incineroar Adamant, SP 4/32/8/0/12/10, meccanica `mega` — perché le tre righe vere hanno
+  tutto a zero e su quelle il test sarebbe passato **anche con la mappatura sbagliata**.
+  `sp_atk` 32 arriva come `ev_atk` 32, `sp_spdef` 12 come `ev_spdef` 12, la Mega arriva
+  come `mega_stone`, nessuna chiave `iv_*` nella risposta, i campi grezzi restano. Chi non
+  è il proprietario: **404**; chi non ha fatto login: **302**; un id inesistente: **404
+  pulito, non 500**.
+- ⬜ **Quello che questa verifica non dice**: che la barra **compaia nel browser**. È JS che
+  gira nella pagina, e per provarlo davvero servirebbe entrare nell'app con la password.
+  I nomi dei campi sono stati confrontati **uno per uno** con quelli che il client legge,
+  ma il clic finale sul pulsante 📊 resta da fare a mano.
+
+
+
 
 
 

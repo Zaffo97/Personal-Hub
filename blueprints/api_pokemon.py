@@ -1,7 +1,7 @@
 from flask import Blueprint, jsonify, request
 import os, json, re
 from data import DATA_DIR, regulation_default
-from extensions import nome_vis
+from extensions import nome_vis, get_db, login_required, ambito_utente
 
 bp = Blueprint('api_pokemon', __name__, url_prefix='/api')
 
@@ -557,3 +557,56 @@ def api_moves():
         return jsonify({'ok': True, 'reg_id': reg_id, 'moves': dati.get('moves', {})})
     except Exception as e:
         return jsonify({'error': str(e)}), 500
+
+
+# ---------------------------------------------------------------------------
+# TEAM: i sei Pokemon salvati, per il quick-load del calcolatore
+# ---------------------------------------------------------------------------
+# ⚠️ Questa route **non esisteva**, e nessuno se n'era accorto perche' l'errore
+# moriva in un `catch(e){console.warn(...)}`: il pulsante 📊 sulle schede di
+# /pokemon apriva il calcolatore e la barra dei sei Pokemon non compariva, senza
+# dire perche'. Era il quarto endpoint fantasma del progetto (dopo /api/regulations,
+# `d.moves` e `d.regulation`), tutti trovati allo stesso modo: leggendo cosa il JS
+# chiede e cercandolo nella url_map.
+#
+# Il contratto lo detta il client, che era gia' scritto (`calcolatori-ui.js`):
+# `d.ok` e `d.members`, e di ogni membro legge `pokemon`, `nature`, `mega_stone` e
+# sei campi `ev_*`. Due di quei nomi **nel DB non esistono**, e la differenza non e'
+# cosmetica:
+#
+#   * `ev_*` <- `sp_*`. Non sono gli EV del gioco vero (252 a stat, 510 in tutto):
+#     sono gli **SP** di questo progetto, max 32 per stat e 66 in totale. Il
+#     calcolatore usa lo stesso fondo di scala — i suoi campi hanno `max="32"` — e
+#     la regola #8 e' scritta cosi': «32 SP atk». Il rinomino e' una traduzione fra
+#     due nomi della stessa cosa, non una conversione.
+#   * `mega_stone` e' la **colonna vecchia**, e su ogni riga salvata da quando
+#     esistono le meccaniche vale `NULL`: oggi la Mega si scrive in
+#     `mechanic_type='mega'` + `mechanic_value`. Si risponde con la colonna se c'e',
+#     altrimenti con la meccanica, cosi' il client resta com'e'.
+#
+# Gli IV non si mandano **di proposito**: questo progetto non li salva, e il client
+# fa gia' la cosa giusta (`m[ivMap[s]]!==undefined ? ... : 31`). Mandare uno zero
+# sarebbe un dato inventato che cambia i conti.
+@bp.route('/team/<int:tid>')
+@login_required
+def api_team(tid):
+    # Il team e' di qualcuno: si legge con la condizione del proprietario, come
+    # ovunque dal 19/08/2026. Un team che non e' tuo risponde «non trovato».
+    cond, par = ambito_utente()
+    db = get_db()
+    team = db.execute(f"SELECT * FROM teams WHERE id=? AND {cond}",
+                      [tid] + list(par)).fetchone()
+    if not team:
+        db.close()
+        return jsonify({"ok": False, "error": "Team non trovato"}), 404
+    membri = []
+    for m in db.execute("SELECT * FROM team_members WHERE team_id=? ORDER BY slot",
+                        (tid,)).fetchall():
+        voce = dict(m)
+        for stat in ("hp", "atk", "def", "spatk", "spdef", "spe"):
+            voce["ev_" + stat] = voce.get("sp_" + stat) or 0
+        if not voce.get("mega_stone") and (voce.get("mechanic_type") or "") == "mega":
+            voce["mega_stone"] = voce.get("mechanic_value") or None
+        membri.append(voce)
+    db.close()
+    return jsonify({"ok": True, "team": dict(team), "members": membri})

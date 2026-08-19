@@ -90,6 +90,10 @@ ECCEZIONI = {
     ("blueprints/pokemon.py", "regulations_list",
      "SELECT COUNT(*) FROM teams WHERE regulation_id=?"):
         "quanti team usano ogni regulation, di chiunque siano. Route da amministratore",
+    ("blueprints/api_pokemon.py", "api_team",
+     "SELECT * FROM team_members WHERE team_id=? ORDER BY slot"):
+        "il team e' stato appena letto con il filtro del proprietario: se non e' tuo, "
+        "la funzione ha gia' risposto 404 e non si arriva qui",
     ("blueprints/dashboard.py", "dashboard",
      "SELECT COUNT(*) FROM python_topics"):
         "il totale dei 53 argomenti: l'elenco e' condiviso di suo, personale e' solo "
