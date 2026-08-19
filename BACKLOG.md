@@ -110,8 +110,9 @@ convertire una sezione alla volta, ed è la ragione per cui il giro va finito.
    niente **non dà errore**, e il codice sotto continuerebbe a girare — è il buco che in
    `_team_upsert()` avrebbe svuotato i membri della squadra di un altro
 4. per l'admin: badge del proprietario sulla riga e tendina `?utente=` per filtrare
-5. si chiude quando `controlla_proprietario.py` dice **0 scoperte** per quel file, e con
-   una prova a due utenti su una **copia** di `hub.db`
+5. si chiude quando `controlla_proprietario.py` dice **0 scoperte** per quel file, con
+   una prova a due utenti su una **copia** di `hub.db`, e con
+   `python scripts/sweep_pagine.py` a zero errori sulle pagine toccate
 
 Si verifica creando due utenti e provando che nessuno veda le cose dell'altro.
 

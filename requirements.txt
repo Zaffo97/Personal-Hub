@@ -1,1 +1,6 @@
 flask>=3.0
+
+# Serve solo a **verificare**, non a far girare l'app: `scripts/sweep_pagine.py`
+# controlla la sintassi di ogni <script> e di ogni handler inline delle pagine, e su
+# questa macchina node non c'e'. Chi vuole solo usare l'hub puo' non installarlo.
+esprima>=4.0
