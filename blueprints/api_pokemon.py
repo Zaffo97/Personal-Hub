@@ -5,19 +5,63 @@ from extensions import nome_vis, get_db, login_required, ambito_utente
 
 bp = Blueprint('api_pokemon', __name__, url_prefix='/api')
 
-# Carica catalogo una volta sola all'avvio
-# data/catalog/pokemon.json è il database completo; il vecchio file resta fallback.
+# ⚠️ Il catalogo era caricato **una volta sola all'avvio**, e non guardava più il
+# file. Misurato il 21/08/2026, il prezzo era doppio e silenzioso:
+#
+#   - un Pokémon aggiunto dall'editor finiva sul file e **compariva nel roster**
+#     della regulation (che rilegge il file ogni volta), ma qui dava **404**: niente
+#     stat, niente tipi, niente sprite. Compariva nell'elenco e non si apriva
+#   - peggio: cambiando una base stat dall'editor, il file diceva 999 e questa API
+#     continuava a rispondere 115 **senza nessun errore**. Il calcolatore faceva i
+#     conti col valore vecchio fino al riavvio dell'app
+#
+# Ora la copia in memoria segue l'**mtime** del file, come già `_MOVESET` in
+# blueprints/pokemon.py e `_TRADUZIONI` in extensions.py: è il pattern che questo
+# progetto usa da sempre per i file che si modificano fuori dal processo.
+#
+# `data/catalog/pokemon.json` è il database completo; il vecchio file resta riserva.
+PERCORSI_CATALOGO = (os.path.join(DATA_DIR, "catalog", "pokemon.json"),
+                     os.path.join(DATA_DIR, "pokemon_catalog.json"))
 POKEMON_CATALOG = {}
-for _catalog_path in (os.path.join(DATA_DIR, "catalog", "pokemon.json"),
-                      os.path.join(DATA_DIR, "pokemon_catalog.json")):
+# ⚠️ `mtime` **e** dimensione, non il solo mtime: due salvataggi ravvicinati possono
+# cadere nello stesso istante del filesystem, e sarebbe di nuovo il dato vecchio
+# servito senza un errore. `st_mtime_ns` costa uno `stat()` come il resto.
+_FIRMA = {"valore": None, "percorso": None}
+
+
+def _firma_file(percorso):
     try:
-        with open(_catalog_path, encoding="utf-8") as _f:
-            POKEMON_CATALOG = json.load(_f)
-        break
-    except Exception as e:
-        _errore = e
-if not POKEMON_CATALOG:
-    print(f"[API] catalogo non leggibile: {_errore}")
+        s = os.stat(percorso)
+    except OSError:
+        return None
+    return (s.st_mtime_ns, s.st_size)
+
+
+def aggiorna_catalogo(forza=False):
+    """Rilegge il catalogo se il file è cambiato. Torna True se ha ricaricato."""
+    global POKEMON_CATALOG
+    for percorso in PERCORSI_CATALOGO:
+        firma = _firma_file(percorso)
+        if firma is None:
+            continue
+        if not forza and _FIRMA["valore"] == firma and _FIRMA["percorso"] == percorso:
+            return False
+        try:
+            with open(percorso, encoding="utf-8") as f:
+                caricato = json.load(f)
+        except Exception as e:
+            # ⚠️ Un file illeggibile **non** svuota la copia buona che abbiamo in
+            # mano: meglio dati di un minuto fa che un catalogo vuoto, che qui
+            # vorrebbe dire 404 su ogni Pokémon.
+            print(f"[API] catalogo non rileggibile ({os.path.basename(percorso)}): {e}")
+            return False
+        POKEMON_CATALOG = caricato
+        _FIRMA.update(valore=firma, percorso=percorso)
+        _costruisci_indice()
+        return True
+    if not POKEMON_CATALOG:
+        print("[API] catalogo non leggibile: nessuno dei percorsi noti risponde")
+    return False
 
 # Sprite fixes diretti (URL completo)
 # Usato per: mimikyu, e mega custom fan-made che non esistono online
@@ -378,10 +422,16 @@ def _costruisci_indice():
             _INDICE.setdefault("-".join([parti[-2]] + parti[:-2]), _INDICE[chiave])
 
 
-_costruisci_indice()
+# Il primo caricamento: sta qui e non in cima perché `aggiorna_catalogo()` chiama
+# `_costruisci_indice()`, che è definita subito sopra.
+aggiorna_catalogo(forza=True)
 
 
 def _find_in_catalog(key: str):
+    # ⚠️ È qui che la copia in memoria si riallinea al file, e ci sta perché è il
+    # collo di bottiglia di ogni lettura del catalogo: sopra c'è una `stat()`, non
+    # una rilettura — il JSON si ricarica solo quando il file è davvero cambiato.
+    aggiorna_catalogo()
     rec = _INDICE.get(key)
     if rec:
         return rec["data"]

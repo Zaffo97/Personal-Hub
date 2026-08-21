@@ -114,6 +114,58 @@ pagina ed esegue `new Function()` su ogni blocco `<script>` **e** su ogni handle
   pagine, **traduzioni 590/590** invariate.
 - ⚠️ **Conseguenza pratica al prossimo avvio**: la chiave di sessione cambia, quindi le
   sessioni aperte cadono e il login va rifatto una volta.
+**Il catalogo si aggiorna mentre l'app gira (§1.3, primo ostacolo)**
+
+- ⚠️ **Il buco non era quello scritto nel backlog.** Andando a misurare il punto 1 di §1.3
+  («il moveset è il buco vero, la tendina esce vuota senza dire perché») sono saltate fuori
+  due cose, e nessuna delle due era quella: la tendina **non** esce vuota, e il problema
+  vero stava un piano sotto.
+- ⚠️ **Il baco, misurato su una copia del catalogo**: `POKEMON_CATALOG` e `_INDICE` in
+  `blueprints/api_pokemon.py` erano caricati **una volta sola all'avvio** — il commento lo
+  diceva pure. Conseguenze, tutte e due silenziose:
+  1. un Pokémon aggiunto dall'editor finiva sul file (1027 voci) e **compariva nel roster**
+     di `pokedex` (1344 voci, dentro), perché quello rilegge il file ogni volta. Ma
+     `/api/pokemon/<nome>` rispondeva **404**: niente stat, niente tipi, niente sprite.
+     Compariva nell'elenco e non si apriva
+  2. peggio: cambiando una base stat dall'editor, il file diceva **999** e l'API continuava
+     a rispondere **115**. Nessun errore da nessuna parte — il calcolatore faceva i conti
+     col valore vecchio fino al riavvio dell'app
+- ✅ **La cura è il pattern che il progetto usa già** per `_MOVESET` e `_TRADUZIONI`: la
+  copia in memoria segue l'**mtime** del file. `aggiorna_catalogo()` sta in
+  `_find_in_catalog()`, che è il collo di bottiglia di ogni lettura: a file fermo costa una
+  `stat()`, non una rilettura del JSON.
+- ⚠️ **Firma `(mtime_ns, dimensione)` e non il solo mtime**: due salvataggi ravvicinati
+  possono cadere nello stesso istante del filesystem, e sarebbe di nuovo il dato vecchio
+  servito senza un errore.
+- ⚠️ **Un file illeggibile non svuota la copia buona**, ed è il verso giusto: meglio il
+  catalogo di un minuto fa che un catalogo vuoto, che qui vorrebbe dire 404 su **ogni**
+  Pokémon. Provato scrivendo spazzatura nel file: 1026 voci restano in mano e i Pokémon
+  continuano a rispondere.
+- ✅ **Verifica che la correzione non sposti niente**: il codice di ieri e quello di oggi
+  messi a confronto sulle stesse voci danno risultati **identici** — 9 casi su 9, indice
+  **1457 chiavi** in entrambi, catalogo 1026 voci, e `Mega Machamp` continua a dare **404**
+  invece di rispondere Mega Venusaur (la trappola dell'11/08 non è tornata).
+  Più **11 prove su 11** in `scripts/prova_catalogo_vivo.py`, sweep **0 errori** su 19 pagine,
+  **20 su 20** sull'import dati.
+- ✅ **Corretta una riga sbagliata del backlog**: «la tendina esce vuota senza dire perché»
+  non era vero. `mosse_legali()` torna `None`, e team builder e calcolatore mostrano
+  **tutte** le mosse della regulation con l'avviso giallo «Nessun elenco mosse per X: sono
+  mostrate tutte». Metà del requisito del punto 1 era già soddisfatta, e nessuno lo sapeva.
+- ⚠️ **Trovato e non corretto**: `/api/catalogo/<db>/salva` accetta una voce col **solo**
+  campo `name` e risponde `200 ok`. Da lì nasce una riga di catalogo senza tipi, senza stat
+  e senza nomi. È il punto 4 di §1.3, ora misurato invece che supposto.
+- ⚠️ **Le prove hanno sporcato la rete di sicurezza vera, e ora se ne accorgono da sole.**
+  Deviare `CATALOG_DIR` non basta: `salva_catalogo()` tiene da parte la versione precedente
+  in `data/archive/`, e quel percorso non era deviato — `catalog_pokemon_pre-salvataggio.json`
+  si è ritrovato dentro `Provamon` e un Incineroar da 999 di attacco. **Il catalogo vero non
+  è stato toccato** (1026 voci, Incineroar 115), la copia è stata ripristinata da git, e
+  `_archive_dir()` ora è deviato come il resto. È la lezione del 16/08 un piano più in là:
+  non bastano i file che il test **legge**, vanno deviati anche quelli che il codice sotto
+  prova **scrive**. Le ultime due delle 11 prove controllano proprio questo.
+- ⚠️ **Non eseguita la regola #8**: il caso Incineroar → Amoonguss va fatto **nel browser**,
+  e per entrare serve la password, che non digito io. Il server è rimasto avviato apposta.
+  Quello che copre il rischio della modifica è il confronto ieri/oggi qui sopra: le stat
+  servite dall'API sono le stesse, quindi il calcolatore riceve gli stessi numeri.
 ---
 
 ## 19/08/2026

@@ -37,6 +37,7 @@ Non sono storia: sono le cose che questo progetto ha già pagato e che tornano a
 | **Commenti e traduzioni** | `controlla_traduzioni.py` legge il **file grezzo**, commenti Jinja compresi: una chiamata a `t()` citata come esempio dentro un `{# … #}` viene contata fra le stringhe chieste dal codice e chiede una traduzione che non serve a nessuno. Nei commenti si descrive, non si cita la sintassi |
 | ⚠️ **Lo sweep statico non basta** | `new Function()` su script e handler dice che la **sintassi** è valida, **non** che il codice giri. Il 13/08 la tabella dell'editor mosse è rimasta **vuota** con lo sweep a zero errori: `renderTable()` lanciava `tf is not defined` a runtime. Ogni giro di verifica va chiuso **caricando davvero** le pagine e contando le righe che compaiono — 919 mosse, 1343 tag del roster, 397 oggetti, 386 abilità. Una tabella vuota non dà errore a schermo |
 | **`t`/`tf` e l'ordine degli script** | Sono definite in un `<script>` nel **`<head>`** di `base.html`, e devono restarci. Più di un template le chiama **durante il parsing** e non dentro un evento (`moves_editor.html` chiude il suo script con `renderTable()`): con la definizione in fondo alla pagina, come era fino al 13/08, quella chiamata non le trova |
+| ⚠️ **Una copia in memoria che non guarda più il file** | Trovata il 21/08/2026 in `blueprints/api_pokemon.py`: il catalogo era letto **all'import del modulo** e non più riletto, quindi una voce aggiunta dall'editor compariva nel roster e dava **404** aprendola, e una base stat modificata continuava a rispondere col valore vecchio **senza errore** fino al riavvio. Ora segue l'mtime, come `_MOVESET` e `_TRADUZIONI`. La regola generale: **un file che si modifica mentre l'app gira non si legge una volta sola.** L'unica copia a modulo rimasta è `CHAMPIONS_BST` in `data.py`, ed è voluto — serve **solo** da riserva quando `load_catalog()` non legge niente, cioè quando avere dati vecchi è meglio che non averne |
 | **Variabili mancanti nei template** | Jinja rende una variabile che non è nel contesto come **stringa vuota**, senza dire niente. `items_editor.html` usava `{{ regulation }}`, che quella route non ha **mai** passato: la conferma di archiviazione ha sempre detto «Archivia gli oggetti correnti ()?» con le parentesi vuote. Se ne è accorto solo `\|tojson`, che su `Undefined` solleva invece di tacere |
 | ⚠️ **Solo Pokémon e Gaming sono tradotte** | Arduino, Python, PC Builder, Dashboard, login e utenti sono in italiano **per scelta** (13/08/2026), e la **sidebar con loro**. Il pulsante lingua compare solo dove la sezione è tradotta: l'elenco è `sezioni_tradotte` in `base.html`, unico punto. Pulsante confinato e shell italiana sono la **stessa** decisione — tradurre la sidebar lascerebbe chi mette EN e va su Arduino senza un modo per tornare indietro |
 | ⚠️ **Le `desc` sono italiane per scelta** | **Non è un lavoro rimasto a metà.** Le 1584 descrizioni di mosse, oggetti e abilità restano **solo in italiano** per decisione di Davide del 13/08/2026, presa dopo aver visto il conto: i **nomi** sono bilingui al 100%, le descrizioni no e non lo diventeranno. Quindi in modalità inglese si legge un nome inglese con sotto una descrizione italiana, ed **è previsto**. `desc_en` non esiste e non va aggiunto; non serve nessun import da PokéAPI né una gemella di `nome_vis()` per i testi |
@@ -105,7 +106,7 @@ prove in `STORICO.md`.
 > prossima route che qualcuno dimentica, e la dimenticanza non darebbe nessun segnale.
 > Così invece si vede subito, perché la pagina non si apre.
 
-### 1.3 ⬜ Aggiungere dati dalla web app, senza passarmi dal mezzo
+### 1.3 🟨 Aggiungere dati dalla web app, senza passarmi dal mezzo
 
 Poter importare nuovi Pokémon in `pokedex` **dall'interfaccia**, e lo stesso per oggetti,
 mosse e abilità.
@@ -122,27 +123,41 @@ E su `pokedex` i quattro filtri sono `null`, cioè «tutto il catalogo»: un Pok
 **compare da solo**. In `ma` (279/460/58) e `mb` (308/460/58) gli elenchi sono espliciti,
 quindi lì va spuntato a mano.
 
+**✅ Il primo ostacolo è stato tolto il 21/08/2026, e non era quello che c'era scritto qui.**
+Misurato: una voce aggiunta dall'editor **compariva nel roster** e `/api/pokemon/<nome>`
+rispondeva **404** — nell'elenco c'era, aprendola non esisteva. E cambiando una base stat il
+file diceva 999 mentre l'API continuava a rispondere 115, **senza nessun errore**, fino al
+riavvio dell'app. Causa: `POKEMON_CATALOG` e `_INDICE` in `blueprints/api_pokemon.py` erano
+caricati **una volta sola all'avvio**. Ora seguono l'mtime del file, come `_MOVESET` e
+`_TRADUZIONI`. Numeri e prove in `STORICO.md`, rete in `scripts/prova_catalogo_vivo.py`.
+
 **Cosa manca davvero, in ordine di rischio:**
 
-1. ⚠️ **Il moveset è il buco vero.** `data/catalog/pokemon_moves.json` **non** è tra i
-   `DB_CATALOGO` ([pokemon.py:71](blueprints/pokemon.py:71)) e nessuna pagina lo tocca: lo
-   scrive solo `scripts/importa_mosse_specie.py`. Una specie aggiunta a mano nasce **senza
-   mosse legali**, e la tendina esce vuota **senza dire perché**. Qualunque forma prenda
-   l'import, deve dare le mosse alla specie nuova o **dichiarare a schermo** che non ne ha
+1. 🟨 **Il moveset**, e il punto va corretto: la frase «la tendina esce vuota senza dire
+   perché» era **sbagliata**. Verificato il 21/08: `mosse_legali()` torna `None`, e sia il
+   team builder sia il calcolatore mostrano **tutte** le mosse della regulation con l'avviso
+   giallo «Nessun elenco mosse per X: sono mostrate tutte». Quindi la seconda metà del
+   requisito — *dichiarare a schermo* — è **già soddisfatta**, ed è la stessa strada delle
+   forme inventate. Resta la prima: **dare le mosse** a una specie nuova quando la fonte
+   esiste. `data/catalog/pokemon_moves.json` non è tra i `DB_CATALOGO`
+   ([pokemon.py:71](blueprints/pokemon.py:71)) e lo scrive solo
+   `scripts/importa_mosse_specie.py`, che legge il dump CSV di PokéAPI
 2. **L'import in blocco**, che è la richiesta letterale: oggi si può fare solo dagli script.
    Serve decidere la forma (incollare JSON, caricare un file, pescare da PokéAPI per nome) e
    in ogni caso riusare `salva_catalogo()` / `_save_abilities()`
 3. **Le regulation non-`pokedex`**: o si offre un «aggiungi anche a…» al salvataggio, o si
    accetta il doppio passaggio — ma allora va **scritto a schermo**
-4. **Validazione, oggi assente**: `/api/catalogo/<db>/salva` accetta qualunque oggetto, il
-   solo controllo è `isinstance(voce, dict)` ([pokemon.py:756](blueprints/pokemon.py:756)).
-   Senza `base_stats` il calcolatore sbaglia i conti, senza `nome_it`/`nome_en` lo switch
-   lingua non ha cosa mostrare
+4. ⚠️ **Validazione, oggi assente, e misurata**: `/api/catalogo/<db>/salva` accetta qualunque
+   oggetto, il solo controllo è `isinstance(voce, dict)`
+   ([pokemon.py:756](blueprints/pokemon.py:756)). Provato il 21/08: una voce con il **solo**
+   campo `name` viene salvata con un `200 ok`, e da lì in poi esiste una riga del catalogo
+   senza tipi, senza stat e senza nomi. È il punto più economico da chiudere e il più facile
+   da sbagliare per distrazione
 5. **Chi può farlo**: ✅ risposto dal 17/08/2026 — è scrittura su dati condivisi, quindi
    **solo gli amministratori**, e una route nuova lo è già senza fare niente (§1.2). Resta
    da incrociare con 1.1 solo se un giorno anche i dati condivisi avranno un proprietario
 
-Nessuno dei cinque punti è deciso: la voce è aperta, non progettata.
+I punti 2 e 3 non sono decisi: quella parte è aperta, non progettata.
 
 **Voce collegata** (dal docx): ⬜ *creare i JSON di una regulation nuova dalla web app* —
 roster, mosse, oggetti e abilità generati in autonomia. Obiettivo di fondo: **aggiungere
@@ -258,7 +273,8 @@ app non si sposta da sola: quelli non sono stati toccati.
 
 **Sulla contemporaneità**: SQLite regge un uso come questo senza problemi. I **file JSON
 scritti a mano no** — vedi la trappola sulle scritture concorrenti. Le cache in memoria
-sono già sull'mtime, quindi con più worker si comportano bene.
+sono sull'mtime — ⚠️ **lo sono da poco**: quella del catalogo in `api_pokemon.py` è stata sistemata il 21/08/2026, e fino a quel giorno questa riga
+diceva il falso.
 
 **E una rete sotto**: «persistente» non vuol dire «al sicuro». Un piano gratuito può
 chiudere o essere sospeso, e oggi `esporta_dati.py` lo lancio io a mano da qui.
