@@ -812,6 +812,73 @@ def api_catalogo_voce(db):
     return jsonify({"ok": True, "nome": nome, "voce": voce})
 
 
+# I campi che **tutte** le voci di un database hanno oggi: non è una lista di desideri,
+# è il contratto vero, contato sul catalogo il 21/08/2026 — 1026 voci Pokémon, 919
+# mosse, 397 oggetti, 386 abilità, e per ognuna questi campi sono al 100%.
+# ⚠️ `bp` sulle mosse **non** è qui di proposito: ce l'hanno 760 su 919, perché le
+# mosse di stato non hanno potenza. Chiederlo vorrebbe dire dichiarare incompleta una
+# voce che è giusta.
+CAMPI_ATTESI = {
+    "pokemon": ("name", "types", "abilities", "base_stats", "nome_it", "nome_en"),
+    "moves": ("category", "type", "desc", "nome_it", "nome_en"),
+    "items": ("category", "desc", "nome_it", "nome_en"),
+    "abilities": ("desc", "category", "effect", "nome_it", "nome_en"),
+}
+
+STAT_ATTESE = ("hp", "atk", "def", "spa", "spd", "spe")
+
+
+def _valida_voce(db, voce):
+    """`(errori, avvisi)` per una voce del catalogo.
+
+    ⚠️ **Due elenchi e non uno**, perché sono due cose diverse — è la stessa distinzione
+    per cui `moves: null` non vuol dire «nessuna mossa»:
+
+    - un **errore** è un campo che c'è ma è del tipo sbagliato. Quello non si salva:
+      `base_stats` con dentro una stringa non dà un errore a valle, dà **un numero
+      sbagliato** nel calcolatore, che è il modo peggiore di sbagliare
+    - un **avviso** è un campo che manca. Quello si salva e si **dichiara**: serve
+      poter tenere una bozza, e le forme inventate di Davide sono nate così
+
+    Fino al 21/08/2026 non c'era né l'uno né l'altro: il solo controllo era
+    `isinstance(voce, dict)`, e una voce col solo campo `name` entrava con un `200 ok`.
+    """
+    errori, avvisi = [], []
+
+    def tipo(campo, atteso, nome_atteso):
+        valore = voce.get(campo)
+        if valore is not None and not isinstance(valore, atteso):
+            errori.append(f"«{campo}» dovrebbe essere {nome_atteso}, "
+                          f"non {type(valore).__name__}")
+
+    tipo("types", list, "un elenco")
+    tipo("abilities", list, "un elenco")
+    tipo("flags", list, "un elenco")
+    tipo("base_stats", dict, "un oggetto")
+    tipo("forms", dict, "un oggetto")
+    tipo("effect", dict if db == "abilities" else (str, dict),
+         "un oggetto" if db == "abilities" else "un testo o un oggetto")
+
+    stats = voce.get("base_stats")
+    if isinstance(stats, dict):
+        for chiave, valore in stats.items():
+            if isinstance(valore, bool) or not isinstance(valore, (int, float)):
+                errori.append(f"base_stats.{chiave} non è un numero ({valore!r})")
+            elif not 1 <= valore <= 255:
+                # Non è un errore: le Mega di Davide possono uscire dai binari. Ma un
+                # 2550 da uno zero di troppo va visto prima, non dopo tre calcoli.
+                avvisi.append(f"base_stats.{chiave} = {valore}, fuori da 1-255")
+        mancanti = [s for s in STAT_ATTESE if s not in stats]
+        if mancanti:
+            avvisi.append("base_stats senza " + ", ".join(mancanti)
+                          + ": il calcolatore userà 0 per quelle")
+
+    for campo in CAMPI_ATTESI.get(db, ()):
+        if campo not in voce or voce.get(campo) in (None, "", [], {}):
+            avvisi.append(f"manca «{campo}»")
+    return errori, avvisi
+
+
 @bp.route("/api/catalogo/<db>/salva", methods=["POST"])
 @login_required
 def api_catalogo_salva(db):
@@ -826,6 +893,9 @@ def api_catalogo_salva(db):
         return jsonify({"ok": False, "error": "nome obbligatorio"}), 400
     if not isinstance(voce, dict):
         return jsonify({"ok": False, "error": "la voce deve essere un oggetto"}), 400
+    errori, avvisi = _valida_voce(db, voce)
+    if errori:
+        return jsonify({"ok": False, "error": "; ".join(errori), "errori": errori}), 400
 
     voci = voci_catalogo(db)
     if nome_originale and nome_originale != nome:
@@ -834,7 +904,7 @@ def api_catalogo_salva(db):
         return jsonify({"ok": False, "error": f"'{nome}' esiste già"}), 400
     voci[nome] = voce
     salva_catalogo(db, voci)
-    return jsonify({"ok": True, "totale": len(voci),
+    return jsonify({"ok": True, "totale": len(voci), "avvisi": avvisi,
                     "riga": _riga_indice(db, nome, voce)})
 
 

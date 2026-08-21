@@ -364,7 +364,12 @@ async function salvaVoce(){
     if(i >= 0) INDICE[i] = d.riga; else INDICE.push(d.riga);
     nomeOriginale = nome;
     rendi();
-    messaggio(tf('Salvato. Il catalogo ha {n} voci.', {n: d.totale}), false);
+    // ⚠️ Gli avvisi si vedono **dopo** un salvataggio riuscito, e non impediscono
+    // niente: un campo mancante e' una lacuna da dichiarare, non un errore. Quello
+    // che invece blocca — un campo del tipo sbagliato — torna gia' come `error`.
+    const avvisi = (d.avvisi || []);
+    messaggio(tf('Salvato. Il catalogo ha {n} voci.', {n: d.totale})
+              + (avvisi.length ? ' ⚠️ ' + avvisi.join(' · ') : ''), false);
   }catch(e){ messaggio(t('Errore:') + ' ' + e.message, true); }
 }
 

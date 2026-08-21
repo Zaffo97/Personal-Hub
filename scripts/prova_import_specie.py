@@ -214,6 +214,33 @@ def prove(dove):
               "Import from Pok" in inglese and "See what enters" in inglese)
         c.set_cookie("hub_lang", "it")
 
+        # --- 5c. la validazione del salvataggio a mano (§1.3 punto 4) ---------
+        # ⚠️ Due esiti diversi di proposito: un campo del **tipo sbagliato** si
+        # rifiuta (darebbe numeri sbagliati nel calcolatore, non un errore), un campo
+        # **mancante** si salva e si dichiara — serve poter tenere una bozza, e le
+        # forme inventate sono nate così.
+        r = c.post("/pokemon/api/catalogo/pokemon/salva",
+                   json={"nome": "Vuotomon", "voce": {"name": "Vuotomon"}})
+        j = r.get_json() or {}
+        esito("una voce col solo `name` si salva ma non più in silenzio",
+              r.status_code == 200 and len(j.get("avvisi") or []) >= 4,
+              f"{len(j.get('avvisi') or [])} avvisi")
+        r = c.post("/pokemon/api/catalogo/pokemon/salva",
+                   json={"nome": "Rotto", "voce": {"name": "Rotto",
+                                                   "base_stats": {"hp": "molti"}}})
+        esito("una base stat che non è un numero viene RIFIUTATA",
+              r.status_code == 400 and "non è un numero" in (r.get_json() or {}).get("error", ""))
+        r = c.post("/pokemon/api/catalogo/pokemon/salva",
+                   json={"nome": "Rotto2", "voce": {"name": "R", "types": "fuoco"}})
+        esito("un campo che dovrebbe essere un elenco e non lo è viene RIFIUTATO",
+              r.status_code == 400)
+        r = c.post("/pokemon/api/catalogo/moves/salva",
+                   json={"nome": "Prova Stato", "voce": {"category": "status", "type": "normal",
+                                                         "desc": "x", "nome_it": "P", "nome_en": "P"}})
+        j = r.get_json() or {}
+        esito("una mossa di stato senza `bp` non viene segnalata (760 su 919 ce l'hanno)",
+              r.status_code == 200 and not (j.get("avvisi") or []), str(j.get("avvisi")))
+
         # --- 6. un utente normale non entra -----------------------------------
         with c.session_transaction() as s:
             s["role"] = "user"

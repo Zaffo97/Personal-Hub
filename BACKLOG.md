@@ -155,17 +155,19 @@ caricati **una volta sola all'avvio**. Ora seguono l'mtime del file, come `_MOVE
 3. ✅ **Le regulation non-`pokedex` — chiuso il 21/08/2026**: una spunta «aggiungi anche
    a…» al salvataggio, scelta di Davide. `pokedex` non compare fra le spunte, ed è voluto:
    i suoi filtri sono `null` e la voce ci finisce da sola
-4. ⚠️ **Validazione, oggi assente, e misurata**: `/api/catalogo/<db>/salva` accetta qualunque
-   oggetto, il solo controllo è `isinstance(voce, dict)`
-   ([pokemon.py:756](blueprints/pokemon.py:756)). Provato il 21/08: una voce con il **solo**
-   campo `name` viene salvata con un `200 ok`, e da lì in poi esiste una riga del catalogo
-   senza tipi, senza stat e senza nomi. È il punto più economico da chiudere e il più facile
-   da sbagliare per distrazione
+4. ✅ **Validazione — chiusa il 21/08/2026**, e con **due esiti diversi** invece di uno:
+   un campo del **tipo sbagliato** viene rifiutato con 400 (`base_stats.hp = "molti"` non
+   darebbe un errore a valle, darebbe **un numero sbagliato** nel calcolatore), un campo
+   **mancante** si salva e si **dichiara** a schermo — serve poter tenere una bozza, e le
+   forme inventate sono nate così. I campi attesi sono contati sul catalogo, non desiderati:
+   sono quelli che oggi hanno **tutte** le voci. ⚠️ `bp` sulle mosse è escluso di proposito
+   (760 su 919: le mosse di stato non hanno potenza)
 5. **Chi può farlo**: ✅ risposto dal 17/08/2026 — è scrittura su dati condivisi, quindi
    **solo gli amministratori**, e una route nuova lo è già senza fare niente (§1.2). Resta
    da incrociare con 1.1 solo se un giorno anche i dati condivisi avranno un proprietario
 
-**Resta aperto il punto 4**, la validazione. Gli altri sono chiusi il 21/08/2026: numeri
+**I punti 1-4 sono chiusi il 21/08/2026**; resta aperta solo la voce collegata qui
+sotto — creare i JSON di una regulation nuova dall'interfaccia. Numeri e prove: numeri
 e prove in `STORICO.md`, rete in `scripts/prova_import_specie.py` (23 su 23).
 
 > ⚠️ **Le tre regole che l'import ha lasciato**, da leggere prima di toccarlo: una voce si

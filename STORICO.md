@@ -207,7 +207,7 @@ pagina ed esegue `new Function()` su ogni blocco `<script>` **e** su ogni handle
   importare**. Il catalogo ha 1026 voci e il dump non ha nessuna specie di default che
   qui manchi davvero. Questo import serve al giorno in cui il dump avrà specie nuove —
   è una porta, non un riempimento.
-- ✅ **Verifica: 23 prove su 23** in `scripts/prova_import_specie.py`, su copie di
+- ✅ **Verifica: 27 prove su 27** in `scripts/prova_import_specie.py`, su copie di
   `catalog/`, `regulations/` e dell'archivio; **sweep 0 errori** su 19 pagine;
   traduzioni **610 su 610** con le 20 chiavi nuove, zero orfane, zero doppie.
 - ⚠️ **Terzo sconfinamento in due giorni, e questa volta l'ho cercato prima che facesse
@@ -220,8 +220,17 @@ pagina ed esegue `new Function()` su ogni blocco `<script>` **e** su ogni handle
   letture diverse dello stesso CSV sotto la stessa chiave, e il sintomo era muto e
   sbagliato nel verso peggiore — `Deoxys` rispondeva «nome non trovato nel dump», cioè
   una specie vera dichiarata inesistente, e **solo per l'ordine delle chiamate**.
-- ⬜ **Resta il punto 4 di §1.3**, la validazione: `/api/catalogo/<db>/salva` accetta
-  ancora una voce col solo campo `name` e risponde 200.
+- ✅ **Anche il punto 4 è chiuso: la validazione di `/api/catalogo/<db>/salva`**, che fino
+  a stamattina aveva come solo controllo `isinstance(voce, dict)`. Ora ha **due esiti**, ed
+  è la stessa distinzione per cui `moves: null` non vuol dire «nessuna mossa»: un campo del
+  **tipo sbagliato** si rifiuta con 400 — `base_stats.hp = "molti"` non darebbe un errore a
+  valle, darebbe **un numero sbagliato** nel calcolatore — e un campo **mancante** si salva
+  e si dichiara a schermo, perché una bozza deve poter esistere. I campi attesi non sono
+  desiderati, sono contati: quelli che oggi hanno **tutte** le voci (1026 Pokémon, 919
+  mosse, 397 oggetti, 386 abilità). ⚠️ `bp` sulle mosse è escluso di proposito, ce l'hanno
+  760 su 919 perché le mosse di stato non hanno potenza: chiederlo avrebbe dichiarato
+  incompleta una voce giusta. Il caso del backlog — la voce col solo `name` — ora entra con
+  **5 avvisi** invece che con un `200 ok` muto.
 ---
 
 ## 19/08/2026
