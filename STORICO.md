@@ -70,6 +70,50 @@ pagina ed esegue `new Function()` su ogni blocco `<script>` **e** su ogni handle
   della radice, **non `scripts/`**, e non è ricorsivo. È giusto — uno script da riga di
   comando non ha una sessione — ma non è scritto da nessuna parte. Voce nel backlog.
 
+**Le quattro cose da chiudere prima di esporre l'app (§1.5, primo blocco)**
+
+- ✅ **Il debugger non si accende più da sé.** `app.py` finiva con
+  `app.run(host="0.0.0.0", debug=True, port=5000)`: il debugger di Werkzeug offre una
+  console Python dentro la pagina d'errore, quindi chiunque raggiungesse quella porta
+  eseguiva codice sulla macchina. Ora si accende solo con `HUB_DEBUG=1`, e quando è acceso
+  l'app lo scrive all'avvio. ⚠️ **L'indirizzo `0.0.0.0` è rimasto di proposito**: è così
+  che l'hub si apre dal telefono sulla rete di casa, ed è un uso che già funziona — il
+  pericolo era il debugger, non l'indirizzo. Si stringe con `HUB_HOST=127.0.0.1`.
+- ✅ **`SECRET_KEY` non ha più un valore di riserva costante.** Era `dev-secret-change-me`,
+  scritta nel codice e quindi pubblicata su GitHub: chi la legge **si firma da solo un
+  cookie di sessione da amministratore**, senza sapere nessuna password. Ora
+  `chiave_di_sessione()` legge la variabile d'ambiente `SECRET_KEY` e, se manca, genera 32
+  byte casuali in `data/secret_key.txt` (in `.gitignore`, per la stessa ragione di
+  `hub.db`). ⚠️ **Generarne una nuova a ogni avvio sarebbe stato peggio**: far cadere le
+  sessioni a ogni riavvio è il fastidio quotidiano che invita a rimettere una costante,
+  cioè a rifare il buco. Provato: due avvii di fila danno la stessa chiave, l'ambiente
+  vince sul file, e il file nasce da solo al primo avvio.
+- ✅ **La pagina di login non stampa più `admin / admin123`**, e al suo posto c'è un avviso
+  in dashboard. Lo vede **solo un amministratore** e **solo finché quella password funziona
+  davvero**: sparisce da sé appena la si cambia. Il seme di `init_db()` resta — un DB nuovo
+  ha bisogno di un modo per entrarci — ma toglierlo dalla pagina senza dire niente a chi ce
+  l'ha ancora avrebbe solo reso il buco più zitto.
+- ✅ **`requirements.txt` dice la verità**: erano `flask>=3.0` e basta, e gli import di
+  terze parti contati sui sorgenti sono **tre** — `flask`, `requests` e `werkzeug`, che
+  arriva con flask ma qui è usato per nome (`generate_password_hash`). Più il server WSGI
+  per sistema operativo e `esprima` per lo sweep. Una guida che diceva
+  `pip install -r requirements.txt` fino a ieri mentiva.
+- ✅ **`wsgi.py`**: `wsgi:application` è il nome che waitress, gunicorn e il file WSGI di
+  PythonAnywhere si aspettano. Provato **servito da un server esterno vero** (`wsgiref`
+  della stdlib, così la prova non dipende da un pacchetto da installare): `/login` 200,
+  `/` 302 al login. ⚠️ Un worker solo finché la trappola sulle scritture concorrenti resta
+  aperta.
+- ⚠️ **Un fallback silenzioso creato e corretto nella stessa ora**, perché è la classe di
+  baco che qui costa di più: `password_di_default()` era nata con un parametro `db` per
+  riusare la connessione del chiamante, e in dashboard quella connessione era già chiusa
+  due righe sopra. L'`except sqlite3.Error` traduceva l'errore in «no, la password non è
+  quella di default» — **un avviso di sicurezza che spariva per un guasto**, senza dire
+  niente. Ora la funzione apre la sua connessione e non ha nessun `except`. L'ha trovata la
+  prova, non la lettura del codice.
+- ✅ **Verifica: 13 prove su 13** (chiave, avviso, pagine, WSGI), **sweep 0 errori** su 19
+  pagine, **traduzioni 590/590** invariate.
+- ⚠️ **Conseguenza pratica al prossimo avvio**: la chiave di sessione cambia, quindi le
+  sessioni aperte cadono e il login va rifatto una volta.
 ---
 
 ## 19/08/2026

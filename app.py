@@ -6,12 +6,15 @@ import os
 import json
 from flask import Flask
 from extensions import (init_db, lingua_attiva, nome_vis, t, tf, traduzioni,
-                        categorie)
+                        categorie, chiave_di_sessione)
 from data import SEZIONI, BLUEPRINT_SEZIONE
 
 def create_app():
     app = Flask(__name__, template_folder="templates", static_folder="static")
-    app.secret_key = os.environ.get("SECRET_KEY", "dev-secret-change-me")
+    # ⚠️ Nessun default costante: vedi `chiave_di_sessione()` in extensions.py.
+    # Il valore vecchio (`dev-secret-change-me`) stava nel codice, quindi su GitHub,
+    # e con quello ci si firma da soli un cookie da amministratore.
+    app.secret_key = chiave_di_sessione()
 
     with app.app_context():
         init_db()
@@ -89,4 +92,21 @@ def create_app():
 app = create_app()
 
 if __name__ == "__main__":
-    app.run(host="0.0.0.0", debug=True, port=5000)
+    # ⚠️ `debug=True` era acceso **sempre**, e su `0.0.0.0`: il debugger di Werkzeug
+    # apre una console Python dentro la pagina d'errore, quindi chiunque arrivi a
+    # quella porta esegue codice sulla macchina. Ora si accende solo a richiesta, e
+    # va acceso **soltanto** in locale.
+    #
+    # L'indirizzo resta `0.0.0.0` perche' e' cosi' che l'hub si apre dal telefono
+    # sulla rete di casa, ed e' un uso che gia' funziona: il pericolo era il
+    # debugger, non l'indirizzo. Si stringe con `HUB_HOST=127.0.0.1`.
+    #
+    # ⚠️ Questo resta il **server di sviluppo di Flask**, che non va esposto fuori
+    # dalla rete di casa a nessuna condizione: per quello c'e' `wsgi.py` e un
+    # server vero (waitress su Windows, gunicorn su Linux).
+    debug = os.environ.get("HUB_DEBUG") == "1"
+    if debug:
+        print("⚠️  HUB_DEBUG=1: debugger acceso. Solo in locale, mai su una rete pubblica.")
+    app.run(host=os.environ.get("HUB_HOST", "0.0.0.0"),
+            port=int(os.environ.get("HUB_PORT", "5000")),
+            debug=debug)

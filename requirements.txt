@@ -1,6 +1,30 @@
-flask>=3.0
+# Personal Hub — quello che serve per farlo girare.
+#
+# ⚠️ Fino al 21/08/2026 qui c'era **una riga sola**, `flask>=3.0`, e una guida che
+# dicesse `pip install -r requirements.txt` avrebbe mentito: gli import di terze parti
+# nel progetto sono tre, non uno. Contati sui sorgenti, non stimati.
 
-# Serve solo a **verificare**, non a far girare l'app: `scripts/sweep_pagine.py`
-# controlla la sintassi di ogni <script> e di ogni handler inline delle pagine, e su
-# questa macchina node non c'e'. Chi vuole solo usare l'hub puo' non installarlo.
+flask>=3.0
+# `requests` lo usano gli import da Steam, PokeAPI e IGDB (blueprints/gaming.py e gli
+# script di `scripts/`). Senza, l'app parte e poi ogni import muore su ImportError.
+requests>=2.31
+# `werkzeug` arriva gia' con flask, ma qui e' importato **direttamente** —
+# `generate_password_hash` / `check_password_hash` in extensions.py — e una dipendenza
+# che si usa per nome va dichiarata per nome: il giorno che flask cambia il modo di
+# tirarsela dietro, questo file dice ancora la verita'.
+werkzeug>=3.0
+
+# --- Solo per mettere l'app online (§1.5) -----------------------------------
+# ⚠️ Il server di sviluppo di Flask **non e' un server**: regge una richiesta per
+# volta e non e' scritto per stare esposto. Ne serve uno vero, e la scelta dipende
+# dal sistema operativo — `wsgi.py` e' il punto d'ingresso per entrambi.
+#   Windows:  python -m waitress --port=5000 wsgi:application
+#   Linux:    gunicorn -b 0.0.0.0:5000 wsgi:application
+waitress>=3.0 ; sys_platform == "win32"
+gunicorn>=21.0 ; sys_platform != "win32"
+
+# --- Solo per verificare, non per usare l'hub -------------------------------
+# `scripts/sweep_pagine.py` controlla la sintassi di ogni <script> e di ogni handler
+# inline delle pagine, e su questa macchina node non c'e'. Chi vuole solo usare l'hub
+# puo' non installarlo.
 esprima>=4.0

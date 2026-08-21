@@ -13,6 +13,10 @@ hub.db
 # l'altra sarebbe lo stesso buco con un altro nome.
 *.db
 
+# La chiave che firma i cookie di sessione. Generata al primo avvio, per la stessa
+# ragione per cui hub.db non e' qui: chi la legge si firma un cookie da admin.
+data/secret_key.txt
+
 # Editor / OS
 .vscode/
 .idea/

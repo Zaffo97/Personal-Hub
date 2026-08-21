@@ -54,7 +54,12 @@ input:focus{outline:none;border-color:var(--primary);
     <button class="btn" type="submit">Entra</button>
   </form>
   {% if error %}<div class="err">&#9888;&#65039; {{ error }}</div>{% endif %}
-  <p class="hint">Default: admin / admin123</p>
+  {# ⚠️ Qui c'era stampato «Default: admin / admin123». Una pagina di login che
+     dice a chiunque la apra come si entra e' un buco a prescindere da chi la
+     guarda, ed era uno dei quattro punti di §1.5 da chiudere prima di esporre
+     l'app. La password di default esiste ancora — `init_db()` deve pur creare un
+     modo per entrare in un DB nuovo — ma ora lo dice **l'avviso in dashboard**,
+     che si vede solo da dentro e sparisce appena la si cambia. #}
 </div>
 </body>
 </html>

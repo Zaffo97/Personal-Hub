@@ -195,7 +195,7 @@ password entrerebbero solo per gli utenti nuovi, mai sovrascrivendo quelle esist
 
 Da incrociare con 1.5: online questo export deve girare **da solo sul server**.
 
-### 1.5 ⬜ Mettere l'app online
+### 1.5 🟨 Mettere l'app online
 
 Usare la web app dal telefono e da altri PC, **in contemporanea**.
 
@@ -223,15 +223,38 @@ gira, più `hub.db`. Quanto deve viaggiare, misurato: `data/` pesa 92 MB ma **84
 | 2 | Railway / Render / Fly con un volume | ❌ ~5 $/mese. **Esclusa dal vincolo «gratis»**, resta scritta solo per sapere cosa si comprerebbe |
 | 3 | **PC di casa con un tunnel Cloudflare** | 🟨 la riserva. Gratis, e i dati non si spostano di qui. Davanti ci va Cloudflare Access. Il prezzo: **il PC deve restare acceso** |
 
-⚠️ **Prima di esporre qualunque cosa, quattro cose trovate nel codice, nessuna opinabile:**
+✅ **Le quattro cose da fare prima di esporre qualunque cosa sono chiuse il 21/08/2026.**
+Erano trovate nel codice, non opinabili, e adesso ognuna ha la sua contromisura — 13 prove
+su 13, numeri in `STORICO.md`:
 
-- `app.py` finisce con `app.run(host="0.0.0.0", debug=True, port=5000)`. Il debugger di
-  Werkzeug su una porta pubblica è **esecuzione di codice da remoto**: serve un WSGI vero
-  (`gunicorn` su Linux, `waitress` su Windows)
-- `SECRET_KEY` ha come default `"dev-secret-change-me"`: chi conosce quella stringa **si
-  firma da solo un cookie di sessione da admin**
-- la pagina di login **stampa `admin / admin123`**: va tolto e la password cambiata
-- `requirements.txt` ha una riga sola
+- ✅ **il debugger non si accende più da sé.** `app.py` finiva con `debug=True` su
+  `0.0.0.0`, e il debugger di Werkzeug offre una console Python dentro la pagina d'errore:
+  chiunque arrivasse a quella porta eseguiva codice sulla macchina. Ora serve `HUB_DEBUG=1`,
+  e l'app lo dice a schermo quando parte. L'indirizzo resta `0.0.0.0` **di proposito** — è
+  così che l'hub si apre dal telefono sulla rete di casa, e il pericolo era il debugger, non
+  l'indirizzo; si stringe con `HUB_HOST=127.0.0.1`
+- ✅ **`SECRET_KEY` non ha più un default costante.** Era `"dev-secret-change-me"`, scritta
+  nel codice e quindi su GitHub: chi la legge **si firma da solo un cookie da admin**. Ora
+  `chiave_di_sessione()` prende la variabile d'ambiente `SECRET_KEY`, e in mancanza genera
+  32 byte casuali in `data/secret_key.txt`, che è in `.gitignore`. Generarla a ogni avvio
+  sarebbe stato peggio, non meglio: far cadere le sessioni a ogni riavvio è il fastidio che
+  invita a rimettere una costante
+- ✅ **la pagina di login non stampa più `admin / admin123`**, e al suo posto c'è un avviso
+  in dashboard che vede **solo un amministratore** e **solo finché quella password funziona
+  davvero**. Il seme di `init_db()` resta — un DB nuovo ha bisogno di un modo per entrarci —
+  ma ora chi ce l'ha ancora lo sa, e l'avviso sparisce da sé quando la cambia
+- ✅ **`requirements.txt` dice la verità**: `flask`, `requests` e `werkzeug`, contati sui
+  sorgenti, più il server WSGI a seconda del sistema operativo e `esprima` per lo sweep.
+  Prima era una riga sola, e una guida che dicesse `pip install -r requirements.txt`
+  **mentiva**
+- ✅ **`wsgi.py`** è il punto d'ingresso per un server vero (`wsgi:application`, il nome che
+  waitress, gunicorn e PythonAnywhere si aspettano). Provato servito da un server esterno.
+  ⚠️ **Un worker solo** finché la trappola sulle scritture concorrenti resta aperta
+
+⬜ **Quello che resta di §1.5, e va deciso da Davide**: quale strada (tabella qui sopra), e
+poi il collaudo obbligatorio del vincolo 1 — salvare, riavviare, ricontrollare. Più i **20
+punti che scrivono file su disco** mentre l'app gira, che sono il vero motivo per cui questa
+app non si sposta da sola: quelli non sono stati toccati.
 
 **Sulla contemporaneità**: SQLite regge un uso come questo senza problemi. I **file JSON
 scritti a mano no** — vedi la trappola sulle scritture concorrenti. Le cache in memoria
@@ -266,16 +289,18 @@ avere il pc acceso».
 
 **⚠️ Cosa la guida n. 2 troverà rotto, e va sistemato prima di scriverla:**
 
-- **`requirements.txt` ha una riga sola**, `flask>=3.0`, ma gli script usano `requests` e le
-  password passano da `werkzeug.security`. Una guida che dice `pip install -r requirements.txt`
-  **oggi mente**
-- ⚠️ **il ripristino dei dati non esiste** (vedi 1.4): su un PC nuovo l'app riparte col DB
-  che `init_db()` crea da zero — solo l'utente `admin`, e **niente** giochi, team, Arduino o
-  build PC
+- ✅ **`requirements.txt`** diceva una riga sola: corretto il 21/08/2026, ora `pip install
+  -r requirements.txt` fa davvero quello che dice
+- ✅ **il ripristino dei dati esiste** dal 21/08/2026: `python scripts/importa_dati.py`
+  rimette dentro `hub_export.json` (§1.4). ⚠️ Con un'eccezione che la guida **deve**
+  scrivere: le password non rientrano, quindi su un PC nuovo si entra come `admin` con la
+  password del primo avvio e le altre si reimpostano da `/utenti`
 - `data/cache/` (84 MB) si rigenera, ma va **detto**, altrimenti il primo import sembra
   bloccato mentre sta scaricando
-- la password `admin123` sta nella pagina di login e in `howtouse.txt`: la guida nuova non
-  deve propagarla
+- ⚠️ **`admin123` resta il seme di `init_db()`**, ed è giusto — un DB nuovo ha bisogno di un
+  modo per entrarci. Dal 21/08 non è più stampata nella pagina di login, ma sta ancora in
+  `howtouse.txt`: la guida nuova non deve propagarla, e deve dire di cambiarla al primo
+  accesso. Se non lo si fa, lo ricorda l'avviso in dashboard
 
 **Come dovrebbero essere fatte**: la n. 1 è **per Davide fra sei mesi**, non per un
 estraneo — deve spiegare *perché* le cose stanno come stanno (perché il catalogo è unico,

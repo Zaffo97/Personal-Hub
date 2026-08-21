@@ -109,6 +109,65 @@ def categorie(db, lingua=None):
     return {chiave: t(etichetta, lingua) for chiave, etichetta in mappa.items()}
 
 
+# --- La chiave che firma i cookie di sessione -------------------------------
+# ⚠️ Fino al 21/08/2026 il default era la costante `"dev-secret-change-me"`, scritta
+# nel codice e quindi su GitHub: chi la conosce **si firma da solo un cookie di
+# sessione da amministratore**, senza bisogno di nessuna password. Era il buco piu'
+# grave dei quattro che §1.5 elencava prima di esporre l'app.
+#
+# Ora la chiave non ha piu' un valore di riserva costante. Nell'ordine:
+#   1. la variabile d'ambiente `SECRET_KEY` — e' quella che si mette sul server
+#   2. `data/secret_key.txt`, generata al primo avvio con 32 byte casuali
+#
+# Il file e' in `.gitignore` per la stessa ragione di `hub.db`. Non e' un ripiego:
+# generare una chiave nuova a ogni avvio farebbe cadere le sessioni a ogni riavvio
+# dell'app, e in locale sarebbe un fastidio quotidiano che invita a rimettere una
+# costante — cioe' a rifare il buco.
+CHIAVE = os.path.join(os.path.dirname(__file__), "data", "secret_key.txt")
+
+
+def chiave_di_sessione():
+    """La chiave con cui Flask firma i cookie. Mai una costante scritta nel codice."""
+    dall_ambiente = os.environ.get("SECRET_KEY")
+    if dall_ambiente:
+        return dall_ambiente
+    if os.path.exists(CHIAVE):
+        with open(CHIAVE, encoding="utf-8") as f:
+            salvata = f.read().strip()
+        if salvata:
+            return salvata
+    import secrets
+    nuova = secrets.token_hex(32)
+    os.makedirs(os.path.dirname(CHIAVE), exist_ok=True)
+    with open(CHIAVE, "w", encoding="utf-8") as f:
+        f.write(nuova + "\n")
+    return nuova
+
+
+def password_di_default():
+    """`True` se l'amministratore entra ancora con `admin123`.
+
+    Serve all'avviso in dashboard: il seme di `init_db()` deve restare — un DB nuovo
+    ha bisogno di un modo per entrarci — ma finche' nessuno la cambia quella password
+    e' scritta nel repo, e la pagina di login la stampava pure. Toglierla di la' senza
+    dire a chi ce l'ha ancora che ce l'ha ancora avrebbe solo reso il buco piu' zitto.
+
+    ⚠️ **Si apre la connessione da se', e non c'e' nessun `except`.** Nata con un
+    parametro `db` per riusare quella del chiamante, ha subito prodotto il baco che
+    doveva evitare: in dashboard la connessione era gia' chiusa due righe sopra, e
+    l'`except sqlite3.Error` traduceva l'errore in «no, la password non e' quella di
+    default» — cioe' un **avviso di sicurezza che spariva per un guasto**, in
+    silenzio, che e' il verso peggiore. Se questa query non risponde c'e' un problema
+    vero, e va visto.
+    """
+    db = get_db()
+    try:
+        r = db.execute("SELECT password FROM users WHERE username='admin'").fetchone()
+        return bool(r) and verifica_password(r["password"], "admin123")[0]
+    finally:
+        db.close()
+
+
 def get_db():
     db = sqlite3.connect(DB)
     db.row_factory = sqlite3.Row

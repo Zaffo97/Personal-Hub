@@ -7,6 +7,19 @@
   <p class="text-muted text-sm">{{ now }}</p>
 </div>
 
+{% if avviso_password %}
+{# Lo vede solo un amministratore, e solo finche' `admin` entra ancora con la
+   password del primo avvio. Sparisce da se' appena la si cambia: e' il seguito
+   della riga tolta dalla pagina di login, non un doppione. #}
+<div class="card mb-0" style="border-color:#d97706;background:rgba(217,119,6,.08);margin-bottom:1.25rem">
+  <div style="font-weight:600;margin-bottom:.25rem">&#9888;&#65039; L'amministratore usa ancora la password predefinita</div>
+  <div class="text-sm text-muted">
+    &egrave; scritta nel codice che sta su GitHub, quindi chiunque legga il repo pu&ograve; entrare.
+    Si cambia da <a href="/admin/utenti">Utenti</a>, e questo avviso sparisce da solo.
+  </div>
+</div>
+{% endif %}
+
 {# Un riquadro per sezione, e solo per le sezioni permesse: mostrarli tutti a zero
    direbbe comunque a chi non ha quella sezione che esiste, e quanti elementi ha. #}
 <div style="display:grid;grid-template-columns:repeat(auto-fill,minmax(170px,1fr));gap:.75rem;margin-bottom:1.25rem">

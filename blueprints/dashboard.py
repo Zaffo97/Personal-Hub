@@ -2,7 +2,7 @@ import json
 from datetime import datetime
 from flask import Blueprint, render_template, Response, session
 from extensions import (get_db, login_required, sezioni_utente,
-                        ambito_utente, utente_id)
+                        ambito_utente, utente_id, e_admin, password_di_default)
 
 bp = Blueprint("dashboard", __name__)
 
@@ -58,9 +58,16 @@ def dashboard():
         GROUP BY b.id ORDER BY b.created_at DESC LIMIT 4""",
         par_b).fetchall() if "pcbuilder" in permesse else []
     db.close()
+    # ⚠️ L'avviso della password di default: si calcola **prima** di chiudere il DB e
+    # si mostra **solo** a un amministratore. Dirlo a tutti sarebbe l'errore che la
+    # pagina di login faceva fino a oggi — annunciare a chiunque passi di qui che si
+    # entra con `admin/admin123`. Chi lo vede e' anche chi puo' rimediare.
+    avviso_password = e_admin() and password_di_default()
+
     return render_template(
         "dashboard.html",
         stats=stats,
+        avviso_password=avviso_password,
         recent_games=recent_games,
         arduino_recent=arduino_recent,
         pc_builds=pc_builds,
