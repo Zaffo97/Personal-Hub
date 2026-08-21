@@ -52,6 +52,26 @@ Non sono storia: sono le cose che questo progetto ha già pagato e che tornano a
 
 ---
 
+## 📌 L'ordine deciso il 21/08/2026
+
+**Mettere l'app online (§1.5) va per ultimo**, per scelta di Davide: «caricare il sito da
+qualche parte lo voglio tenere come una delle ultime cose». I quattro buchi di sicurezza
+che rendevano pericoloso esporla sono comunque **chiusi lo stesso giorno**, quindi la
+voce non è più urgente e non blocca niente — l'hub in casa funziona come sempre.
+
+L'ordine che ne esce, e che vale finché Davide non lo cambia:
+
+1. §1.3 — le voci collegate che restano (una regulation nuova dall'interfaccia)
+2. §2.2 — le 103 abilità da fondere: **aspetta una decisione**, non del codice
+3. §4 — le sezioni: Stampa 3D, Tinkercad, PC Builder, Python
+4. §1.4 — l'export `--completo`
+5. §3 — i bachi noti
+6. §5 — il giro di collaudo, la verifica dei moveset, l'inventario del codice morto
+7. §1.6 — le due guide, che vanno **dopo** il collaudo
+8. §1.5 — l'app online
+
+---
+
 ## 1. I blocchi aperti (quattro su sei)
 
 Erano sei, aperti il 12/08/2026: **1.2 è chiuso il 17/08/2026** e resta qui solo come riga
