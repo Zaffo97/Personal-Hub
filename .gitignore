@@ -8,6 +8,10 @@ env/
 
 # Database locale — NON committare (vedi PROJECT_CONTEXT.md)
 hub.db
+# Le copie che `scripts/importa_dati.py` lascia prima di scrivere: stesso
+# contenuto di hub.db, hash delle password compresi. Escluderne una e non
+# l'altra sarebbe lo stesso buco con un altro nome.
+*.db
 
 # Editor / OS
 .vscode/

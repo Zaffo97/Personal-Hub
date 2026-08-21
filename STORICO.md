@@ -18,6 +18,60 @@ pagina ed esegue `new Function()` su ogni blocco `<script>` **e** su ogni handle
 
 ---
 
+## 21/08/2026
+
+**Il backup sa tornare indietro — `scripts/importa_dati.py` (§1.4, falla 2)**
+
+- ✅ **Il ritorno di `esporta_dati.py` esiste.** Fino a ieri nessuno rileggeva
+  `hub_export.json`: su un PC nuovo l'app ripartiva col DB che `init_db()` crea da zero,
+  solo `admin` e **niente** giochi, team, Arduino o build PC. Ora `python
+  scripts/importa_dati.py` li rimette dentro. Provato sul giro vero: DB appena creato da
+  `init_db()` → import → **9 tabelle su 9 combaciano con l'export** (2 utenti, 33 giochi,
+  3 team, 3 membri, 53 argomenti, 1 build, 5 componenti), **46 righe scritte**, e l'app
+  ci si apre sopra — **6 pagine a 200**, col primo gioco visibile in `/gaming/`.
+- ✅ **Rieseguibile**: una riga già presente e identica si salta, e la seconda esecuzione
+  dice «Niente da fare» senza toccare il file. La tolleranza sui numeri non è un dettaglio:
+  `hours_hltb` è REAL, SQLite torna `40.0` dove il JSON ha `40`, e senza il confronto
+  numerico ogni riesecuzione avrebbe visto un conflitto inesistente — cioè lo script
+  sarebbe stato rieseguibile solo sulla carta.
+- ✅ **Non sovrascrive niente senza dirlo**: le righe già presenti e **diverse** sono un
+  conflitto, e lo script si ferma elencando la riga, la colonna e i due valori. Per
+  procedere serve `--sovrascrivi`, che è il momento in cui hai già visto cosa perdi.
+  `--dry-run` non lascia nemmeno la copia di sicurezza.
+- ⚠️ **Le password non rientrano, e non è un limite da correggere**: l'export non le
+  contiene di proposito perché viene committato. Quindi un utente **nuovo** nasce con una
+  password casuale che nessuno conosce — non con una vuota e non con una nota — e lo
+  script lo dichiara a schermo; un utente **già presente** tiene la sua anche con
+  `--sovrascrivi`. Riscriverla vorrebbe dire distruggere l'unica copia buona con il nulla.
+- ⚠️ **La trappola vera era `python_topics`, e ha una rete apposta.** L'elenco lo semina
+  `init_db()` con gli `id` 1..53 nell'ordine di `PYTHON_TOPICS`, e `python_progress.topic_id`
+  punta a quegli `id`: se l'ordine cambia fra l'export e oggi, l'`id` 7 nel backup è un
+  argomento **diverso** da quello nel DB, e importare le spunte le metterebbe sugli
+  argomenti sbagliati **senza nessun errore**. Ora gli argomenti si confrontano per
+  `(category, name)` a parità di `id`; con delle spunte da importare lo script si ferma,
+  senza spunte avvisa e prosegue.
+- ✅ **Le altre tre reti**: `username` duplicato con `id` diverso (`users.username` è
+  UNIQUE, e senza il controllo l'INSERT sarebbe morta a metà strada senza dire **quale**
+  utente); DB più vecchio dell'export, cioè una colonna che nell'export c'è e nel DB no —
+  si ferma e manda a `init_db()`, perché scrivere lì perderebbe quella colonna; e il
+  `rowcount` a zero sugli UPDATE, la trappola già pagata in `_team_upsert()`, che qui
+  annulla la transazione invece di proseguire come se avesse funzionato.
+- ✅ **Tutto o niente**: una sola transazione, `rollback` su qualunque intoppo, e una copia
+  di `hub.db` in `data/archive/hub_pre-import_*.db` prima di scrivere. ⚠️ Quel nome è in
+  `.gitignore` — aggiunta la riga `*.db` — perché la copia contiene gli hash delle
+  password, ed è esattamente la ragione per cui `hub.db` non è versionato.
+- ✅ **19 prove su 19 in `scripts/prova_importa_dati.py`**, ognuna su un DB **suo** creato
+  da `init_db()` in una cartella temporanea: è la regola pagata il 16/08, quando uno script
+  di prova che cancellava «il mio intervallo» di id si portò via 497 righe vere. Fra le
+  prove ce ne sono due **a futuro**, per il `--completo` di §1.4 che ancora non esiste: un
+  export che portasse le password vere deve poterle dare a un utente nuovo, e non deve
+  finire con la colonna `password` scritta due volte nella stessa INSERT.
+- ⚠️ **Trovato e non corretto**: `controlla_proprietario.py` legge `blueprints/` e i `.py`
+  della radice, **non `scripts/`**, e non è ricorsivo. È giusto — uno script da riga di
+  comando non ha una sessione — ma non è scritto da nessuna parte. Voce nel backlog.
+
+---
+
 ## 19/08/2026
 
 **I dati hanno un proprietario — schema, rete e la prima sezione (§1.1, primo blocco)**

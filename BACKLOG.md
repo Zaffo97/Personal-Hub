@@ -2,7 +2,7 @@
 
 > **Qui c'è solo ciò che è aperto.** Le voci chiuse stanno in [`STORICO.md`](STORICO.md),
 > una riga per lavoro con la data e i numeri della verifica.
-> Aggiornato: **17/08/2026**. Fonte storica: `Nuove implementazioni.docx` (verde = fatto).
+> Aggiornato: **21/08/2026**. Fonte storica: `Nuove implementazioni.docx` (verde = fatto).
 
 Legenda: ⬜ da fare · 🟨 parziale · ⚠️ trappola nota, da rileggere prima di toccare la zona
 
@@ -148,7 +148,7 @@ Nessuno dei cinque punti è deciso: la voce è aperta, non progettata.
 roster, mosse, oggetti e abilità generati in autonomia. Obiettivo di fondo: **aggiungere
 una regulation senza IA, solo da interfaccia**.
 
-### 1.4 ⬜ Esportare tutto il DB, utenti e personalizzazioni comprese
+### 1.4 🟨 Esportare tutto il DB, utenti e personalizzazioni comprese
 
 > Precisazione di Davide: «con esportazione db intendo anche esportare tutto il resto».
 > **Quella parte c'è già.** Contato sul DB vero: 33 giochi, 1 team con 1 membro, 1 build PC
@@ -158,28 +158,40 @@ una regulation senza IA, solo da interfaccia**.
 tranne `password` — quindi **i permessi per sezione ci sono già**, stanno in
 `users.sections`, che è una colonna e non una tabella a parte.
 
-**Le tre falle, misurate sul DB vero:**
+**✅ La falla 2 è chiusa il 21/08/2026: `scripts/importa_dati.py` esiste.** Il ritorno
+c'è, è rieseguibile, ha `--dry-run` e **non sovrascrive niente senza averlo detto
+prima**. 19 prove su 19 in `scripts/prova_importa_dati.py`, ognuna su un DB suo creato
+da `init_db()` in una cartella temporanea. Numeri e prove in `STORICO.md`.
+
+> ⚠️ **Le due regole che restano, e vanno lette prima di usarlo**: le **password non
+> rientrano** (l'export non le contiene di proposito), quindi un utente ripristinato
+> nasce con una password casuale che nessuno conosce e va reimpostata da `/utenti` —
+> lo script lo dice a schermo, ed è il verso giusto. E l'unità del ripristino è **la
+> riga con il suo `id`**: non c'è nessuna fusione per titolo o per nome, perché
+> `team_members.team_id`, `pc_components.build_id` e `python_progress.topic_id`
+> puntano a quegli `id`.
+
+**Le due falle che restano, misurate sul DB vero:**
 
 1. ⚠️ **Una tabella su nove non è nell'elenco**: `regulations` (1 riga) non è in `TABELLE`.
    Ma è una **tabella morta** — la scrive solo `init_db()` e non la legge nessuno, le
    regulation vivono in `data/regulations/*.json` dal 10/08. Da decidere: o entra
    nell'export, o si toglie dal DB con l'inventario del codice morto. Oggi è omessa **per
-   caso**, non per scelta
-2. ⚠️ **Manca il ritorno**: nessuno script rilegge `hub_export.json`. Un export senza import
-   non è un backup, è un file che nessuno sa rimettere dentro. Serve
-   `scripts/importa_dati.py` rieseguibile, con `--dry-run`, che dica **prima** cosa
-   sovrascriverebbe
-3. ⚠️ **Due personalizzazioni non sono nel DB**, quindi nessun export potrà mai prenderle:
+   caso**, non per scelta — e finché è fuori di là, `importa_dati.py` non ha niente da
+   rimettere dentro
+2. ⚠️ **Due personalizzazioni non sono nel DB**, quindi nessun export potrà mai prenderle:
    il **tema** è in `localStorage` e la **lingua** nel cookie `hub_lang`, entrambi per
    browser. Vanno su colonne di `users` se devono seguire l'utente — cioè esattamente
    quando l'app sarà online e la userai dal telefono e dal PC
 
-**La decisione da prendere: due export, non uno.** Le password sono escluse di proposito
-perché `hub_export.json` **viene committato**. Ma un backup vero le deve contenere. Quindi
+**La decisione ancora da prendere: due export, non uno.** Le password sono escluse di
+proposito perché `hub_export.json` **viene committato**. Ma un backup vero le deve
+contenere — e oggi è proprio la parte che il ripristino non sa rimettere. Quindi
 `esporta_dati.py` resta com'è, e serve una modalità **`--completo`** che scriva tutto,
-`regulations` e password comprese, in un file **fuori dal repo** — e che si **rifiuti** di
-scrivere in una cartella versionata, unico modo perché la distinzione non salti per
-distrazione.
+`regulations` e password comprese, in un file **fuori dal repo** — e che si **rifiuti**
+di scrivere in una cartella versionata, unico modo perché la distinzione non salti per
+distrazione. `importa_dati.py` è già pronto a rileggerlo: si punta con `--file`, e le
+password entrerebbero solo per gli utenti nuovi, mai sovrascrivendo quelle esistenti.
 
 Da incrociare con 1.5: online questo export deve girare **da solo sul server**.
 
@@ -422,6 +434,7 @@ quattro cose richiedono **fonti diverse**:
 | ⚠️ | **`build_catalog.py` oggi distruggerebbe il catalogo** | Trovato il 12/08, **non corretto** perché fuori scope. Legge come base i **file storici** (174 voci contro le 1026 di oggi, nessun `nome_it`/`nome_en`, Mega ancora convertite) e scrive in `data/catalog/`. Peggio: `MEGA_BONUS` riapplicherebbe il `+75 HP / +20` che la deconversione dell'11/08 ha tolto. Rieseguirlo **riporterebbe indietro il catalogo di quattro giorni di lavoro, in silenzio**. Va fatto leggere `data/catalog/` quando esiste, e `MEGA_BONUS` va tolto. Fino ad allora **non eseguirlo** |
 | ⬜ | **Il calcolatore non impedisce di scrivere una mossa illegale** | La segnala e basta. **È voluto per ora**: un blocco duro sulle voci senza elenco sarebbe un falso divieto |
 | ⬜ | **`controlla_traduzioni.py` taglia le chiavi sull'apostrofo protetto** | Trovato il 19/08/2026 scrivendo una frase nuova, **non corretto** perché fuori scope. La regex `CHIAMATA` dovrebbe consumare `'` dentro una stringa fra apici singoli, e invece si ferma: `t('Nessun team per l'utente scelto.')` viene contato come la chiave «Nessun team per l», che nessun dizionario avrà mai. Il sintomo è una «mancante» storpiata, quindi si vede — ma se qualcuno la traducesse così com'è, la traduzione non comparirebbe mai a schermo. Aggirato riscrivendo la frase senza apostrofo; da correggere nella regex |
+| ⬜ | **`scripts/` è fuori dal raggio di `controlla_proprietario.py`** | Visto il 21/08/2026 scrivendo `importa_dati.py`: `SORGENTI` sono `blueprints/` e i `.py` della radice, e la scansione **non è ricorsiva**. È giusto che sia così — uno script da riga di comando non ha una sessione, quindi `ambito_utente()` lì non vuol dire niente e lavora per definizione su tutto il DB — ma non è scritto da nessuna parte, e il silenzio somiglia troppo a una svista. Da mettere nel docstring del controllo, o da rendere una categoria dichiarata |
 | ⬜ | **`/pokemon/api/abilities` (GET) non lo chiama nessuno** | Trovato il 17/08/2026 con lo stesso censimento. Nessun `fetch`, nessun `url_for`, nessun link in `templates/` o `static/`: l'editor abilità usa il POST del form e `/pokemon/abilita/archives`. Candidato per l'inventario del codice morto (§5.3), non un baco. Dal 17/08 è comunque riservato agli amministratori, come tutto ciò che non è in `APERTE_A_TUTTI` |
 | ⚠️ | **La tendina categorie degli oggetti non corrisponde ai dati** | Saltato fuori il 13/08/2026 traducendo le categorie, ed è un difetto di contenuto, non di lingua. Contato sul catalogo: gli oggetti usano **7** categorie, le abilità 13. Ma la tendina degli oggetti ne offre 13, e **6 non hanno nemmeno una voce** (`conditional`, `damage`, `defensive`, `orb`, `support`, `terrain`, `weather`): sono filtri che non danno mai risultati, l'opposto di come sono fatte le tendine di Gaming. ✅ La metà urgente è chiusa: **`other` mancava del tutto ed è 339 oggetti su 397**, l'86% del catalogo, quindi il badge cadeva sulla chiave grezza e quella categoria non era filtrabile. Resta da decidere se togliere le 6 morte o assegnarci le voci giuste — è una ricategorizzazione dei dati, non una riga di codice |
 
