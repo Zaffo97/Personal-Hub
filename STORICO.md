@@ -166,6 +166,62 @@ pagina ed esegue `new Function()` su ogni blocco `<script>` **e** su ogni handle
   e per entrare serve la password, che non digito io. Il server è rimasto avviato apposta.
   Quello che copre il rischio della modifica è il confronto ieri/oggi qui sopra: le stat
   servite dall'API sono le stesse, quindi il calcolatore riceve gli stessi numeri.
+**Importare una specie da PokéAPI dall'interfaccia (§1.3, punti 1-2-3)**
+
+- ✅ **La forma l'ha scelta Davide**: si scrive un nome e i dati li pesca il programma,
+  invece di incollare JSON. E **le regole di Champions**: la voce nuova porta l'elenco
+  `champions` quando il dump ce l'ha. Nuovo modulo `pokeapi.py`, due route
+  (`/pesca` per l'anteprima, `/importa` per scrivere) e un pannello in
+  `catalog_editor.html`, visibile **solo** sotto la linguetta Pokémon.
+- ✅ **La fonte è il dump CSV, non la API REST**, per la stessa ragione di
+  `build_catalog.py` e `importa_mosse_specie.py`: è quella da cui il catalogo è stato
+  costruito. E la prova che conta è questa — **pescate 397 voci già in catalogo e
+  confrontate una per una: zero differenze** su base stat, tipi e abilità. Se la fonte
+  fosse stata un'altra, si sarebbe visto lì.
+- ✅ **Due passi, non uno**: `/pesca` mostra cosa entrerebbe — stat, tipi, abilità,
+  quante mosse per elenco — e **non scrive niente**; il pulsante Importa resta spento
+  finché non c'è un'anteprima davanti agli occhi. Le voci già presenti sono marcate
+  prima, e sovrascriverle chiede conferma.
+- ⚠️ **Tre porte che si chiudono, tutte trovate misurando:**
+  1. **doppione sotto un'altra chiave.** Delle specie di default del dump ne mancano al
+     catalogo **quattro** (`aegislash-shield`, `mimikyu-disguised`, `morpeko-full-belly`,
+     `palafin-zero`) e **tutte e quattro ci sono già** con un'altra chiave. Importarle
+     avrebbe fatto due voci per lo stesso Pokémon, con due verità sulle sue stat e
+     nessun errore. Ora si confronta lo **slug**, non la chiave, e l'import si ferma
+  2. **le forme non passano di qui.** Le 1025 voci di primo livello hanno tutte
+     `is_default=1`, e le 317 forme — Mega, Gigantamax, regionali — stanno **annidate**
+     in `forms`. Scrivere `deoxys-attack` al primo livello sarebbe stato un doppione
+     con un altro nome
+  3. **le `forms` di una voce che esisteva non si perdono**: reimportando una specie,
+     le sue Mega e Gigantamax — che il dump non ha e che nessun import può ricostruire —
+     vengono ricopiate sulla voce nuova invece di sparire in silenzio
+- ⚠️ **Quello che l'import non aggiusta, e lo dichiara**: per **6 voci su 1025** il
+  catalogo usa una convenzione sua per il nome (`Basculegion (Male)`) che il dump non
+  ha (`Basculegion`). Comporre quel nome vorrebbe dire inventare una regola di
+  scrittura: l'import scrive il nome del dump e **avvisa**, e si corregge dall'editor.
+- ✅ **La spunta «aggiungi anche a ma/mb»**, l'altra decisione di Davide: scrive il nome
+  negli elenchi delle regulation scelte. `pokedex` non compare fra le spunte, ed è
+  voluto — i suoi filtri sono `null`, cioè tutto il catalogo, e offrirla darebbe
+  l'idea che senza spunta la voce non ci finisca. Provato: **278 → 279 nomi in MA**.
+- ⚠️ **Misura che cambia le aspettative**: oggi **non c'è niente di davvero nuovo da
+  importare**. Il catalogo ha 1026 voci e il dump non ha nessuna specie di default che
+  qui manchi davvero. Questo import serve al giorno in cui il dump avrà specie nuove —
+  è una porta, non un riempimento.
+- ✅ **Verifica: 23 prove su 23** in `scripts/prova_import_specie.py`, su copie di
+  `catalog/`, `regulations/` e dell'archivio; **sweep 0 errori** su 19 pagine;
+  traduzioni **610 su 610** con le 20 chiavi nuove, zero orfane, zero doppie.
+- ⚠️ **Terzo sconfinamento in due giorni, e questa volta l'ho cercato prima che facesse
+  danno**: la spunta della regulation passa da `_salva_filtro()`, che scrive sotto
+  `DATA_DIR` — la prova aveva riscritto il file **vero** di `ma.json`, cambiandogli la
+  data (nessun nome perso, ripristinato da git). Ora la prova copia anche
+  `regulations/`. La regola, ormai pagata tre volte: **si deviano i file che il codice
+  sotto prova scrive, non quelli che il test legge.**
+- ⚠️ **Trovato correggendo il mio stesso codice**: `pokeapi.py` teneva in cache due
+  letture diverse dello stesso CSV sotto la stessa chiave, e il sintomo era muto e
+  sbagliato nel verso peggiore — `Deoxys` rispondeva «nome non trovato nel dump», cioè
+  una specie vera dichiarata inesistente, e **solo per l'ordine delle chiamate**.
+- ⬜ **Resta il punto 4 di §1.3**, la validazione: `/api/catalogo/<db>/salva` accetta
+  ancora una voce col solo campo `name` e risponde 200.
 ---
 
 ## 19/08/2026

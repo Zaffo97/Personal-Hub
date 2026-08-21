@@ -40,6 +40,33 @@ textarea.code-area{min-height:300px}
   {% endfor %}
 </div>
 
+{% if db == 'pokemon' %}
+{# L'import da PokéAPI sta solo sotto la linguetta Pokémon: gli altri tre database
+   non hanno una fonte per nome come questa, e un pannello che non funziona è
+   peggio di un pannello che non c'è. Deciso con Davide il 21/08/2026: si scrive un
+   nome e i dati li pesca il programma. #}
+<div class="card" style="margin-bottom:1rem">
+  <div class="card-header">
+    <span class="card-title">⬇️ {{ t('Importa da PokéAPI') }}</span>
+    <span class="text-xs text-muted">{{ t('un nome per riga · si vede cosa entra prima di scrivere') }}</span>
+  </div>
+  <div class="card-body" style="padding-top:.6rem">
+    <div style="display:flex;gap:.6rem;flex-wrap:wrap;align-items:flex-start">
+      <textarea id="imp_nomi" class="form-control" rows="3"
+                style="flex:1;min-width:240px;font-size:.8rem"
+                placeholder="{{ t('Es. Pawmot') }}"></textarea>
+      <div style="display:flex;flex-direction:column;gap:.4rem">
+        <button class="btn btn-secondary btn-sm" type="button" onclick="impCerca()">
+          🔍 {{ t('Vedi cosa entra') }}</button>
+        <button class="btn btn-primary btn-sm" type="button" id="imp_scrivi"
+                onclick="impScrivi()" disabled>💾 {{ t('Importa') }}</button>
+      </div>
+    </div>
+    <div id="imp_esito" style="margin-top:.7rem"></div>
+  </div>
+</div>
+{% endif %}
+
 <div style="display:grid;grid-template-columns:1fr 420px;gap:1rem;align-items:start">
 
   <div class="card">
@@ -120,6 +147,124 @@ function stessaCosa(a, b){
   const n = s => String(s || '').toLowerCase().replace(/[\s_-]/g, '');
   return n(a) === n(b);
 }
+
+{% if db == 'pokemon' %}
+// ── Import da PokéAPI ────────────────────────────────────────────────────────
+// ⚠️ Sotto `{% raw %}{% if %}{% endraw %}` come il pannello che comanda: sugli altri tre database non
+// c'è nessun `imp_nomi` da toccare, e lasciare qui le funzioni vorrebbe dire tenere
+// codice morto su tre pagine su quattro — la classe di roba che §5.3 va poi a cercare.
+// Due passi e non uno: `impCerca()` mostra soltanto, `impScrivi()` scrive. Il
+// pulsante Importa resta spento finché non c'è un'anteprima davanti agli occhi.
+let IMP_PRONTI = [];        // le chiavi che l'anteprima ha trovato
+let IMP_SOVRASCRIVI = false;
+
+function impNomi(){
+  return (document.getElementById('imp_nomi').value || '')
+    .split(/[\n,;]+/).map(s => s.trim()).filter(Boolean);
+}
+
+function impMsg(html){ document.getElementById('imp_esito').innerHTML = html; }
+
+function impSpegni(){
+  IMP_PRONTI = [];
+  document.getElementById('imp_scrivi').disabled = true;
+}
+
+function impProblemi(problemi){
+  if (!problemi || !problemi.length) return '';
+  return '<ul style="margin:.5rem 0 0;padding-left:1.1rem;font-size:.75rem;color:var(--warning,#d90)">'
+    + problemi.map(p => '<li><strong>' + esc(p.nome || '') + '</strong>: '
+        + esc(p.problema) + ' — ' + esc(p.dettaglio) + '</li>').join('') + '</ul>';
+}
+
+async function impCerca(){
+  const nomi = impNomi();
+  impSpegni();
+  if (!nomi.length){ impMsg('<span class="text-xs text-muted">' + t('Scrivi almeno un nome.') + '</span>'); return; }
+  impMsg('<span class="text-xs text-muted">' + t('Cerco...') + '</span>');
+  const r = await fetch('/pokemon/api/catalogo/pokemon/pesca', {
+    method: 'POST', headers: {'Content-Type': 'application/json'},
+    body: JSON.stringify({nomi})
+  });
+  const d = await r.json();
+  // La fonte è un dump da scaricare una volta: se manca lo si dice, con il pulsante
+  // per prenderla, invece di lasciare un errore che non spiega cosa fare.
+  if (d.fonte_incompleta){
+    impMsg('<div class="text-xs" style="color:var(--warning,#d90)">⚠️ '
+      + t('La fonte non è ancora scaricata') + ' (' + d.fonte_incompleta.length + ' file). '
+      + '<button class="btn btn-secondary btn-sm" type="button" onclick="impFonte()">'
+      + t('Scarica la fonte') + '</button></div>');
+    return;
+  }
+  if (!d.ok){ impMsg('<span class="text-xs" style="color:var(--danger,#c33)">' + esc(d.error || 'errore') + '</span>'); return; }
+
+  const righe = (d.voci || []).map(v => {
+    const st = v.base_stats || {};
+    const avviso = v.doppione_di
+      ? '<span style="color:var(--danger,#c33)">⚠️ ' + t('doppione di') + ' ' + esc(v.doppione_di) + '</span>'
+      : (v.gia_presente ? '<span style="color:var(--warning,#d90)">⚠️ ' + t('sovrascrive quella esistente') + '</span>' : '');
+    return '<tr><td><strong>' + esc(v.nome) + '</strong><br><span class="text-xs text-muted">' + esc(v.chiave) + '</span></td>'
+      + '<td class="text-xs">' + (v.types || []).map(esc).join(' · ') + '<br>'
+      + (v.abilities || []).map(esc).join(', ') + '</td>'
+      + '<td class="text-xs">' + ['hp','atk','def','spa','spd','spe'].map(k => (st[k] ?? '–')).join(' / ') + '</td>'
+      + '<td class="text-xs">main ' + v.mosse_main + ' · champions ' + v.mosse_champions + '</td>'
+      + '<td class="text-xs">' + avviso + '</td></tr>';
+  }).join('');
+
+  IMP_PRONTI = (d.voci || []).filter(v => !v.doppione_di).map(v => v.chiave);
+  IMP_SOVRASCRIVI = (d.voci || []).some(v => v.gia_presente);
+  // ⚠️ Solo le regulation con un elenco esplicito: `pokedex` non filtra niente, e
+  // offrirla darebbe l'idea che senza spunta la voce non ci finisca.
+  const reg = (d.regulation || []).filter(r => r.id !== 'pokedex').map(r =>
+    '<label style="margin-right:.8rem;font-size:.78rem">'
+    + '<input type="checkbox" class="imp-reg" value="' + esc(r.id) + '"> ' + esc(r.label) + '</label>').join('');
+
+  impMsg((righe
+      ? '<table class="cat-table" style="font-size:.8rem"><thead><tr>'
+        + '<th>' + t('Nome') + '</th><th>' + t('Tipi e abilità') + '</th>'
+        + '<th>' + t('Base stat') + '</th><th>' + t('Mosse') + '</th><th></th>'
+        + '</tr></thead><tbody>' + righe + '</tbody></table>'
+        + '<div style="margin-top:.5rem">' + (reg ? t('Aggiungi anche a:') + ' ' + reg : '') + '</div>'
+      : '<span class="text-xs text-muted">' + t('Nessuna voce da importare.') + '</span>')
+    + impProblemi(d.problemi));
+  document.getElementById('imp_scrivi').disabled = IMP_PRONTI.length === 0;
+}
+
+async function impFonte(){
+  impMsg('<span class="text-xs text-muted">' + t('Scarico la fonte, ci vuole un minuto...') + '</span>');
+  const r = await fetch('/pokemon/api/catalogo/pokemon/prepara-fonte', {method: 'POST'});
+  const d = await r.json();
+  impMsg('<span class="text-xs">' + (d.ok
+    ? '✅ ' + tf('{n} file scaricati ({kb} KB)', {n: (d.scaricati || []).length, kb: d.kb || 0})
+    : '<span style="color:var(--danger,#c33)">' + esc(d.error || 'errore') + '</span>') + '</span>');
+}
+
+async function impScrivi(){
+  if (!IMP_PRONTI.length) return;
+  if (IMP_SOVRASCRIVI && !confirm(t('Alcune voci esistono già e verranno sovrascritte. Procedo?'))) return;
+  const regulation = Array.from(document.querySelectorAll('.imp-reg:checked')).map(el => el.value);
+  document.getElementById('imp_scrivi').disabled = true;
+  const r = await fetch('/pokemon/api/catalogo/pokemon/importa', {
+    method: 'POST', headers: {'Content-Type': 'application/json'},
+    body: JSON.stringify({nomi: IMP_PRONTI, regulation, sovrascrivi: IMP_SOVRASCRIVI})
+  });
+  const d = await r.json();
+  if (!d.ok){
+    impMsg('<span class="text-xs" style="color:var(--danger,#c33)">' + esc(d.error || 'errore') + '</span>'
+           + impProblemi(d.problemi));
+    return;
+  }
+  const senza = (d.senza_champions || []).length;
+  impMsg('<div class="text-xs">✅ '
+    + tf('{n} voci scritte, {tot} in catalogo', {n: (d.scritte || []).length, tot: d.totale})
+    + (senza ? ' · <span style="color:var(--warning,#d90)">'
+        + tf('{n} senza elenco Champions', {n: senza}) + '</span>' : '')
+    + '<br>' + Object.entries(d.regulation || {}).map(([k, v]) => esc(k) + ': ' + esc(v)).join(' · ')
+    + '</div>' + impProblemi(d.problemi)
+    + '<div class="text-xs text-muted" style="margin-top:.4rem">' + t('Ricarica la pagina per vederle in elenco.') + '</div>');
+  impSpegni();
+}
+{% endif %}
 
 function rendi(){
   const q = document.getElementById('cerca').value.toLowerCase();

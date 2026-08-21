@@ -929,6 +929,196 @@ def catalog_restore(db, filename):
     return redirect(url_for("pokemon.catalog_editor", db=db))
 
 
+# ── Import di specie nuove da PokéAPI (§1.3) ─────────────────────────────────
+# La forma dell'import l'ha scelta Davide il 21/08/2026: si scrive un nome e i dati
+# li pesca il programma, invece di incollare JSON a mano. La fonte è il dump CSV,
+# la stessa da cui il catalogo è stato costruito — vedi `pokeapi.py`.
+#
+# ⚠️ Due route e non una: `pesca` fa **solo** l'anteprima e non scrive niente,
+# `importa` scrive dopo che hai visto cosa entra. Un import che scrive al primo clic
+# su dati curati è esattamente ciò che `salva_catalogo()` e gli archivi esistono per
+# rimediare, e rimediare è peggio che chiedere.
+def _voci_gia_presenti(voci):
+    catalogo = voci_catalogo("pokemon")
+    return {chiave: catalogo[chiave] for chiave in voci if chiave in catalogo}
+
+
+def _stesso_slug_altrove(voci):
+    """`{chiave pescata: chiave già in catalogo}` per chi ha lo **stesso slug**.
+
+    ⚠️ Il confronto per chiave non basta, e questo è il caso vero, non teorico: delle
+    specie di default del dump che non sono in catalogo ne restano **quattro**
+    (`aegislash-shield`, `mimikyu-disguised`, `morpeko-full-belly`, `palafin-zero`), e
+    tutte e quattro ci sono già sotto un'altra chiave (`aegislash-shield-forme`, …).
+    Importarle creerebbe due voci per lo stesso Pokémon, con due verità sulle sue
+    stat e nessun errore da nessuna parte.
+    """
+    catalogo = voci_catalogo("pokemon")
+    per_slug = {}
+    for chiave, voce in catalogo.items():
+        if voce.get("slug"):
+            per_slug.setdefault(voce["slug"], chiave)
+    fuori = {}
+    for chiave, voce in voci.items():
+        altra = per_slug.get(voce.get("slug"))
+        if altra and altra != chiave:
+            fuori[chiave] = altra
+    return fuori
+
+
+def salva_moveset(nuove):
+    """Aggiunge o aggiorna voci in `pokemon_moves.json`, tenendo `_meta`.
+
+    ⚠️ Niente copia in `data/archive/`, e la ragione è la stessa scritta in
+    `scripts/importa_mosse_specie.py`: il file pesa 3 MB e si **rigenera** con uno
+    script rieseguibile. La rete qui è quella, non una copia che gonfierebbe una
+    cartella versionata a ogni import.
+    """
+    try:
+        with open(MOVESET_FILE, encoding="utf-8") as f:
+            dati = json.load(f) or {}
+    except Exception:
+        dati = {}
+    voci = dati.get("voci") or {}
+    voci.update(nuove)
+    dati["voci"] = voci
+    meta = dati.get("_meta") or {}
+    # La provenienza si scrive **accanto** a quella del dump, non al posto: il grosso
+    # del file resta di `importa_mosse_specie.py`, e chi legge deve poterlo sapere.
+    meta["aggiornato_da_interfaccia"] = datetime.now().strftime("%Y-%m-%d")
+    dati["_meta"] = meta
+    os.makedirs(os.path.dirname(MOVESET_FILE), exist_ok=True)
+    with open(MOVESET_FILE, "w", encoding="utf-8") as f:
+        json.dump(dati, f, ensure_ascii=False, indent=2)
+    _MOVESET["mtime"] = None                  # la cache si rilegge al prossimo giro
+
+
+@bp.route("/api/catalogo/pokemon/pesca", methods=["POST"])
+@login_required
+def api_catalogo_pesca():
+    """Anteprima dell'import: cosa entrerebbe, cosa sovrascriverebbe, cosa non torna."""
+    import pokeapi
+    payload = request.get_json(silent=True) or {}
+    nomi = [n.strip() for n in (payload.get("nomi") or []) if (n or "").strip()]
+    if not nomi:
+        return jsonify({"ok": False, "error": "nessun nome da cercare"}), 400
+    mancanti = pokeapi.file_mancanti()
+    if mancanti:
+        return jsonify({"ok": False, "fonte_incompleta": mancanti,
+                        "error": "la fonte non è ancora scaricata"}), 200
+
+    voci, mosse, problemi = pokeapi.pesca(nomi)
+    presenti = _voci_gia_presenti(voci)
+    doppioni = _stesso_slug_altrove(voci)
+    for chiave, altra in doppioni.items():
+        problemi.append({"nome": chiave, "problema": "esiste già sotto un'altra chiave",
+                         "dettaglio": f"«{altra}» ha lo stesso slug: importarla farebbe "
+                                      f"due voci per lo stesso Pokémon"})
+    anteprima = []
+    for chiave, voce in voci.items():
+        m = mosse.get(chiave) or {}
+        anteprima.append({
+            "chiave": chiave,
+            "nome": voce.get("nome_it") or voce.get("name"),
+            "types": voce.get("types"),
+            "abilities": voce.get("abilities"),
+            "base_stats": voce.get("base_stats"),
+            "mosse_main": len((m.get("main") or {}).get("moves") or {}),
+            "mosse_champions": len((m.get("champions") or {}).get("moves") or {}),
+            # ⚠️ Va detto **prima**: sovrascrivere una voce curata a mano senza
+            # dirlo sarebbe il modo più veloce di perdere una correzione.
+            "gia_presente": chiave in presenti,
+            "doppione_di": doppioni.get(chiave),
+        })
+    return jsonify({"ok": True, "voci": anteprima, "problemi": problemi,
+                    "regulation": [{"id": r["id"], "label": r.get("label", r["id"])}
+                                   for r in _list_regulation_files()]})
+
+
+@bp.route("/api/catalogo/pokemon/prepara-fonte", methods=["POST"])
+@login_required
+def api_catalogo_prepara_fonte():
+    """Scarica i file del dump che mancano. È lento la prima volta: sono ~11 MB."""
+    import pokeapi
+    mancanti = pokeapi.file_mancanti()
+    if not mancanti:
+        return jsonify({"ok": True, "scaricati": [], "messaggio": "la fonte c'era già"})
+    try:
+        scaricati, byte = pokeapi.scarica_mancanti(mancanti)
+    except Exception as e:
+        return jsonify({"ok": False, "error": f"{type(e).__name__}: {e}"}), 502
+    return jsonify({"ok": True, "scaricati": scaricati, "kb": byte // 1024})
+
+
+@bp.route("/api/catalogo/pokemon/importa", methods=["POST"])
+@login_required
+def api_catalogo_importa():
+    """Scrive le voci pescate: catalogo, moveset e — se chiesto — le regulation."""
+    import pokeapi
+    payload = request.get_json(silent=True) or {}
+    nomi = [n.strip() for n in (payload.get("nomi") or []) if (n or "").strip()]
+    regulation = payload.get("regulation") or []
+    sovrascrivi = bool(payload.get("sovrascrivi"))
+    if not nomi:
+        return jsonify({"ok": False, "error": "nessun nome da importare"}), 400
+
+    voci, mosse, problemi = pokeapi.pesca(nomi)
+    if not voci:
+        return jsonify({"ok": False, "error": "niente da importare", "problemi": problemi}), 400
+
+    doppioni = _stesso_slug_altrove(voci)
+    if doppioni:
+        # ⚠️ Qui non c'è un `--sovrascrivi` che tenga: la voce esiste già con un altro
+        # nome, e scriverla comunque vorrebbe dire creare il doppione, non sostituirlo.
+        # Chi vuole davvero rimpiazzarla passa dall'editor, dove rinominare è previsto.
+        return jsonify({"ok": False, "error": "esistono già sotto un'altra chiave",
+                        "doppioni": doppioni, "problemi": problemi}), 409
+    presenti = _voci_gia_presenti(voci)
+    if presenti and not sovrascrivi:
+        return jsonify({"ok": False, "error": "voci già in catalogo",
+                        "gia_presenti": sorted(presenti),
+                        "problemi": problemi}), 409
+
+    catalogo = voci_catalogo("pokemon")
+    for chiave, voce in voci.items():
+        # ⚠️ Le `forms` annidate di una voce che esisteva **non si perdono**: sono le
+        # Mega e le Gigantamax, che il dump non ha e che nessun import può ricostruire.
+        # Sovrascrivere la voce intera le cancellerebbe in silenzio.
+        vecchia = catalogo.get(chiave) or {}
+        if vecchia.get("forms"):
+            voce = dict(voce, forms=vecchia["forms"])
+        catalogo[chiave] = voce
+    salva_catalogo("pokemon", catalogo)
+    if mosse:
+        salva_moveset(mosse)
+
+    # Le regulation con l'elenco esplicito: `pokedex` non serve, i suoi filtri sono
+    # `null` cioè "tutto il catalogo", e una voce nuova ci compare da sola.
+    aggiunte_a = {}
+    for reg in _list_regulation_files():
+        if reg["id"] not in regulation:
+            continue
+        filtro = _load_filtro(reg)
+        if filtro is None or filtro.get("pokemon") is None:
+            aggiunte_a[reg["id"]] = "già tutto il catalogo: non serve aggiungerla"
+            continue
+        elenco = set(filtro["pokemon"])
+        prima = len(elenco)
+        for voce in voci.values():
+            elenco.add(voce.get("name") or voce.get("nome_en"))
+        if _salva_filtro(reg, "pokemon", elenco):
+            aggiunte_a[reg["id"]] = f"{len(elenco) - prima} aggiunte, {len(elenco)} in tutto"
+        else:
+            aggiunte_a[reg["id"]] = "non migrata al filtro: elenco non scritto"
+
+    return jsonify({"ok": True, "scritte": sorted(voci), "totale": len(catalogo),
+                    "sovrascritte": sorted(presenti), "problemi": problemi,
+                    "regulation": aggiunte_a,
+                    "con_mosse": sorted(mosse),
+                    "senza_champions": sorted(c for c, m in mosse.items()
+                                              if "champions" not in m)})
+
+
 @bp.route("/api/abilities/update", methods=["POST"])
 @login_required
 def api_abilities_update():

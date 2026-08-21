@@ -133,8 +133,11 @@ caricati **una volta sola all'avvio**. Ora seguono l'mtime del file, come `_MOVE
 
 **Cosa manca davvero, in ordine di rischio:**
 
-1. 🟨 **Il moveset**, e il punto va corretto: la frase «la tendina esce vuota senza dire
-   perché» era **sbagliata**. Verificato il 21/08: `mosse_legali()` torna `None`, e sia il
+1. ✅ **Il moveset — chiuso il 21/08/2026.** Una specie importata porta l'elenco `main`
+   e, quando il dump ce l'ha, anche `champions`: sono le regole di Champions chieste da
+   Davide. Dove Champions non conosce la specie l'elenco **non si inventa** e resta
+   l'avviso giallo. ⚠️ E la frase che stava qui — «la tendina esce vuota senza dire
+   perché» — era **sbagliata**. Verificato il 21/08: `mosse_legali()` torna `None`, e sia il
    team builder sia il calcolatore mostrano **tutte** le mosse della regulation con l'avviso
    giallo «Nessun elenco mosse per X: sono mostrate tutte». Quindi la seconda metà del
    requisito — *dichiarare a schermo* — è **già soddisfatta**, ed è la stessa strada delle
@@ -142,11 +145,16 @@ caricati **una volta sola all'avvio**. Ora seguono l'mtime del file, come `_MOVE
    esiste. `data/catalog/pokemon_moves.json` non è tra i `DB_CATALOGO`
    ([pokemon.py:71](blueprints/pokemon.py:71)) e lo scrive solo
    `scripts/importa_mosse_specie.py`, che legge il dump CSV di PokéAPI
-2. **L'import in blocco**, che è la richiesta letterale: oggi si può fare solo dagli script.
-   Serve decidere la forma (incollare JSON, caricare un file, pescare da PokéAPI per nome) e
-   in ogni caso riusare `salva_catalogo()` / `_save_abilities()`
-3. **Le regulation non-`pokedex`**: o si offre un «aggiungi anche a…» al salvataggio, o si
-   accetta il doppio passaggio — ma allora va **scritto a schermo**
+2. ✅ **L'import — chiuso il 21/08/2026.** Forma scelta da Davide: **si scrive un nome e i
+   dati li pesca il programma**. `pokeapi.py` legge il dump CSV, `/pesca` mostra cosa
+   entrerebbe senza scrivere niente e `/importa` scrive dopo l'anteprima, con
+   `salva_catalogo()` sotto. Pannello in `catalog_editor.html`, solo sotto la linguetta
+   Pokémon. ⚠️ **Oggi non c'è niente di davvero nuovo da importare** — il dump non ha
+   specie di default che al catalogo manchino: è una porta per il futuro, non un
+   riempimento
+3. ✅ **Le regulation non-`pokedex` — chiuso il 21/08/2026**: una spunta «aggiungi anche
+   a…» al salvataggio, scelta di Davide. `pokedex` non compare fra le spunte, ed è voluto:
+   i suoi filtri sono `null` e la voce ci finisce da sola
 4. ⚠️ **Validazione, oggi assente, e misurata**: `/api/catalogo/<db>/salva` accetta qualunque
    oggetto, il solo controllo è `isinstance(voce, dict)`
    ([pokemon.py:756](blueprints/pokemon.py:756)). Provato il 21/08: una voce con il **solo**
@@ -157,7 +165,15 @@ caricati **una volta sola all'avvio**. Ora seguono l'mtime del file, come `_MOVE
    **solo gli amministratori**, e una route nuova lo è già senza fare niente (§1.2). Resta
    da incrociare con 1.1 solo se un giorno anche i dati condivisi avranno un proprietario
 
-I punti 2 e 3 non sono decisi: quella parte è aperta, non progettata.
+**Resta aperto il punto 4**, la validazione. Gli altri sono chiusi il 21/08/2026: numeri
+e prove in `STORICO.md`, rete in `scripts/prova_import_specie.py` (23 su 23).
+
+> ⚠️ **Le tre regole che l'import ha lasciato**, da leggere prima di toccarlo: una voce si
+> riconosce dallo **slug** e non dalla chiave (delle specie di default che mancano al
+> catalogo ce ne sono 4, e ci sono già tutte sotto un'altra chiave); **le forme non
+> passano di lì** — sono annidate in `forms`, e importarle al primo livello farebbe un
+> doppione; e reimportando una specie le sue `forms` vanno **ricopiate**, perché il dump
+> non le ha e nessun import può ricostruirle.
 
 **Voce collegata** (dal docx): ⬜ *creare i JSON di una regulation nuova dalla web app* —
 roster, mosse, oggetti e abilità generati in autonomia. Obiettivo di fondo: **aggiungere
