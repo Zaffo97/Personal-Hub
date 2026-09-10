@@ -2,7 +2,7 @@
 
 > **Qui c'è solo ciò che è aperto.** Le voci chiuse stanno in [`STORICO.md`](STORICO.md),
 > una riga per lavoro con la data e i numeri della verifica.
-> Aggiornato: **21/08/2026**. Fonte storica: `Nuove implementazioni.docx` (verde = fatto).
+> Aggiornato: **10/09/2026**. Fonte storica: `Nuove implementazioni.docx` (verde = fatto).
 
 Legenda: ⬜ da fare · 🟨 parziale · ⚠️ trappola nota, da rileggere prima di toccare la zona
 
@@ -69,6 +69,9 @@ L'ordine che ne esce, e che vale finché Davide non lo cambia:
 6. §5 — il giro di collaudo, la verifica dei moveset, l'inventario del codice morto
 7. §1.6 — le due guide, che vanno **dopo** il collaudo
 8. §1.5 — l'app online
+
+> **Aggiunta il 10/09/2026**: la sezione **Fantacalcio** (§4.2) è chiesta ma non ancora
+> definita. Sta con le altre sezioni al punto 3 finché Davide non le dà un posto suo.
 
 ---
 
@@ -529,6 +532,7 @@ quattro cose richiedono **fonti diverse**:
 | 💻 **PC Builder** | ⬜ Wishlist Amazon o altri · ⬜ prezzo componente · ⬜ percentuale di compatibilità fra i pezzi (valutare UserBenchmark) · ⬜ gestire l'uscita di nuovi pezzi nel tempo |
 | 🐍 **Python** | ⬜ Spazio per inserire i propri progetti e testarli · ⬜ idee per rendere la sezione più utile |
 | 🐾 **Pokémon** | ⬜ Creare i JSON di una regulation nuova dalla web app (vedi §1.3) |
+| ⚽ **Fantacalcio** | ⬜ Sezione nuova, chiesta il 10/09/2026 — i dettagli si studiano dopo (vedi §4.2) |
 
 ### 4.1 🟨 Gaming — il calendario delle uscite (chiesto il 13/08, costruito il 16/08/2026)
 
@@ -599,6 +603,27 @@ non basta mai, e l'avviso a schermo lo dice.
   che non conosce nessuno si applica la stessa soglia (`filtra_per_attesa` è già scritta)
 - ⬜ **Le soglie sono due numeri fissi** (2 e 10) scelti sui conti del 17/08. Se in cache
   entrasse molto altro andrebbero rimisurate, non ritoccate a occhio
+
+
+### 4.2 ⬜ Fantacalcio — sezione nuova, tutta da definire
+
+Chiesta da Davide il **10/09/2026**. Per ora c'è **solo il titolo**: i dettagli si studiano
+più avanti, quindi qui non c'è né un progetto né una fonte dati scelta. È un segnaposto
+perché il lavoro non si perda, **non** una specifica — e finché resta così non si scrive
+codice.
+
+Le domande da sciogliere prima di iniziare, nessuna delle quali ha oggi una risposta:
+
+- **cosa deve fare**: seguire la propria rosa durante la stagione, consultare voti e
+  statistiche, preparare l'asta, o più cose insieme
+- **da dove arrivano i dati**: una API, uno scraping, o un import a mano come Steam e
+  IGDB — con la stessa domanda sulla licenza che si è posta per IGDB
+- **quanto è personale**: se ci sono dati per utente valgono le regole di §1.1 — una
+  `SELECT` nuova sui contenuti nasce **scoperta**, e `controlla_proprietario.py` è il
+  solo segnale
+- **tradotta o no**: il pulsante lingua compare solo dove la sezione è tradotta
+  (`sezioni_tradotte` in `base.html`). Una sezione nuova nasce **italiana**, come Arduino
+  e PC Builder, salvo decisione contraria
 
 ---
 
