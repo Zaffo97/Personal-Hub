@@ -63,6 +63,17 @@
         <input id="meta_label" class="form-control" value="{{ reg.label }}" placeholder="{{ t('Es. Regulation MB') }}">
       </div>
       <div class="meta-field">
+        <label>{{ t('Sorgente delle mosse') }}</label>
+        <select id="meta_moveset" class="form-control">
+          {% for s in sorgenti_mosse %}
+          <option value="{{ s }}" {% if s == moveset %}selected{% endif %}>{{ s }}</option>
+          {% endfor %}
+        </select>
+        <p style="font-size:.7rem;color:var(--text-muted)">
+          {{ t('Quali mosse ogni Pokémon può imparare. Cambiarla cambia gli elenchi legali del team builder e del calcolatore, senza toccare nessun dato.') }}
+        </p>
+      </div>
+      <div class="meta-field">
         <label>{{ t('Meccaniche disponibili') }}</label>
         <div id="mech_list" style="display:flex;flex-wrap:wrap;gap:.4rem;margin-bottom:.4rem">
           {% for m in reg.mechanics %}
@@ -140,7 +151,7 @@
         <div style="display:flex;gap:.75rem;flex-wrap:wrap;margin-top:.5rem;font-size:.75rem">
           {% for campo, etichetta in [('pokemon','Pokémon'), ('moves','Mosse'),
                                       ('items','Oggetti'), ('abilities','Abilità'),
-                                      ('mega_map','Mega map')] %}
+                                      ('mega_map','Mega map'), ('moveset','Sorgente mosse')] %}
           <label style="display:flex;align-items:center;gap:.25rem">
             <input type="checkbox" class="copia-campo" value="{{ campo }}" checked> {{ t(etichetta) }}
           </label>
@@ -149,6 +160,21 @@
         <p id="copia_esito" style="font-size:.75rem;margin-top:.5rem;display:none"></p>
       </div>
       {% endif %}
+
+      <hr style="margin:1rem 0;border-color:var(--border)">
+      <div>
+        <p style="font-size:.78rem;color:var(--text-muted);margin-bottom:.5rem">
+          {{ t('<strong>Completa la mega_map.</strong> Collega ogni Mega del roster alla sua specie base, dedotta dal nome. Una Mega che nessuna base punta resta <strong>irraggiungibile</strong>: il team builder non la offre. I collegamenti già scritti non si toccano.')|safe }}
+        </p>
+        <div style="display:flex;gap:.5rem;flex-wrap:wrap;align-items:center">
+          <button class="btn btn-secondary btn-sm" onclick="megaMap(true)">🔍 {{ t('Vedi cosa collegherebbe') }}</button>
+          <button class="btn btn-primary btn-sm" onclick="megaMap(false)">🔗 {{ t('Collega') }}</button>
+          <label style="display:flex;align-items:center;gap:.25rem;font-size:.75rem">
+            <input type="checkbox" id="mega_aggiungi_basi"> {{ t('aggiungi al roster le specie base mancanti') }}
+          </label>
+        </div>
+        <div id="mega_esito" style="font-size:.75rem;margin-top:.5rem;display:none"></div>
+      </div>
       {% else %}
       <p style="font-size:.82rem;color:var(--text-muted);margin-bottom:1rem">
         {{ tf('Modifica direttamente roster, mosse e oggetti di questa regulation. Ogni editor carica e salva solo i file di <strong>{reg}</strong>.', {'reg': reg.label})|safe }}
@@ -293,6 +319,7 @@ async function saveMeta() {
   const label     = document.getElementById('meta_label').value.trim();
   const file      = campiFile();
   const mechanics = getMechs();
+  const moveset   = document.getElementById('meta_moveset').value;
 
   if (!label) { showToast(t('Label obbligatoria'), false); return; }
 
@@ -304,7 +331,7 @@ async function saveMeta() {
 
     const regs = d1.regulations.map(reg =>
       reg.id === REG_ID
-        ? { ...reg, label, ...file, mechanics }
+        ? { ...reg, label, ...file, mechanics, moveset }
         : reg
     );
 
@@ -373,6 +400,67 @@ async function copiaDa() {
     esito.textContent = tf('Copiato da {sorgente} — {righe}. Ricarico...',
                            {sorgente: d.sorgente, righe: righe});
     setTimeout(() => window.location.reload(), 900);
+  } catch(e) {
+    esito.style.color = 'var(--error,#e05555)';
+    esito.textContent = t('Errore rete:') + ' ' + e;
+  }
+}
+
+// -- Completa la mega_map ---------------------------------------------------
+// `anteprima` non scrive niente: e' lo stesso `--dry-run` degli script, e qui serve
+// a far vedere **prima** quali specie verrebbero aggiunte al roster.
+function rigaMega(testo) {
+  const div = document.createElement('div');
+  div.style.marginBottom = '.2rem';
+  div.textContent = testo;
+  return div;
+}
+
+async function megaMap(anteprima) {
+  const esito = document.getElementById('mega_esito');
+  const aggiungiBasi = document.getElementById('mega_aggiungi_basi').checked;
+  esito.style.display = 'block';
+  esito.style.color = 'var(--text-muted)';
+  esito.textContent = t('Calcolo in corso...');
+  try {
+    const r = await fetch('/pokemon/api/regulation/{{ reg.id }}/mega-map', {
+      method: 'POST', headers: {'Content-Type':'application/json'},
+      body: JSON.stringify({ anteprima: !!anteprima, aggiungi_basi: aggiungiBasi })
+    });
+    const d = await r.json();
+    if (!d.ok) {
+      esito.style.color = 'var(--error,#e05555)';
+      esito.textContent = t('Errore:') + ' ' + d.error;
+      return;
+    }
+    const righe = [];
+    if (!d.collegati) {
+      righe.push(t('Niente da collegare: ogni Mega del roster è già raggiungibile.'));
+    } else {
+      righe.push(tf('{n} collegamenti', {n: d.collegati}) + ': '
+                 + d.collegamenti.slice(0, 12).map(c => c.base + ' -> ' + c.mega).join(' · ')
+                 + (d.collegamenti.length > 12 ? ' …' : ''));
+    }
+    if (d.aggiunte_al_roster.length) {
+      righe.push(tf('Specie aggiunte al roster ({n}):', {n: d.aggiunte_al_roster.length})
+                 + ' ' + d.aggiunte_al_roster.join(', '));
+    }
+    if (d.senza_base.length && !d.aggiunte_al_roster.length) {
+      righe.push('⚠️ ' + tf('{n} Mega hanno la base fuori dal roster e restano scollegate:', {n: d.senza_base.length})
+                 + ' ' + d.senza_base.slice(0, 8).map(c => c.mega + ' (' + c.base + ')').join(', ')
+                 + '. ' + t('Spunta la casella per aggiungerle.'));
+    }
+    (d.problemi || []).forEach(p => righe.push('⚠️ ' + p));
+    if (d.scritto) {
+      righe.push(tf('Scritto. Mega raggiungibili: {n} su {tot}.',
+                    {n: d.raggiungibili, tot: d.mega_nel_roster}));
+    } else if (anteprima) {
+      righe.push(t('Anteprima: non è stato scritto niente.'));
+    }
+    esito.style.color = d.scritto ? 'var(--primary)' : 'var(--text-muted)';
+    esito.innerHTML = '';
+    righe.forEach(x => esito.appendChild(rigaMega(x)));
+    if (d.scritto) setTimeout(() => window.location.reload(), 2500);
   } catch(e) {
     esito.style.color = 'var(--error,#e05555)';
     esito.textContent = t('Errore rete:') + ' ' + e;

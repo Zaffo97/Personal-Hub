@@ -30,10 +30,17 @@ import argparse
 import io
 import json
 import os
-import re
 import sys
 
 RADICE = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
+if RADICE not in sys.path:
+    sys.path.insert(0, RADICE)
+
+# ⚠️ La deduzione `Mega X` → `X` sta in `data.py` dal 10/09/2026, non piu' qui: la
+# usa anche il pulsante «ricalcola la mega_map» dell'editor regulation, e due copie
+# della stessa regola divergono al primo caso nuovo.
+from data import applica_collegamenti, collega_mega
+
 FILTRI = os.path.join(RADICE, "data", "regulations")
 CATALOGO = os.path.join(RADICE, "data", "catalog", "pokemon.json")
 ARCHIVIO = os.path.join(RADICE, "data", "archive")
@@ -51,29 +58,6 @@ def nomi_catalogo():
         nomi.add(voce.get("name") or chiave)
         nomi.update((voce.get("forms") or {}).keys())
     return nomi
-
-
-# Le Mega inventate che non seguono la regola del nome. Il catalogo scrive la forma
-# come `<Specie> (<Forma> Form)`, queste come `Mega <Forma> <Specie>`: nessuna regola
-# generale le lega, quindi stanno qui una per una invece di essere indovinate.
-# Verificate contro i nomi veri del catalogo il 12/08/2026.
-BASE_A_MANO = {
-    # Curly e' la forma predefinita di Tatsugiri: nel catalogo e' la voce nuda.
-    "Mega Curly Tatsugiri":    "Tatsugiri",
-    "Mega Droopy Tatsugiri":   "Tatsugiri (Droopy Form)",
-    "Mega Stretchy Tatsugiri": "Tatsugiri (Stretchy Form)",
-    "Mega Original Magearna":  "Magearna (Original Color)",
-}
-
-
-def base_attesa(mega):
-    """`Mega Raichu X` → `Raichu`; `Mega Meowstic (Male)` → `Meowstic (Male)`."""
-    if mega in BASE_A_MANO:
-        return BASE_A_MANO[mega]
-    base = re.sub(r"^Mega ", "", mega)
-    # `Z` insieme a X e Y: `Mega Absol Z` sta a `Absol` come `Mega Charizard X` sta a
-    # `Charizard`. E' la stessa convenzione, non un caso nuovo.
-    return re.sub(r" [XYZ]$", "", base)
 
 
 def main():
@@ -98,28 +82,22 @@ def main():
         roster = (list(filtro["pokemon"]) if filtro.get("pokemon") is not None
                   else sorted(catalogo))
         mega_map = filtro.get("mega_map") or {}
-        mappate = {m for v in mega_map.values() for m in v}
-        irraggiungibili = sorted(n for n in roster
-                                 if n.startswith("Mega ") and n not in mappate)
+        collegamenti, senza_base, non_risolte = collega_mega(roster, catalogo, mega_map)
 
-        collega, aggiungi = [], []
-        for mega in irraggiungibili:
-            base = base_attesa(mega)
-            if base not in catalogo:
-                problemi.append(f"{reg_id}: '{mega}' → base '{base}' non è nel catalogo")
-                continue
-            if mega not in catalogo:
-                problemi.append(f"{reg_id}: '{mega}' non è nel catalogo")
-                continue
-            if base in roster:
-                collega.append((base, mega))
-            elif reg_id in AGGIUNGI_BASI:
+        collega, aggiungi = list(collegamenti), []
+        for _mega, motivo in non_risolte:
+            problemi.append(f"{reg_id}: {motivo}")
+        for base, mega in senza_base:
+            # Aggiungere al roster una specie che non c'è è una scelta di contenuto,
+            # non un dato deducibile: si fa solo dove Davide l'ha deciso.
+            if reg_id in AGGIUNGI_BASI:
                 aggiungi.append(base)
                 collega.append((base, mega))
             else:
                 problemi.append(
                     f"{reg_id}: '{mega}' → la base '{base}' non è nel roster e "
                     f"'{reg_id}' non è fra le regulation da popolare")
+        collega.sort()
         if collega or aggiungi:
             piano[reg_id] = (percorso, filtro, roster, mega_map, collega, sorted(set(aggiungi)))
 
@@ -149,12 +127,7 @@ def main():
         with open(copia, "w", encoding="utf-8") as f:
             json.dump(filtro, f, ensure_ascii=False, indent=2)
 
-        for base, mega in collega:
-            mega_map.setdefault(base, [])
-            if mega not in mega_map[base]:
-                mega_map[base].append(mega)
-            mega_map[base].sort()
-        filtro["mega_map"] = dict(sorted(mega_map.items()))
+        filtro["mega_map"] = applica_collegamenti(mega_map, collega)
         if aggiungi:
             filtro["pokemon"] = sorted(set(roster) | set(aggiungi))
         filtro["last_updated"] = "2026-08-11"

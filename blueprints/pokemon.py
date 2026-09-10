@@ -7,6 +7,8 @@ from extensions import (get_db, login_required, _i, nome_vis, categorie,
                         ambito_utente, utente_id, e_admin)
 from data import (
     DATA_DIR,
+    applica_collegamenti,
+    collega_mega,
     regulation_default,
     REG_MA_ROSTER,
     MEGA_EVOLUTIONS_MA,
@@ -145,6 +147,26 @@ def load_moveset():
 def sorgente_moveset(reg):
     """Quale dei due elenchi usa la regulation: `main` o `champions`."""
     return (reg or {}).get("moveset") or MOVESET_DEFAULT
+
+
+def sorgenti_moveset():
+    """Gli elenchi che il moveset contiene davvero, `main` per primo.
+
+    Letti dal file invece che scritti a mano: il giorno che un import aggiunge un
+    version group, la tendina della regulation lo offre senza toccare il codice.
+    ⚠️ E una regulation che chiede una sorgente inesistente non darebbe errore —
+    `mosse_legali()` troverebbe `None` e mostrerebbe **tutte** le mosse: e' per
+    questo che la creazione e il salvataggio la validano contro questo elenco.
+    """
+    voci, _ = load_moveset()
+    # ⚠️ Non «tutte le chiavi tranne `slug`»: le 32 forme Gigantamax hanno anche
+    # `eredita_da`, che dice **da chi** copiano le mosse e non e' una sorgente. Una
+    # sorgente e' un blocco con dentro `moves`, ed e' questa la forma che
+    # `mosse_legali()` legge — cosi' l'elenco non si sporca al prossimo campo nuovo.
+    trovate = {chiave for voce in voci.values() for chiave, valore in voce.items()
+               if isinstance(valore, dict) and "moves" in valore}
+    trovate.discard(MOVESET_DEFAULT)
+    return [MOVESET_DEFAULT] + sorted(trovate)
 
 
 def mosse_legali(nome, reg):
@@ -730,12 +752,21 @@ def api_regulation_copia_da(reg_id):
         return jsonify({"ok": False, "error": f"regulation sorgente non valida: {sorgente_id}"}), 404
 
     # solo i campi scelti, così si può copiare per esempio le sole mosse
-    campi = payload.get("campi") or ["pokemon", "moves", "items", "abilities", "mega_map"]
+    campi = payload.get("campi") or ["pokemon", "moves", "items", "abilities", "mega_map",
+                                     "moveset"]
     percorso = os.path.join(DATA_DIR, reg["filter_file"])
     with open(percorso, encoding="utf-8") as f:
         filtro = json.load(f)
 
     copiati = {}
+    # ⚠️ `moveset` non sta nel filtro, sta nel registro: e' l'unico campo copiabile
+    # che si scrive in `regulations.json`. Senza di lui una regulation copiata da MA
+    # riceve i 460 nomi di Champions e poi legge gli elenchi di `main`.
+    if "moveset" in campi:
+        reg["moveset"] = sorgente_moveset(sorgente)
+        _save_regulations(regs)
+        copiati["moveset"] = reg["moveset"]
+
     for campo in campi:
         if campo not in ("pokemon", "moves", "items", "abilities", "mega_map"):
             continue
@@ -747,6 +778,85 @@ def api_regulation_copia_da(reg_id):
         json.dump(filtro, f, ensure_ascii=False, indent=2)
 
     return jsonify({"ok": True, "sorgente": sorgente.get("label", sorgente_id), "copiati": copiati})
+
+
+@bp.route("/api/regulation/<reg_id>/mega-map", methods=["POST"])
+@login_required
+def api_regulation_mega_map(reg_id):
+    """Collega le Mega del roster alla loro specie base, dedotte dal nome.
+
+    E' il pulsante che rende una regulation nata qui **usabile**: una Mega che sta
+    nel roster ma che nessuna base punta e' irraggiungibile — il team builder non la
+    offre e il calcolatore non ci arriva — e fino al 10/09/2026 l'unico modo di
+    collegarla era `scripts/completa_mega_map.py` da riga di comando, o copiare la
+    mega_map di un'altra regulation.
+
+    Tre cose, di proposito:
+
+    - **completa, non ricalcola**: i collegamenti gia' scritti restano, anche quelli
+      messi a mano che nessuna regola dedurrebbe
+    - `anteprima: true` non scrive niente e dice cosa farebbe, come il `--dry-run`
+      degli script
+    - le Mega la cui base **non e' nel roster** non si collegano da sole: aggiungere
+      una specie e' una scelta di contenuto, e serve `aggiungi_basi: true`
+    """
+    regs = _list_regulation_files()
+    reg = next((r for r in regs if r["id"] == reg_id), None)
+    filtro = _load_filtro(reg) if reg else None
+    if filtro is None:
+        return jsonify({"ok": False, "error": "regulation non trovata o non convertita"}), 404
+
+    payload = request.get_json(silent=True) or {}
+    anteprima     = bool(payload.get("anteprima"))
+    aggiungi_basi = bool(payload.get("aggiungi_basi"))
+
+    nomi_catalogo = _nomi_catalogo_pokemon(load_catalog("pokemon"))
+    roster = _load_roster(reg)          # risolve gia' `pokemon: null` = tutto il catalogo
+    mega_map = filtro.get("mega_map") or {}
+    collegamenti, senza_base, problemi = collega_mega(roster, nomi_catalogo, mega_map)
+
+    # ⚠️ Su una regulation con `pokemon: null` il roster e' tutto il catalogo, quindi
+    # `senza_base` e' vuoto per costruzione e nessuna specie va aggiunta: scrivere
+    # l'elenco trasformerebbe «tutto, anche le voci future» in una lista chiusa.
+    tutto_il_catalogo = filtro.get("pokemon") is None
+    da_aggiungere = sorted({b for b, _ in senza_base}) if (aggiungi_basi and not tutto_il_catalogo) else []
+    da_collegare = collegamenti + (senza_base if da_aggiungere else [])
+
+    esito = {
+        "ok": True,
+        "anteprima": anteprima,
+        "collegamenti": [{"base": b, "mega": m} for b, m in sorted(da_collegare)],
+        "collegati": len(da_collegare),
+        "senza_base": [{"base": b, "mega": m} for b, m in sorted(senza_base)],
+        "aggiunte_al_roster": da_aggiungere,
+        "problemi": [motivo for _, motivo in problemi],
+    }
+
+    if anteprima or not da_collegare:
+        esito["scritto"] = False
+        return jsonify(esito)
+
+    copia = os.path.join(_archive_dir(), f"regulation_{reg_id}_pre-mega-map.json")
+    try:
+        with open(copia, "w", encoding="utf-8") as f:
+            json.dump(filtro, f, ensure_ascii=False, indent=2)
+    except Exception:
+        pass  # come per il catalogo: il backup non deve impedire il salvataggio
+
+    filtro["mega_map"] = applica_collegamenti(mega_map, da_collegare)
+    if da_aggiungere:
+        filtro["pokemon"] = sorted(set(roster) | set(da_aggiungere))
+    filtro["last_updated"] = datetime.now().strftime("%Y-%m-%d")
+    with open(os.path.join(DATA_DIR, reg["filter_file"]), "w", encoding="utf-8") as f:
+        json.dump(filtro, f, ensure_ascii=False, indent=2)
+
+    roster_finale = filtro["pokemon"] if filtro.get("pokemon") is not None else roster
+    mappate = {m for v in filtro["mega_map"].values() for m in v}
+    mega_nel_roster = {n for n in roster_finale if n.startswith("Mega ")}
+    esito.update(scritto=True,
+                 raggiungibili=len(mega_nel_roster & mappate),
+                 mega_nel_roster=len(mega_nel_roster))
+    return jsonify(esito)
 
 
 @bp.route("/api/regulation/<reg_id>/contenuto/<db>", methods=["POST"])
@@ -1264,6 +1374,17 @@ def api_regulations_save():
     if len(ids) != len(set(ids)):
         return jsonify({"ok": False, "error": "Ci sono id duplicati"}), 400
 
+    # Una sorgente mosse inesistente non darebbe errore a valle: `mosse_legali()`
+    # troverebbe `None` e il team builder mostrerebbe **tutte** le mosse, con
+    # l'avviso giallo delle forme inventate. Sarebbe un permesso, non un guasto.
+    sorgenti = sorgenti_moveset()
+    for r in regs:
+        if r.get("moveset") and r["moveset"] not in sorgenti:
+            return jsonify({"ok": False,
+                            "error": f"'{r['id']}': sorgente mosse sconosciuta "
+                                     f"'{r['moveset']}'. Disponibili: "
+                                     + ", ".join(sorgenti)}), 400
+
     precedenti = {r["id"] for r in _list_regulation_files()}
     perse = precedenti - set(ids)
     if perse:
@@ -1295,6 +1416,17 @@ def api_regulations_create():
     if any(r["id"] == reg_id for r in regs):
         return jsonify({"ok": False, "error": f"Regulation '{reg_id}' già esistente"}), 409
 
+    # ⚠️ La sorgente delle mosse va decisa **qui**, perche' l'assenza non da' errore:
+    # `sorgente_moveset()` ricade su `main`, e una regulation nata da una copia di MA
+    # servirebbe in silenzio gli elenchi dei giochi principali invece di quelli di
+    # Champions — Incineroar con 80 mosse invece di 77, Knock Off compresa.
+    sorgenti = sorgenti_moveset()
+    moveset = (data.get("moveset") or "").strip().lower()
+    if moveset and moveset not in sorgenti:
+        return jsonify({"ok": False,
+                        "error": f"Sorgente mosse sconosciuta: '{moveset}'. "
+                                 f"Disponibili: {', '.join(sorgenti)}"}), 400
+
     # Una regulation nuova nasce nel modello a filtro: elenchi di nomi che puntano
     # al catalogo, mai una copia dei dati.
     #   partenza = "vuota"  -> non contiene nulla, si popola dalla schermata contenuti
@@ -1309,6 +1441,9 @@ def api_regulations_create():
         filtro_sorgente = _load_filtro(sorgente) or {}
         elenchi = {k: filtro_sorgente.get(k) for k in ("pokemon", "moves", "items", "abilities")}
         mega_map = filtro_sorgente.get("mega_map") or {}
+        # Copiando gli elenchi si copia anche la sorgente delle mosse, se non e' stata
+        # chiesta esplicitamente: e' l'altra meta' di «parti da questa».
+        moveset = moveset or sorgente_moveset(sorgente)
     else:
         partenza = "vuota"
         elenchi = {"pokemon": [], "moves": [], "items": [], "abilities": None}
@@ -1334,11 +1469,15 @@ def api_regulations_create():
         "label":       reg_label,
         "filter_file": percorso_filtro.replace(os.sep, "/"),
         "mechanics":   data.get("mechanics") or ["mega"],
+        # Scritta sempre, anche quando vale il default: implicita non si vede, e una
+        # sorgente che non si vede e' la stessa cosa di una sorgente sbagliata.
+        "moveset":     moveset or MOVESET_DEFAULT,
     }
     regs.append(new_reg)
     _save_regulations(regs)
 
-    return jsonify({"ok": True, "regulation": new_reg, "partenza": partenza}), 201
+    return jsonify({"ok": True, "regulation": new_reg, "partenza": partenza,
+                    "moveset": new_reg["moveset"]}), 201
 
 
 # ---------------------------------------------------------------------------
@@ -1819,18 +1958,18 @@ def regulations_list():
         reg["teams_count"] = db.execute(
             "SELECT COUNT(*) FROM teams WHERE regulation_id=?", (reg["id"],)
         ).fetchone()[0]
-        for key, fld, sub in [
-            ("roster_count", "roster_file", "pokemon"),
-            ("moves_count",  "moves_file",  "moves"),
-            ("items_count",  "items_file",  "items"),
-        ]:
-            try:
-                with open(os.path.join(DATA_DIR, reg[fld]), encoding="utf-8") as f:
-                    reg[key] = len(json.load(f).get(sub, {}))
-            except Exception:
-                reg[key] = 0
+        # ⚠️ Dagli stessi loader dell'editor, non dai file vecchi. Fino al 10/09/2026
+        # questa pagina leggeva `roster_file`/`moves_file`/`items_file`: su MA diceva
+        # **208** Pokémon e **461** mosse invece di 279 e 460, e su MB, Pokedex e su
+        # qualunque regulation creata da qui — che quei file non li ha mai avuti —
+        # diceva **0 su tutto**, anche piena. Numeri sbagliati, nessun errore.
+        reg["roster_count"] = len(_load_roster(reg))
+        reg["moves_count"]  = len(load_moves(reg["id"]).get("moves", {}))
+        reg["items_count"]  = len(load_items(reg["id"]).get("items", {}))
+        reg["moveset"]      = sorgente_moveset(reg)
     db.close()
-    return render_template("regulations_list.html", regulations=regs)
+    return render_template("regulations_list.html", regulations=regs,
+                           sorgenti_mosse=sorgenti_moveset())
 
 
 @bp.route("/regulation/<reg_id>")
@@ -1869,5 +2008,7 @@ def regulation_editor(reg_id):
         items_count=_count("items_file", "items"),
         teams_count=len(teams),
         teams=teams,
-        regulations=regs
+        regulations=regs,
+        moveset=sorgente_moveset(reg),
+        sorgenti_mosse=sorgenti_moveset(),
     )

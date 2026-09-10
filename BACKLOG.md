@@ -48,6 +48,7 @@ Non sono storia: sono le cose che questo progetto ha già pagato e che tornano a
 | ⚠️ **Si legge con `ambito_utente()`, si scrive con `solo_mie()`** | Sono due domande diverse. Per **leggere**, l'amministratore vede tutto (`1=1`): giusto in elenco. Per **importare o arricchire**, quella deroga è un baco: l'import da Steam cerca gli appid già presenti per non duplicarli, e con l'elenco di tutti un admin che importa la propria libreria **riscriverebbe le ore giocate di un altro utente** invece di crearsi la riga sua. Misurato e provato il 19/08: la riga di admin resta a 104,1 ore e all'utente ne nasce una nuova |
 | ⚠️ **`rowcount` sulle scritture filtrate** | Un `UPDATE`/`DELETE` con la condizione del proprietario che non tocca niente **non dà errore**: il codice sotto continua. In `_team_upsert()` questo avrebbe svuotato i membri della squadra di un altro dopo un UPDATE andato a vuoto. Ogni scrittura filtrata deve guardare il `rowcount` e uscire |
 | **`user_id` a `NULL`** | Il travaso ad `admin` gira **solo nel giro in cui la colonna nasce**, non a ogni avvio: è voluto, perché un `WHERE user_id IS NULL` permanente intesterebbe all'admin qualunque riga scritta male, in silenzio. Il prezzo: una riga senza proprietario **sparisce dalla vista del suo autore** — ma non è persa e non è invisibile a tutti, perché l'admin filtra `1=1` e la vede, col badge che dice «senza proprietario». È lì che si va a cercarla quando qualcuno dice «il dato è sparito» |
+| ⚠️ **Un campo che manca vale «main»** | La sorgente delle mosse di una regulation e' `moveset` in `data/regulations.json`, e **se manca non e' un errore**: `sorgente_moveset()` ricade su `main`. Fino al 10/09/2026 la creazione non lo scriveva affatto, quindi una regulation copiata da MA — 279 nomi di Champions — leggeva gli elenchi dei giochi principali: **80 mosse su Incineroar invece di 77**, Knock Off compresa, senza un errore da nessuna parte. Ora la creazione lo scrive sempre esplicito e il salvataggio rifiuta un nome che non esiste, ma il fallback resta: **un file scritto a mano senza quel campo dira' `main` e sembrera' giusto** |
 | **Default del DB** | `extensions.py:143` crea la colonna con `regulation_id TEXT DEFAULT 'ma'`. Non è un residuo dei 14 letterali tolti l'11/08: è il default del **DB**, e cambiarlo richiede una migrazione. Oggi non fa danno perché `_team_upsert()` passa sempre un valore esplicito |
 
 ---
@@ -61,8 +62,10 @@ voce non è più urgente e non blocca niente — l'hub in casa funziona come sem
 
 L'ordine che ne esce, e che vale finché Davide non lo cambia:
 
-1. §1.3 — le voci collegate che restano (una regulation nuova dall'interfaccia)
+1. ~~§1.3 — le voci collegate che restano (una regulation nuova dall'interfaccia)~~
+   ✅ **chiuso il 10/09/2026**
 2. §2.2 — le 103 abilità da fondere: **aspetta una decisione**, non del codice
+   ← **il prossimo**
 3. §4 — le sezioni: Stampa 3D, Tinkercad, PC Builder, Python
 4. §1.4 — l'export `--completo`
 5. §3 — i bachi noti
@@ -200,9 +203,27 @@ e prove in `STORICO.md`, rete in `scripts/prova_import_specie.py` (23 su 23).
 > doppione; e reimportando una specie le sue `forms` vanno **ricopiate**, perché il dump
 > non le ha e nessun import può ricostruirle.
 
-**Voce collegata** (dal docx): ⬜ *creare i JSON di una regulation nuova dalla web app* —
-roster, mosse, oggetti e abilità generati in autonomia. Obiettivo di fondo: **aggiungere
-una regulation senza IA, solo da interfaccia**.
+**Voce collegata** (dal docx): ✅ **chiusa il 10/09/2026** — *creare i JSON di una
+regulation nuova dalla web app*. Il pulsante «Nuova Regulation» c'era già; quello che
+mancava erano quattro cose senza le quali la regulation che nasceva da lì non era usabile,
+e tre su quattro **non davano nessun errore**: la sorgente delle mosse non si sceglieva
+(una copia di MA leggeva `main` e su Incineroar dava 80 mosse invece di 77), la pagina
+Regulations mostrava 208/461 su MA e 0 su tutto il resto, la `mega_map` si poteva riempire
+solo da riga di comando, e una regulation vuota rispondeva 404 facendo ricadere lo Speed
+Tier sulla lista statica. Numeri e prove in `STORICO.md`, rete in
+`scripts/prova_regulation_nuova.py` (32 su 32).
+
+> ⚠️ **Le due regole che restano**: la sorgente delle mosse (`moveset` in
+> `regulations.json`) **non ha un valore obbligatorio** — se manca vale `main`, ed è
+> il motivo per cui ora la creazione la scrive sempre esplicita e il salvataggio rifiuta
+> un nome che non esiste. E il pulsante della `mega_map` **completa, non ricalcola**: i
+> collegamenti scritti a mano restano, e le Mega la cui base è fuori dal roster non si
+> collegano da sole, perché aggiungere una specie è una scelta di contenuto.
+
+**⬜ Cosa resta di questa voce, ed è dato, non codice**: una regulation nuova che **non**
+sia basata su Champions o sui giochi principali non ha una terza sorgente di mosse da
+scegliere, perché nel dump non c'è (vedi §2.3). E gli `overrides` del filtro — i campi
+sovrascritti voce per voce — si scrivono ancora solo a mano nel JSON.
 
 ### 1.4 🟨 Esportare tutto il DB, utenti e personalizzazioni comprese
 

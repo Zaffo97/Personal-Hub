@@ -16,6 +16,14 @@ async function loadRegSpeed() {
   try {
     const r = await fetch('/api/regulation/' + REG_ID + '/data');
     const d = await r.json();
+    // Una regulation senza Pokemon non e' un guasto: dirlo, invece di ricadere
+    // sulla lista statica da 158 nomi, che qui ha gia' mentito una volta.
+    if (d.ok && d.vuota) {
+      SPEED_META = [];
+      if (header) header.textContent = '📊 ' + tf('Speed Tier — nessun Pokémon in {reg}', {reg: REG_ID.toUpperCase()});
+      renderSpeed();
+      return;
+    }
     if (d.ok && d.roster) {
       // La velocità sta in base_stats.spe: leggerla da bst.spe dava null su tutti
       // e 174 Pokémon su 174 finivano scartati, con caduta muta sulla lista statica.

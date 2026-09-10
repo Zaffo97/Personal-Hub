@@ -18,6 +18,55 @@ pagina ed esegue `new Function()` su ogni blocco `<script>` **e** su ogni handle
 
 ---
 
+## 10/09/2026
+
+**Una regulation nata dall'interfaccia è usabile davvero (§1.3, voce collegata)**
+
+- ✅ **La sorgente delle mosse si sceglie, si eredita e si valida.** Era il campo che
+  cambiava i numeri senza comparire da nessuna parte: `moveset` non veniva scritto alla
+  creazione, quindi una regulation copiata da MA riceveva i 279 nomi di Champions e poi
+  leggeva gli elenchi di `main` — **80 mosse su Incineroar invece di 77**, Knock Off
+  compresa. Ora c'è una tendina alla creazione e nell'editor, il copia contenuti la porta
+  con sé, e una sorgente inesistente è **rifiutata con 400** sia alla creazione sia al
+  salvataggio (senza il rifiuto `mosse_legali()` avrebbe risposto `None`, cioè «mostrale
+  tutte»). Le sorgenti si leggono dal file, non da una costante: sono `main` e
+  `champions`, e le 32 forme Gigantamax che hanno anche `eredita_da` non sporcano
+  l'elenco.
+- ✅ **La pagina Regulations dice i numeri veri.** Leggeva ancora i file storici: su MA
+  scriveva **208 Pokémon e 461 mosse** invece di **279 e 460**, e su MB, Pokedex e su
+  qualunque regulation creata da lì — che quei file non li hanno mai avuti — **0 su
+  tutto, anche piena**. Ora usa gli stessi loader dell'editor: Pokedex 1343/919/397, MA
+  279/460/58, MB 308/460/58, e ogni card dice anche da quale sorgente prende le mosse.
+- ✅ **La `mega_map` si completa da interfaccia.** Una Mega nel roster che nessuna base
+  punta è irraggiungibile — il team builder non la offre — e l'unico modo di collegarla
+  era `scripts/completa_mega_map.py` da riga di comando. Ora c'è un pulsante con
+  anteprima (che non scrive niente, come un `--dry-run`): su una regulation «tutto il
+  catalogo» collega **97 Mega su 97** in un colpo, tiene i collegamenti già scritti,
+  dichiara quelle la cui base è fuori dal roster invece di aggiungerla di nascosto, e
+  **non trasforma mai `pokemon: null` in un elenco chiuso**. La deduzione `Mega X → X` è
+  stata spostata in `data.py` e ora è **una sola**: la usano lo script e il pulsante.
+- ✅ **Una regulation vuota si dichiara invece di dare 404.** `/api/regulation/<id>/data`
+  rispondeva 404 con roster vuoto, e i due che la chiamano lo prendevano nel `catch`: lo
+  Speed Tier ricadeva **in silenzio** sulla lista statica da 158 nomi, il team builder
+  usciva prima di aggiornare roster, oggetti e meccaniche — cioè restava con quelli della
+  regulation precedente. Ora risponde 200 con `vuota: true`: il calcolatore scrive
+  «nessun Pokémon in VUOTA9» con 0 righe, e il team builder mostra l'avviso e svuota i
+  suggerimenti.
+- **Verifica**: `scripts/prova_regulation_nuova.py` **32 su 32** su una copia dei dati;
+  gli altri tre giri di prove restano verdi (import specie 27/27, catalogo vivo 11/11,
+  importa dati 20/20); **sweep 0 errori** su 22 pagine per due lingue, con
+  `/pokemon/regulation/ma` e la sua schermata contenuti **aggiunte all'elenco dello
+  sweep**, dove non erano mai state; traduzioni **629 su 629**, 0 mancanti e 0 orfane;
+  `controlla_proprietario.py` 53 filtrate, 27 dichiarate, **0 scoperte**; **regola #8**
+  eseguita nel browser su `pokedex` — A=183, D=122, HP=221, 85-102 (38.5%–46.2%).
+- **Provato davvero nel browser**, non solo col test client: regulation creata dalla
+  modale copiando da MA (279/460/58, sorgente `champions` ereditata), pulsante della
+  mega_map che scrive 91 basi per 97 Mega con la copia di sicurezza in archivio, e il
+  filtro che resta `pokemon: null`. Su un'istanza di prova con i dati in `%TEMP%`: i file
+  veri non sono stati toccati.
+
+---
+
 ## 21/08/2026
 
 **Il backup sa tornare indietro — `scripts/importa_dati.py` (§1.4, falla 2)**

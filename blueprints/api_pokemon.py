@@ -567,8 +567,12 @@ def api_regulation_data(reg_id):
         return jsonify({'ok': False, 'error': f'Regulation not found: {reg_id}'}), 404
 
     roster = _load_roster(reg)
-    if not roster:
-        return jsonify({'ok': False, 'error': f'Roster vuoto per la regulation {reg_id}'}), 404
+    # ⚠️ Un roster vuoto NON e' un errore: e' una regulation appena creata, che non ha
+    # ancora nessun Pokémon. Fino al 10/09/2026 qui rispondeva 404, e i due che
+    # chiamano questa rotta lo prendevano nel loro `catch`: lo Speed Tier ricadeva
+    # **in silenzio** sulla lista statica da 158 nomi, e il team builder usciva prima
+    # di aggiornare roster, oggetti e meccaniche — cioe' continuava a mostrare quelli
+    # della regulation di prima. Meglio dirlo: `vuota` e' il campo che lo dichiara.
 
     # `regulation` e `items` erano letti da team_form.html e non sono mai esistiti qui:
     # `CURRENT_MECHANICS` restava vuoto a ogni caricamento, quindi il selettore della
@@ -578,6 +582,7 @@ def api_regulation_data(reg_id):
     # dell'11/08: JS scritto contro una risposta mai implementata.
     return jsonify({
         'ok': True, 'reg_id': reg_id, 'roster': roster, 'count': len(roster),
+        'vuota': not roster,
         'regulation': {
             'id': reg.get('id'), 'label': reg.get('label'),
             'mechanics': reg.get('mechanics') or [],

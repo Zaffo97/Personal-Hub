@@ -42,6 +42,9 @@
         </div>
       </div>
       <div style="font-size:.72rem;color:var(--text-muted);margin-bottom:.75rem">
+        {# La sorgente delle mosse e' l'unico campo che cambia i **numeri** senza
+           comparire da nessuna parte: scritta qui si vede a colpo d'occhio. #}
+        <div>⚡ {{ t('mosse da') }} <code>{{ reg.moveset }}</code></div>
         {% if reg.filter_file %}
         <div>🔎 {{ t('filtro sul catalogo') }} — <code>{{ reg.filter_file }}</code></div>
         {% else %}
@@ -87,6 +90,18 @@
       <div class="form-group">
         <label>{{ t('Meccaniche (separato da virgola)') }}</label>
         <input id="new_mechanics" class="form-control" placeholder="mega" value="mega">
+      </div>
+      <div class="form-group">
+        <label>{{ t('Sorgente delle mosse') }}</label>
+        <select id="new_moveset" class="form-control">
+          <option value="">{{ t('Come la regulation di partenza (altrimenti main)') }}</option>
+          {% for s in sorgenti_mosse %}
+          <option value="{{ s }}">{{ s }}</option>
+          {% endfor %}
+        </select>
+        <p style="font-size:.7rem;color:var(--text-muted);margin-top:.25rem">
+          {{ t('Quali mosse ogni Pokémon può imparare: <code>main</code> sono i giochi principali, <code>champions</code> è il moveset di Pokémon Champions — su Incineroar sono 80 contro 77.')|safe }}
+        </p>
       </div>
       <div class="form-group">
         <label>{{ t('Parti da') }}</label>
@@ -162,6 +177,7 @@ async function createRegulation() {
   const label     = document.getElementById('new_label').value.trim();
   const mechanics = document.getElementById('new_mechanics').value.split(',').map(m=>m.trim()).filter(Boolean);
   const partenza  = document.getElementById('new_partenza').value;
+  const moveset   = document.getElementById('new_moveset').value;
   const errEl     = document.getElementById('new_error');
 
   if (!id || !label) {
@@ -172,7 +188,7 @@ async function createRegulation() {
   const res = await fetch('/pokemon/api/regulations/create', {
     method: 'POST',
     headers: {'Content-Type':'application/json'},
-    body: JSON.stringify({ id, label, mechanics, partenza })
+    body: JSON.stringify({ id, label, mechanics, partenza, moveset })
   });
   const data = await res.json();
   if (data.ok) {

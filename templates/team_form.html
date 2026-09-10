@@ -49,6 +49,9 @@
           <select name="regulation_id" id="regulation_id" class="form-control" onchange="loadRegulationData()">
             <option value="{{ current_reg.id }}">{{ current_reg.label }}</option>
           </select>
+          {# Una regulation appena creata e' vuota: senza questa riga i suggerimenti
+             sarebbero semplicemente assenti, che a schermo somiglia a un guasto. #}
+          <p id="reg_vuota" style="display:none;font-size:.75rem;color:var(--warning,#e0a800);margin-top:.35rem"></p>
         </div>
       </div>
       <div class="form-group"><label>{{ t('Descrizione') }}</label>
@@ -226,6 +229,15 @@ async function loadRegulationData() {
     const r = await fetch(`/api/regulation/${regId}/data`);
     const d = await r.json();
     if (!d.ok) return;
+
+    // Roster vuoto: si dichiara. Prima questa risposta era un 404 e la funzione
+    // usciva nel catch, lasciando a schermo roster, oggetti e meccaniche della
+    // regulation precedente — cioe' il caso peggiore, dati di un'altra.
+    const avviso = document.getElementById('reg_vuota');
+    if (avviso) {
+      avviso.style.display = d.vuota ? '' : 'none';
+      if (d.vuota) avviso.textContent = '⚠️ ' + t('Questa regulation non ha ancora nessun Pokémon: scegli cosa includere dalla schermata contenuti.');
+    }
 
     // Aggiorna datalist roster
     const rosterDl = document.getElementById('roster_list');

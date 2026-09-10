@@ -1,5 +1,6 @@
 import os
 import json
+import re
 
 DATA_DIR = os.path.join(os.path.dirname(__file__), "data")
 
@@ -258,3 +259,75 @@ def _load_champions_bst():
         }
 
 CHAMPIONS_BST = _load_champions_bst()
+
+
+# ---------------------------------------------------------------------------
+# MEGA MAP: quale specie base porta a quale Mega.
+#
+# Una Mega che sta nel roster ma che nessuna specie base punta e' **irraggiungibile**:
+# il team builder non la offre e il calcolatore non ci arriva, senza nessun errore.
+# La deduzione sta qui e non in `scripts/completa_mega_map.py` perche' dal 10/09/2026
+# la usano in due — lo script da riga di comando e il pulsante «ricalcola» dell'editor
+# regulation — e due copie della stessa regola divergono al primo caso nuovo.
+# ---------------------------------------------------------------------------
+
+# Le Mega inventate che non seguono la regola del nome. Il catalogo scrive la forma
+# come `<Specie> (<Forma> Form)`, queste come `Mega <Forma> <Specie>`: nessuna regola
+# generale le lega, quindi stanno qui una per una invece di essere indovinate.
+# Verificate contro i nomi veri del catalogo il 12/08/2026.
+BASE_A_MANO = {
+    # Curly e' la forma predefinita di Tatsugiri: nel catalogo e' la voce nuda.
+    "Mega Curly Tatsugiri":    "Tatsugiri",
+    "Mega Droopy Tatsugiri":   "Tatsugiri (Droopy Form)",
+    "Mega Stretchy Tatsugiri": "Tatsugiri (Stretchy Form)",
+    "Mega Original Magearna":  "Magearna (Original Color)",
+}
+
+
+def base_attesa(mega):
+    """`Mega Raichu X` -> `Raichu`; `Mega Meowstic (Male)` -> `Meowstic (Male)`."""
+    if mega in BASE_A_MANO:
+        return BASE_A_MANO[mega]
+    base = re.sub(r"^Mega ", "", mega)
+    # `Z` insieme a X e Y: `Mega Absol Z` sta a `Absol` come `Mega Charizard X` sta a
+    # `Charizard`. E' la stessa convenzione, non un caso nuovo.
+    return re.sub(r" [XYZ]$", "", base)
+
+
+def collega_mega(roster, nomi_catalogo, mega_map):
+    """Le Mega del roster non ancora raggiungibili, divise per cosa serve a collegarle.
+
+    Torna tre elenchi, e la divisione **e' il punto**: solo il primo e' deducibile.
+
+    - `collegamenti`  coppie `(base, mega)` con la base gia' nel roster: nessun dato
+      nuovo, solo il collegamento fra due nomi gia' presenti
+    - `senza_base`    coppie `(base, mega)` con la base nel catalogo ma **fuori** dal
+      roster: collegarle vuol dire **aggiungere una specie**, che e' una scelta di
+      contenuto e la prende chi chiama, non questa funzione
+    - `problemi`      le Mega su cui ci si ferma: la base non e' nel catalogo, oppure
+      la Mega stessa non c'e'. Non si indovina un nome che non esiste
+    """
+    mappate = {m for v in (mega_map or {}).values() for m in v}
+    nomi = set(nomi_catalogo)
+    collegamenti, senza_base, problemi = [], [], []
+    for mega in sorted(n for n in roster if n.startswith("Mega ") and n not in mappate):
+        base = base_attesa(mega)
+        if mega not in nomi:
+            problemi.append((mega, f"'{mega}' non e' nel catalogo"))
+            continue
+        if base not in nomi:
+            problemi.append((mega, f"la base attesa '{base}' non e' nel catalogo"))
+            continue
+        (collegamenti if base in set(roster) else senza_base).append((base, mega))
+    return collegamenti, senza_base, problemi
+
+
+def applica_collegamenti(mega_map, collegamenti):
+    """Aggiunge le coppie `(base, mega)` alla mega_map, ordinata. Torna la nuova."""
+    nuova = {k: list(v) for k, v in (mega_map or {}).items()}
+    for base, mega in collegamenti:
+        nuova.setdefault(base, [])
+        if mega not in nuova[base]:
+            nuova[base].append(mega)
+        nuova[base].sort()
+    return dict(sorted(nuova.items()))

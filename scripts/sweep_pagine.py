@@ -50,6 +50,9 @@ PAGINE = [
     "/", "/pokemon/", "/pokemon/team/new", "/pokemon/team/1/edit",
     "/pokemon/calcolatori", "/pokemon/regulations", "/pokemon/catalogo",
     "/pokemon/mosse", "/pokemon/oggetti", "/pokemon/roster", "/pokemon/abilita",
+    # ⚠️ Aggiunte il 10/09/2026: le due pagine di una regulation non erano nell'elenco,
+    # quindi lo sweep non le ha mai guardate — e sono piene di handler inline.
+    "/pokemon/regulation/ma", "/pokemon/regulation/ma/contenuto",
     "/gaming/", "/gaming/new", "/gaming/1/edit", "/gaming/uscite", "/gaming/steam",
     "/arduino/", "/python/", "/pcbuilder/", "/admin/utenti",
 ]
