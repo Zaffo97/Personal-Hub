@@ -130,10 +130,18 @@ dell'inventario del codice morto, che sono i due lavori in cui deve essere compl
 - **le chiavi del catalogo non si rinominano.** Le usano i filtri delle regulation, il
   motore degli effetti e i team salvati nel DB. Per cambiare ciò che si legge a schermo
   ci sono `nome_it` e `nome_en`
-- ⚠️ **due chiavi diverse possono avere lo stesso `nome_it`/`nome_en`**, quindi la
-  risoluzione per nome è ambigua: `Sheer Force` esiste come `Forza Bruta` e come
-  `Forzabruta`. `indiceNomi()` a parità di nome tiene la voce che ha un `effect`; i
-  doppioni veri sono elencati in `BACKLOG.md` e vanno fusi, non aggirati
+- ⚠️ **la risoluzione per nome può diventare ambigua**, e quando lo diventa non lo dice
+  nessuno. Oggi doppioni **non ce ne sono**: contati il 10/09/2026, zero nomi condivisi
+  da due chiavi in tutti e quattro i database. Il caso storico era `Sheer Force`,
+  presente come `Forza Bruta` (con l'effetto) e `Forzabruta` (inerte), fusi l'11/08.
+  `indiceNomi()` a parità di nome tiene la voce che ha un `effect`, ma è una rete, non
+  una cura: con due voci **entrambe** attive vince l'ultima. Un doppione nuovo si fonde,
+  non si aggira, e `python scripts/controlla_abilita.py` lo trova sulle abilità
+- ⚠️ **e il legame fra Pokémon e abilità passa da `nome_en`**: il catalogo Pokémon le
+  cita col nome **inglese**, le chiavi sono italiane. Cambiare un `nome_en` può quindi
+  staccare un Pokémon dalla sua abilità **senza nessun errore** — è successo a Mega
+  Meganium con `Mega Sol`, e non se n'è accorto nessuno per un mese. Dopo ogni giro sui
+  nomi, `controlla_abilita.py`
 - gli script in `scripts/` sono **rieseguibili** e hanno `--dry-run`. Uno script che
   modifica dati curati deve rifiutarsi di farlo alla cieca e lasciare una copia in
   `data/archive/`
