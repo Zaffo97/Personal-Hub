@@ -68,7 +68,8 @@ L'ordine che ne esce, e che vale finché Davide non lo cambia:
    e la rimisura l'ha detto. Restava un legame rotto su Mega Meganium
 3. §4 — le sezioni: Stampa 3D, Tinkercad, PC Builder, Python ← **il prossimo**
 4. §1.4 — l'export `--completo`
-5. §3 — i bachi noti
+5. ~~§3 — i bachi noti~~ ✅ **guardati tutti il 10/09/2026**: tre chiusi, uno mezzo,
+   uno che non si riproduce, uno lasciato apposta
 6. §5 — il giro di collaudo, la verifica dei moveset, l'inventario del codice morto
 7. §1.6 — le due guide, che vanno **dopo** il collaudo
 8. §1.5 — l'app online
@@ -546,18 +547,15 @@ quattro cose richiedono **fonti diverse**:
 
 ---
 
-## 3. Bachi noti e non corretti
+## 3. Bachi noti — quattro guardati il 10/09/2026
 
 | | Baco | Stato |
 |---|---|---|
-| ⚠️ | **`build_catalog.py` oggi distruggerebbe il catalogo** | Trovato il 12/08, **non corretto** perché fuori scope. Legge come base i **file storici** (174 voci contro le 1026 di oggi, nessun `nome_it`/`nome_en`, Mega ancora convertite) e scrive in `data/catalog/`. Peggio: `MEGA_BONUS` riapplicherebbe il `+75 HP / +20` che la deconversione dell'11/08 ha tolto. Rieseguirlo **riporterebbe indietro il catalogo di quattro giorni di lavoro, in silenzio**. Va fatto leggere `data/catalog/` quando esiste, e `MEGA_BONUS` va tolto. Fino ad allora **non eseguirlo** |
+| ✅ | **`build_catalog.py` avrebbe distrutto il catalogo** | **Chiuso il 10/09/2026.** Leggeva come base i **file storici** (174 voci contro 1026) e riapplicava alle Mega il `+75 HP / +20` che la deconversione dell'11/08 aveva tolto: rieseguirlo avrebbe riscritto `data/catalog/` con quella base, **in silenzio**. Ora la base è `data/catalog/` quando c'è — e lo script **dice da quale file legge** — `MEGA_BONUS` non esiste più, e `scrivi_json()` **rifiuta** un file più povero di quello sul disco. Provato: dry-run reale 1026→1029 specie, 919→920 mosse, 386→387 abilità, 397→398 oggetti, **0 voci curate modificate**; `scripts/prova_build_catalog.py` 9 su 9 |
+| ✅ | **La regex delle traduzioni taglia sull'apostrofo** — **non si riproduce** | Rimisurato il 10/09/2026 **su un file vero**: `t('Nessun team per l\'utente scelto.')` viene estratto **intero**. Il ramo `\\.` dell'alternanza consuma la coppia backslash-apice, e la `replace()` sotto toglie il backslash. La diagnosi del 19/08 è quasi certamente nata da una prova fatta in una shell che si mangia un livello di backslash — la stessa trappola è ricapitata **due volte** mentre si scriveva questa riga. La spiegazione sta ora nel commento sopra la regex, perché il caso non si riapra una terza volta |
+| ✅ | **`scripts/` è fuori dal raggio di `controlla_proprietario.py`** | **Chiuso il 10/09/2026**, ed è rimasto fuori: uno script da riga di comando non ha una sessione, quindi `ambito_utente()` lì non vuol dire niente e lavora su tutto il DB per costruzione. Quello che mancava era **dirlo**: ora è scritto nel docstring e il riassunto conta e **nomina** gli script che toccano una tabella di contenuto (oggi 2: `importa_dati.py` e `prova_importa_dati.py`). Se ne compare uno che non ti aspetti, quello va letto |
+| 🟨 | **La tendina categorie degli oggetti non corrisponde ai dati** | **Metà chiusa il 10/09/2026, e non era una decisione sui dati.** Il filtro offriva tutte e **14** le categorie mentre gli oggetti ne usano **7**: le altre 7 (`conditional`, `damage`, `defensive`, `orb`, `support`, `terrain`, `weather`) non hanno **nemmeno una voce**, quindi sceglierle dava sempre zero risultati. Ora il filtro mostra solo quelle che i dati usano davvero, **contate sui dati** e non tolte a mano, mentre la tendina del **modulo** resta completa — è da lì che una categoria vuota si riempie. ⬜ **Resta la decisione vera**, che è di Davide: assegnare le voci giuste a quelle 7 categorie, oppure toglierle da `CATEGORIE_OGGETTI`. E resta il numero che sta sotto tutto: **`other` è 339 oggetti su 397**, l'86%, quindi come filtro la categoria dice poco comunque |
 | ⬜ | **Il calcolatore non impedisce di scrivere una mossa illegale** | La segnala e basta. **È voluto per ora**: un blocco duro sulle voci senza elenco sarebbe un falso divieto |
-| ⬜ | **`controlla_traduzioni.py` taglia le chiavi sull'apostrofo protetto** | Trovato il 19/08/2026 scrivendo una frase nuova, **non corretto** perché fuori scope. La regex `CHIAMATA` dovrebbe consumare `'` dentro una stringa fra apici singoli, e invece si ferma: `t('Nessun team per l'utente scelto.')` viene contato come la chiave «Nessun team per l», che nessun dizionario avrà mai. Il sintomo è una «mancante» storpiata, quindi si vede — ma se qualcuno la traducesse così com'è, la traduzione non comparirebbe mai a schermo. Aggirato riscrivendo la frase senza apostrofo; da correggere nella regex |
-| ⬜ | **`scripts/` è fuori dal raggio di `controlla_proprietario.py`** | Visto il 21/08/2026 scrivendo `importa_dati.py`: `SORGENTI` sono `blueprints/` e i `.py` della radice, e la scansione **non è ricorsiva**. È giusto che sia così — uno script da riga di comando non ha una sessione, quindi `ambito_utente()` lì non vuol dire niente e lavora per definizione su tutto il DB — ma non è scritto da nessuna parte, e il silenzio somiglia troppo a una svista. Da mettere nel docstring del controllo, o da rendere una categoria dichiarata |
-| ⬜ | **`/pokemon/api/abilities` (GET) non lo chiama nessuno** | Trovato il 17/08/2026 con lo stesso censimento. Nessun `fetch`, nessun `url_for`, nessun link in `templates/` o `static/`: l'editor abilità usa il POST del form e `/pokemon/abilita/archives`. Candidato per l'inventario del codice morto (§5.3), non un baco. Dal 17/08 è comunque riservato agli amministratori, come tutto ciò che non è in `APERTE_A_TUTTI` |
-| ⚠️ | **La tendina categorie degli oggetti non corrisponde ai dati** | Saltato fuori il 13/08/2026 traducendo le categorie, ed è un difetto di contenuto, non di lingua. Contato sul catalogo: gli oggetti usano **7** categorie, le abilità 13. Ma la tendina degli oggetti ne offre 13, e **6 non hanno nemmeno una voce** (`conditional`, `damage`, `defensive`, `orb`, `support`, `terrain`, `weather`): sono filtri che non danno mai risultati, l'opposto di come sono fatte le tendine di Gaming. ✅ La metà urgente è chiusa: **`other` mancava del tutto ed è 339 oggetti su 397**, l'86% del catalogo, quindi il badge cadeva sulla chiave grezza e quella categoria non era filtrabile. Resta da decidere se togliere le 6 morte o assegnarci le voci giuste — è una ricategorizzazione dei dati, non una riga di codice |
-
----
 
 ## 4. Voci minori, per sezione
 

@@ -1946,7 +1946,15 @@ def items_editor():
         items=idata.get("items", {}),
         items_json=json.dumps(idata, ensure_ascii=False, indent=2),
         current_reg=reg,
-        regulations=regs
+        regulations=regs,
+        # ⚠️ Le categorie che i dati usano **davvero**, contate qui e non scritte a
+        # mano: la tendina dei filtri offriva tutte e 14 quelle di `CATEGORIE_OGGETTI`,
+        # e **7 non hanno nemmeno una voce** (`conditional`, `damage`, `defensive`,
+        # `orb`, `support`, `terrain`, `weather`). Sceglierle dava sempre zero
+        # risultati, che a schermo somiglia a un guasto. La tendina del **modulo**
+        # invece resta completa: e' da la' che una categoria vuota si riempie.
+        categorie_presenti=sorted({(v.get("category") or "") for v in
+                                   (idata.get("items") or {}).values()} - {""}),
     )
 
 @bp.route("/regulations")

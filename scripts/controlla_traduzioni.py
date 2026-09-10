@@ -33,6 +33,15 @@ I18N = os.path.join(BASE, "data", "i18n")
 
 # t('...') e tf('...', {...}) — sia in Jinja che in JavaScript. Le due forme di
 # apici vanno prese entrambe: nei template si scrive t('...'), nel JS capita "...".
+#
+# ⚠️ **L'apostrofo protetto lo gestisce già**, e il 19/08/2026 il backlog diceva di no.
+# Rimisurato il 10/09/2026 sul file vero: `t('Nessun team per l\'utente scelto.')`
+# viene estratto **intero**, perché il ramo `\\.` dell'alternanza consuma la coppia
+# backslash-apice prima che `(?P=q)` possa chiudere, e la `.replace()` più sotto
+# toglie il backslash. La diagnosi di allora è nata quasi certamente da una prova
+# fatta in una shell che si mangia un livello di backslash: la stessa trappola è
+# ricapitata due volte scrivendo questa riga. Prima di riaprire il caso, la prova va
+# fatta su un **file**, non su una stringa scritta a mano in un terminale.
 CHIAMATA = re.compile(r"\bt f?\(|\btf?\(\s*(?P<q>['\"])(?P<testo>(?:\\.|(?!(?P=q)).)*)(?P=q)")
 
 

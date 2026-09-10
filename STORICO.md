@@ -20,6 +20,44 @@ pagina ed esegue `new Function()` su ogni blocco `<script>` **e** su ogni handle
 
 ## 10/09/2026
 
+**I quattro bachi noti, guardati uno per uno (§3)**
+
+- ⚠️ ✅ **`build_catalog.py` non è più una bomba.** Rieseguito com'era, avrebbe riscritto
+  `data/catalog/` partendo dai **file storici** — 174 voci contro le 1026 di oggi, senza
+  `nome_it`/`nome_en` — e avrebbe riapplicato alle Mega il `+75 HP / +20` che la
+  deconversione dell'11/08 aveva tolto apposta. **In silenzio**: la regola «non tocco i
+  dati curati» c'era già, ma confrontava il risultato con la **base sbagliata**, quindi
+  le 852 voci che in quella base non c'erano non le difendeva nessuno. Ora la base è
+  `data/catalog/` quando esiste (i file storici restano solo per il primo giro) e lo
+  script **dice da quale file legge**; `MEGA_BONUS` è stato tolto; `scrivi_json()` si
+  **rifiuta** di scrivere un file con meno voci di quello sul disco. Dry-run vero:
+  **1026 → 1029 specie, 919 → 920 mosse, 386 → 387 abilità, 397 → 398 oggetti, 0 voci
+  curate modificate**. `scripts/prova_build_catalog.py` **9 su 9**, senza rete e senza CSV.
+- ✅ **La regex delle traduzioni non è rotta.** Il backlog diceva che
+  `t('Nessun team per l\'utente scelto.')` veniva contato come «Nessun team per l»:
+  rimisurato **su un file vero**, la frase esce **intera**. Il ramo `\\.` consuma la
+  coppia backslash-apice e la `replace()` sotto la ripulisce. La diagnosi del 19/08 è
+  nata quasi certamente da una prova scritta a mano in una shell che si mangia un
+  livello di backslash — trappola ricapitata **due volte** oggi mentre si scriveva la
+  spiegazione, che infatti ora sta nel commento sopra la regex.
+- ✅ **`scripts/` resta fuori dal controllo proprietario, ma adesso c'è scritto.** Uno
+  script da riga di comando non ha una sessione: `ambito_utente()` lì non vuol dire
+  niente e lavora su tutto il DB **per costruzione**. Il problema non era la scelta, era
+  il silenzio: ora il docstring lo dichiara e il riassunto **conta e nomina** gli script
+  che toccano una tabella di contenuto — oggi **2**, `importa_dati.py` e
+  `prova_importa_dati.py`. Il controllo esclude se stesso, che le tabelle le nomina
+  tutte perché sono la sua configurazione.
+- 🟨 **La tendina delle categorie oggetti: chiusa la metà che non chiedeva decisioni.**
+  Il filtro offriva **14** categorie, gli oggetti ne usano **7**: le altre sette non
+  hanno nemmeno una voce, quindi erano filtri che davano sempre zero. Ora il filtro
+  mostra solo le presenti — **contate sui dati**, non tolte a mano, così si riaggiornano
+  da sole — mentre la tendina del modulo resta a 14, perché è da lì che una categoria
+  vuota si riempie. Verificato a schermo: filtro 7 opzioni, modulo 14. ⬜ Resta la
+  ricategorizzazione, che è una decisione di Davide.
+- **Verifica**: cinque giri di prove verdi (9/9, 32/32, 27/27, 11/11, 20/20), sweep **0
+  errori**, traduzioni **629 su 629**, `controlla_abilita.py` pulito,
+  `controlla_proprietario.py` **0 scoperte**.
+
 **Le abilità da fondere erano già fuse — e un filo era rimasto staccato (§2.2)**
 
 - ✅ **Rimisurato invece di eseguito.** Il backlog diceva 103 voci da fondere, 34 con un

@@ -23,6 +23,15 @@ ogni stringa SQL che nomina una tabella di contenuto e la mette in una di tre fi
 l'eccezione smette di combaciare e la query torna «scoperta»: è voluto. Un'eccezione
 che segue in silenzio le modifiche non sarebbe una rete, sarebbe un cerotto.
 
+**Cosa resta fuori dal raggio, e perché** (scritto qui dal 10/09/2026, prima era solo
+un silenzio): le sorgenti sono `blueprints/` e i `.py` della radice, e la scansione
+**non è ricorsiva**. Quindi `scripts/` non viene guardato — ed è giusto: uno script da
+riga di comando **non ha una sessione**, `ambito_utente()` lì non vuol dire niente, e
+per definizione lavora su tutto il DB, perché è per questo che lo si lancia. Ma un
+silenzio somiglia troppo a una svista: da oggi gli script che nominano una tabella di
+contenuto vengono **contati e nominati** in fondo al riassunto, come categoria
+dichiarata. Se ne compare uno che non ti aspetti, quello va letto.
+
 Esce con 1 se resta anche una sola query scoperta.
 """
 import argparse
@@ -252,6 +261,31 @@ def sorgenti():
                 yield percorso
 
 
+def fuori_dal_raggio():
+    """Gli script che nominano una tabella di contenuto: dichiarati, non controllati.
+
+    Non sono un problema — uno script non ha una sessione, quindi lavora su tutto il
+    DB per costruzione — ma vanno **contati**, altrimenti «non li guardo» e «me ne
+    sono dimenticato» hanno lo stesso aspetto.
+    """
+    cartella = os.path.join(BASE, "scripts")
+    trovati = []
+    io_stesso = os.path.basename(os.path.abspath(__file__))
+    for nome in sorted(os.listdir(cartella)):
+        # Questo file nomina tutte le tabelle — sono la sua configurazione, non
+        # query: contarsi da solo sarebbe l'unica riga sicuramente falsa dell'elenco.
+        if not nome.endswith(".py") or nome == io_stesso:
+            continue
+        try:
+            testo = io.open(os.path.join(cartella, nome), encoding="utf-8").read()
+        except Exception:
+            continue
+        tabelle = sorted(set(t.lower() for t in CITA.findall(testo)))
+        if tabelle:
+            trovati.append((nome, tabelle))
+    return trovati
+
+
 def main():
     ap = argparse.ArgumentParser()
     ap.add_argument("--tutte", action="store_true",
@@ -291,6 +325,8 @@ def main():
     print(f"  dichiarate (eccezioni)    : {len(dichiarate)}")
     print(f"  a tabella calcolata       : {len(calcolate)}")
     print(f"  SCOPERTE                  : {len(scoperte)}")
+    print(f"  fuori dal raggio: {len(fuori_dal_raggio())} script in scripts/ "
+          f"(dichiarati, vedi in fondo)")
 
     if args.tutte and filtrate:
         print("\n-- filtrate --")
@@ -309,6 +345,17 @@ def main():
         for q in sorted(calcolate, key=lambda x: (x["file"], x["riga"])):
             print(f"  {q['file']}:{q['riga']} {q['funzione']}()")
             print(f"      {q['sql'][:110]}")
+
+    script = fuori_dal_raggio()
+    if script:
+        print("\n-- fuori dal raggio, e dichiarato: scripts/ non viene controllato --")
+        print("   uno script da riga di comando non ha una sessione, quindi "
+              "`ambito_utente()`")
+        print("   non vuol dire niente e lavora su tutto il DB. È voluto: qui si "
+              "contano,")
+        print("   così «non li guardo» non somiglia a «me ne sono dimenticato».")
+        for nome, tabelle in script:
+            print(f"  scripts/{nome}  [{', '.join(tabelle)}]")
 
     if scoperte:
         print("\n-- SCOPERTE: mostrano le righe di tutti --")

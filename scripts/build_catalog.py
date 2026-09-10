@@ -8,16 +8,31 @@ REGOLA D'ORO: i dati curati esistenti vincono sempre.
 L'import aggiunge solo ciò che manca e non sovrascrive mai una voce già presente.
 Questo perché PokéAPI non ha i campi che il calcolatore usa davvero — `modifier` e
 `effect` sugli oggetti, il blocco `effect` sulle abilità — e perché parte del
-catalogo è deliberatamente personalizzata (vedi le Mega qui sotto).
+catalogo è deliberatamente personalizzata.
+
+⚠️ **Corretto il 10/09/2026, e fino a quel giorno questo script era una bomba.**
+Faceva due cose che oggi non fa più:
+
+1. leggeva come base i **file storici** (`data/pokemon_catalog.json`, `moves_ma.json`,
+   `items_ma.json`, `abilities.json`), fermi a **174 voci** contro le 1026 di oggi e
+   senza `nome_it`/`nome_en`. Rieseguirlo avrebbe **riscritto `data/catalog/` con
+   quella base**, cioè buttato via quattro giorni di lavoro **in silenzio**: la regola
+   «non tocco i dati curati» c'era già, ma confrontava il risultato con la base
+   sbagliata, quindi le 852 voci che nella base non c'erano non le difendeva nessuno
+2. riapplicava alle Mega un bonus `+75 HP / +20` che la deconversione dell'11/08 ha
+   **tolto apposta**: nel catalogo le Mega tengono le loro base stat vere, come ogni
+   altra voce, e quel +75 era una conversione a Lv.50 finita dentro `base_stats`
+
+Ora la base è **`data/catalog/`** quando c'è — i file storici restano solo come
+riserva per il primo giro, e lo script **dice quale dei due sta leggendo** — e nessuna
+stat viene ritoccata. In più si **rifiuta di scrivere** un file che avrebbe meno voci
+di quello già sul disco.
 
 Convenzioni rispettate, le stesse dei file attuali:
   - chiavi Pokémon, mosse e oggetti in inglese; abilità con nome italiano ufficiale
     quando esiste, altrimenti inglese (è la convenzione di data/abilities.json)
   - tipi in italiano, descrizioni in italiano
-  - Pokémon: base stat ufficiali. Le forme **Mega** ricevono il potenziamento del
-    formato Champions: HP +75, tutte le altre stat +20. Verificato sul catalogo
-    esistente: 53 Mega su 55 seguono questa regola, mentre le 166 specie base e le
-    20 forme non-Mega sono identiche ai dati ufficiali.
+  - Pokémon: **base stat ufficiali per tutti**, forme Mega comprese
 
 Le regulation NON contengono più dati: contengono elenchi di nomi che puntano qui.
 """
@@ -42,8 +57,10 @@ IT, EN = "8", "9"
 STAT_ID = {"1": "hp", "2": "atk", "3": "def", "4": "spa", "5": "spd", "6": "spe"}
 ORDINE_STAT = ["hp", "atk", "def", "spa", "spd", "spe"]
 
-# Potenziamento Mega del formato Champions, ricavato dal catalogo esistente.
-MEGA_BONUS = {"hp": 75, "atk": 20, "def": 20, "spa": 20, "spd": 20, "spe": 20}
+# ⚠️ Qui stava `MEGA_BONUS = {hp: +75, resto: +20}`, tolto il 10/09/2026. Non era un
+# potenziamento di Champions: era la firma di una **conversione a Lv.50** (IV 31, 0 SP)
+# finita dentro `base_stats`, che `scripts/deconverti_mega_catalogo.py` ha ripulito
+# l'11/08 su 95 Mega. Riapplicarlo qui avrebbe rifatto il danno a ogni Mega nuova.
 
 # PokéAPI chiama 'ballistics' quello che i file dell'app chiamano 'bullet'.
 FLAG_RINOMINATI = {"ballistics": "bullet"}
@@ -117,12 +134,47 @@ def carica_json(percorso, default):
         return default
 
 
-def scrivi_json(percorso, dati, dry):
+def base_curata(nome, storico, chiave=None, avvolto_anche_nel_catalogo=False):
+    """Le voci da cui partire, e **da quale file arrivano**.
+
+    ⚠️ Prima si leggevano sempre i file storici, che oggi sono una fotografia di
+    giugno: `data/catalog/` vince quando esiste, e il percorso torna indietro per
+    poterlo stampare — una base sbagliata qui non da' errore, da' un catalogo
+    dimezzato.
+    """
+    nel_catalogo = os.path.join(CATALOGO, nome + ".json")
+    if os.path.isfile(nel_catalogo):
+        dati = carica_json(nel_catalogo, {})
+        if avvolto_anche_nel_catalogo:
+            dati = dati.get(chiave, dati)
+        return dati, nel_catalogo
+    percorso = os.path.join(DATA, storico)
+    dati = carica_json(percorso, {})
+    return (dati.get(chiave, {}) if chiave else dati), percorso
+
+
+def scrivi_json(percorso, dati, dry, chiave=None):
+    """Scrive, ma **non accetta di perdere voci**.
+
+    E' la rete che mancava: la regola «non tocco i dati curati» confrontava il
+    risultato con la base, quindi con la base sbagliata non difendeva niente. Questa
+    guarda il file **che c'e' adesso sul disco**, che e' l'unica cosa che si perde.
+    """
+    quante = len(dati.get(chiave, dati) if chiave else dati)
+    if os.path.isfile(percorso):
+        prima = carica_json(percorso, {})
+        prima = prima.get(chiave, prima) if chiave else prima
+        if quante < len(prima):
+            print(f"  INTERROTTO su {os.path.basename(percorso)}: "
+                  f"{len(prima)} voci sul disco, {quante} in uscita. "
+                  f"Non scrivo un file più povero di quello che c'è.")
+            return False
     if dry:
-        return
+        return True
     os.makedirs(os.path.dirname(percorso), exist_ok=True)
     with io.open(percorso, "w", encoding="utf-8") as f:
         json.dump(dati, f, ensure_ascii=False, indent=2)
+    return True
 
 
 # ── Pokémon ──────────────────────────────────────────────────────────────────
@@ -202,9 +254,9 @@ def costruisci_pokemon(esistente):
         if nome.lower() in forme_esistenti:
             continue
         base = {k: stat[k] for k in ORDINE_STAT}
-        e_mega = bool(f and f.get("is_mega") == "1") or nome.startswith("Mega ")
-        if e_mega:
-            base = {k: v + MEGA_BONUS[k] for k, v in base.items()}
+        # Le Mega entrano con le loro base stat ufficiali, come ogni altra voce:
+        # niente da aggiungere, solo da contare per il riepilogo.
+        if bool(f and f.get("is_mega") == "1") or nome.startswith("Mega "):
             mega_potenziate += 1
         voce = {"types": tipi, "base_stats": base, "abilities": abilita, "slug": slug}
 
@@ -368,10 +420,18 @@ def main():
     scarica_cache()
     print()
 
-    pk_esistente = carica_json(os.path.join(DATA, "pokemon_catalog.json"), {})
-    mv_esistenti = carica_json(os.path.join(DATA, "moves_ma.json"), {}).get("moves", {})
-    it_esistenti = carica_json(os.path.join(DATA, "items_ma.json"), {}).get("items", {})
-    ab_esistenti = carica_json(os.path.join(DATA, "abilities.json"), {}).get("abilities", {})
+    pk_esistente, da_pk = base_curata("pokemon", "pokemon_catalog.json")
+    mv_esistenti, da_mv = base_curata("moves", "moves_ma.json", "moves")
+    it_esistenti, da_it = base_curata("items", "items_ma.json", "items")
+    ab_esistenti, da_ab = base_curata("abilities", "abilities.json", "abilities",
+                                      avvolto_anche_nel_catalogo=True)
+    print("base di partenza:")
+    for etichetta, percorso, quante in (("pokemon", da_pk, len(pk_esistente)),
+                                        ("mosse", da_mv, len(mv_esistenti)),
+                                        ("oggetti", da_it, len(it_esistenti)),
+                                        ("abilità", da_ab, len(ab_esistenti))):
+        print(f"  {etichetta:8s} {quante:5d} voci da {os.path.relpath(percorso, RADICE)}")
+    print()
 
     pk, s1 = costruisci_pokemon(pk_esistente)
     mv, s2 = costruisci_mosse(mv_esistenti)
@@ -380,7 +440,8 @@ def main():
 
     forme_tot = sum(len(v.get("forms") or {}) for v in pk.values())
     print(f"POKÉMON  {len(pk_esistente):5d} -> {len(pk):5d} specie   (+{s1['nuove_specie']})")
-    print(f"         forme: {forme_tot} totali   (+{s1['nuove_forme']}, di cui {s1['mega_potenziate']} Mega con bonus Champions)")
+    print(f"         forme: {forme_tot} totali   (+{s1['nuove_forme']}, di cui "
+          f"{s1['mega_potenziate']} Mega, con le loro base stat ufficiali)")
     print(f"MOSSE    {len(mv_esistenti):5d} -> {len(mv):5d}   (+{s2['aggiunte']})")
     ci = s2["contact_integrati"]
     if ci:
@@ -422,12 +483,18 @@ def main():
         print("INTERROTTO: l'import non deve toccare i dati curati")
         return 1
 
-    scrivi_json(os.path.join(CATALOGO, "pokemon.json"), pk, args.dry_run)
-    scrivi_json(os.path.join(CATALOGO, "moves.json"), mv, args.dry_run)
-    # le abilità restano avvolte in {"abilities": ...}: è la forma che l'editor,
-    # l'archivio e il ripristino già si aspettano
-    scrivi_json(os.path.join(CATALOGO, "abilities.json"), {"abilities": ab}, args.dry_run)
-    scrivi_json(os.path.join(CATALOGO, "items.json"), og, args.dry_run)
+    scritti = [
+        scrivi_json(os.path.join(CATALOGO, "pokemon.json"), pk, args.dry_run),
+        scrivi_json(os.path.join(CATALOGO, "moves.json"), mv, args.dry_run),
+        # le abilità restano avvolte in {"abilities": ...}: è la forma che l'editor,
+        # l'archivio e il ripristino già si aspettano
+        scrivi_json(os.path.join(CATALOGO, "abilities.json"), {"abilities": ab},
+                    args.dry_run, chiave="abilities"),
+        scrivi_json(os.path.join(CATALOGO, "items.json"), og, args.dry_run),
+    ]
+    if not all(scritti):
+        print("\nINTERROTTO: qualche file avrebbe perso voci, vedi sopra.")
+        return 1
     print("\n" + ("dry-run: niente scritto" if args.dry_run else f"scritto in {CATALOGO}"))
     return 0
 
