@@ -20,6 +20,38 @@ pagina ed esegue `new Function()` su ogni blocco `<script>` **e** su ogni handle
 
 ## 10/09/2026
 
+**Le abilità da fondere erano già fuse — e un filo era rimasto staccato (§2.2)**
+
+- ✅ **Rimisurato invece di eseguito.** Il backlog diceva 103 voci da fondere, 34 con un
+  effetto: erano i numeri di **prima** della fusione dell'11/08, mai più ricontati. Oggi
+  il catalogo ha **386 voci**, **82** senza traduzione e **10** di quelle con un effetto —
+  e sono esattamente le 10 abilità di Champions che Davide aveva deciso di lasciare fuori.
+  Delle altre 72: 7 appese a un Pokémon (anche quelle decise) e **65 inerti che nessuno
+  possiede**. Doppioni di nome nei quattro database del catalogo: **zero**.
+- ⚠️ ✅ **Mega Meganium citava un'abilità che non esisteva più, e l'ha visto Davide.**
+  Prima dell'11/08 la chiave `Megasolar` aveva `nome_en: Mega Sol`, ed è così che il
+  catalogo Pokémon la chiama: le abilità le cita col nome **inglese**. La fusione ha
+  spostato l'effetto della chiave `Mega Sol` su `Terra Estrema` — giusto, è l'abilità di
+  Primal Groudon, che infatti applica il sole — e poi il giro sui nomi ha cambiato il
+  `nome_en` di `Megasolar`. Da quel giorno quel nome non risolveva **su nessuna voce**:
+  nome grezzo nella tendina, niente descrizione, niente traduzione, nessun errore.
+  Misurato: **1 nome su 312** citati dai Pokémon era orfano.
+- ✅ **Chiuso con `scripts/ricollega_megasolar.py`** (rieseguibile, `--dry-run`, scrive
+  con `_save_abilities()`): `nome_en` torna `Mega Sol` e la voce riprende il blocco della
+  chiave cancellata — sole permanente, Fuoco ×1.5, Acqua ×0.5 — **copiato dall'archivio**,
+  non riscritto a mano. Provato nel browser: Mega Meganium con una mossa Fuoco fisica BP
+  100 su Amoonguss passa da **94-112 a 142-168**, cioè il ×1.5 del sole, che prima quella
+  voce non applicava. Le voci attive salgono da 49 a **50**.
+- ✅ **La rete perché non ricapiti**: `scripts/controlla_abilita.py` — 312 nomi citati,
+  **0 orfani**, **0 doppioni di nome**, 50 voci attive di cui **10 irraggiungibili** (le
+  abilità di Champions, decise fuori l'11/08). Provato **anche sul guasto**: sui dati di
+  ieri lo trova. Esce con 1 se trova qualcosa.
+- **Verifica**: quattro giri di prove verdi (32/32, 27/27, 11/11, 20/20), **sweep 0
+  errori**, traduzioni **629 su 629**, **regola #8** rieseguita nel browser su `pokedex`
+  dopo la modifica ai dati — A=183, D=122, HP=221, 85-102 (38.5%–46.2%).
+- ⬜ **Non riallineato** il fallback `data/abilities.json`, che tiene ancora la voce
+  vecchia: vedi §2.2 nel backlog.
+
 **Una regulation nata dall'interfaccia è usabile davvero (§1.3, voce collegata)**
 
 - ✅ **La sorgente delle mosse si sceglie, si eredita e si valida.** Era il campo che

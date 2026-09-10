@@ -64,9 +64,9 @@ L'ordine che ne esce, e che vale finché Davide non lo cambia:
 
 1. ~~§1.3 — le voci collegate che restano (una regulation nuova dall'interfaccia)~~
    ✅ **chiuso il 10/09/2026**
-2. §2.2 — le 103 abilità da fondere: **aspetta una decisione**, non del codice
-   ← **il prossimo**
-3. §4 — le sezioni: Stampa 3D, Tinkercad, PC Builder, Python
+2. ~~§2.2 — le 103 abilità da fondere~~ ✅ **chiuso il 10/09/2026**: erano già fuse,
+   e la rimisura l'ha detto. Restava un legame rotto su Mega Meganium
+3. §4 — le sezioni: Stampa 3D, Tinkercad, PC Builder, Python ← **il prossimo**
 4. §1.4 — l'export `--completo`
 5. §3 — i bachi noti
 6. §5 — il giro di collaudo, la verifica dei moveset, l'inventario del codice morto
@@ -483,34 +483,50 @@ vedi la riga nelle trappole in cima. Dettagli di entrambe in `STORICO.md`.
 > se per abitudine VGC preferisci l'inglese anche in italiano si cambia in un punto solo
 > (`nomeVis`, ora nel `<head>` di `base.html`).
 
-### 2.2 ⬜ Le 103 abilità da fondere — gli effetti stanno dalla parte sbagliata
+### 2.2 ✅ Le abilità da fondere — chiuso il 10/09/2026, erano già fuse
 
-24 coppie sono state fuse l'11/08 (415 → 391 voci). **Restano 103 voci**, e il problema
-**non è di traduzione**: la wiki ne recuperava solo 5, confermando che sono identiche nelle
-due lingue.
+**Rimisurato prima di toccare, ed è il punto della voce**: i numeri scritti qui erano
+quelli di **prima** della fusione dell'11/08, e nessuno li aveva più contati.
 
-Delle 103: **69** hanno `effect: {"type": "none"}` — sono le abilità inventate e i
-placeholder, ed è giusto che non abbiano un nome ufficiale. **34** hanno un effetto vero, e
-**7 di queste hanno un blocco `effect` identico a una voce ufficiale già in catalogo**
-(`Erboristeria` ↔ `Erbaiuto`, `Torrente`/`Torrentismo` ↔ `Acquaiuto`, `Vampirico` ↔
-`Aiutofuoco`, `Filtraggio`/`Prisma Armatura`/`Schermosaldo` ↔ `Filtro`/`Scudoprisma`/`Solidroccia`).
-Le altre 27 sono lo stesso caso, solo che la controparte ufficiale ha `effect: none`: su
-undici controllate a campione la controparte c'è **sempre**, e sempre inerte.
+| | Quello che c'era scritto | Misurato il 10/09/2026 |
+|---|---|---|
+| voci totali | 415 | **386** |
+| senza traduzione | 108 | **82** |
+| di quelle, con un effetto | 34 | **10** |
 
-Il conto complessivo dice la stessa cosa: delle 307 voci col nome ufficiale solo **22**
-hanno un effetto attivo, contro **34 su 108** fra quelle senza. **A far funzionare il
-calcolatore è la voce vecchia; a essere collegata ai Pokémon è quella ufficiale.**
+Le **10** rimaste con un effetto sono esattamente quelle che Davide aveva deciso di
+lasciare fuori l'11/08 (`Nervosismo`, `Sforzo`, `Tiratore`, `Manto Neve`, `Tempra`,
+`Assorbifuoco`, `Colpo Secco`, `Compressione`, `Vento Misterioso`, `Polifagia`). Delle
+altre 72, **7** sono appese a un Pokémon — anche quelle già decise — e **65** sono
+inerti e non le possiede nessuno: sono le abilità inventate di Champions e i
+placeholder, ed è giusto che non abbiano un nome ufficiale. **Non c'è più niente da
+fondere**, e nei quattro database del catalogo i doppioni di nome sono **zero**.
 
-> Il lavoro quindi è **fondere ogni coppia**, tenendo la chiave giusta e portandoci sopra
-> il blocco `effect` che funziona — lo stesso metodo delle 24 già fatte, mappate a mano e
-> mai indovinate per somiglianza. Ha conseguenze sui team salvati e sulle regulation, e va
-> deciso da Davide: non l'ho toccato.
->
-> ✅ Le **10 voci senza corrispondente reale** (`Nervosismo`, `Sforzo`, `Tiratore`,
-> `Manto Neve`, `Tempra`, `Assorbifuoco`, `Colpo Secco`, `Compressione`, `Vento Misterioso`,
-> `Polifagia`) restano fuori per decisione dell'11/08, e ognuna lo dichiara nella propria
-> descrizione. Fuori anche le **7** senza traduzione ma appese a un Pokémon (`Download`,
-> `Libero`, `Punk Rock`, `Teravolt`, `Transistor`, `Eelevate`, `Fire Mane`).
+**⚠️ La fusione aveva però lasciato un filo staccato, e l'ha trovato Davide.** Prima
+dell'11/08 c'erano tre voci in gioco: la chiave `Mega Sol`, con l'effetto sole
+permanente; la chiave **`Megasolar`**, inerte, il cui `nome_en` era `Mega Sol` — ed è
+quella che il catalogo Pokémon cita su **Mega Meganium**, perché le abilità le cita
+col nome **inglese**; e `Terra Estrema` (`Desolate Land`), ufficiale e inerte, di
+Primal Groudon. La fusione ha portato l'effetto su `Terra Estrema` — e per Primal
+Groudon **è giusto** — poi il giro sui nomi ha cambiato il `nome_en` di `Megasolar`, e
+da lì il nome scritto su Mega Meganium non ha più risolto su niente: nessuna
+descrizione, nessuna traduzione, nessun effetto, **nessun errore**. Chiuso il
+10/09/2026 con `scripts/ricollega_megasolar.py`, decisioni di Davide: il `nome_en`
+torna `Mega Sol` e la voce riprende il blocco della voce cancellata, copiato
+dall'archivio. Numeri in `STORICO.md`.
+
+> ⚠️ **La rete che resta**: `python scripts/controlla_abilita.py` risponde alle tre
+> domande che non danno errore da sole — ogni nome citato da un Pokémon risolve? due
+> chiavi si chiamano uguale? quante voci attive sono irraggiungibili? Oggi dice
+> **312 nomi citati, 0 orfani, 0 doppioni, 50 voci attive di cui 10 irraggiungibili**
+> — e quelle 10 sono le abilità di Champions decise fuori. Se quel numero cresce, un
+> effetto è finito di nuovo dalla parte sbagliata.
+
+**⬜ Cosa resta, ed è piccolo**: il fallback `data/abilities.json` **non** è stato
+riallineato, quindi contiene ancora `Megasolar` inerte e col nome vecchio. Non fa
+danno finché `data/catalog/abilities.json` è leggibile — è lui che vince — ma è la
+stessa «macchina del tempo» che l'11/08 era stata disinnescata. Va con la dismissione
+dei file storici (§5.3), o con una riga di riallineamento se dà fastidio prima.
 
 ### 2.3 ⬜ Mosse per regulation — le quattro cose che richiedono una fonte
 
