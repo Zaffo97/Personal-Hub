@@ -18,6 +18,47 @@ pagina ed esegue `new Function()` su ogni blocco `<script>` **e** su ogni handle
 
 ---
 
+## 13/09/2026
+
+**Quattro forme vere erano contate fra le inventate, e da un mese non avevano le mosse (§2.3)**
+
+- ⚠️ ✅ **Le voci del catalogo senza elenco mosse erano 20 su 1343, e per quattro il motivo
+  era sbagliato.** Il backlog le chiamava tutte «forme inventate, che PokéAPI non conosce»:
+  i tre **Gourgeist (Small/Large/Super)** e **Floette Fiore Eterno** invece il dump li
+  conosce — 397 righe di mosse a testa i primi, 229 la seconda. Quello che mancava era il
+  campo `slug` sulla voce del catalogo, e `indice_catalogo()` in `importa_mosse_specie.py`
+  prende **solo** le voci che ce l'hanno. Quindi uscivano dal moveset insieme alle Mega
+  fan-made e prendevano lo stesso avviso giallo «nessun elenco mosse», **senza nessun
+  errore** — e il rapporto dell'import le elencava sotto «forme che PokéAPI non conosce»,
+  che per loro era falso. Dal 12/08/2026 al 13/09/2026, un mese.
+- **Lo slug non è stato scritto a occhio**: `scripts/aggiungi_slug_forme.py` pretende che le
+  **sei base stat** del catalogo combacino esatte con quelle che il dump dà per quello slug,
+  perché uno slug plausibile ma sbagliato non darebbe errore, darebbe l'elenco mosse di un
+  altro Pokémon. Combaciate **6 su 6 su tutte e quattro le voci**. Se una sola voce non
+  passa i controlli non si scrive niente e si esce con 1: provato **5 su 5** sui rifiuti
+  (slug di un altro Pokémon, slug inesistente, nome che nel catalogo non c'è, voce che ha
+  già uno slug diverso), zero scritture in tutti e cinque i casi.
+- **Numeri della verifica**: catalogo **1343 voci prima e dopo, 4 cambiate, solo il campo
+  `slug`**, tutto il resto byte per byte identico (copia in `data/archive/`). Moveset
+  **1323 → 1327 voci, 0 perse, 0 preesistenti modificate**. Voci senza moveset **20 → 16**,
+  e le 16 sono tutte e sole le Mega inventate di Davide. Passando dalla route vera
+  (`/api/pokemon/<nome>`, test client su una copia di `hub.db`): Gourgeist (Small) dà **57**
+  mosse su `pokedex` e **60** su `ma`, Floette Fiore Eterno **51** e **41** — due numeri
+  diversi, cioè sta leggendo davvero `main` contro `champions`. Controprova sulle voci che
+  non dovevano muoversi: Incineroar resta **80/77** e Mega Zygarde resta `null` con l'avviso
+  giallo.
+- **Contorno**: `sweep_pagine.py` 0 errori su 22 pagine in due lingue, `prova_catalogo_vivo`
+  11 su 11, `prova_import_specie` 27 su 27, `prova_build_catalog` 9 su 9,
+  `controlla_abilita` a posto.
+- ⬜ **Tre voci lasciate aperte in §3, perché sono decisioni di Davide e non codice**:
+  Floette Fiore Eterno sta nel catalogo **due volte** (chiave di primo livello e forma
+  annidata, stesso slug); quella di primo livello ha `abilities: []` e non ha
+  `nome_it`/`nome_en`; e `prova_regulation_nuova.py` fallisce **31 su 32** perché pretende
+  che `data/regulations/` abbia esattamente tre file mentre c'è anche `mc.json`, che è una
+  regulation vera creata dall'interfaccia e mai committata.
+
+---
+
 ## 10/09/2026
 
 **I quattro bachi noti, guardati uno per uno (§3)**

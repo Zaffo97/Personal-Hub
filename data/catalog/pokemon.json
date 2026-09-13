@@ -5622,7 +5622,8 @@
           "Insomnia"
         ],
         "nome_it": "Gourgeist (Small)",
-        "nome_en": "Gourgeist (Small)"
+        "nome_en": "Gourgeist (Small)",
+        "slug": "gourgeist-small"
       },
       "Gourgeist (Large)": {
         "types": [
@@ -5643,7 +5644,8 @@
           "Insomnia"
         ],
         "nome_it": "Gourgeist (Large)",
-        "nome_en": "Gourgeist (Large)"
+        "nome_en": "Gourgeist (Large)",
+        "slug": "gourgeist-large"
       },
       "Gourgeist (Super)": {
         "types": [
@@ -5664,7 +5666,8 @@
           "Insomnia"
         ],
         "nome_it": "Gourgeist (Super)",
-        "nome_en": "Gourgeist (Super)"
+        "nome_en": "Gourgeist (Super)",
+        "slug": "gourgeist-super"
       }
     },
     "slug": "gourgeist-average",
@@ -6520,7 +6523,8 @@
       }
     },
     "nome_it": "Eternal Flower Floette",
-    "nome_en": "Eternal Flower Floette"
+    "nome_en": "Eternal Flower Floette",
+    "slug": "floette-eternal"
   },
   "bulbasaur": {
     "name": "Bulbasaur",

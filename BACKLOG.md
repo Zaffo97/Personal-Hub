@@ -2,7 +2,7 @@
 
 > **Qui c'è solo ciò che è aperto.** Le voci chiuse stanno in [`STORICO.md`](STORICO.md),
 > una riga per lavoro con la data e i numeri della verifica.
-> Aggiornato: **10/09/2026**. Fonte storica: `Nuove implementazioni.docx` (verde = fatto).
+> Aggiornato: **13/09/2026**. Fonte storica: `Nuove implementazioni.docx` (verde = fatto).
 
 Legenda: ⬜ da fare · 🟨 parziale · ⚠️ trappola nota, da rileggere prima di toccare la zona
 
@@ -26,6 +26,7 @@ Non sono storia: sono le cose che questo progetto ha già pagato e che tornano a
 | Zona | La trappola |
 |---|---|
 | **Dati mancanti** | `moves: null` **non** vuol dire «nessuna mossa», vuol dire «non lo sappiamo». Le forme inventate non stanno su PokéAPI: se `null` valesse zero, diventerebbero inutilizzabili. Stessa logica per `roster: null` = tutto il catalogo |
+| ⚠️ **Una voce senza `slug` sparisce dal moveset, e sembra una forma inventata** | Trovata il 13/09/2026. `indice_catalogo()` in `importa_mosse_specie.py` prende **solo** le voci del catalogo che hanno il campo `slug`: è il verso giusto (senza slug non c'è niente da cercare nel dump), ma vuol dire che una forma **vera** a cui lo slug manca esce dal moveset **insieme** alle Mega fan-made, e a schermo prende lo stesso avviso giallo «nessun elenco mosse». Nessun errore, e il rapporto dell'import la elenca sotto «forme che PokéAPI non conosce», che per lei è **falso**. Così i tre Gourgeist e Floette Fiore Eterno sono rimasti senza le loro 397 e 229 righe di mosse dal 12/08 al 13/09. La regola: **prima di dare per inventata una voce senza moveset, cercarne lo slug nel dump.** Lo script è `scripts/aggiungi_slug_forme.py`, e lo slug non si scrive a occhio — le sei base stat devono combaciare con quelle del dump, altrimenti si prende l'elenco mosse di un altro Pokémon senza accorgersene |
 | **Risoluzione per nome** | Due chiavi diverse possono avere lo stesso `nome_it`/`nome_en`, e il catalogo Pokémon cita le abilità col nome **inglese** mentre le chiavi sono italiane. Ogni confronto per nome va fatto con `risolviChiave()` / `_INDICE`, mai con un match esatto sulla chiave |
 | **Fallback silenziosi** | Più di un baco qui non dava errore, dava il numero sbagliato: lo Speed Tier che ricadeva su una lista statica, `/api/moves` che leggeva il file di MA, un alias che rispondeva Mega Venusaur. Se un loader ha un ramo di riserva, va verificato **quale dei due** sta rispondendo |
 | **Endpoint fantasma** | **Quattro volte** il JS ha chiamato una risposta che nessuno aveva mai implementato: `/api/regulations`, `d.moves`, `d.regulation` e — trovato il 17/08 e scritto il 19/08 — `/api/team/<id>`. Tutte e quattro fallivano **dentro un `catch` muto**, quindi la pagina si apriva e mancava solo un pezzo, senza un errore a schermo. Sono tutte chiuse, ma la classe resta: **un `catch(e){}` vuoto qui è un baco in attesa**, e il modo di trovarli è leggere cosa il JS chiede e cercarlo nella `url_map` |
@@ -537,7 +538,7 @@ quattro cose richiedono **fonti diverse**:
 | Cosa manca | Fonte che servirebbe |
 |---|---|
 | **La differenza fra M-A e M-B** | Nel dump c'è **un solo** version group `champions`, quindi oggi le due regulation riceverebbero la **stessa identica lista**. Se bandiscono mosse diverse, quella differenza non è in nessun dato che abbiamo. È lo stesso buco già noto per mosse e oggetti, che oggi MB copia da MA |
-| **Le 20 forme inventate** | Sono forme di Davide, PokéAPI non le conosce. Non è solo il moveset: è la stessa fonte che servirà per le loro stat e abilità. Restano fuori — dichiarate, non riempite |
+| **Le 16 forme inventate** | Sono forme di Davide, PokéAPI non le conosce. Non è solo il moveset: è la stessa fonte che servirà per le loro stat e abilità. Restano fuori — dichiarate, non riempite. ⚠️ **Erano scritte 20 fino al 13/09/2026, e il numero era sbagliato**: quattro di quelle venti — i tre Gourgeist e Floette Fiore Eterno — sono forme **vere**, che il dump conosce. Vedi la trappola dello `slug` in cima |
 | **`Pawmot`** | ✅ chiarito il 12/08: è un buco del dump, non un errore nostro. Resta senza elenco, con l'avviso giallo. Da riconfermare sulla wiki nel giro di collaudo |
 | **Le regulation future** | Se la prossima non è basata su Champions non ha un version group nel dump: il suo elenco va dalla schermata contenuti o da uno script dedicato |
 
@@ -547,7 +548,7 @@ quattro cose richiedono **fonti diverse**:
 
 ---
 
-## 3. Bachi noti — quattro guardati il 10/09/2026
+## 3. Bachi noti — quattro guardati il 10/09/2026, tre aperti il 13/09/2026
 
 | | Baco | Stato |
 |---|---|---|
@@ -556,6 +557,9 @@ quattro cose richiedono **fonti diverse**:
 | ✅ | **`scripts/` è fuori dal raggio di `controlla_proprietario.py`** | **Chiuso il 10/09/2026**, ed è rimasto fuori: uno script da riga di comando non ha una sessione, quindi `ambito_utente()` lì non vuol dire niente e lavora su tutto il DB per costruzione. Quello che mancava era **dirlo**: ora è scritto nel docstring e il riassunto conta e **nomina** gli script che toccano una tabella di contenuto (oggi 2: `importa_dati.py` e `prova_importa_dati.py`). Se ne compare uno che non ti aspetti, quello va letto |
 | 🟨 | **La tendina categorie degli oggetti non corrisponde ai dati** | **Metà chiusa il 10/09/2026, e non era una decisione sui dati.** Il filtro offriva tutte e **14** le categorie mentre gli oggetti ne usano **7**: le altre 7 (`conditional`, `damage`, `defensive`, `orb`, `support`, `terrain`, `weather`) non hanno **nemmeno una voce**, quindi sceglierle dava sempre zero risultati. Ora il filtro mostra solo quelle che i dati usano davvero, **contate sui dati** e non tolte a mano, mentre la tendina del **modulo** resta completa — è da lì che una categoria vuota si riempie. ⬜ **Resta la decisione vera**, che è di Davide: assegnare le voci giuste a quelle 7 categorie, oppure toglierle da `CATEGORIE_OGGETTI`. E resta il numero che sta sotto tutto: **`other` è 339 oggetti su 397**, l'86%, quindi come filtro la categoria dice poco comunque |
 | ⬜ | **Il calcolatore non impedisce di scrivere una mossa illegale** | La segnala e basta. **È voluto per ora**: un blocco duro sulle voci senza elenco sarebbe un falso divieto |
+| ⬜ | **Floette Fiore Eterno sta nel catalogo due volte** | Trovato il 13/09/2026 mentre si sistemavano gli slug. È la chiave di primo livello `eternal-flower-floette` (`name`: «Eternal Flower Floette», che ospita **Mega Floette** fra le sue `forms`) **e** la forma annidata `floette` → `Floette (Eternal Flower)`. Stesse sei base stat, stesso slug `floette-eternal`, quindi ora **stesso identico elenco mosse**. I due nomi sono diversi, quindi non è il caso `Sheer Force` e `controlla_abilita.py` non lo vede: non c'è nessuna ambiguità, c'è una voce di troppo che in `pokedex` si vede due volte nel roster. ⬜ **La decisione è di Davide**, perché non è un errore di codice: o le due voci si fondono (e Mega Floette trasloca sotto `floette`), o il doppione resta perché serve da base alla Mega. Finché resta, `aggiungi_slug_forme.py` lo **dichiara** a ogni esecuzione invece di tacerlo |
+| ⬜ | **`eternal-flower-floette` ha `abilities: []` e non ha `nome_it`/`nome_en`** | Contato il 13/09/2026. La sua gemella annidata ha `Flower Veil` e `Symbiosis`; questa no, quindi nella tendina delle abilità esce vuota. Va con la decisione qui sopra: se le due voci si fondono, il buco sparisce da solo |
+| ⬜ | **`prova_regulation_nuova.py` fallisce 31 su 32, e non è colpa del codice** | Misurato il 13/09/2026. La prova 12 controlla che il test non abbia sporcato i dati veri, e pretende che `data/regulations/` abbia **esattamente** `ma`, `mb`, `pokedex`. Oggi c'è anche **`mc.json`** (309 Pokémon, 460 mosse, 58 oggetti, 73 Mega mappate, `last_updated` 13/09/2026), che non è sporcizia del test: è una regulation vera creata dall'interfaccia, e infatti in git **non c'è**. ⬜ Da decidere insieme: se `mc` è una regulation che tieni, va **committata** e la prova va riscritta perché guardi ciò che c'era **prima** del test invece di un elenco fisso; se era solo una prova tua, si cancella. Come sta ora la prova è un allarme che suona ogni volta |
 
 ## 4. Voci minori, per sezione
 
