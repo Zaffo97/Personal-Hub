@@ -548,7 +548,7 @@ quattro cose richiedono **fonti diverse**:
 
 ---
 
-## 3. Bachi noti — quattro guardati il 10/09/2026, tre aperti il 13/09/2026
+## 3. Bachi noti — quattro guardati il 10/09/2026, due aperti il 13/09/2026
 
 | | Baco | Stato |
 |---|---|---|
@@ -559,7 +559,6 @@ quattro cose richiedono **fonti diverse**:
 | ⬜ | **Il calcolatore non impedisce di scrivere una mossa illegale** | La segnala e basta. **È voluto per ora**: un blocco duro sulle voci senza elenco sarebbe un falso divieto |
 | ⬜ | **Floette Fiore Eterno sta nel catalogo due volte** | Trovato il 13/09/2026 mentre si sistemavano gli slug. È la chiave di primo livello `eternal-flower-floette` (`name`: «Eternal Flower Floette», che ospita **Mega Floette** fra le sue `forms`) **e** la forma annidata `floette` → `Floette (Eternal Flower)`. Stesse sei base stat, stesso slug `floette-eternal`, quindi ora **stesso identico elenco mosse**. I due nomi sono diversi, quindi non è il caso `Sheer Force` e `controlla_abilita.py` non lo vede: non c'è nessuna ambiguità, c'è una voce di troppo che in `pokedex` si vede due volte nel roster. ⬜ **La decisione è di Davide**, perché non è un errore di codice: o le due voci si fondono (e Mega Floette trasloca sotto `floette`), o il doppione resta perché serve da base alla Mega. Finché resta, `aggiungi_slug_forme.py` lo **dichiara** a ogni esecuzione invece di tacerlo |
 | ⬜ | **`eternal-flower-floette` ha `abilities: []` e non ha `nome_it`/`nome_en`** | Contato il 13/09/2026. La sua gemella annidata ha `Flower Veil` e `Symbiosis`; questa no, quindi nella tendina delle abilità esce vuota. Va con la decisione qui sopra: se le due voci si fondono, il buco sparisce da solo |
-| ⬜ | **`prova_regulation_nuova.py` fallisce 31 su 32, e non è colpa del codice** | Misurato il 13/09/2026. La prova 12 controlla che il test non abbia sporcato i dati veri, e pretende che `data/regulations/` abbia **esattamente** `ma`, `mb`, `pokedex`. Oggi c'è anche **`mc.json`** (309 Pokémon, 460 mosse, 58 oggetti, 73 Mega mappate, `last_updated` 13/09/2026), che non è sporcizia del test: è una regulation vera creata dall'interfaccia, e infatti in git **non c'è**. ⬜ Da decidere insieme: se `mc` è una regulation che tieni, va **committata** e la prova va riscritta perché guardi ciò che c'era **prima** del test invece di un elenco fisso; se era solo una prova tua, si cancella. Come sta ora la prova è un allarme che suona ogni volta |
 
 ## 4. Voci minori, per sezione
 

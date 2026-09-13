@@ -53,9 +53,13 @@ pagina ed esegue `new Function()` su ogni blocco `<script>` **e** su ogni handle
 - ⬜ **Tre voci lasciate aperte in §3, perché sono decisioni di Davide e non codice**:
   Floette Fiore Eterno sta nel catalogo **due volte** (chiave di primo livello e forma
   annidata, stesso slug); quella di primo livello ha `abilities: []` e non ha
-  `nome_it`/`nome_en`; e `prova_regulation_nuova.py` fallisce **31 su 32** perché pretende
-  che `data/regulations/` abbia esattamente tre file mentre c'è anche `mc.json`, che è una
-  regulation vera creata dall'interfaccia e mai committata.
+  `nome_it`/`nome_en`.
+- ✅ **La regulation `mc` era una prova di Davide, e l'abbiamo tolta.** Faceva fallire
+  `prova_regulation_nuova.py` **31 su 32**: la prova 12 pretende che `data/regulations/`
+  abbia esattamente `ma`, `mb`, `pokedex`, e quel quarto file non era sporcizia del test ma
+  una regulation vera creata dall'interfaccia (309 Pokémon, 73 Mega mappate) e mai
+  committata. Zero team attaccati, copia in `data/archive/regulation_mc_pre-eliminazione.json`
+  prima di toglierla, registro tornato a tre voci: la prova passa **32 su 32**.
 
 ---
 
