@@ -250,7 +250,11 @@ def prove(dove):
     # --- 7. niente di vero è stato toccato -----------------------------------
     vero = json.load(open(os.path.join(RADICE, "data", "catalog", "pokemon.json"),
                           encoding="utf-8"))
-    esito("il catalogo vero è intatto", len(vero) == 1026 and CAVIA in vero,
+    # 1025 e non più 1026 dal 13/09/2026: la fusione del doppione di Floette ha tolto
+    # `eternal-flower-floette`, che era lo stesso Pokémon della forma annidata
+    # `Floette (Eternal Flower)`. Il numero è una fotografia del catalogo vero e si
+    # muove con lui — se cala senza che nessuno l'abbia deciso, è questa riga a dirlo.
+    esito("il catalogo vero è intatto", len(vero) == 1025 and CAVIA in vero,
           f"{len(vero)} voci")
 
 

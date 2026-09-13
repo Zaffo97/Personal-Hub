@@ -302,6 +302,16 @@ def main():
     ap.add_argument("--dry-run", action="store_true", help="non scrive niente")
     ap.add_argument("--solo", default="main,champions",
                     help="quali elenchi costruire: main, champions, o entrambi")
+    # ⚠️ Non e' un «--forza». La rete sotto ferma un import che fa **calare** le voci,
+    # perche' una cache CSV troncata darebbe quel sintomo senza nessun errore. Ma un
+    # calo puo' anche essere voluto — il 13/09/2026 la fusione del doppione di Floette
+    # ha tolto `eternal-flower-floette` dal catalogo, e quella voce nel moveset **deve**
+    # sparire. La differenza fra i due casi non la puo' indovinare lo script: la dice
+    # chi lo lancia, **nominando** le voci. Cosi' un calo diverso da quello atteso si
+    # ferma lo stesso, e una voce nominata che invece resta viene detta a schermo.
+    ap.add_argument("--tolte-apposta", default="",
+                    help="nomi (separati da virgola) delle voci che devono sparire: "
+                         "solo queste sono ammesse a calare")
     args = ap.parse_args()
     quali = {p.strip() for p in args.solo.split(",") if p.strip()}
     if not quali <= {"main", "champions"}:
@@ -353,9 +363,21 @@ def main():
 
     if prima:
         perse = sorted(set(prima) - set(voci))
+        attese = {n.strip() for n in args.tolte_apposta.split(",") if n.strip()}
         print(f"\nRISPETTO AL FILE ESISTENTE   {len(prima)} -> {len(voci)} voci")
-        if perse:
-            print(f"  ⚠️  {len(perse)} voci sparirebbero: {perse[:10]}")
+        # Una voce nominata che **non** sparisce va detta: il flag e' scritto a mano, e
+        # un nome ormai sbagliato resterebbe li' a coprire un calo vero della volta dopo.
+        restate = sorted(attese - set(perse))
+        if restate:
+            print(f"  ⚠️  nominate in --tolte-apposta ma NON sparite: {restate}")
+        impreviste = sorted(set(perse) - attese)
+        if attese:
+            tolte = sorted(set(perse) & attese)
+            if tolte:
+                print(f"  {len(tolte)} voci tolte apposta: {tolte}")
+        if impreviste:
+            print(f"  ⚠️  {len(impreviste)} voci sparirebbero senza essere state nominate: "
+                  f"{impreviste[:10]}")
             print("  INTERROTTO: un import non deve far calare i dati. Controlla la cache CSV.")
             return 1
 

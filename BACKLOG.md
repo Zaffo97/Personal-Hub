@@ -548,7 +548,7 @@ quattro cose richiedono **fonti diverse**:
 
 ---
 
-## 3. Bachi noti — quattro guardati il 10/09/2026, due aperti il 13/09/2026
+## 3. Bachi noti — quattro guardati il 10/09/2026
 
 | | Baco | Stato |
 |---|---|---|
@@ -557,8 +557,6 @@ quattro cose richiedono **fonti diverse**:
 | ✅ | **`scripts/` è fuori dal raggio di `controlla_proprietario.py`** | **Chiuso il 10/09/2026**, ed è rimasto fuori: uno script da riga di comando non ha una sessione, quindi `ambito_utente()` lì non vuol dire niente e lavora su tutto il DB per costruzione. Quello che mancava era **dirlo**: ora è scritto nel docstring e il riassunto conta e **nomina** gli script che toccano una tabella di contenuto (oggi 2: `importa_dati.py` e `prova_importa_dati.py`). Se ne compare uno che non ti aspetti, quello va letto |
 | 🟨 | **La tendina categorie degli oggetti non corrisponde ai dati** | **Metà chiusa il 10/09/2026, e non era una decisione sui dati.** Il filtro offriva tutte e **14** le categorie mentre gli oggetti ne usano **7**: le altre 7 (`conditional`, `damage`, `defensive`, `orb`, `support`, `terrain`, `weather`) non hanno **nemmeno una voce**, quindi sceglierle dava sempre zero risultati. Ora il filtro mostra solo quelle che i dati usano davvero, **contate sui dati** e non tolte a mano, mentre la tendina del **modulo** resta completa — è da lì che una categoria vuota si riempie. ⬜ **Resta la decisione vera**, che è di Davide: assegnare le voci giuste a quelle 7 categorie, oppure toglierle da `CATEGORIE_OGGETTI`. E resta il numero che sta sotto tutto: **`other` è 339 oggetti su 397**, l'86%, quindi come filtro la categoria dice poco comunque |
 | ⬜ | **Il calcolatore non impedisce di scrivere una mossa illegale** | La segnala e basta. **È voluto per ora**: un blocco duro sulle voci senza elenco sarebbe un falso divieto |
-| ⬜ | **Floette Fiore Eterno sta nel catalogo due volte** | Trovato il 13/09/2026 mentre si sistemavano gli slug. È la chiave di primo livello `eternal-flower-floette` (`name`: «Eternal Flower Floette», che ospita **Mega Floette** fra le sue `forms`) **e** la forma annidata `floette` → `Floette (Eternal Flower)`. Stesse sei base stat, stesso slug `floette-eternal`, quindi ora **stesso identico elenco mosse**. I due nomi sono diversi, quindi non è il caso `Sheer Force` e `controlla_abilita.py` non lo vede: non c'è nessuna ambiguità, c'è una voce di troppo che in `pokedex` si vede due volte nel roster. ⬜ **La decisione è di Davide**, perché non è un errore di codice: o le due voci si fondono (e Mega Floette trasloca sotto `floette`), o il doppione resta perché serve da base alla Mega. Finché resta, `aggiungi_slug_forme.py` lo **dichiara** a ogni esecuzione invece di tacerlo |
-| ⬜ | **`eternal-flower-floette` ha `abilities: []` e non ha `nome_it`/`nome_en`** | Contato il 13/09/2026. La sua gemella annidata ha `Flower Veil` e `Symbiosis`; questa no, quindi nella tendina delle abilità esce vuota. Va con la decisione qui sopra: se le due voci si fondono, il buco sparisce da solo |
 
 ## 4. Voci minori, per sezione
 

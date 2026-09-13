@@ -6486,46 +6486,6 @@
     "nome_it": "Meowstic (Male)",
     "nome_en": "Meowstic (Male)"
   },
-  "eternal-flower-floette": {
-    "name": "Eternal Flower Floette",
-    "types": [
-      "Folletto"
-    ],
-    "abilities": [],
-    "base_stats": {
-      "hp": 74,
-      "atk": 65,
-      "def": 67,
-      "spa": 125,
-      "spd": 128,
-      "spe": 92
-    },
-    "forms": {
-      "Mega Floette": {
-        "types": [
-          "Folletto"
-        ],
-        "base_stats": {
-          "hp": 74,
-          "atk": 85,
-          "def": 87,
-          "spa": 145,
-          "spd": 148,
-          "spe": 92
-        },
-        "abilities": [
-          "Flower Veil",
-          "Fairy Aura"
-        ],
-        "slug": "floette-mega",
-        "nome_it": "Mega Floette",
-        "nome_en": "Mega Floette"
-      }
-    },
-    "nome_it": "Eternal Flower Floette",
-    "nome_en": "Eternal Flower Floette",
-    "slug": "floette-eternal"
-  },
   "bulbasaur": {
     "name": "Bulbasaur",
     "types": [
@@ -21073,6 +21033,26 @@
         "slug": "floette-eternal",
         "nome_it": "Floette (Eternal Flower)",
         "nome_en": "Floette (Eternal Flower)"
+      },
+      "Mega Floette": {
+        "types": [
+          "Folletto"
+        ],
+        "base_stats": {
+          "hp": 74,
+          "atk": 85,
+          "def": 87,
+          "spa": 145,
+          "spd": 148,
+          "spe": 92
+        },
+        "abilities": [
+          "Flower Veil",
+          "Fairy Aura"
+        ],
+        "slug": "floette-mega",
+        "nome_it": "Mega Floette",
+        "nome_en": "Mega Floette"
       }
     },
     "nome_it": "Floette",

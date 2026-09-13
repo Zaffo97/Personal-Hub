@@ -119,7 +119,9 @@ def prove(dove):
     # --- 8. niente di vero è stato toccato -----------------------------------
     with io.open(os.path.join(RADICE, "data", "catalog", "pokemon.json"), encoding="utf-8") as f:
         vero = json.load(f)
-    esito("il catalogo vero è intatto", len(vero) == 1026, f"{len(vero)} voci")
+    # 1025 dal 13/09/2026: la fusione del doppione di Floette ha tolto
+    # `eternal-flower-floette`. Vedi la stessa nota in `prova_import_specie.py`.
+    esito("il catalogo vero è intatto", len(vero) == 1025, f"{len(vero)} voci")
 
 
 def main():

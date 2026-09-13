@@ -65,13 +65,13 @@
     "Empoleon",
     "Espathra",
     "Espeon",
-    "Eternal Flower Floette",
     "Excadrill",
     "Fan Rotom",
     "Farigiraf",
     "Feraligatr",
     "Flapple",
     "Flareon",
+    "Floette (Eternal Flower)",
     "Florges",
     "Forretress",
     "Froslass",
@@ -875,14 +875,14 @@
     "Emboar": [
       "Mega Emboar"
     ],
-    "Eternal Flower Floette": [
-      "Mega Floette"
-    ],
     "Excadrill": [
       "Mega Excadrill"
     ],
     "Feraligatr": [
       "Mega Feraligatr"
+    ],
+    "Floette (Eternal Flower)": [
+      "Mega Floette"
     ],
     "Froslass": [
       "Mega Froslass"

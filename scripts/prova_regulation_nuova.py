@@ -164,11 +164,14 @@ def prove(dove):
                                    len(P.load_items(reg["id"]).get("items", {})))
         esito("MA dice 279 / 460 / 58, non i 208 / 461 / 58 dei file vecchi",
               conteggi["ma"] == (279, 460, 58), str(conteggi["ma"]))
-        esito("Pokedex dice tutto il catalogo, non 0", conteggi["pokedex"] == (1343, 919, 397),
+        # 1342 e non più 1343 dal 13/09/2026: il roster di Pokedex è specie più forme, e
+        # la fusione del doppione di Floette ha tolto `eternal-flower-floette`, che era
+        # lo stesso Pokémon della forma annidata `Floette (Eternal Flower)`.
+        esito("Pokedex dice tutto il catalogo, non 0", conteggi["pokedex"] == (1342, 919, 397),
               str(conteggi["pokedex"]))
         html = r.get_data(as_text=True)
         esito("e i numeri veri sono scritti nella pagina",
-              ">279<" in html and ">1343<" in html and ">919<" in html)
+              ">279<" in html and ">1342<" in html and ">919<" in html)
 
         # --- 8. una regulation vuota si dichiara, non da' 404 -----------------
         c.post("/pokemon/api/regulations/create",

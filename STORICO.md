@@ -50,10 +50,45 @@ pagina ed esegue `new Function()` su ogni blocco `<script>` **e** su ogni handle
 - **Contorno**: `sweep_pagine.py` 0 errori su 22 pagine in due lingue, `prova_catalogo_vivo`
   11 su 11, `prova_import_specie` 27 su 27, `prova_build_catalog` 9 su 9,
   `controlla_abilita` a posto.
-- ⬜ **Tre voci lasciate aperte in §3, perché sono decisioni di Davide e non codice**:
-  Floette Fiore Eterno sta nel catalogo **due volte** (chiave di primo livello e forma
-  annidata, stesso slug); quella di primo livello ha `abilities: []` e non ha
-  `nome_it`/`nome_en`.
+- ✅ **Il doppione di Floette è stato fonduto lo stesso giorno, su decisione di Davide.**
+  Lo stesso Pokémon stava in due posti: `eternal-flower-floette` di **primo livello**
+  (`abilities: []`, e con **Mega Floette** fra le sue `forms`) e la forma **annidata**
+  `floette` → `Floette (Eternal Flower)`. ⚠️ **Quale delle due resti non era una scelta di
+  gusto**: la forma annidata è quella che `build_catalog.py` **rigenera dal dump**, quindi
+  tenere il primo livello avrebbe fatto **rinascere il doppione** alla prossima esecuzione.
+  Mega Floette è traslocata sotto `floette` **identica** — una Mega porta le sue
+  `base_stats`, quindi il calcolatore non cambia di un punto — e la chiave vecchia è
+  sparita. Prove dei rifiuti **5 su 5** (base stat diverse, slug diversi, forma annidata
+  assente, fusione a metà, un team salvato che cita la voce che sparisce), zero scritture
+  in tutti e cinque.
+- ⚠️ **La fusione da sola avrebbe rotto due regulation, e in silenzio.** `ma` e `mb`
+  citavano `Eternal Flower Floette` sia nell'elenco `pokemon` sia come chiave della
+  `mega_map`: quelle liste sono elenchi di **nomi**, e un nome che nel catalogo non esiste
+  più non dà errore — sparisce e basta. Rinominato in `Floette (Eternal Flower)` in tutti
+  e quattro i punti, con copia in `data/archive/`: **ma 279 nomi prima e dopo, mb 308**,
+  `mega_map` 58 e 73 invariate, il valore `['Mega Floette']` conservato, tutto il resto dei
+  due file identico. In `pokedex` non c'era niente da cambiare: la sua `mega_map` diceva
+  già `Floette → Mega Floette`, che dopo la fusione è il verso giusto.
+- **Numeri finali**: catalogo **1026 → 1025 specie**, **1343 → 1342 voci**, l'unica sparita
+  è `eternal-flower-floette` e nessuna delle altre è cambiata; moveset **1326 voci**, e
+  rispetto all'inizio della giornata **0 perse, 0 modificate, 3 nuove** (i Gourgeist).
+  Doppioni di nome fra tutte le 1342 voci: **0**. Dalla route vera,
+  `Floette (Eternal Flower)` dà 41 mosse su `ma` e 51 su `pokedex`, `Mega Floette`
+  risponde 200 con le sue stat, e `Eternal Flower Floette` ora dà **404**.
+- ⚠️ **`importa_mosse_specie.py` si è rifiutato di scrivere**, ed era giusto: la sua rete
+  ferma un import che fa **calare** le voci, perché una cache CSV troncata darebbe quel
+  sintomo senza nessun errore. Qui il calo era voluto, ma lo script non può indovinarlo.
+  Aggiunto `--tolte-apposta`, che **non** è un `--forza`: bisogna **nominare** le voci che
+  devono sparire, un calo diverso da quello nominato si ferma lo stesso, e un nome che
+  invece resta viene detto a schermo. Provato: senza flag esce **1**, con un nome sbagliato
+  esce **1** e lo dice, col nome giusto esce **0**.
+- **Quattro asserzioni aggiornate perché il catalogo è calato di uno apposta**: `1026 → 1025`
+  in `prova_import_specie.py` e `prova_build_catalog.py`, `1343 → 1342` in due punti di
+  `prova_regulation_nuova.py`. Il perché è scritto in un commento sopra ognuna, così la
+  prossima sessione non le legge come un test addomesticato. Tutto verde dopo:
+  **27/27, 32/32, 9/9, 11/11**, `controlla_abilita` a posto, `controlla_proprietario` e
+  `controlla_traduzioni` a posto, sweep **0 errori**. I due script nuovi sono rieseguibili:
+  rilanciati dicono «niente da fare» ed escono 0.
 - ✅ **La regulation `mc` era una prova di Davide, e l'abbiamo tolta.** Faceva fallire
   `prova_regulation_nuova.py` **31 su 32**: la prova 12 pretende che `data/regulations/`
   abbia esattamente `ma`, `mb`, `pokedex`, e quel quarto file non era sporcizia del test ma

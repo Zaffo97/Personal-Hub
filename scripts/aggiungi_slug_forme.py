@@ -54,7 +54,12 @@ SLUG_ATTESI = {
     "Gourgeist (Small)": "gourgeist-small",
     "Gourgeist (Large)": "gourgeist-large",
     "Gourgeist (Super)": "gourgeist-super",
-    "eternal-flower-floette": "floette-eternal",
+    # ⚠️ Il 13/09/2026 questa riga diceva `eternal-flower-floette`, la chiave di primo
+    # livello. Poche ore dopo la fusione del doppione l'ha tolta dal catalogo — era lo
+    # stesso Pokémon di questa forma annidata — e lo script avrebbe cominciato a uscire
+    # con 1 su «non esiste nel catalogo». Ora punta alla voce che resta, che lo slug ce
+    # l'ha gia' da `build_catalog.py`: l'esecuzione la conta fra le «gia' fatte».
+    "Floette (Eternal Flower)": "floette-eternal",
 }
 
 ORDINE_STAT = ("hp", "atk", "def", "spa", "spd", "spe")

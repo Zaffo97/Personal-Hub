@@ -1,8 +1,8 @@
 {
-  "id": "mb",
-  "label": "Regulation MB",
+  "id": "mc",
+  "label": "mc",
   "_commento": "Solo elenchi di nomi: i dati stanno in data/catalog/. null significa 'tutte le voci del catalogo'.",
-  "last_updated": "2026-08-11",
+  "last_updated": "2026-09-13",
   "pokemon": [
     "Abomasnow",
     "Absol",
@@ -69,6 +69,7 @@
     "Empoleon",
     "Espathra",
     "Espeon",
+    "Eternal Flower Floette",
     "Excadrill",
     "Falinks",
     "Fan Rotom",
@@ -76,7 +77,6 @@
     "Feraligatr",
     "Flapple",
     "Flareon",
-    "Floette (Eternal Flower)",
     "Florges",
     "Forretress",
     "Froslass",
@@ -311,7 +311,8 @@
     "Weavile",
     "Whimsicott",
     "Wyrdeer",
-    "Zoroark"
+    "Zoroark",
+    "mega garchomp z"
   ],
   "moves": [
     "Absorb",
@@ -916,6 +917,9 @@
     "Emboar": [
       "Mega Emboar"
     ],
+    "Eternal Flower Floette": [
+      "Mega Floette"
+    ],
     "Excadrill": [
       "Mega Excadrill"
     ],
@@ -924,9 +928,6 @@
     ],
     "Feraligatr": [
       "Mega Feraligatr"
-    ],
-    "Floette (Eternal Flower)": [
-      "Mega Floette"
     ],
     "Froslass": [
       "Mega Froslass"
