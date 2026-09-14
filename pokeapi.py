@@ -48,6 +48,10 @@ FILE_CSV = [
     "pokemon_moves.csv",
 ]
 
+# Il problema che `pesca()` scrive quando il dump non ha la lista di Champions. Sta in
+# una costante perché l'anteprima del pannello lo toglie dove c'è un'integrazione.
+NON_IN_CHAMPIONS = "PokéAPI non ha la sua lista di Pokémon Champions"
+
 # Specie che `pokemon_species.csv` dà per pre-evoluzioni ma senza nessuna riga in
 # `pokemon_evolution.csv`, perché l'evoluzione avviene fuori dai giochi principali.
 # Contano come «si evolve» per la forma di default. `scripts/importa_evoluzioni.py` si
@@ -471,7 +475,9 @@ def pesca(nomi, con_mosse=True):
         for chiave, voce in mosse.items():
             if "champions" not in voce:
                 problemi.append({
-                    "nome": chiave, "problema": "non è in Pokémon Champions",
+                    "nome": chiave, "problema": NON_IN_CHAMPIONS,
                     "dettaglio": "ha solo l'elenco `main`: in ma/mb comparirà "
-                                 "l'avviso giallo invece di un elenco inventato"})
+                                 "l'avviso giallo invece di un elenco inventato. "
+                                 "⚠️ Il dump arriva a Regulation M-B: una specie "
+                                 "arrivata con la 1.2.0 finisce qui anche se è in Champions"})
     return voci, mosse, problemi

@@ -67,6 +67,14 @@ def prove(dove):
                  os.path.join(dati, "regulations.json"))
     archivio = os.path.join(dove, "archive")
     os.makedirs(archivio, exist_ok=True)
+    # Dal 14/09/2026 Pawmot ha una lista `champions` **integrata da Bulbapedia**
+    # (`moveset_integrazioni.json`). Le prove 1-2 controllano la strada del dump da solo
+    # — che una lista che PokéAPI non ha **non si inventa** — quindi girano senza il file,
+    # e la prova 4b lo rimette e controlla che l'integrazione sopravviva all'import.
+    integrazioni = os.path.join(catalogo_dir, "moveset_integrazioni.json")
+    integrazioni_da_rimettere = integrazioni + ".da_rimettere"
+    if os.path.exists(integrazioni):
+        os.replace(integrazioni, integrazioni_da_rimettere)
 
     import extensions
     extensions.DB = os.path.join(dove, "prova.db")
@@ -174,6 +182,31 @@ def prove(dove):
         r = c.post("/pokemon/api/catalogo/pokemon/importa",
                    json={"nomi": ["Pawmot"], "sovrascrivi": True})
         esito("...e con `sovrascrivi` passa", r.status_code == 200)
+
+        # --- 4b. l'integrazione da Bulbapedia sopravvive all'import -----------
+        os.replace(integrazioni_da_rimettere, integrazioni)
+        r = c.post("/pokemon/api/catalogo/pokemon/pesca", json={"nomi": ["Pawmot"]})
+        j = r.get_json() or {}
+        voce = (j.get("voci") or [{}])[0]
+        problemi_pawmot = [p["problema"] for p in j.get("problemi") or []]
+        esito("con l'integrazione l'anteprima conta le 64 mosse di Champions, e lo dice",
+              voce.get("mosse_champions") == 64
+              and "lista Champions integrata" in problemi_pawmot
+              and not any("non ha la sua lista" in p for p in problemi_pawmot),
+              f"champions={voce.get('mosse_champions')} problemi={problemi_pawmot}")
+        r = c.post("/pokemon/api/catalogo/pokemon/importa",
+                   json={"nomi": ["Pawmot"], "sovrascrivi": True})
+        with open(os.path.join(catalogo_dir, "pokemon_moves.json"), encoding="utf-8") as f:
+            ch = ((json.load(f).get("voci") or {}).get(CAVIA) or {}).get("champions") or {}
+        esito("reimportare Pawmot dal dump NON cancella la lista integrata",
+              r.status_code == 200 and ch.get("fonte") == "bulbapedia"
+              and len(ch.get("moves") or {}) == 64,
+              f"fonte={ch.get('fonte')} mosse={len(ch.get('moves') or {})}")
+        finto_dump = {CAVIA: {"champions": {"moves": {"Thunder Punch": "train"}}}}
+        applicate, superate = P.applica_integrazioni_moveset(finto_dump)
+        esito("dove il dump ha una lista sua vince il dump, e l'integrazione è detta superata",
+              superate == [f"{CAVIA}/champions"] and not applicate
+              and list(finto_dump[CAVIA]["champions"]["moves"]) == ["Thunder Punch"])
 
         r = c.post("/pokemon/api/catalogo/pokemon/importa", json={"nomi": ["aegislash-shield"]})
         j = r.get_json() or {}

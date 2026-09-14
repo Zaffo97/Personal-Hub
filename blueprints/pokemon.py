@@ -173,8 +173,9 @@ def mosse_legali(nome, reg):
     """Mosse che `nome` può imparare nella regulation.
 
     Restituisce `(elenco, sorgente)`. **`elenco` è `None` quando non lo sappiamo** —
-    le forme inventate non stanno su PokéAPI, e `Pawmot` è nel roster di MA ma non
-    nel moveset di Champions. `None` e lista vuota sono due cose diverse: chi chiama
+    le forme inventate non stanno su PokéAPI, e le specie arrivate in Champions con la
+    versione 1.2.0 non stanno nel suo moveset (Pawmot ce l'ha dal 14/09/2026, integrato
+    da Bulbapedia). `None` e lista vuota sono due cose diverse: chi chiama
     deve poter mostrare tutte le mosse invece di non mostrarne nessuna.
     """
     voci, indice = load_moveset()
@@ -1146,6 +1147,49 @@ def _stesso_slug_altrove(voci):
     return fuori
 
 
+def file_integrazioni_moveset():
+    """Il file delle liste che il dump non ha, prese da un'altra fonte a mano.
+
+    Letto a ogni chiamata e non fissato all'import del modulo: le prove spostano
+    `CATALOG_DIR` su una copia, e questo file deve seguirlo.
+    """
+    return os.path.join(CATALOG_DIR, "moveset_integrazioni.json")
+
+
+def applica_integrazioni_moveset(voci):
+    """Aggiunge a `voci` (sul posto) le liste di `moveset_integrazioni.json`.
+
+    Scritto il 14/09/2026 per Pawmot: è in Champions dalla versione 1.2.0, e PokéAPI
+    quella versione non ce l'ha. `pokemon_moves.json` però lo **rigenerano** due strade,
+    `importa_mosse_specie.py` e l'import dal pannello del catalogo, e una lista scritta
+    a mano lì dentro sparirebbe al giro dopo **senza nessun errore**. Per questo le
+    integrazioni stanno in un file loro, e tutte e due le strade passano da qui.
+
+    ⚠️ **Il dump vince.** Una lista integrata si applica solo dove il dump non ne ha una
+    sua: il giorno che PokéAPI aggiungerà Pawmot, la voce torna al dump e l'integrazione
+    compare fra le `superate`, da togliere. Si riconosce dal campo `fonte`, che il dump
+    non scrive mai.
+
+    Torna `(applicate, superate)`, due elenchi di `"voce/sorgente"`.
+    """
+    try:
+        with open(file_integrazioni_moveset(), encoding="utf-8") as f:
+            integrazioni = (json.load(f) or {}).get("voci") or {}
+    except (OSError, ValueError):
+        return [], []
+    applicate, superate = [], []
+    for chiave, sorgenti in integrazioni.items():
+        for sorgente, blocco in sorgenti.items():
+            voce = voci.setdefault(chiave, {})
+            presente = voce.get(sorgente)
+            if presente and not presente.get("fonte"):
+                superate.append(f"{chiave}/{sorgente}")
+                continue
+            voce[sorgente] = blocco
+            applicate.append(f"{chiave}/{sorgente}")
+    return applicate, superate
+
+
 def salva_moveset(nuove):
     """Aggiunge o aggiorna voci in `pokemon_moves.json`, tenendo `_meta`.
 
@@ -1161,6 +1205,8 @@ def salva_moveset(nuove):
         dati = {}
     voci = dati.get("voci") or {}
     voci.update(nuove)
+    # una voce reimportata dal dump non deve perdere la lista integrata
+    applica_integrazioni_moveset(voci)
     dati["voci"] = voci
     meta = dati.get("_meta") or {}
     # La provenienza si scrive **accanto** a quella del dump, non al posto: il grosso
@@ -1188,6 +1234,18 @@ def api_catalogo_pesca():
                         "error": "la fonte non è ancora scaricata"}), 200
 
     voci, mosse, problemi = pokeapi.pesca(nomi)
+    # L'anteprima mostra quello che l'import scriverà davvero, integrazioni comprese:
+    # dire «non è in Champions» di Pawmot sarebbe falso, e lo è dalla 1.2.0.
+    applicate, _ = applica_integrazioni_moveset(mosse)
+    integrate = {a.split("/")[0] for a in applicate}
+    mosse = {k: v for k, v in mosse.items() if k in voci}
+    problemi = [p for p in problemi
+                if not (p.get("nome") in integrate and p.get("problema") == pokeapi.NON_IN_CHAMPIONS)]
+    for chiave in sorted(integrate & set(voci)):
+        fonte = ((mosse.get(chiave) or {}).get("champions") or {}).get("fonte", "")
+        problemi.append({"nome": chiave, "problema": "lista Champions integrata",
+                         "dettaglio": f"PokéAPI non ce l'ha: viene da {fonte}, "
+                                      "in data/catalog/moveset_integrazioni.json"})
     presenti = _voci_gia_presenti(voci)
     doppioni = _stesso_slug_altrove(voci)
     for chiave, altra in doppioni.items():

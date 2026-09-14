@@ -90,6 +90,34 @@ pagina ed esegue `new Function()` su ogni blocco `<script>` **e** su ogni handle
   DEF**. Reti: 27/27, 11/11, 9/9, 32/32, `controlla_abilita` a posto, traduzioni
   **631/631**, sweep 44 pagine a 0 errori.
 
+**Pawmot ha la sua lista di Champions, integrata da Bulbapedia (§5.2, decisione di Davide)**
+
+- ✅ `scripts/integra_moveset_bulbapedia.py --voci pawmot`: **64 mosse** dalla pagina
+  «Pawmot (Pokémon)/Champions learnset» (versione 1.2.0), metodo `train` come nel dump.
+  Scrive il dato curato in `data/catalog/moveset_integrazioni.json` (copia in
+  `data/archive/`) e lo applica subito a `pokemon_moves.json`. Il diff tocca **solo**
+  Pawmot: +74 righe su 2,7 MB. Si rifiuta di scrivere su una voce che il dump ha già
+  (Incineroar: «Vince il dump»), su una voce inesistente e su una mossa sconosciuta.
+- ✅ `applica_integrazioni_moveset()` in `blueprints/pokemon.py`, chiamata da `salva_moveset()`
+  (import dal pannello) e da `importa_mosse_specie.py`: rigenerare non cancella
+  l'integrazione (dry-run: voci **1326 → 1326**, liste `champions` **333**). Dove il dump ha
+  una lista sua vince il dump, e l'integrazione viene detta «superata». L'anteprima del
+  pannello dice «lista Champions integrata» invece di un falso «non è in Champions».
+- ⚠️ **`prova_import_specie.py`**: due prove fallivano dopo l'integrazione, ed era atteso,
+  perché dicevano che Pawmot non è in Champions. Non sono state tolte: le prove 1-2 ora
+  girano **senza** il file delle integrazioni (così controllano ancora che il dump da solo
+  non inventi una lista), e **tre prove nuove** controllano che l'anteprima conti 64 mosse,
+  che reimportare dal dump non cancelli l'integrazione e che dove il dump ha una lista vinca
+  il dump. **30 su 30**.
+- Verifica dall'app vera: `/api/pokemon/pawmot` dà **64** mosse `champions` su MA e MB (prima
+  `null`) e 71 `main` su `pokedex`; Incineroar resta a 77; Toxtricity, non integrato,
+  resta `null`. `verifica_moveset.py`: identiche **270 → 271**, senza lista **26 → 25**.
+  Reti 30/30, 11/11, 32/32, 9/9; sweep 44 pagine a 0 errori.
+- ⚠️ **Trovato e non corretto**: la tendina di Pawmot in MA mostra **51** mosse, non 64. Le
+  13 che mancano (Crunch, Endure, Substitute, Thief, …) non sono nell'elenco mosse della
+  regulation, e il problema è generale: **159 mosse escluse, tutte le 278 specie di MA
+  colpite**, Crunch sparita anche da Incineroar. Scritto nel §3 del backlog.
+
 **La lista `champions` confrontata con Bulbapedia: il dump è fermo prima della 1.2.0 (§5.2)**
 
 - ✅ `scripts/verifica_moveset.py`, rieseguibile. Legge le **231 pagine** della categoria

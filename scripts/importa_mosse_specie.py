@@ -323,6 +323,13 @@ def main():
 
     voci, s = costruisci_moveset(quali)
 
+    # ⚠️ Le liste che il dump non ha e che sono state integrate a mano da un'altra fonte
+    # (Pawmot, da Bulbapedia, 14/09/2026). Senza questo passaggio, rigenerare il file le
+    # cancellerebbe in silenzio. Il dump vince: dove ora ha una lista sua, l'integrazione
+    # non si applica e viene detta, perché va tolta.
+    from blueprints.pokemon import applica_integrazioni_moveset
+    integrate, superate = applica_integrazioni_moveset(voci)
+
     precedente = carica_json(USCITA, {}) or {}
     prima = precedente.get("voci") or {}
 
@@ -354,6 +361,12 @@ def main():
         print("     è una trasformazione, non un learnset a sé. Marcate con `eredita_da`)")
     if s["gmax_senza_base"]:
         print(f"    ⚠️ Gigantamax senza una base a cui agganciarsi: {s['gmax_senza_base']}")
+
+    if integrate:
+        print(f"\n  liste integrate da data/catalog/moveset_integrazioni.json: {integrate}")
+    if superate:
+        print(f"  ⚠️  integrazioni SUPERATE, il dump ora ha la sua lista: {superate}")
+        print("      vanno tolte dal file delle integrazioni")
 
     inventate = sorted(s["senza_slug"] + s["senza_righe"])
     print(f"\nRESTANO FUORI  {len(inventate)}")
