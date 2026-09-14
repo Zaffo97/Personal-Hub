@@ -43,8 +43,18 @@ FILE_CSV = [
     "pokemon_species_names.csv", "pokemon_abilities.csv", "ability_names.csv",
     "version_groups.csv", "pokemon_move_methods.csv", "move_names.csv",
     "pokemon_forms.csv",
+    # per `puo_evolversi`, che serve all'Evolcondensa nel calcolatore (14/09/2026)
+    "pokemon_species.csv", "pokemon_evolution.csv",
     "pokemon_moves.csv",
 ]
+
+# Specie che `pokemon_species.csv` dà per pre-evoluzioni ma senza nessuna riga in
+# `pokemon_evolution.csv`, perché l'evoluzione avviene fuori dai giochi principali.
+# Contano come «si evolve» per la forma di default. `scripts/importa_evoluzioni.py` si
+# ferma su una specie **nuova** in questa situazione: va guardata e scritta qui.
+EVOLUZIONI_FUORI_DAL_DUMP = {
+    "meltan": "si evolve in Melmetal solo con le caramelle di Pokémon GO",
+}
 
 # Le chiavi delle stat nel catalogo non sono quelle del dump: `spa`/`spd`, non
 # `special-attack`/`special-defense`. Cambiarle vorrebbe dire toccare il calcolatore.
@@ -326,6 +336,42 @@ def moveset(slug_voluti):
     return fuori
 
 
+def evoluzioni():
+    """`({slug: True/False}, [species_id senza righe e non dichiarate])`.
+
+    ⚠️ **Si decide per forma, non per specie.** Corsola di Kanto non si evolve e quella
+    di Galar sì; Pikachu sì e Pikachu Cosplay no; una Mega mai. `pokemon_evolution.csv`
+    dice da quale **forma** parte un'evoluzione (`base_form_id`, un id di `pokemon.csv`):
+    una riga con `base_form_id` vale solo per quella forma, una senza vale per la forma
+    di default, e una forma non di default si evolve solo se una riga la nomina.
+
+    La cache segue la firma di `pokemon_evolution.csv`; gli altri due file li legge
+    dentro, perché il dump si aggiorna tutto insieme.
+    """
+    def costruisci(righe):
+        specie = {r["id"]: r for r in leggi("pokemon_species.csv")}
+        partenze = {}
+        for r in righe:
+            arrivo = specie.get(r["evolved_species_id"])
+            if arrivo and arrivo["evolves_from_species_id"]:
+                partenze.setdefault(arrivo["evolves_from_species_id"], set()).add(
+                    r["base_form_id"] or "")
+        pre = {s["evolves_from_species_id"] for s in specie.values()
+               if s["evolves_from_species_id"]}
+        non_dichiarate = []
+        for sid in sorted(pre - set(partenze)):
+            if specie[sid]["identifier"] in EVOLUZIONI_FUORI_DAL_DUMP:
+                partenze[sid] = {""}
+            else:
+                non_dichiarate.append(sid)
+        esito = {}
+        for p in leggi("pokemon.csv"):
+            da = partenze.get(p["species_id"], set())
+            esito[p["identifier"]] = p["id"] in da or (p["is_default"] == "1" and "" in da)
+        return esito, non_dichiarate
+    return tabella("pokemon_evolution.csv", costruisci)
+
+
 def pesca(nomi, con_mosse=True):
     """`(voci, mosse, problemi)` per i nomi chiesti. **Non scrive niente.**
 
@@ -372,6 +418,11 @@ def pesca(nomi, con_mosse=True):
             "base_stats": stat.get(pid) or {},
             "slug": slug,
         }
+        # Serve all'Evolcondensa. Si scrive qui e non si ricopia dalla voce vecchia:
+        # una specie davvero nuova non ha una voce vecchia da cui prenderlo.
+        evo = evoluzioni()[0]
+        if slug in evo:
+            voce["puo_evolversi"] = evo[slug]
         # ⚠️ I nomi si scrivono solo se ci sono: `nome_it` mancante è una lacuna da
         # dichiarare, non un buco da riempire col nome inglese fingendo sia italiano.
         if nome_it:

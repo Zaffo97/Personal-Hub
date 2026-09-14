@@ -156,7 +156,7 @@
                Fino al 14/09/2026 il value era il solo moltiplicatore, e il JS lo applicava
                all'Attacco qualunque fosse l'oggetto: vedi oggettoScelto() in calcolatori-danno.js #}
             <option value="">{{ t('— Nessun oggetto —') }}</option>
-            {% for iname, idata in items_data["items"]|dictsort %}{% if idata.category in ["choice","damage","conditional","type_boost","orb","utility"] and idata.modifier %}<option value="{{ iname }}" data-effect="{{ idata.effect or '' }}" data-mod="{{ idata.modifier }}">{{ nome_vis(idata, iname) }} ×{{ idata.modifier }}</option>{% endif %}{% endfor %}
+            {% for iname, idata in items_data["items"]|dictsort %}{% if idata.category in ["choice","damage","conditional","type_boost","orb","utility"] and idata.modifier is not none %}<option value="{{ iname }}" data-effect="{{ idata.effect or '' }}" data-mod="{{ idata.modifier }}" data-specie="{{ (idata.specie or [])|join('|') }}" data-tipi="{{ (idata.tipi or [])|join('|') }}" data-stat="{{ idata.stat or '' }}">{{ nome_vis(idata, iname) }} ×{{ idata.modifier }}</option>{% endif %}{% endfor %}
           </select></div>
       </div>
       <div class="form-group">
@@ -396,7 +396,7 @@
         <div class="form-group"><label style="font-size:.72rem">Item DEF</label>
           <select id="def_item" class="form-control" style="font-size:.78rem" onchange="calcDamage()">
             <option value="">{{ t('— Nessun oggetto —') }}</option>
-            {% for iname, idata in items_data["items"]|dictsort %}{% if idata.category in ["defensive","healing","berry","survival","support","weather","terrain"] and idata.modifier %}<option value="{{ iname }}" data-effect="{{ idata.effect or '' }}" data-mod="{{ idata.modifier }}">{{ nome_vis(idata, iname) }} ×{{ idata.modifier }}</option>{% endif %}{% endfor %}
+            {% for iname, idata in items_data["items"]|dictsort %}{% if idata.category in ["defensive","healing","berry","survival","support","weather","terrain"] and idata.modifier is not none %}<option value="{{ iname }}" data-effect="{{ idata.effect or '' }}" data-mod="{{ idata.modifier }}" data-specie="{{ (idata.specie or [])|join('|') }}" data-tipi="{{ (idata.tipi or [])|join('|') }}" data-stat="{{ idata.stat or '' }}">{{ nome_vis(idata, iname) }} ×{{ idata.modifier }}</option>{% endif %}{% endfor %}
           </select>
         </div>
         <!-- ABILITY DEF -->

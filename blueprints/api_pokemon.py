@@ -394,6 +394,9 @@ def _costruisci_indice():
                 "abilities": forma.get("abilities") or voce.get("abilities", []),
                 "nome_it": forma.get("nome_it") or nome_forma,
                 "nome_en": forma.get("nome_en") or nome_forma,
+                # ⚠️ questo NON si eredita: dal base una Mega prenderebbe `true`, e
+                # l'Evolcondensa le si attiverebbe. Assente = non lo sappiamo.
+                "puo_evolversi": forma.get("puo_evolversi"),
             }
             _INDICE.setdefault(
                 _normalize_key(nome_forma),
@@ -538,6 +541,9 @@ def api_pokemon(name):
         'stats':    data.get('base_stats', {}),
         'types':    data.get('types', []),
         'abilities': data.get('abilities', []),
+        # true/false dal dump (scripts/importa_evoluzioni.py), null se non lo sappiamo.
+        # Lo legge l'Evolcondensa nel calcolatore.
+        'puo_evolversi': data.get('puo_evolversi'),
         'sprite':   sprite,
         'sprite_hd': sprite_hd,
         'moves':        mosse,

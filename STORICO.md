@@ -48,6 +48,48 @@ pagina ed esegue `new Function()` su ogni blocco `<script>` **e** su ogni handle
   67-79 → 79-94, Charcoal «not active». Sweep IT+EN: **44 pagine, 0 errori**.
   Traduzioni: **630 su 630**.
 
+**Le 7 categorie di oggetti vuote, assegnate: 88 oggetti e 12 effetti nuovi nel calcolatore (§3)**
+
+- ✅ **Decisioni di Davide**: `orb` = Assorbisfera, Fiammosfera e Tossicsfera; **tutte e
+  18** le gemme; per l'Evolcondensa **si importano le evoluzioni**. Gli oggetti delle
+  leggende (Adamasfera, Splendisfera, Grigiosfera, Cuorugiada, le tre maschere di Ogerpon)
+  sono andati in `conditional`, perché `orb` era presa: da riconfermare con Davide.
+- ✅ `scripts/assegna_categorie_oggetti.py` (rieseguibile, `--dry-run`, non sovrascrive
+  un oggetto già curato). **88 oggetti**: choice 2, damage 2, orb 3, conditional 9,
+  utility 2, type_boost 41 (5 aromi, 18 lastre, 18 gemme), defensive 5; solo come
+  etichetta weather 4, terrain 5, support 1, berry 14. `other` da **339 a 251**. Ogni
+  valore da Bulbapedia, una pagina per oggetto; le frazioni arrotondate come i 58
+  curati (4915/4096 → 1.2, 4505/4096 → 1.1, 5324/4096 → 1.3). Seconda esecuzione:
+  «niente da fare».
+- ✅ `scripts/importa_evoluzioni.py` scrive `puo_evolversi` su **1340 voci su 1342** (481
+  sì, 859 no). Si decide **per forma** con `base_form_id` di `pokemon_evolution.csv`, e la
+  regola sta in `pokeapi.evoluzioni()`, che usa anche l'import dal pannello. **22
+  canarini** confrontati con Bulbapedia (Corsola/Corsola di Galar, Pikachu/Pikachu Cosplay,
+  Farfetch'd/Farfetch'd di Galar, Qwilfish/Qwilfish di Hisui, Mega Venusaur, Meltan, …).
+  Meltan è l'unica specie che il dump dà per pre-evoluzione **senza righe**: si evolve
+  solo in Pokémon GO, ed è dichiarata in `EVOLUZIONI_FUORI_DAL_DUMP`. Restano senza valore
+  le due Mega Meowstic, che non hanno `slug`.
+- ✅ Il motore conosce `boost_atk`/`boost_spa`, `boost_physical`/`boost_special`,
+  `boost_punch`, `life_orb`, `expert_belt`, `boost_specie`, `stat_specie`, `boost_spd`,
+  `eviolite` e `air_balloon`. Le tendine hanno `data-specie`/`data-tipi`/`data-stat` e
+  mostrano le voci con `modifier` **non nullo** (il Palloncino ha 0). `/api/pokemon`
+  restituisce `puo_evolversi`, che nelle forme **non si eredita**.
+- ⚠️ **Una rete ha trovato un difetto vero**: `prova_import_specie.py` 26/27. Reimportando
+  una specie dal pannello, `puo_evolversi` spariva, cioè la stessa trappola delle `forms`.
+  Ora lo scrive `pesca()`; `pokemon_species.csv` e `pokemon_evolution.csv` entrano in
+  `FILE_CSV`.
+- Verifica nel browser su `pokedex`: **44 casi su 44**. Attacco 18/18 (a mano:
+  Bendascelta **127-150**, Muscolbanda **93-111**, Assorbisfera **110-132**, Abilcintura
+  super efficace **205-244**, Bijoubuio **109-130**, Guantone su Fire Punch **129-153 →
+  141-168**, e senza mossa scelta «non si attiva»). Specie 8/8 (Adamasfera su Dialga
+  Drago sì e Fuoco no, Maschera Focolare su Ogerpon, Ossospesso su Marowak di Alola,
+  Dente Abissi su Clamperl). Difesa 11/11 (Corpetto assalto solo sulle speciali;
+  Evolcondensa su Porygon2 sì, Amoonguss no, Mega Meowstic «evoluzione non nota»;
+  Squamabissi, Metalpolvere; Palloncino immune alle mosse Terra). Regressione 7/7
+  sui casi del blocco precedente. Regola #8 invariata. Tendine: **77 oggetti ATK, 23
+  DEF**. Reti: 27/27, 11/11, 9/9, 32/32, `controlla_abilita` a posto, traduzioni
+  **631/631**, sweep 44 pagine a 0 errori.
+
 **Tre voci chiuse come decise da Davide, senza codice**
 
 - ✅ **Il calcolatore non blocca le mosse illegali**: le segnala e basta, perché un

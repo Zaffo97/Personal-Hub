@@ -703,116 +703,162 @@
     "nome_en": "Old Gateau"
   },
   "Adamant Orb": {
-    "category": "other",
+    "category": "conditional",
     "desc": "Sfera molto luminosa da dare a Dialga. Potenzia le mosse di tipo Drago e Acciaio.",
     "categoria_pokeapi": "species-specific",
     "nome_it": "Adamasfera",
-    "nome_en": "Adamant Orb"
+    "nome_en": "Adamant Orb",
+    "effect": "boost_specie",
+    "modifier": 1.2,
+    "specie": [
+      "Dialga"
+    ],
+    "tipi": [
+      "dragon",
+      "steel"
+    ]
   },
   "Lustrous Orb": {
-    "category": "other",
+    "category": "conditional",
     "desc": "Sfera splendente da dare a Palkia. Potenzia le mosse di tipo Drago e Acqua.",
     "categoria_pokeapi": "species-specific",
     "nome_it": "Splendisfera",
-    "nome_en": "Lustrous Orb"
+    "nome_en": "Lustrous Orb",
+    "effect": "boost_specie",
+    "modifier": 1.2,
+    "specie": [
+      "Palkia"
+    ],
+    "tipi": [
+      "dragon",
+      "water"
+    ]
   },
   "Figy Berry": {
-    "category": "other",
+    "category": "berry",
     "desc": "Se un Pokémon in difficoltà ha questa bacca, recupera dei PS. Se al Pokémon non piace il suo sapore, può causare confusione.",
     "categoria_pokeapi": "picky-healing",
     "nome_it": "Baccafico",
-    "nome_en": "Figy Berry"
+    "nome_en": "Figy Berry",
+    "effect": null,
+    "modifier": null
   },
   "Wiki Berry": {
-    "category": "other",
+    "category": "berry",
     "desc": "Se un Pokémon in difficoltà ha questa bacca, recupera dei PS. Se al Pokémon non piace il suo sapore, può causare confusione.",
     "categoria_pokeapi": "picky-healing",
     "nome_it": "Baccakiwi",
-    "nome_en": "Wiki Berry"
+    "nome_en": "Wiki Berry",
+    "effect": null,
+    "modifier": null
   },
   "Mago Berry": {
-    "category": "other",
+    "category": "berry",
     "desc": "Se un Pokémon in difficoltà ha questa bacca, recupera dei PS. Se al Pokémon non piace il suo sapore, può causare confusione.",
     "categoria_pokeapi": "picky-healing",
     "nome_it": "Baccamango",
-    "nome_en": "Mago Berry"
+    "nome_en": "Mago Berry",
+    "effect": null,
+    "modifier": null
   },
   "Aguav Berry": {
-    "category": "other",
+    "category": "berry",
     "desc": "Se un Pokémon in difficoltà ha questa bacca, recupera dei PS. Se al Pokémon non piace il suo sapore, può causare confusione.",
     "categoria_pokeapi": "picky-healing",
     "nome_it": "Baccaguava",
-    "nome_en": "Aguav Berry"
+    "nome_en": "Aguav Berry",
+    "effect": null,
+    "modifier": null
   },
   "Iapapa Berry": {
-    "category": "other",
+    "category": "berry",
     "desc": "Se un Pokémon in difficoltà ha questa bacca, recupera dei PS. Se al Pokémon non piace il suo sapore, può causare confusione.",
     "categoria_pokeapi": "picky-healing",
     "nome_it": "Baccapaia",
-    "nome_en": "Iapapa Berry"
+    "nome_en": "Iapapa Berry",
+    "effect": null,
+    "modifier": null
   },
   "Liechi Berry": {
-    "category": "other",
+    "category": "berry",
     "desc": "Se il Pokémon che ha questa bacca si trova in difficoltà, il suo Attacco aumenta.",
     "categoria_pokeapi": "in-a-pinch",
     "nome_it": "Baccalici",
-    "nome_en": "Liechi Berry"
+    "nome_en": "Liechi Berry",
+    "effect": null,
+    "modifier": null
   },
   "Ganlon Berry": {
-    "category": "other",
+    "category": "berry",
     "desc": "Se il Pokémon che ha questa bacca si trova in difficoltà, la sua Difesa aumenta.",
     "categoria_pokeapi": "in-a-pinch",
     "nome_it": "Baccalongan",
-    "nome_en": "Ganlon Berry"
+    "nome_en": "Ganlon Berry",
+    "effect": null,
+    "modifier": null
   },
   "Salac Berry": {
-    "category": "other",
+    "category": "berry",
     "desc": "Se il Pokémon che ha questa bacca si trova in difficoltà, la sua Velocità aumenta.",
     "categoria_pokeapi": "in-a-pinch",
     "nome_it": "Baccasalak",
-    "nome_en": "Salac Berry"
+    "nome_en": "Salac Berry",
+    "effect": null,
+    "modifier": null
   },
   "Petaya Berry": {
-    "category": "other",
+    "category": "berry",
     "desc": "Se il Pokémon che ha questa bacca si trova in difficoltà, il suo Attacco Speciale aumenta.",
     "categoria_pokeapi": "in-a-pinch",
     "nome_it": "Baccapitaya",
-    "nome_en": "Petaya Berry"
+    "nome_en": "Petaya Berry",
+    "effect": null,
+    "modifier": null
   },
   "Apicot Berry": {
-    "category": "other",
+    "category": "berry",
     "desc": "Se il Pokémon che ha questa bacca si trova in difficoltà, la sua Difesa Speciale aumenta.",
     "categoria_pokeapi": "in-a-pinch",
     "nome_it": "Baccacocca",
-    "nome_en": "Apicot Berry"
+    "nome_en": "Apicot Berry",
+    "effect": null,
+    "modifier": null
   },
   "Lansat Berry": {
-    "category": "other",
+    "category": "berry",
     "desc": "Se il Pokémon che ha questa bacca si trova in difficoltà, la probabilità di sferrare brutti colpi aumenta.",
     "categoria_pokeapi": "in-a-pinch",
     "nome_it": "Baccalangsa",
-    "nome_en": "Lansat Berry"
+    "nome_en": "Lansat Berry",
+    "effect": null,
+    "modifier": null
   },
   "Starf Berry": {
-    "category": "other",
+    "category": "berry",
     "desc": "Se il Pokémon che ha questa bacca si trova in difficoltà, una delle sue statistiche aumenta di molto.",
     "categoria_pokeapi": "in-a-pinch",
     "nome_it": "Baccambola",
-    "nome_en": "Starf Berry"
+    "nome_en": "Starf Berry",
+    "effect": null,
+    "modifier": null
   },
   "Micle Berry": {
-    "category": "other",
+    "category": "berry",
     "desc": "Se il Pokémon che ha questa bacca si trova in difficoltà, la precisione della sua mossa successiva aumenta.",
     "categoria_pokeapi": "in-a-pinch",
     "nome_it": "Baccaracolo",
-    "nome_en": "Micle Berry"
+    "nome_en": "Micle Berry",
+    "effect": null,
+    "modifier": null
   },
   "Custap Berry": {
-    "category": "other",
+    "category": "berry",
     "desc": "Se il Pokémon che ha questa bacca si trova in difficoltà, sferra la sua mossa per primo. Funziona una sola volta.",
     "categoria_pokeapi": "in-a-pinch",
     "nome_it": "Baccacrela",
-    "nome_en": "Custap Berry"
+    "nome_en": "Custap Berry",
+    "effect": null,
+    "modifier": null
   },
   "Macho Brace": {
     "category": "other",
@@ -836,11 +882,13 @@
     "nome_en": "Soothe Bell"
   },
   "Choice Band": {
-    "category": "other",
+    "category": "choice",
     "desc": "Strumento da dare a un Pokémon. Questa benda aumenta l’Attacco, ma permette l’uso di una sola mossa.",
     "categoria_pokeapi": "choice",
     "nome_it": "Bendascelta",
-    "nome_en": "Choice Band"
+    "nome_en": "Choice Band",
+    "effect": "boost_atk",
+    "modifier": 1.5
   },
   "Amulet Coin": {
     "category": "other",
@@ -857,25 +905,47 @@
     "nome_en": "Cleanse Tag"
   },
   "Soul Dew": {
-    "category": "other",
+    "category": "conditional",
     "desc": "Sfera miracolosa da dare a Latios o Latias. Aumenta la potenza delle mosse di tipo Psico e Drago.",
     "categoria_pokeapi": "species-specific",
     "nome_it": "Cuorugiada",
-    "nome_en": "Soul Dew"
+    "nome_en": "Soul Dew",
+    "effect": "boost_specie",
+    "modifier": 1.2,
+    "specie": [
+      "Latios",
+      "Latias"
+    ],
+    "tipi": [
+      "psychic",
+      "dragon"
+    ]
   },
   "Deep Sea Tooth": {
-    "category": "other",
+    "category": "utility",
     "desc": "Strumento da dare a Clamperl. Dente dai bagliori argentei che aumenta l’Attacco Speciale.",
     "categoria_pokeapi": "species-specific",
     "nome_it": "Dente Abissi",
-    "nome_en": "Deep Sea Tooth"
+    "nome_en": "Deep Sea Tooth",
+    "effect": "stat_specie",
+    "modifier": 2.0,
+    "stat": "spa",
+    "specie": [
+      "Clamperl"
+    ]
   },
   "Deep Sea Scale": {
-    "category": "other",
+    "category": "defensive",
     "desc": "Strumento da dare a Clamperl. Squama dai bagliori rosei che aumenta la Difesa Speciale.",
     "categoria_pokeapi": "species-specific",
     "nome_it": "Squamabissi",
-    "nome_en": "Deep Sea Scale"
+    "nome_en": "Deep Sea Scale",
+    "effect": "stat_specie",
+    "modifier": 2.0,
+    "stat": "spd",
+    "specie": [
+      "Clamperl"
+    ]
   },
   "Smoke Ball": {
     "category": "other",
@@ -899,11 +969,13 @@
     "nome_en": "Lucky Egg"
   },
   "Sea Incense": {
-    "category": "other",
+    "category": "type_boost",
     "desc": "Strumento da dare a un Pokémon. Incenso dal profumo esotico che potenzia le mosse di tipo Acqua.",
     "categoria_pokeapi": "type-enhancement",
     "nome_it": "Marearoma",
-    "nome_en": "Sea Incense"
+    "nome_en": "Sea Incense",
+    "effect": "boost_water",
+    "modifier": 1.2
   },
   "Lax Incense": {
     "category": "other",
@@ -920,18 +992,31 @@
     "nome_en": "Lucky Punch"
   },
   "Metal Powder": {
-    "category": "other",
+    "category": "defensive",
     "desc": "Strumento da dare a Ditto. Strana polvere finissima e al tempo stesso dura che migliora la Difesa.",
     "categoria_pokeapi": "species-specific",
     "nome_it": "Metalpolvere",
-    "nome_en": "Metal Powder"
+    "nome_en": "Metal Powder",
+    "effect": "stat_specie",
+    "modifier": 2.0,
+    "stat": "def",
+    "specie": [
+      "Ditto"
+    ]
   },
   "Thick Club": {
-    "category": "other",
+    "category": "utility",
     "desc": "Strumento da dare a Cubone o Marowak. Osso duro che migliora la potenza delle mosse fisiche.",
     "categoria_pokeapi": "species-specific",
     "nome_it": "Ossospesso",
-    "nome_en": "Thick Club"
+    "nome_en": "Thick Club",
+    "effect": "stat_specie",
+    "modifier": 2.0,
+    "stat": "atk",
+    "specie": [
+      "Cubone",
+      "Marowak"
+    ]
   },
   "Leek": {
     "category": "other",
@@ -983,39 +1068,49 @@
     "nome_en": "Wide Lens"
   },
   "Muscle Band": {
-    "category": "other",
+    "category": "damage",
     "desc": "Strumento da dare a un Pokémon. Fascia che potenzia di poco le mosse fisiche.",
     "categoria_pokeapi": "held-items",
     "nome_it": "Muscolbanda",
-    "nome_en": "Muscle Band"
+    "nome_en": "Muscle Band",
+    "effect": "boost_physical",
+    "modifier": 1.1
   },
   "Wise Glasses": {
-    "category": "other",
+    "category": "damage",
     "desc": "Strumento da dare a un Pokémon. Paio di occhiali dalle lenti spesse che potenzia di poco le mosse speciali.",
     "categoria_pokeapi": "held-items",
     "nome_it": "Saviocchiali",
-    "nome_en": "Wise Glasses"
+    "nome_en": "Wise Glasses",
+    "effect": "boost_special",
+    "modifier": 1.1
   },
   "Expert Belt": {
-    "category": "other",
+    "category": "conditional",
     "desc": "Strumento da dare a un Pokémon. Cintura consumata che potenzia di poco le mosse superefficaci.",
     "categoria_pokeapi": "held-items",
     "nome_it": "Abilcintura",
-    "nome_en": "Expert Belt"
+    "nome_en": "Expert Belt",
+    "effect": "expert_belt",
+    "modifier": 1.2
   },
   "Light Clay": {
-    "category": "other",
+    "category": "support",
     "desc": "Strumento da dare a un Pokémon. Allunga la durata delle mosse barriera come Schermoluce e Riflesso.",
     "categoria_pokeapi": "held-items",
     "nome_it": "Creta Luce",
-    "nome_en": "Light Clay"
+    "nome_en": "Light Clay",
+    "effect": null,
+    "modifier": null
   },
   "Life Orb": {
-    "category": "other",
+    "category": "orb",
     "desc": "Strumento da dare a un Pokémon. Potenzia le mosse a scapito di alcuni PS per ogni colpo.",
     "categoria_pokeapi": "held-items",
     "nome_it": "Assorbisfera",
-    "nome_en": "Life Orb"
+    "nome_en": "Life Orb",
+    "effect": "life_orb",
+    "modifier": 1.3
   },
   "Power Herb": {
     "category": "other",
@@ -1025,18 +1120,22 @@
     "nome_en": "Power Herb"
   },
   "Toxic Orb": {
-    "category": "other",
+    "category": "orb",
     "desc": "Strumento da dare a un Pokémon. Sfera bizzarra che iperavvelena chi l’ha con sé in una lotta.",
     "categoria_pokeapi": "bad-held-items",
     "nome_it": "Tossicsfera",
-    "nome_en": "Toxic Orb"
+    "nome_en": "Toxic Orb",
+    "effect": null,
+    "modifier": null
   },
   "Flame Orb": {
-    "category": "other",
+    "category": "orb",
     "desc": "Strumento da dare a un Pokémon. Sfera bizzarra che procura una scottatura a chi l’ha con sé in una lotta.",
     "categoria_pokeapi": "bad-held-items",
     "nome_it": "Fiammosfera",
-    "nome_en": "Flame Orb"
+    "nome_en": "Flame Orb",
+    "effect": null,
+    "modifier": null
   },
   "Quick Powder": {
     "category": "other",
@@ -1088,32 +1187,40 @@
     "nome_en": "Black Sludge"
   },
   "Icy Rock": {
-    "category": "other",
+    "category": "weather",
     "desc": "Strumento da dare a un Pokémon. Allunga la durata della mossa Grandine.",
     "categoria_pokeapi": "held-items",
     "nome_it": "Rocciafredda",
-    "nome_en": "Icy Rock"
+    "nome_en": "Icy Rock",
+    "effect": null,
+    "modifier": null
   },
   "Smooth Rock": {
-    "category": "other",
+    "category": "weather",
     "desc": "Strumento da dare a un Pokémon. Allunga la durata della mossa Terrempesta.",
     "categoria_pokeapi": "held-items",
     "nome_it": "Roccialiscia",
-    "nome_en": "Smooth Rock"
+    "nome_en": "Smooth Rock",
+    "effect": null,
+    "modifier": null
   },
   "Heat Rock": {
-    "category": "other",
+    "category": "weather",
     "desc": "Strumento da dare a un Pokémon. Allunga la durata della mossa Giornodisole.",
     "categoria_pokeapi": "held-items",
     "nome_it": "Rocciacalda",
-    "nome_en": "Heat Rock"
+    "nome_en": "Heat Rock",
+    "effect": null,
+    "modifier": null
   },
   "Damp Rock": {
-    "category": "other",
+    "category": "weather",
     "desc": "Strumento da dare a un Pokémon. Allunga la durata della mossa Pioggiadanza.",
     "categoria_pokeapi": "held-items",
     "nome_it": "Rocciaumida",
-    "nome_en": "Damp Rock"
+    "nome_en": "Damp Rock",
+    "effect": null,
+    "modifier": null
   },
   "Grip Claw": {
     "category": "other",
@@ -1186,137 +1293,175 @@
     "nome_en": "Big Root"
   },
   "Choice Specs": {
-    "category": "other",
+    "category": "choice",
     "desc": "Strumento da dare a un Pokémon. Questi occhiali aumentano la potenza delle mosse speciali, ma permettono l’uso di una sola mossa.",
     "categoria_pokeapi": "choice",
     "nome_it": "Lentiscelta",
-    "nome_en": "Choice Specs"
+    "nome_en": "Choice Specs",
+    "effect": "boost_spa",
+    "modifier": 1.5
   },
   "Flame Plate": {
-    "category": "other",
+    "category": "type_boost",
     "desc": "Strumento da dare a un Pokémon. Lastra di pietra che potenzia le mosse di tipo Fuoco.",
     "categoria_pokeapi": "plates",
     "nome_it": "Lastrarogo",
-    "nome_en": "Flame Plate"
+    "nome_en": "Flame Plate",
+    "effect": "boost_fire",
+    "modifier": 1.2
   },
   "Splash Plate": {
-    "category": "other",
+    "category": "type_boost",
     "desc": "Strumento da dare a un Pokémon. Lastra di pietra che potenzia le mosse di tipo Acqua.",
     "categoria_pokeapi": "plates",
     "nome_it": "Lastraidro",
-    "nome_en": "Splash Plate"
+    "nome_en": "Splash Plate",
+    "effect": "boost_water",
+    "modifier": 1.2
   },
   "Zap Plate": {
-    "category": "other",
+    "category": "type_boost",
     "desc": "Strumento da dare a un Pokémon. Lastra di pietra che potenzia le mosse di tipo Elettro.",
     "categoria_pokeapi": "plates",
     "nome_it": "Lastrasaetta",
-    "nome_en": "Zap Plate"
+    "nome_en": "Zap Plate",
+    "effect": "boost_electric",
+    "modifier": 1.2
   },
   "Meadow Plate": {
-    "category": "other",
+    "category": "type_boost",
     "desc": "Strumento da dare a un Pokémon. Lastra di pietra che potenzia le mosse di tipo Erba.",
     "categoria_pokeapi": "plates",
     "nome_it": "Lastraprato",
-    "nome_en": "Meadow Plate"
+    "nome_en": "Meadow Plate",
+    "effect": "boost_grass",
+    "modifier": 1.2
   },
   "Icicle Plate": {
-    "category": "other",
+    "category": "type_boost",
     "desc": "Strumento da dare a un Pokémon. Lastra di pietra che potenzia le mosse di tipo Ghiaccio.",
     "categoria_pokeapi": "plates",
     "nome_it": "Lastragelo",
-    "nome_en": "Icicle Plate"
+    "nome_en": "Icicle Plate",
+    "effect": "boost_ice",
+    "modifier": 1.2
   },
   "Fist Plate": {
-    "category": "other",
+    "category": "type_boost",
     "desc": "Strumento da dare a un Pokémon. Lastra di pietra che potenzia le mosse di tipo Lotta.",
     "categoria_pokeapi": "plates",
     "nome_it": "Lastrapugno",
-    "nome_en": "Fist Plate"
+    "nome_en": "Fist Plate",
+    "effect": "boost_fighting",
+    "modifier": 1.2
   },
   "Toxic Plate": {
-    "category": "other",
+    "category": "type_boost",
     "desc": "Strumento da dare a un Pokémon. Lastra di pietra che potenzia le mosse di tipo Veleno.",
     "categoria_pokeapi": "plates",
     "nome_it": "Lastrafiele",
-    "nome_en": "Toxic Plate"
+    "nome_en": "Toxic Plate",
+    "effect": "boost_poison",
+    "modifier": 1.2
   },
   "Earth Plate": {
-    "category": "other",
+    "category": "type_boost",
     "desc": "Strumento da dare a un Pokémon. Lastra di pietra che potenzia le mosse di tipo Terra.",
     "categoria_pokeapi": "plates",
     "nome_it": "Lastrageo",
-    "nome_en": "Earth Plate"
+    "nome_en": "Earth Plate",
+    "effect": "boost_ground",
+    "modifier": 1.2
   },
   "Sky Plate": {
-    "category": "other",
+    "category": "type_boost",
     "desc": "Strumento da dare a un Pokémon. Lastra di pietra che potenzia le mosse di tipo Volante.",
     "categoria_pokeapi": "plates",
     "nome_it": "Lastracielo",
-    "nome_en": "Sky Plate"
+    "nome_en": "Sky Plate",
+    "effect": "boost_flying",
+    "modifier": 1.2
   },
   "Mind Plate": {
-    "category": "other",
+    "category": "type_boost",
     "desc": "Strumento da dare a un Pokémon. Lastra di pietra che potenzia le mosse di tipo Psico.",
     "categoria_pokeapi": "plates",
     "nome_it": "Lastramente",
-    "nome_en": "Mind Plate"
+    "nome_en": "Mind Plate",
+    "effect": "boost_psychic",
+    "modifier": 1.2
   },
   "Insect Plate": {
-    "category": "other",
+    "category": "type_boost",
     "desc": "Strumento da dare a un Pokémon. Lastra di pietra che potenzia le mosse di tipo Coleottero.",
     "categoria_pokeapi": "plates",
     "nome_it": "Lastrabaco",
-    "nome_en": "Insect Plate"
+    "nome_en": "Insect Plate",
+    "effect": "boost_bug",
+    "modifier": 1.2
   },
   "Stone Plate": {
-    "category": "other",
+    "category": "type_boost",
     "desc": "Strumento da dare a un Pokémon. Lastra di pietra che potenzia le mosse di tipo Roccia.",
     "categoria_pokeapi": "plates",
     "nome_it": "Lastrapietra",
-    "nome_en": "Stone Plate"
+    "nome_en": "Stone Plate",
+    "effect": "boost_rock",
+    "modifier": 1.2
   },
   "Spooky Plate": {
-    "category": "other",
+    "category": "type_boost",
     "desc": "Strumento da dare a un Pokémon. Lastra di pietra che potenzia le mosse di tipo Spettro.",
     "categoria_pokeapi": "plates",
     "nome_it": "Lastratetra",
-    "nome_en": "Spooky Plate"
+    "nome_en": "Spooky Plate",
+    "effect": "boost_ghost",
+    "modifier": 1.2
   },
   "Draco Plate": {
-    "category": "other",
+    "category": "type_boost",
     "desc": "Strumento da dare a un Pokémon. Lastra di pietra che potenzia le mosse di tipo Drago.",
     "categoria_pokeapi": "plates",
     "nome_it": "Lastradrakon",
-    "nome_en": "Draco Plate"
+    "nome_en": "Draco Plate",
+    "effect": "boost_dragon",
+    "modifier": 1.2
   },
   "Dread Plate": {
-    "category": "other",
+    "category": "type_boost",
     "desc": "Strumento da dare a un Pokémon. Lastra di pietra che potenzia le mosse di tipo Buio.",
     "categoria_pokeapi": "plates",
     "nome_it": "Lastratimore",
-    "nome_en": "Dread Plate"
+    "nome_en": "Dread Plate",
+    "effect": "boost_dark",
+    "modifier": 1.2
   },
   "Iron Plate": {
-    "category": "other",
+    "category": "type_boost",
     "desc": "Strumento da dare a un Pokémon. Lastra di pietra che potenzia le mosse di tipo Acciaio.",
     "categoria_pokeapi": "plates",
     "nome_it": "Lastraferro",
-    "nome_en": "Iron Plate"
+    "nome_en": "Iron Plate",
+    "effect": "boost_steel",
+    "modifier": 1.2
   },
   "Odd Incense": {
-    "category": "other",
+    "category": "type_boost",
     "desc": "Strumento da dare a un Pokémon. Incenso dal profumo esotico che potenzia le mosse di tipo Psico.",
     "categoria_pokeapi": "type-enhancement",
     "nome_it": "Bizzoaroma",
-    "nome_en": "Odd Incense"
+    "nome_en": "Odd Incense",
+    "effect": "boost_psychic",
+    "modifier": 1.2
   },
   "Rock Incense": {
-    "category": "other",
+    "category": "type_boost",
     "desc": "Strumento da dare a un Pokémon. Incenso dal profumo esotico che potenzia le mosse di tipo Roccia.",
     "categoria_pokeapi": "type-enhancement",
     "nome_it": "Roccioaroma",
-    "nome_en": "Rock Incense"
+    "nome_en": "Rock Incense",
+    "effect": "boost_rock",
+    "modifier": 1.2
   },
   "Full Incense": {
     "category": "other",
@@ -1326,18 +1471,22 @@
     "nome_en": "Full Incense"
   },
   "Wave Incense": {
-    "category": "other",
+    "category": "type_boost",
     "desc": "Strumento da dare a un Pokémon. Incenso dal profumo esotico che potenzia le mosse di tipo Acqua.",
     "categoria_pokeapi": "type-enhancement",
     "nome_it": "Ondaroma",
-    "nome_en": "Wave Incense"
+    "nome_en": "Wave Incense",
+    "effect": "boost_water",
+    "modifier": 1.2
   },
   "Rose Incense": {
-    "category": "other",
+    "category": "type_boost",
     "desc": "Strumento da dare a un Pokémon. Incenso dal profumo esotico che potenzia le mosse di tipo Erba.",
     "categoria_pokeapi": "type-enhancement",
     "nome_it": "Rosaroma",
-    "nome_en": "Rose Incense"
+    "nome_en": "Rose Incense",
+    "effect": "boost_grass",
+    "modifier": 1.2
   },
   "Luck Incense": {
     "category": "other",
@@ -1368,11 +1517,20 @@
     "nome_en": "Razor Fang"
   },
   "Griseous Orb": {
-    "category": "other",
+    "category": "conditional",
     "desc": "Poliedro splendente da dare a Giratina. Aumenta la potenza delle mosse di tipo Drago e Spettro.",
     "categoria_pokeapi": "species-specific",
     "nome_it": "Grigiosfera",
-    "nome_en": "Griseous Orb"
+    "nome_en": "Griseous Orb",
+    "effect": "boost_specie",
+    "modifier": 1.2,
+    "specie": [
+      "Giratina"
+    ],
+    "tipi": [
+      "dragon",
+      "ghost"
+    ]
   },
   "Douse Drive": {
     "category": "other",
@@ -1410,11 +1568,13 @@
     "nome_en": "Sweet Heart"
   },
   "Eviolite": {
-    "category": "other",
+    "category": "defensive",
     "desc": "Misterioso concentrato di materia evolutiva. Aumenta la Difesa e la Difesa Speciale di un Pokémon che può ancora evolversi.",
     "categoria_pokeapi": "held-items",
     "nome_it": "Evolcondensa",
-    "nome_en": "Eviolite"
+    "nome_en": "Eviolite",
+    "effect": "eviolite",
+    "modifier": 1.5
   },
   "Float Stone": {
     "category": "other",
@@ -1431,11 +1591,13 @@
     "nome_en": "Rocky Helmet"
   },
   "Air Balloon": {
-    "category": "other",
+    "category": "defensive",
     "desc": "Permette al Pokémon che ha questo strumento di fluttuare in aria. Scoppia se il Pokémon è colpito da un attacco.",
     "categoria_pokeapi": "held-items",
     "nome_it": "Palloncino",
-    "nome_en": "Air Balloon"
+    "nome_en": "Air Balloon",
+    "effect": "air_balloon",
+    "modifier": 0
   },
   "Red Card": {
     "category": "other",
@@ -1480,109 +1642,139 @@
     "nome_en": "Eject Button"
   },
   "Fire Gem": {
-    "category": "other",
+    "category": "type_boost",
     "desc": "Strumento da dare a un Pokémon. Gioiello che potenzia una sola volta le mosse di tipo Fuoco.",
     "categoria_pokeapi": "jewels",
     "nome_it": "Bijoufuoco",
-    "nome_en": "Fire Gem"
+    "nome_en": "Fire Gem",
+    "effect": "boost_fire",
+    "modifier": 1.3
   },
   "Water Gem": {
-    "category": "other",
+    "category": "type_boost",
     "desc": "Strumento da dare a un Pokémon. Gioiello che potenzia una sola volta le mosse di tipo Acqua.",
     "categoria_pokeapi": "jewels",
     "nome_it": "Bijouacqua",
-    "nome_en": "Water Gem"
+    "nome_en": "Water Gem",
+    "effect": "boost_water",
+    "modifier": 1.3
   },
   "Electric Gem": {
-    "category": "other",
+    "category": "type_boost",
     "desc": "Strumento da dare a un Pokémon. Gioiello che potenzia una sola volta le mosse di tipo Elettro.",
     "categoria_pokeapi": "jewels",
     "nome_it": "Bijouelettro",
-    "nome_en": "Electric Gem"
+    "nome_en": "Electric Gem",
+    "effect": "boost_electric",
+    "modifier": 1.3
   },
   "Grass Gem": {
-    "category": "other",
+    "category": "type_boost",
     "desc": "Strumento da dare a un Pokémon. Gioiello che potenzia una sola volta le mosse di tipo Erba.",
     "categoria_pokeapi": "jewels",
     "nome_it": "Bijouerba",
-    "nome_en": "Grass Gem"
+    "nome_en": "Grass Gem",
+    "effect": "boost_grass",
+    "modifier": 1.3
   },
   "Ice Gem": {
-    "category": "other",
+    "category": "type_boost",
     "desc": "Strumento da dare a un Pokémon. Gioiello che potenzia una sola volta le mosse di tipo Ghiaccio.",
     "categoria_pokeapi": "jewels",
     "nome_it": "Bijoughiaccio",
-    "nome_en": "Ice Gem"
+    "nome_en": "Ice Gem",
+    "effect": "boost_ice",
+    "modifier": 1.3
   },
   "Fighting Gem": {
-    "category": "other",
+    "category": "type_boost",
     "desc": "Strumento da dare a un Pokémon. Gioiello che potenzia una sola volta le mosse di tipo Lotta.",
     "categoria_pokeapi": "jewels",
     "nome_it": "Bijoulotta",
-    "nome_en": "Fighting Gem"
+    "nome_en": "Fighting Gem",
+    "effect": "boost_fighting",
+    "modifier": 1.3
   },
   "Poison Gem": {
-    "category": "other",
+    "category": "type_boost",
     "desc": "Strumento da dare a un Pokémon. Gioiello che potenzia una sola volta le mosse di tipo Veleno.",
     "categoria_pokeapi": "jewels",
     "nome_it": "Bijouveleno",
-    "nome_en": "Poison Gem"
+    "nome_en": "Poison Gem",
+    "effect": "boost_poison",
+    "modifier": 1.3
   },
   "Ground Gem": {
-    "category": "other",
+    "category": "type_boost",
     "desc": "Strumento da dare a un Pokémon. Gioiello che potenzia una sola volta le mosse di tipo Terra.",
     "categoria_pokeapi": "jewels",
     "nome_it": "Bijouterra",
-    "nome_en": "Ground Gem"
+    "nome_en": "Ground Gem",
+    "effect": "boost_ground",
+    "modifier": 1.3
   },
   "Flying Gem": {
-    "category": "other",
+    "category": "type_boost",
     "desc": "Strumento da dare a un Pokémon. Gioiello che potenzia una sola volta le mosse di tipo Volante.",
     "categoria_pokeapi": "jewels",
     "nome_it": "Bijouvolante",
-    "nome_en": "Flying Gem"
+    "nome_en": "Flying Gem",
+    "effect": "boost_flying",
+    "modifier": 1.3
   },
   "Psychic Gem": {
-    "category": "other",
+    "category": "type_boost",
     "desc": "Strumento da dare a un Pokémon. Gioiello che potenzia una sola volta le mosse di tipo Psico.",
     "categoria_pokeapi": "jewels",
     "nome_it": "Bijoupsico",
-    "nome_en": "Psychic Gem"
+    "nome_en": "Psychic Gem",
+    "effect": "boost_psychic",
+    "modifier": 1.3
   },
   "Bug Gem": {
-    "category": "other",
+    "category": "type_boost",
     "desc": "Strumento da dare a un Pokémon. Gioiello che potenzia una sola volta le mosse di tipo Coleottero.",
     "categoria_pokeapi": "jewels",
     "nome_it": "Bijoucoleottero",
-    "nome_en": "Bug Gem"
+    "nome_en": "Bug Gem",
+    "effect": "boost_bug",
+    "modifier": 1.3
   },
   "Rock Gem": {
-    "category": "other",
+    "category": "type_boost",
     "desc": "Strumento da dare a un Pokémon. Gioiello che potenzia una sola volta le mosse di tipo Roccia.",
     "categoria_pokeapi": "jewels",
     "nome_it": "Bijouroccia",
-    "nome_en": "Rock Gem"
+    "nome_en": "Rock Gem",
+    "effect": "boost_rock",
+    "modifier": 1.3
   },
   "Ghost Gem": {
-    "category": "other",
+    "category": "type_boost",
     "desc": "Strumento da dare a un Pokémon. Gioiello che potenzia una sola volta le mosse di tipo Spettro.",
     "categoria_pokeapi": "jewels",
     "nome_it": "Bijouspettro",
-    "nome_en": "Ghost Gem"
+    "nome_en": "Ghost Gem",
+    "effect": "boost_ghost",
+    "modifier": 1.3
   },
   "Dark Gem": {
-    "category": "other",
+    "category": "type_boost",
     "desc": "Strumento da dare a un Pokémon. Gioiello che potenzia una sola volta le mosse di tipo Buio.",
     "categoria_pokeapi": "jewels",
     "nome_it": "Bijoubuio",
-    "nome_en": "Dark Gem"
+    "nome_en": "Dark Gem",
+    "effect": "boost_dark",
+    "modifier": 1.3
   },
   "Steel Gem": {
-    "category": "other",
+    "category": "type_boost",
     "desc": "Strumento da dare a un Pokémon. Gioiello che potenzia una sola volta le mosse di tipo Acciaio.",
     "categoria_pokeapi": "jewels",
     "nome_it": "Bijouacciaio",
-    "nome_en": "Steel Gem"
+    "nome_en": "Steel Gem",
+    "effect": "boost_steel",
+    "modifier": 1.3
   },
   "Health Feather": {
     "category": "other",
@@ -1641,18 +1833,22 @@
     "nome_en": "Casteliacone"
   },
   "Dragon Gem": {
-    "category": "other",
+    "category": "type_boost",
     "desc": "Strumento da dare a un Pokémon. Gioiello che potenzia una sola volta le mosse di tipo Drago.",
     "categoria_pokeapi": "jewels",
     "nome_it": "Bijoudrago",
-    "nome_en": "Dragon Gem"
+    "nome_en": "Dragon Gem",
+    "effect": "boost_dragon",
+    "modifier": 1.3
   },
   "Normal Gem": {
-    "category": "other",
+    "category": "type_boost",
     "desc": "Strumento da dare a un Pokémon. Gioiello che potenzia una sola volta le mosse di tipo Normale.",
     "categoria_pokeapi": "jewels",
     "nome_it": "Bijounormale",
-    "nome_en": "Normal Gem"
+    "nome_en": "Normal Gem",
+    "effect": "boost_normal",
+    "modifier": 1.3
   },
   "Weakness Policy": {
     "category": "other",
@@ -1662,18 +1858,22 @@
     "nome_en": "Weakness Policy"
   },
   "Assault Vest": {
-    "category": "other",
+    "category": "defensive",
     "desc": "Strumento da dare a un Pokémon. Questo corpetto aumenta la Difesa Speciale ma impedisce l’uso di mosse di stato.",
     "categoria_pokeapi": "held-items",
     "nome_it": "Corpetto assalto",
-    "nome_en": "Assault Vest"
+    "nome_en": "Assault Vest",
+    "effect": "boost_spd",
+    "modifier": 1.5
   },
   "Pixie Plate": {
-    "category": "other",
+    "category": "type_boost",
     "desc": "Strumento da dare a un Pokémon. Lastra di pietra che potenzia le mosse di tipo Folletto.",
     "categoria_pokeapi": "plates",
     "nome_it": "Lastraspiritello",
-    "nome_en": "Pixie Plate"
+    "nome_en": "Pixie Plate",
+    "effect": "boost_fairy",
+    "modifier": 1.2
   },
   "Ability Capsule": {
     "category": "other",
@@ -1907,11 +2107,13 @@
     "nome_en": "Lumiose Galette"
   },
   "Fairy Gem": {
-    "category": "other",
+    "category": "type_boost",
     "desc": "Strumento da dare a un Pokémon. Gioiello che potenzia una sola volta le mosse di tipo Folletto.",
     "categoria_pokeapi": "jewels",
     "nome_it": "Bijoufolletto",
-    "nome_en": "Fairy Gem"
+    "nome_en": "Fairy Gem",
+    "effect": "boost_fairy",
+    "modifier": 1.3
   },
   "Latiasite": {
     "category": "other",
@@ -2299,11 +2501,13 @@
     "nome_en": "Purple Nectar"
   },
   "Terrain Extender": {
-    "category": "other",
+    "category": "terrain",
     "desc": "Se un Pokémon ha questo strumento, l’effetto di una sua mossa o abilità che modifica il campo di lotta durerà più a lungo.",
     "categoria_pokeapi": "held-items",
     "nome_it": "Fissacampo",
-    "nome_en": "Terrain Extender"
+    "nome_en": "Terrain Extender",
+    "effect": null,
+    "modifier": null
   },
   "Protective Pads": {
     "category": "other",
@@ -2313,32 +2517,40 @@
     "nome_en": "Protective Pads"
   },
   "Electric Seed": {
-    "category": "other",
+    "category": "terrain",
     "desc": "Strumento da dare a un Pokémon. Fa aumentare la Difesa quando il terreno di lotta è nello stato di Campo Elettrico.",
     "categoria_pokeapi": "held-items",
     "nome_it": "Elettroseme",
-    "nome_en": "Electric Seed"
+    "nome_en": "Electric Seed",
+    "effect": null,
+    "modifier": null
   },
   "Psychic Seed": {
-    "category": "other",
+    "category": "terrain",
     "desc": "Strumento da dare a un Pokémon. Fa aumentare la Difesa Speciale quando il terreno di lotta è nello stato di Campo Psichico.",
     "categoria_pokeapi": "held-items",
     "nome_it": "Psicoseme",
-    "nome_en": "Psychic Seed"
+    "nome_en": "Psychic Seed",
+    "effect": null,
+    "modifier": null
   },
   "Misty Seed": {
-    "category": "other",
+    "category": "terrain",
     "desc": "Strumento da dare a un Pokémon. Fa aumentare la Difesa Speciale quando il terreno di lotta è nello stato di Campo Nebbioso.",
     "categoria_pokeapi": "held-items",
     "nome_it": "Nebbiaseme",
-    "nome_en": "Misty Seed"
+    "nome_en": "Misty Seed",
+    "effect": null,
+    "modifier": null
   },
   "Grassy Seed": {
-    "category": "other",
+    "category": "terrain",
     "desc": "Strumento da dare a un Pokémon. Fa aumentare la Difesa quando il terreno di lotta è nello stato di Campo Erboso.",
     "categoria_pokeapi": "held-items",
     "nome_it": "Erbaseme",
-    "nome_en": "Grassy Seed"
+    "nome_en": "Grassy Seed",
+    "effect": null,
+    "modifier": null
   },
   "Fighting Memory": {
     "category": "other",
@@ -2705,11 +2917,13 @@
     "nome_en": "Ability Patch"
   },
   "Blank Plate": {
-    "category": "other",
+    "category": "type_boost",
     "desc": "",
     "categoria_pokeapi": "plates",
     "nome_it": "Lastraripristino",
-    "nome_en": "Blank Plate"
+    "nome_en": "Blank Plate",
+    "effect": "boost_normal",
+    "modifier": 1.2
   },
   "Legend Plate": {
     "category": "other",
@@ -2747,11 +2961,13 @@
     "nome_en": "Mirror Herb"
   },
   "Punching Glove": {
-    "category": "other",
+    "category": "conditional",
     "desc": "",
     "categoria_pokeapi": "held-items",
     "nome_it": "Guantone",
-    "nome_en": "Punching Glove"
+    "nome_en": "Punching Glove",
+    "effect": "boost_punch",
+    "modifier": 1.1
   },
   "Covert Cloak": {
     "category": "other",
@@ -2768,25 +2984,40 @@
     "nome_en": "Loaded Dice"
   },
   "Wellspring Mask": {
-    "category": "other",
+    "category": "conditional",
     "desc": "",
     "categoria_pokeapi": "held-items",
     "nome_it": "Maschera Pozzo",
-    "nome_en": "Wellspring Mask"
+    "nome_en": "Wellspring Mask",
+    "effect": "boost_specie",
+    "modifier": 1.2,
+    "specie": [
+      "Ogerpon"
+    ]
   },
   "Hearthflame Mask": {
-    "category": "other",
+    "category": "conditional",
     "desc": "",
     "categoria_pokeapi": "held-items",
     "nome_it": "Maschera Focolare",
-    "nome_en": "Hearthflame Mask"
+    "nome_en": "Hearthflame Mask",
+    "effect": "boost_specie",
+    "modifier": 1.2,
+    "specie": [
+      "Ogerpon"
+    ]
   },
   "Cornerstone Mask": {
-    "category": "other",
+    "category": "conditional",
     "desc": "",
     "categoria_pokeapi": "held-items",
     "nome_it": "Maschera Fondamenta",
-    "nome_en": "Cornerstone Mask"
+    "nome_en": "Cornerstone Mask",
+    "effect": "boost_specie",
+    "modifier": 1.2,
+    "specie": [
+      "Ogerpon"
+    ]
   },
   "Health Mochi": {
     "category": "other",

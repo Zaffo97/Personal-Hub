@@ -113,8 +113,10 @@ function loadSide(side){
       ...d.stats,
       abilities: d.abilities || [],
       types: d.types || [],
-      // serve a Elettropalla, che vale solo per Pikachu e le sue forme
-      nome_en: d.nome_en || d.name || ''
+      // serve agli oggetti legati a una specie: Elettropalla, Ossospesso, le sfere…
+      nome_en: d.nome_en || d.name || '',
+      // serve all'Evolcondensa; null = non lo sappiamo
+      puo_evolversi: d.puo_evolversi
     };
     const sp=document.getElementById(side+'_spr');
     if(sp){
@@ -169,12 +171,25 @@ function recalcSide(side){
 function oggettoScelto(id){
   const o = document.getElementById(id)?.selectedOptions[0];
   if (!o || !o.value || !o.dataset.effect) return null;
+  const mod = parseFloat(o.dataset.mod);
+  const elenco = s => (s || '').split('|').filter(Boolean);
   return {
     chiave: o.value,
     effect: o.dataset.effect,
-    mod:    parseFloat(o.dataset.mod) || 1.0,
+    // ⚠️ non `|| 1.0`: il Palloncino ha modifier 0, e 0 e' un valore, non un vuoto
+    mod:    isNaN(mod) ? 1.0 : mod,
+    specie: elenco(o.dataset.specie),
+    tipi:   elenco(o.dataset.tipi),
+    stat:   o.dataset.stat || '',
     nome:   o.textContent.replace(/\s*×.*$/, '').trim(),
   };
+}
+
+// Chi tiene l'oggetto e' una delle specie elencate? Si confronta il nome inglese per
+// parola intera: «Marowak» prende anche «Alolan Marowak», «Dialga» anche la forma Origine.
+function specieCombacia(specie, lato){
+  const nome = lato?.nome_en || '';
+  return specie.some(s => new RegExp('\\b' + s + '\\b', 'i').test(nome));
 }
 
 function calcDamage(){
@@ -259,6 +274,9 @@ function calcDamage(){
       if ((dFx.type === 'immunity' || dFx.type === 'absorb') && dFx.move_type === mvType) {
         typeEff = 0;
       }
+      // Palloncino: immune alle mosse Terra finche' non viene colpito (Bulbapedia)
+      const palloncino = defOgg?.effect === 'air_balloon' && mvType === 'Terra';
+      if (palloncino) typeEff = 0;
 
       if (typeEff === 0) {
         const res = document.getElementById('dmg_result');
@@ -268,7 +286,8 @@ function calcDamage(){
           ? tf('{tipo} → Wonder Guard: bloccata (solo le super efficaci passano)',
                {tipo: tipoVis(mvType)})
           : tf('{tipo} → Immune (0×) su {tipiDif}',
-               {tipo: tipoVis(mvType), tipiDif: effectiveDefTypes.map(tipoVis).join('/')});
+               {tipo: tipoVis(mvType), tipiDif: effectiveDefTypes.map(tipoVis).join('/')})
+            + (palloncino ? ` @ ${defOgg.nome}` : '');
         if (el('dmg_pct'))   el('dmg_pct').textContent   = '0%';
         if (el('dmg_bar'))   el('dmg_bar').style.width   = '0%';
         if (el('dmg_min'))   el('dmg_min').textContent   = '0';
@@ -367,18 +386,43 @@ function calcDamage(){
   // potenziava anche le mosse Buio e Stolascelta il danno (caso della regola #8:
   // 85-102 diventava 102-120 e 127-150). Ora ogni effetto ha la sua condizione, e
   // un oggetto che non si attiva lo dice a schermo invece di non fare niente.
-  // Regole da Bulbapedia: i bonus di tipo alzano la potenza del 20% solo sul loro
-  // tipo; Elettropalla raddoppia Attacco e Attacco Speciale solo a Pikachu.
+  // Regole da Bulbapedia, una pagina per oggetto; l'elenco degli effetti e cosa
+  // vogliono dire sta in scripts/assegna_categorie_oggetti.py. Tre posti diversi,
+  // come nei giochi: la potenza (bpEff), la stat (A / D) e il danno finale.
   let bpEff = bp;
   let atkOggAttivo = false;
+  let finaleAtk = 1.0;   // Assorbisfera, Abilcintura: sul danno, nel ciclo dei roll
   if (atkOgg) {
     const fx = atkOgg.effect;
     const tipoBoost = fx.startsWith('boost_') ? TIPI_EN_IT[fx.slice(6)] : null;
+    const mossa = MOVES_DB[risolviChiave(MOVES_DB, document.getElementById('mv_name').value)];
+    // mvType e' gia' quello dopo le "-ate": Folletto con Pixilate prende Piuma fatata
+    const potenza = () => { bpEff = Math.floor(bp * atkOgg.mod); atkOggAttivo = true; };
+    const stat    = () => { A = Math.floor(A * atkOgg.mod); atkOggAttivo = true; };
     if (tipoBoost) {
-      // mvType e' gia' quello dopo le "-ate": Folletto con Pixilate prende Piuma fatata
-      if (mvType === tipoBoost) { bpEff = Math.floor(bp * atkOgg.mod); atkOggAttivo = true; }
+      if (mvType === tipoBoost) potenza();
     } else if (fx === 'pikachu_boost') {
-      if (/pikachu/i.test(BS.atk?.nome_en || '')) { A = Math.floor(A * atkOgg.mod); atkOggAttivo = true; }
+      if (/pikachu/i.test(BS.atk?.nome_en || '')) stat();
+    } else if (fx === 'boost_atk') {
+      if (cat === 'physical') stat();
+    } else if (fx === 'boost_spa') {
+      if (cat === 'special') stat();
+    } else if (fx === 'boost_physical') {
+      if (cat === 'physical') potenza();
+    } else if (fx === 'boost_special') {
+      if (cat === 'special') potenza();
+    } else if (fx === 'boost_punch') {
+      // senza una mossa scelta dall'elenco il flag non si conosce: non si attiva
+      if ((mossa?.flags || []).includes('punch')) potenza();
+    } else if (fx === 'boost_specie') {
+      const tipi = atkOgg.tipi.map(x => TIPI_EN_IT[x]);
+      if (specieCombacia(atkOgg.specie, BS.atk) && (!tipi.length || tipi.includes(mvType))) potenza();
+    } else if (fx === 'stat_specie') {
+      if (atkOgg.stat === aStat && specieCombacia(atkOgg.specie, BS.atk)) stat();
+    } else if (fx === 'life_orb') {
+      finaleAtk = atkOgg.mod; atkOggAttivo = true;
+    } else if (fx === 'expert_belt') {
+      if (typeEff > 1) { finaleAtk = atkOgg.mod; atkOggAttivo = true; }
     }
     // Ogni altro effetto (Stolascelta: `boost_spe`) non tocca il danno: resta inattivo.
   }
@@ -390,12 +434,27 @@ function calcDamage(){
   // mossa Normale. Il moltiplicatore va sul danno finale, nel ciclo dei roll.
   let baccaMult = 1.0;
   let defOggAttivo = false;
+  let defOggNota = '';
   if (defOgg) {
     const fx = defOgg.effect;
     const tipoBacca = fx.startsWith('resist_') ? TIPI_EN_IT[fx.slice(7)] : null;
-    if (tipoBacca && mvType === tipoBacca && (typeEff > 1 || tipoBacca === 'Normale')) {
-      baccaMult = defOgg.mod; defOggAttivo = true;
+    const stat = () => { D = Math.floor(D * defOgg.mod); defOggAttivo = true; };
+    if (tipoBacca) {
+      if (mvType === tipoBacca && (typeEff > 1 || tipoBacca === 'Normale')) {
+        baccaMult = defOgg.mod; defOggAttivo = true;
+      }
+    } else if (fx === 'boost_spd') {
+      if (cat === 'special') stat();
+    } else if (fx === 'eviolite') {
+      // `puo_evolversi` viene dal dump (scripts/importa_evoluzioni.py). Se manca non
+      // lo sappiamo, e non e' la stessa cosa di «no»: lo si dice a schermo.
+      const evo = BS.def?.puo_evolversi;
+      if (evo === true) stat();
+      else if (evo !== false) defOggNota = t('evoluzione non nota');
+    } else if (fx === 'stat_specie') {
+      if (defOgg.stat === dStat && specieCombacia(defOgg.specie, BS.def)) stat();
     }
+    // `air_balloon` agisce prima, sull'immunita': vedi sopra, vicino a Levitazione.
   }
 
   // ── Pioggia forte: le mosse Fuoco falliscono ────────────────────────────────
@@ -451,7 +510,8 @@ function calcDamage(){
     dmg = Math.floor(dmg * (85 + i) / 100);
     dmg = Math.floor(dmg * stab * typeEff);
 
-    // Bacca che dimezza il danno (vedi Item DEF sopra)
+    // Oggetti sul danno finale: Assorbisfera / Abilcintura e la bacca che dimezza
+    if (finaleAtk !== 1.0) dmg = Math.floor(dmg * finaleAtk);
     if (baccaMult !== 1.0) dmg = Math.floor(dmg * baccaMult);
 
     return dmg;
@@ -475,10 +535,10 @@ function calcDamage(){
     ? ` (${nomeVis(ABILITIES_DATA[abilChiave], abilChiave)})` : '';
   // L'oggetto sta nella riga del risultato, e se non si e' attivato lo dice: un
   // oggetto scelto che non cambia il numero somiglia troppo a un guasto.
-  const oggTag = (ogg, attivo) => !ogg ? ''
-    : ` @ ${ogg.nome}` + (attivo ? '' : ` (${t('non si attiva')})`);
+  const oggTag = (ogg, attivo, nota) => !ogg ? ''
+    : ` @ ${ogg.nome}` + (attivo ? '' : ` (${nota || t('non si attiva')})`);
   const atkOggTag = oggTag(atkOgg, atkOggAttivo);
-  const defOggTag = oggTag(defOgg, defOggAttivo);
+  const defOggTag = oggTag(defOgg, defOggAttivo, defOggNota);
   const stabLabel = stab > 1 ? ` +STAB(${stab}×)` : '';
   let effLabel = '';
   if      (typeEff >= 4)    effLabel = ' ✕4 ' + t('(super)');
