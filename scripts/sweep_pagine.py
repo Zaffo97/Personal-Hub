@@ -66,8 +66,13 @@ def moderno(codice):
     sintassi su una riga che nel browser gira benissimo. Un falso allarme dentro uno
     strumento di verifica è peggio di nessuno strumento: si impara a ignorarlo, e il
     giorno dell'errore vero non lo guarda più nessuno.
+
+    ⚠️ `?.[` e `?.(` vanno tolti **prima** di `?.`: `TC[mvType]?.[dt]` in
+    `calcolatori-danno.js` diventava `TC[mvType].[dt]`, che è un errore vero per
+    qualunque parser. Trovato il 14/09/2026.
     """
-    return codice.replace("?.", ".").replace("??", "||")
+    return (codice.replace("?.[", "[").replace("?.(", "(")
+            .replace("?.", ".").replace("??", "||"))
 
 
 def controlla(esprima, pagina, testo):

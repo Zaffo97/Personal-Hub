@@ -53,7 +53,7 @@ pagina ed esegue `new Function()` su ogni blocco `<script>` **e** su ogni handle
 - ✅ **Decisioni di Davide**: `orb` = Assorbisfera, Fiammosfera e Tossicsfera; **tutte e
   18** le gemme; per l'Evolcondensa **si importano le evoluzioni**. Gli oggetti delle
   leggende (Adamasfera, Splendisfera, Grigiosfera, Cuorugiada, le tre maschere di Ogerpon)
-  sono andati in `conditional`, perché `orb` era presa: da riconfermare con Davide.
+  sono andati in `conditional`, perché `orb` era presa: confermato da Davide lo stesso giorno.
 - ✅ `scripts/assegna_categorie_oggetti.py` (rieseguibile, `--dry-run`, non sovrascrive
   un oggetto già curato). **88 oggetti**: choice 2, damage 2, orb 3, conditional 9,
   utility 2, type_boost 41 (5 aromi, 18 lastre, 18 gemme), defensive 5; solo come
@@ -89,6 +89,19 @@ pagina ed esegue `new Function()` su ogni blocco `<script>` **e** su ogni handle
   sui casi del blocco precedente. Regola #8 invariata. Tendine: **77 oggetti ATK, 23
   DEF**. Reti: 27/27, 11/11, 9/9, 32/32, `controlla_abilita` a posto, traduzioni
   **631/631**, sweep 44 pagine a 0 errori.
+
+**Il grafo rifatto prima del §5.2, e un falso allarme dello sweep tolto**
+
+- ✅ `/graphify . --update` (il grafo era del 16/08): **69 file** ri-estratti, 51 di codice
+  con l'AST e 18 documenti con due subagenti (372.457 token). Risultato: **1029 nodi,
+  2005 archi, 89 comunità**, cioè +409 nodi e −140 rispetto a prima. Controllo di
+  integrità pulito: 0 archi pendenti, mancanti o collassati. ⚠️ Il subagente dei documenti
+  **non ha letto per intero** il log di `PROJECT_CONTEXT.md` e le voci di `STORICO.md`
+  prima del 19/08: quella parte del grafo è incompleta.
+- ✅ `moderno()` in `scripts/sweep_pagine.py` trasformava `TC[mvType]?.[dt]` in
+  `TC[mvType].[dt]`, che nessun parser accetta. Ora toglie `?.[` e `?.(` prima di `?.`.
+  Prima: `calcolatori-danno.js` dava «Line 264: Unexpected token [». Dopo: i **7 file
+  `.js` su 7** del calcolatore passano, e lo sweep delle 44 pagine resta a 0 errori.
 
 **Tre voci chiuse come decise da Davide, senza codice**
 
