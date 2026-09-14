@@ -27,6 +27,7 @@ Non sono storia: sono le cose che questo progetto ha già pagato e che tornano a
 |---|---|
 | **Dati mancanti** | `moves: null` **non** vuol dire «nessuna mossa», vuol dire «non lo sappiamo». Le forme inventate non stanno su PokéAPI: se `null` valesse zero, diventerebbero inutilizzabili. Stessa logica per `roster: null` = tutto il catalogo |
 | ⚠️ **Una voce senza `slug` sparisce dal moveset, e sembra una forma inventata** | Trovata il 13/09/2026. `indice_catalogo()` in `importa_mosse_specie.py` prende **solo** le voci del catalogo che hanno il campo `slug`: è il verso giusto (senza slug non c'è niente da cercare nel dump), ma vuol dire che una forma **vera** a cui lo slug manca esce dal moveset **insieme** alle Mega fan-made, e a schermo prende lo stesso avviso giallo «nessun elenco mosse». Nessun errore, e il rapporto dell'import la elenca sotto «forme che PokéAPI non conosce», che per lei è **falso**. Così i tre Gourgeist e Floette Fiore Eterno sono rimasti senza le loro 397 e 229 righe di mosse dal 12/08 al 13/09. La regola: **prima di dare per inventata una voce senza moveset, cercarne lo slug nel dump.** Lo script è `scripts/aggiungi_slug_forme.py`, e lo slug non si scrive a occhio — le sei base stat devono combaciare con quelle del dump, altrimenti si prende l'elenco mosse di un altro Pokémon senza accorgersene |
+| ⚠️ **Il moveset di Champions è fermo a M-B** | Trovato il 14/09/2026 con `scripts/verifica_moveset.py`. La lista `champions` di PokéAPI arriva a Regulation M-B e non ha la **versione 1.2.0**: 26 voci arrivate con quella versione restano senza lista, e a schermo prendono l'avviso giallo «nessun elenco mosse», esattamente come una forma inventata. **Nessun errore.** Riscaricare il dump non serve, perché è PokéAPI a non averla. Prima di dare per mancante una specie di Champions, guardare la frase «available from Version …» sulla sua pagina Bulbapedia |
 | **Risoluzione per nome** | Due chiavi diverse possono avere lo stesso `nome_it`/`nome_en`, e il catalogo Pokémon cita le abilità col nome **inglese** mentre le chiavi sono italiane. Ogni confronto per nome va fatto con `risolviChiave()` / `_INDICE`, mai con un match esatto sulla chiave |
 | **Fallback silenziosi** | Più di un baco qui non dava errore, dava il numero sbagliato: lo Speed Tier che ricadeva su una lista statica, `/api/moves` che leggeva il file di MA, un alias che rispondeva Mega Venusaur. Se un loader ha un ramo di riserva, va verificato **quale dei due** sta rispondendo |
 | **Endpoint fantasma** | **Quattro volte** il JS ha chiamato una risposta che nessuno aveva mai implementato: `/api/regulations`, `d.moves`, `d.regulation` e — trovato il 17/08 e scritto il 19/08 — `/api/team/<id>`. Tutte e quattro fallivano **dentro un `catch` muto**, quindi la pagina si apriva e mancava solo un pezzo, senza un errore a schermo. Sono tutte chiuse, ma la classe resta: **un `catch(e){}` vuoto qui è un baco in attesa**, e il modo di trovarli è leggere cosa il JS chiede e cercarlo nella `url_map` |
@@ -544,7 +545,7 @@ quattro cose richiedono **fonti diverse**:
 |---|---|
 | **La differenza fra M-A e M-B** | Nel dump c'è **un solo** version group `champions`, quindi oggi le due regulation riceverebbero la **stessa identica lista**. Se bandiscono mosse diverse, quella differenza non è in nessun dato che abbiamo. È lo stesso buco già noto per mosse e oggetti, che oggi MB copia da MA |
 | **Le 16 forme inventate** | Sono forme di Davide, PokéAPI non le conosce. Non è solo il moveset: è la stessa fonte che servirà per le loro stat e abilità. Restano fuori — dichiarate, non riempite. ⚠️ **Erano scritte 20 fino al 13/09/2026, e il numero era sbagliato**: quattro di quelle venti — i tre Gourgeist e Floette Fiore Eterno — sono forme **vere**, che il dump conosce. Vedi la trappola dello `slug` in cima |
-| **`Pawmot`** | ✅ chiarito il 12/08: è un buco del dump, non un errore nostro. Resta senza elenco, con l'avviso giallo. Da riconfermare sulla wiki nel giro di collaudo |
+| **`Pawmot`** | ⚠️ **La spiegazione del 12/08 era sbagliata**, corretta il 14/09/2026. Non è un «buco del dump»: Pawmot **è in Champions dalla versione 1.2.0** (Bulbapedia, 64 mosse), e PokéAPI la 1.2.0 non ce l'ha. Vedi §5.2 |
 | **Le regulation future** | Se la prossima non è basata su Champions non ha un version group nel dump: il suo elenco va dalla schermata contenuti o da uno script dedicato |
 
 > Il metodo resta quello del roster: dove esiste una fonte la si importa con uno script
@@ -701,7 +702,33 @@ sulle cose toccate di recente: tutto, comprese le parti che nessuno guarda da me
 L'esito va scritto qui con i numeri: quante pagine, quanti campi, quante anomalie e quali.
 Le anomalie fuori scope si segnalano, non si correggono al volo.
 
-### 5.2 ⬜ Le mosse assegnate sono davvero quelle giuste?
+### 5.2 🟨 Le mosse assegnate sono davvero quelle giuste?
+
+> **La lista `champions` è confrontata dal 14/09/2026** con `scripts/verifica_moveset.py`
+> (numeri in `STORICO.md`). Il risultato cambia la domanda: **il dump non è sbagliato, è
+> fermo.** PokéAPI ha Champions fino a Regulation M-B (ultimo commit del file: 21/07/2026),
+> e Bulbapedia è già alla **versione 1.2.0**. La cache locale è identica al dump pubblicato,
+> quindi riscaricarlo non cambia niente.
+>
+> **⬜ Le decisioni che servono, di Davide:**
+>
+> 1. **Le 26 voci arrivate con la 1.2.0** non hanno lista `champions`. Oggi solo **Pawmot**
+>    è in un roster (MA e MB), le altre 25 servirebbero a una regulation futura
+> 2. **Le mosse cambiate con la 1.2.0**: Slash aggiunta a 29 specie, più Charm, Draining Kiss e
+>    Misty Terrain a Mawile e Bulldoze a Houndstone; tolte Metal Burst e Mirror Coat ad
+>    Archaludon e Pound a Politoed (Bulbapedia scrive «Prior to Version 1.2.0»). Se MA e MB
+>    si giocano sulla versione corrente, oggi il calcolatore ha le liste di prima
+> 3. **Tre disaccordi che nessuna versione spiega**, dove sospetto Bulbapedia e non il dump:
+>    Gardevoir (5 mosse — Alluring Voice, Aura Sphere, Body Slam, Calm Mind, Charge Beam — che
+>    sulla sua pagina **non compaiono né fra le accessibili né fra le perse**, mentre su Gallade
+>    ci sono), U-turn di Blaziken (stessa cosa) e Ariados (Psychic nel dump, Psychic Fangs su
+>    Bulbapedia e Psychic fra le perse)
+> 4. **Morpeko (Hangry Mode)**: nel dump ha 5 mosse in meno della forma normale (Assurance,
+>    Payback, Rising Voltage, Round, Snore), e Bulbapedia ha un blocco solo per tutte e due.
+>    Questo sembra un difetto del dump
+>
+> Le differenze delle **forme di Rotom** non sono errori: Bulbapedia mette le mosse proprie
+> di ogni forma (Overheat, Hydro Pump, …) sulla pagina unica di Rotom, il dump le separa.
 
 Il moveset importato il 12/08 non è mai stato confrontato con una fonte indipendente:
 viene tutto dal dump di PokéAPI, e finora l'unica verifica è stata **interna** — i nomi
@@ -714,13 +741,12 @@ seconda fonte indipendente).
 
 In ordine di rischio:
 
-- **la lista `champions` per prima**: è la più giovane e la meno vista (19 810 righe su 319
+- ✅ **la lista `champions` per prima** (14/09/2026, vedi sopra): è la più giovane e la meno vista (19 810 righe su 319
   voci), e nessuno ha mai controllato che quel version group sia completo. Se lì manca
   qualcosa, su M-A e M-B una mossa legale sparisce dalla tendina **senza dire niente**
-- **`Pawmot`**, il canarino: un caso solo, già spiegato come buco del dump, da riconfermare
-- **un campione della lista `main`** su generazioni diverse: per 429 voci su 1258 il version
+- ⬜ **un campione della lista `main`** su generazioni diverse: per 429 voci su 1258 il version
   group scelto **non** è Scarlatto/Violetto
-- **i metodi**: `machine` è il 76% delle righe (50 551 su 66 033). Se il dump gonfia le MT,
+- ⬜ **i metodi**: `machine` è il 76% delle righe (50 551 su 66 033). Se il dump gonfia le MT,
   gli elenchi sono più larghi del vero e il filtro serve a poco
 
 Metodo: uno script rieseguibile che scarica, che **si ferma su ciò che non risolve**, e che

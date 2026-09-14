@@ -90,6 +90,32 @@ pagina ed esegue `new Function()` su ogni blocco `<script>` **e** su ogni handle
   DEF**. Reti: 27/27, 11/11, 9/9, 32/32, `controlla_abilita` a posto, traduzioni
   **631/631**, sweep 44 pagine a 0 errori.
 
+**La lista `champions` confrontata con Bulbapedia: il dump è fermo prima della 1.2.0 (§5.2)**
+
+- ✅ `scripts/verifica_moveset.py`, rieseguibile. Legge le **231 pagine** della categoria
+  «Pokémon learnsets (Champions)» (wikitext tramite l'API, cache in
+  `data/cache/bulbapedia/champions/`, una richiesta al secondo, 0 errori), fa corrispondere
+  pagina e sezione `===…===` a **una sola** voce del catalogo e **segnala senza scrivere**.
+  Esce con 1 se un blocco non risolve. Esito: **0 non risolti**, 0 nomi di mossa ignoti,
+  **358 voci confrontate** (252 con un blocco loro, 106 forme confrontate con la lista
+  della specie), **270 identiche**.
+- ⚠️ **Il dump non ha la versione 1.2.0.** **26 voci** hanno una pagina Bulbapedia e nessuna
+  lista nel dump, e **tutte e 26** sono «available from Version 1.2.0». Fra queste c'è
+  **Pawmot**, che il backlog dal 12/08 dava per «buco del dump» (64 mosse su Bulbapedia): è
+  l'unica in un roster, MA e MB. Controllato alla fonte: la cache locale è **identica** al
+  dump pubblicato oggi su GitHub (19.810 righe, 319 Pokémon). L'ultimo commit sul file è del
+  21/07/2026, «Add Champions Regulation M-B learnsets». Le pagine per versione d'arrivo sono
+  186 per la 1.0.2, 22 per la 1.1.0 e 23 per la 1.2.0.
+- **Le differenze sulle voci con un blocco loro sono 35**, e quasi tutte sono la 1.2.0:
+  Slash solo su Bulbapedia in **29**, e 34 pagine l'hanno accessibile; Mawile +3 (Charm,
+  Draining Kiss, Misty Terrain); Houndstone +Bulldoze. Tre mosse sono solo nel dump e
+  Bulbapedia le segna «Prior to Version 1.2.0» (Archaludon: Metal Burst e Mirror Coat;
+  Politoed: Pound). **Non spiegati** da nessuna versione: Gardevoir con 5 mosse in più nel
+  dump, che sulla sua pagina Bulbapedia mancano del tutto; Blaziken con U-turn; Ariados con
+  Psychic contro Psychic Fangs. Le forme di Rotom differiscono perché Bulbapedia ha una
+  pagina unica, e non è un errore. Morpeko (Hangry Mode) ha 5 mosse in meno nel dump.
+  Nessun dato è stato toccato: le decisioni sono di Davide, elencate nel §5.2.
+
 **Il grafo rifatto prima del §5.2, e un falso allarme dello sweep tolto**
 
 - ✅ `/graphify . --update` (il grafo era del 16/08): **69 file** ri-estratti, 51 di codice
