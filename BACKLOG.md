@@ -2,16 +2,16 @@
 
 > **Qui c'è solo ciò che è aperto.** Le voci chiuse stanno in [`STORICO.md`](STORICO.md),
 > una riga per lavoro con la data e i numeri della verifica.
-> Aggiornato: **13/09/2026**. Fonte storica: `Nuove implementazioni.docx` (verde = fatto).
+> Aggiornato: **14/09/2026**. Fonte storica: `Nuove implementazioni.docx` (verde = fatto).
 
 Legenda: ⬜ da fare · 🟨 parziale · ⚠️ trappola nota, da rileggere prima di toccare la zona
 
 **Indice**
 
 1. [Le trappole che valgono ancora](#-le-trappole-che-valgono-ancora) — leggere prima di lavorare
-2. [I cinque blocchi aperti](#1-i-cinque-blocchi-aperti)
+2. [I blocchi aperti](#1-i-blocchi-aperti-quattro-su-sei)
 3. [I lavori a metà](#2-i-lavori-a-metà)
-4. [Bachi noti e non corretti](#3-bachi-noti-e-non-corretti)
+4. [Bachi noti](#3-bachi-noti)
 5. [Voci minori, per sezione](#4-voci-minori-per-sezione)
 6. [🏁 Il giro di collaudo finale](#5--il-giro-di-collaudo-finale-va-fatto-per-ultimo)
 
@@ -67,7 +67,11 @@ L'ordine che ne esce, e che vale finché Davide non lo cambia:
    ✅ **chiuso il 10/09/2026**
 2. ~~§2.2 — le 103 abilità da fondere~~ ✅ **chiuso il 10/09/2026**: erano già fuse,
    e la rimisura l'ha detto. Restava un legame rotto su Mega Meganium
-3. §4 — le sezioni: Stampa 3D, Tinkercad, PC Builder, Python ← **il prossimo**
+3. §4 — le sezioni: Stampa 3D, Tinkercad, PC Builder, Python
+
+> **Cambiato il 14/09/2026**: Davide ha scelto di **finire prima la sezione Pokémon**.
+> Quindi vengono anticipate l'assegnazione delle 7 categorie di oggetti vuote (§3) e la
+> verifica del moveset contro Bulbapedia (§5.2). Le sezioni del §4 vengono dopo.
 4. §1.4 — l'export `--completo`
 5. ~~§3 — i bachi noti~~ ✅ **guardati tutti il 10/09/2026**: tre chiusi, uno mezzo,
    uno che non si riproduce, uno lasciato apposta
@@ -224,8 +228,9 @@ Tier sulla lista statica. Numeri e prove in `STORICO.md`, rete in
 
 **⬜ Cosa resta di questa voce, ed è dato, non codice**: una regulation nuova che **non**
 sia basata su Champions o sui giochi principali non ha una terza sorgente di mosse da
-scegliere, perché nel dump non c'è (vedi §2.3). E gli `overrides` del filtro — i campi
-sovrascritti voce per voce — si scrivono ancora solo a mano nel JSON.
+scegliere, perché nel dump non c'è (vedi §2.3). Gli `overrides` del filtro — i campi
+sovrascritti voce per voce — si scrivono a mano nel JSON **per decisione del 14/09/2026**:
+in tutte e tre le regulation valgono `{}`, e un editor si fa quando serviranno.
 
 ### 1.4 🟨 Esportare tutto il DB, utenti e personalizzazioni comprese
 
@@ -548,15 +553,16 @@ quattro cose richiedono **fonti diverse**:
 
 ---
 
-## 3. Bachi noti — quattro guardati il 10/09/2026
+## 3. Bachi noti
 
 | | Baco | Stato |
 |---|---|---|
 | ✅ | **`build_catalog.py` avrebbe distrutto il catalogo** | **Chiuso il 10/09/2026.** Leggeva come base i **file storici** (174 voci contro 1026) e riapplicava alle Mega il `+75 HP / +20` che la deconversione dell'11/08 aveva tolto: rieseguirlo avrebbe riscritto `data/catalog/` con quella base, **in silenzio**. Ora la base è `data/catalog/` quando c'è — e lo script **dice da quale file legge** — `MEGA_BONUS` non esiste più, e `scrivi_json()` **rifiuta** un file più povero di quello sul disco. Provato: dry-run reale 1026→1029 specie, 919→920 mosse, 386→387 abilità, 397→398 oggetti, **0 voci curate modificate**; `scripts/prova_build_catalog.py` 9 su 9 |
 | ✅ | **La regex delle traduzioni taglia sull'apostrofo** — **non si riproduce** | Rimisurato il 10/09/2026 **su un file vero**: `t('Nessun team per l\'utente scelto.')` viene estratto **intero**. Il ramo `\\.` dell'alternanza consuma la coppia backslash-apice, e la `replace()` sotto toglie il backslash. La diagnosi del 19/08 è quasi certamente nata da una prova fatta in una shell che si mangia un livello di backslash — la stessa trappola è ricapitata **due volte** mentre si scriveva questa riga. La spiegazione sta ora nel commento sopra la regex, perché il caso non si riapra una terza volta |
 | ✅ | **`scripts/` è fuori dal raggio di `controlla_proprietario.py`** | **Chiuso il 10/09/2026**, ed è rimasto fuori: uno script da riga di comando non ha una sessione, quindi `ambito_utente()` lì non vuol dire niente e lavora su tutto il DB per costruzione. Quello che mancava era **dirlo**: ora è scritto nel docstring e il riassunto conta e **nomina** gli script che toccano una tabella di contenuto (oggi 2: `importa_dati.py` e `prova_importa_dati.py`). Se ne compare uno che non ti aspetti, quello va letto |
-| 🟨 | **La tendina categorie degli oggetti non corrisponde ai dati** | **Metà chiusa il 10/09/2026, e non era una decisione sui dati.** Il filtro offriva tutte e **14** le categorie mentre gli oggetti ne usano **7**: le altre 7 (`conditional`, `damage`, `defensive`, `orb`, `support`, `terrain`, `weather`) non hanno **nemmeno una voce**, quindi sceglierle dava sempre zero risultati. Ora il filtro mostra solo quelle che i dati usano davvero, **contate sui dati** e non tolte a mano, mentre la tendina del **modulo** resta completa — è da lì che una categoria vuota si riempie. ⬜ **Resta la decisione vera**, che è di Davide: assegnare le voci giuste a quelle 7 categorie, oppure toglierle da `CATEGORIE_OGGETTI`. E resta il numero che sta sotto tutto: **`other` è 339 oggetti su 397**, l'86%, quindi come filtro la categoria dice poco comunque |
-| ⬜ | **Il calcolatore non impedisce di scrivere una mossa illegale** | La segnala e basta. **È voluto per ora**: un blocco duro sulle voci senza elenco sarebbe un falso divieto |
+| ✅ | **Gli oggetti del calcolatore davano il numero sbagliato** | **Chiuso il 14/09/2026.** La tendina ATK faceva `A × modifier` con qualunque oggetto (Carbonella su una mossa Buio: 85-102 → 102-120; Stolascelta: → 127-150), e la DEF non applicava mai niente. Colpiva MA e MB. Ora ogni effetto ha la sua condizione presa da Bulbapedia, e un oggetto che non si attiva lo dice a schermo. Numeri in `STORICO.md` |
+| 🟨 | **Le 7 categorie di oggetti senza nessuna voce** | **Decisione di Davide del 14/09/2026: si assegnano.** Il filtro dell'editor mostra solo le categorie usate (10/09). Misurato il 14/09: le 7 vuote (`conditional`, `damage`, `defensive`, `orb`, `support`, `terrain`, `weather`) **sono i gruppi da cui si riempiono le due tendine Item del calcolatore** ([calcolatori.html:156](templates/calcolatori.html:156) e [:396](templates/calcolatori.html:396)), e `other` sono **esattamente** i 339 oggetti senza `effect`. Assegnare una categoria quindi vuol dire **dare un effetto** a un oggetto, e l'effetto va anche insegnato al motore (vedi la trappola qui sotto). Riguarda solo `pokedex`: MA e MB hanno solo i 58 oggetti che l'effetto ce l'hanno già. ⬜ **Prossimo passo**: proporre a Davide quali oggetti vanno in quale categoria, con i valori da Bulbapedia (Bendascelta, Assorbisfera, Abilcintura, Corpetto assalto, Evolcondensa, …). ⚠️ `orb` è ambigua: può voler dire Assorbisfera o le sfere delle specie (Adamasfera e simili), e va chiesto |
+| ⚠️ | **Un effetto che il motore non conosce non si attiva** | Dal 14/09/2026 il calcolatore gestisce solo `boost_<tipo>`, `pikachu_boost` e `resist_<tipo>`. Un oggetto nuovo con un `effect` e un `modifier` compare nella tendina, ma finché `calcDamage()` non conosce l'effetto il risultato dice «non si attiva». È voluto: prima un oggetto sconosciuto moltiplicava l'Attacco in silenzio. Quindi **ogni effetto nuovo va scritto anche nel motore**, e provato con un caso calcolato a mano |
 
 ## 4. Voci minori, per sezione
 
@@ -567,7 +573,6 @@ quattro cose richiedono **fonti diverse**:
 | 🤖 **Arduino** | ⬜ Richiamo a Tinkercad per disegnare il progetto e verificare i connettori |
 | 💻 **PC Builder** | ⬜ Wishlist Amazon o altri · ⬜ prezzo componente · ⬜ percentuale di compatibilità fra i pezzi (valutare UserBenchmark) · ⬜ gestire l'uscita di nuovi pezzi nel tempo |
 | 🐍 **Python** | ⬜ Spazio per inserire i propri progetti e testarli · ⬜ idee per rendere la sezione più utile |
-| 🐾 **Pokémon** | ⬜ Creare i JSON di una regulation nuova dalla web app (vedi §1.3) |
 | ⚽ **Fantacalcio** | ⬜ Sezione nuova, chiesta il 10/09/2026 — i dettagli si studiano dopo (vedi §4.2) |
 
 ### 4.1 🟨 Gaming — il calendario delle uscite (chiesto il 13/08, costruito il 16/08/2026)

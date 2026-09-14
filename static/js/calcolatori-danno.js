@@ -112,7 +112,9 @@ function loadSide(side){
     BS[side] = {
       ...d.stats,
       abilities: d.abilities || [],
-      types: d.types || []
+      types: d.types || [],
+      // serve a Elettropalla, che vale solo per Pikachu e le sue forme
+      nome_en: d.nome_en || d.name || ''
     };
     const sp=document.getElementById(side+'_spr');
     if(sp){
@@ -161,6 +163,20 @@ function recalcSide(side){
   });
 }
 
+// L'oggetto scelto in una delle due tendine Item: il `value` e' la chiave del
+// catalogo, effetto e moltiplicatore stanno negli attributi data-* dell'<option>.
+// `null` per «nessun oggetto» e per una voce senza effetto.
+function oggettoScelto(id){
+  const o = document.getElementById(id)?.selectedOptions[0];
+  if (!o || !o.value || !o.dataset.effect) return null;
+  return {
+    chiave: o.value,
+    effect: o.dataset.effect,
+    mod:    parseFloat(o.dataset.mod) || 1.0,
+    nome:   o.textContent.replace(/\s*×.*$/, '').trim(),
+  };
+}
+
 function calcDamage(){
   // Prima di leggere gli input: BP e tipo di Weather Ball / Solar Beam / Solar Blade
   // dipendono dal meteo effettivo, che a sua volta dipende dalle abilita' scelte.
@@ -188,8 +204,8 @@ function calcDamage(){
   const atkStage  = parseInt(document.getElementById('atk_stage')?.value||0);
   const defStage  = parseInt(document.getElementById('def_stage')?.value||0);
   const trickroom = document.getElementById('f_trickroom')?.checked||false;
-  const atkItem  = parseFloat(document.getElementById('atk_item')?.value||1);
-  const defItem  = document.getElementById('def_item')?.value||'1';
+  const atkOgg   = oggettoScelto('atk_item');
+  const defOgg   = oggettoScelto('def_item');
   const atkStatus= document.getElementById('atk_status')?.value||'';
   const atkTera  = document.getElementById('atk_tera')?.value||'';
   const defTera  = document.getElementById('def_tera')?.value||'';
@@ -347,10 +363,40 @@ function calcDamage(){
     stab = (aFx.type === 'stab_multiplier') ? (aFx.value || 2.0) : 1.5;
 
   // ── Item ATK ─────────────────────────────────────────────────────────────────
-  A = Math.floor(A * atkItem);
+  // Fino al 14/09/2026 qui c'era `A × modifier` per qualunque oggetto: Carbonella
+  // potenziava anche le mosse Buio e Stolascelta il danno (caso della regola #8:
+  // 85-102 diventava 102-120 e 127-150). Ora ogni effetto ha la sua condizione, e
+  // un oggetto che non si attiva lo dice a schermo invece di non fare niente.
+  // Regole da Bulbapedia: i bonus di tipo alzano la potenza del 20% solo sul loro
+  // tipo; Elettropalla raddoppia Attacco e Attacco Speciale solo a Pikachu.
+  let bpEff = bp;
+  let atkOggAttivo = false;
+  if (atkOgg) {
+    const fx = atkOgg.effect;
+    const tipoBoost = fx.startsWith('boost_') ? TIPI_EN_IT[fx.slice(6)] : null;
+    if (tipoBoost) {
+      // mvType e' gia' quello dopo le "-ate": Folletto con Pixilate prende Piuma fatata
+      if (mvType === tipoBoost) { bpEff = Math.floor(bp * atkOgg.mod); atkOggAttivo = true; }
+    } else if (fx === 'pikachu_boost') {
+      if (/pikachu/i.test(BS.atk?.nome_en || '')) { A = Math.floor(A * atkOgg.mod); atkOggAttivo = true; }
+    }
+    // Ogni altro effetto (Stolascelta: `boost_spe`) non tocca il danno: resta inattivo.
+  }
 
   // ── Item DEF ─────────────────────────────────────────────────────────────────
-  if (defItem === 'av' && cat === 'special') D = Math.floor(D * 1.5);
+  // Prima controllava solo il valore 'av', che nessuna voce della tendina aveva:
+  // le 18 bacche si sceglievano e non facevano niente. Da Bulbapedia: ×0.5 solo se
+  // la mossa e' del tipo della bacca **e** super efficace; Baccacinlan su qualunque
+  // mossa Normale. Il moltiplicatore va sul danno finale, nel ciclo dei roll.
+  let baccaMult = 1.0;
+  let defOggAttivo = false;
+  if (defOgg) {
+    const fx = defOgg.effect;
+    const tipoBacca = fx.startsWith('resist_') ? TIPI_EN_IT[fx.slice(7)] : null;
+    if (tipoBacca && mvType === tipoBacca && (typeEff > 1 || tipoBacca === 'Normale')) {
+      baccaMult = defOgg.mod; defOggAttivo = true;
+    }
+  }
 
   // ── Pioggia forte: le mosse Fuoco falliscono ────────────────────────────────
   // Il campo `fire_blocked` sta su Pioggia Perpetua in abilities.json; vale anche
@@ -359,7 +405,7 @@ function calcDamage(){
     (meteoFonte ? (ABILITIES_DATA[meteoFonte] || {}).fire_blocked === true : false);
 
   // ── Formula danno base Gen 9 ──────────────────────────────────────────────────
-  const base = Math.floor(Math.floor(Math.floor(2 * parseInt(aLvl) / 5 + 2) * bp * A / D) / 50) + 2;
+  const base = Math.floor(Math.floor(Math.floor(2 * parseInt(aLvl) / 5 + 2) * bpEff * A / D) / 50) + 2;
 
   const rolls = Array.from({length: 16}, (_, i) => {
     let dmg = base;
@@ -405,6 +451,9 @@ function calcDamage(){
     dmg = Math.floor(dmg * (85 + i) / 100);
     dmg = Math.floor(dmg * stab * typeEff);
 
+    // Bacca che dimezza il danno (vedi Item DEF sopra)
+    if (baccaMult !== 1.0) dmg = Math.floor(dmg * baccaMult);
+
     return dmg;
   });
 
@@ -424,6 +473,12 @@ function calcDamage(){
   const abilChiave = risolviChiave(ABILITIES_DATA, atkAbilityName);
   const abilTag  = atkAbilityName
     ? ` (${nomeVis(ABILITIES_DATA[abilChiave], abilChiave)})` : '';
+  // L'oggetto sta nella riga del risultato, e se non si e' attivato lo dice: un
+  // oggetto scelto che non cambia il numero somiglia troppo a un guasto.
+  const oggTag = (ogg, attivo) => !ogg ? ''
+    : ` @ ${ogg.nome}` + (attivo ? '' : ` (${t('non si attiva')})`);
+  const atkOggTag = oggTag(atkOgg, atkOggAttivo);
+  const defOggTag = oggTag(defOgg, defOggAttivo);
   const stabLabel = stab > 1 ? ` +STAB(${stab}×)` : '';
   let effLabel = '';
   if      (typeEff >= 4)    effLabel = ' ✕4 ' + t('(super)');
@@ -431,7 +486,7 @@ function calcDamage(){
   else if (typeEff <= 0.25) effLabel = ' ✕0.25 ' + t('(poco)');
   else if (typeEff <= 0.5)  effLabel = ' ✕0.5 ' + t('(poco)');
 
-  document.getElementById('dmg_line').textContent = `${aN2}${teraTag}${abilTag} → ${mv} → ${dN2} HP ${HP}`;
+  document.getElementById('dmg_line').textContent = `${aN2}${teraTag}${abilTag}${atkOggTag} → ${mv} → ${dN2}${defOggTag} HP ${HP}`;
   document.getElementById('dmg_pct').textContent  = `${minP} ~ ${maxP}${effLabel}${stabLabel}`;
   document.getElementById('dmg_bar').style.width  = Math.min(avgP, 100) + '%';
   document.getElementById('dmg_min').textContent  = `${minD} (${minP}%)`;

@@ -731,5 +731,6 @@
   "Come la regulation di partenza (altrimenti main)": "Same as the source regulation (main otherwise)",
   "Quali mosse ogni Pokémon può imparare: <code>main</code> sono i giochi principali, <code>champions</code> è il moveset di Pokémon Champions — su Incineroar sono 80 contro 77.": "Which moves each Pokémon can learn: <code>main</code> is the main games, <code>champions</code> is the Pokémon Champions moveset — on Incineroar that is 80 against 77.",
   "Questa regulation non ha ancora nessun Pokémon: scegli cosa includere dalla schermata contenuti.": "This regulation has no Pokémon yet: pick what to include from the contents screen.",
-  "Speed Tier — nessun Pokémon in {reg}": "Speed Tier — no Pokémon in {reg}"
+  "Speed Tier — nessun Pokémon in {reg}": "Speed Tier — no Pokémon in {reg}",
+  "non si attiva": "not active"
 }

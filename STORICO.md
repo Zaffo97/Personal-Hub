@@ -18,6 +18,46 @@ pagina ed esegue `new Function()` su ogni blocco `<script>` **e** su ogni handle
 
 ---
 
+## 14/09/2026
+
+**Gli oggetti del calcolatore davano il numero sbagliato da giugno, su tutte le regulation (§3)**
+
+- ⚠️ ✅ **La tendina «Item ATK» faceva `A × modifier` qualunque fosse l'oggetto**, e la
+  tendina «Item DEF» controllava solo il valore `'av'`, che nessuna voce aveva. Nessun
+  errore a schermo: il numero era solo sbagliato. Misurato nel calcolatore vero sul
+  caso della regola #8 (85-102 senza oggetti): **Carbonella** su una mossa Buio dava
+  **102-120**, **Stolascelta** dava **127-150**, **Elettropalla** raddoppiava l'Attacco a
+  chiunque, e le **18 bacche** difensive si sceglievano e non facevano niente. Il codice
+  era così dalla versione 14 (commit `f43927e`). Colpiva **MA e MB**: i loro 58 oggetti
+  sono esattamente i 58 che hanno un `effect`.
+- ✅ Ora il `value` delle due tendine è la **chiave** dell'oggetto, e `effect` e
+  `modifier` viaggiano negli attributi `data-*`. `oggettoScelto()` in
+  `calcolatori-danno.js` legge l'effetto, e ogni effetto ha la sua condizione, presa da
+  Bulbapedia. `boost_<tipo>`: +20% alla **potenza**, solo sul tipo giusto, dopo le «-ate».
+  `pikachu_boost`: Attacco ×2 solo se il `nome_en` contiene Pikachu. `resist_<tipo>`:
+  ×0.5 sul danno finale, solo se la mossa è di quel tipo **e** super efficace; per
+  Baccacinlan basta una mossa Normale. Ogni altro effetto, come `boost_spe` della
+  Stolascelta, non tocca il danno. Un oggetto che non si attiva **lo dice** nella riga
+  del risultato: `@ Carbonella (non si attiva)`.
+- Verifica nel browser, su `pokedex`. Regola #8 invariata: **A=183, D=122, HP=221,
+  85-102**. **10 casi su 10** col valore calcolato a mano: Carbonella su Buio 85-102
+  (non si attiva), Occhialineri su Buio **102-121**, Stolascelta ed Elettropalla su
+  Incineroar 85-102, Baccaxan su neutra 85-102 (non si attiva), su Psico **171-204 →
+  85-102**, Baccacinlan su Normale **57-68 → 28-34**. Pikachu con Elettropalla:
+  **69-84 → 138-165**. Su **MA in inglese**: 20 oggetti ATK e 18 DEF, Black Glasses
+  67-79 → 79-94, Charcoal «not active». Sweep IT+EN: **44 pagine, 0 errori**.
+  Traduzioni: **630 su 630**.
+
+**Tre voci chiuse come decise da Davide, senza codice**
+
+- ✅ **Il calcolatore non blocca le mosse illegali**: le segnala e basta, perché un
+  blocco sulle voci senza elenco mosse sarebbe un divieto falso.
+- ✅ **Gli `overrides` delle regulation restano scritti a mano nel JSON**: in `ma`, `mb`
+  e `pokedex` valgono `{}`, cioè non li ha mai usati nessuno. Un editor si fa quando
+  servirà davvero.
+- ✅ **La riga Pokémon in §4** («Creare i JSON di una regulation nuova») era chiusa dal
+  10/09 e stava ancora fra le voci aperte: tolta.
+
 ## 13/09/2026
 
 **Quattro forme vere erano contate fra le inventate, e da un mese non avevano le mosse (§2.3)**
