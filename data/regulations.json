@@ -6,7 +6,7 @@
     "mechanics": [
       "mega"
     ],
-    "moveset": "main"
+    "moveset": "champions"
   },
   {
     "filter_file": "regulations/ma.json",

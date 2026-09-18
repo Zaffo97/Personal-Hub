@@ -128,6 +128,33 @@ def main():
         esito(f"{rid}: Slash c'è, Pound no", "Slash" in elenco and "Pound" not in elenco,
               f"{len(elenco)} mosse")
 
+    print("\n== 8. anche il Pokedex mostra le mosse di Champions ==")
+    # Decisione di Davide del 18/09/2026: «voglio solo ciò che imparano in Champions».
+    # `pokedex` usa la sorgente `champions`, quindi chi in Champions non c'è **non ha
+    # elenco** — l'avviso giallo e tutte le mosse — invece di un elenco preso da un
+    # gioco che non c'entra (Abra aveva **una** mossa, da Leggende Arceus).
+    pokedex = regs["pokedex"]
+    esito("pokedex usa la sorgente `champions`",
+          pokedex.get("moveset") == "champions", str(pokedex.get("moveset")))
+    catalogo = load_catalog("pokemon")
+    tutte = []
+    for k, v in catalogo.items():
+        tutte.append(k)
+        tutte.extend((v.get("forms") or {}).keys())
+    con = sum(1 for n in tutte if mosse_legali(n, pokedex)[0])
+    esito("333 voci del Pokedex hanno un elenco, le altre no",
+          con == 333, f"{con} su {len(tutte)}")
+    esito("Incineroar nel Pokedex mostra le sue 77 di Champions",
+          len(mosse_legali("Incineroar", pokedex)[0] or []) == 77)
+    esito("Abra non ha più l'elenco da una mossa sola",
+          mosse_legali("Abra", pokedex)[0] is None,
+          str(mosse_legali("Abra", pokedex)[0]))
+    # ⚠️ Il caso della regola #8 gira su `pokedex` e usa Amoonguss, che in Champions
+    # non c'è: l'avviso giallo su Amoonguss è **previsto**, non un guasto. Il danno si
+    # calcola lo stesso perché la mossa si scrive a mano (Buio, fisica, BP 100).
+    esito("e Amoonguss prende l'avviso, come deve",
+          mosse_legali("Amoonguss", pokedex)[0] is None)
+
     print(f"\n{sum(esiti)} controlli su {len(esiti)}")
     return 0 if all(esiti) else 1
 

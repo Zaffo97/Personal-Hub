@@ -20,6 +20,40 @@ pagina ed esegue `new Function()` su ogni blocco `<script>` **e** su ogni handle
 
 ## 18/09/2026
 
+**Il Pokedex passa alle mosse di Champions, e i due controlli di §5.2 hanno una risposta**
+
+- ✅ **I metodi: il dump non gonfia le MT, e non è un'impressione.** Scaricato `machines.csv`
+  dallo stesso dump di PokéAPI e confrontate, gioco per gioco, le mosse insegnate da
+  `machine` col **catalogo MT del gioco stesso**: **23 version group su 24 coincidono
+  esatti** — 55 in Rosso/Blu, 57 in Oro/Argento, 58 in Rubino/Zaffiro, 100 in Diamante/Perla,
+  101 in Bianco/Nero, 105 in X/Y, 107 in ORAS, 200 in Spada/Scudo (MT+MN), **229 in
+  Scarlatto/Violetto** coi DLC. L'unico scarto è **BDSP**, dove `machines.csv` dichiara 17
+  macchine contro 100 usate: è un buco di quel file, che noi non leggiamo.
+- ⚠️ **Il campione sulla lista `main` ha trovato un difetto senza seconda fonte**: per
+  **77 voci** l'ultimo gioco in cui compaiono è **Leggende Arceus** (58) o **Let's Go** (19),
+  due giochi col sistema di mosse ridotto. Media **7,4 mosse** contro 56,3 di
+  Scarlatto/Violetto, **1063 in tutto invece di 4562**. **Abra aveva una mossa sola**
+  (Teleport), Mr. Mime 8, Mega Mewtwo X e Y 49 invece di 99.
+- ✅ **Decisione di Davide: «voglio solo ciò che imparano in Champions».** `pokedex` passa da
+  `moveset: main` a `champions`, un campo solo in `data/regulations.json`. **333 voci su 1342**
+  hanno l'elenco vero; le altre **1009** prendono l'avviso giallo «nessun elenco mosse: sono
+  mostrate tutte» e la tendina da 919 — la stessa risposta onesta che prendono le forme
+  inventate, invece di un elenco preso da un gioco che non c'entra. Abra non ha più la
+  tendina da una riga: non ha tendina.
+- ⚠️ **Conseguenza da tenere a mente**: il caso della **regola #8** gira su `pokedex` con
+  **Amoonguss**, che in Champions non c'è — quindi ora mostra l'avviso giallo. È previsto, e
+  il danno si calcola lo stesso perché la mossa si scrive a mano. Misurato dopo il cambio:
+  **85-102 = 38.5%–46.2%**, identico.
+- ⚠️ **E il blocco `main` non lo legge più nessuno**: 1293 voci e la maggior parte dei 3 MB
+  del file. Candidato per l'inventario del §5.3, ma `sorgenti_moveset()` lo offre ancora alla
+  creazione di una regulation, quindi non si toglie senza decidere.
+- ✅ Verificato: `prova_champions_1_2_0.py` **26 su 26** (5 controlli nuovi sul Pokedex),
+  `prova_mosse_regulation.py` 16/16, e 30/30 + 9/9 + 11/11 + 32/32 sulle prove esistenti,
+  sweep 0 errori. In browser: Abra 919 mosse con l'avviso, **Incineroar 77 anche in
+  `pokedex`**, regola #8 invariata.
+
+---
+
 **Le liste di Champions portate alla versione 1.2.0, e i dati mossa con loro (§5.2)**
 
 - ✅ **La fonte che ha sciolto i quattro punti aperti non era la pagina learnset**: è la
