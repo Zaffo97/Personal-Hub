@@ -18,6 +18,51 @@ pagina ed esegue `new Function()` su ogni blocco `<script>` **e** su ogni handle
 
 ---
 
+## 18/09/2026
+
+**L'elenco mosse di MA e MB non era quello di Champions: era il dump di maggio (§3)**
+
+- ⚠️ ✅ **Il filtro `moves` nascondeva 3239 mosse legali su 17219 in MA**, 3583 su 19039
+  in MB, su **278 specie su 278** e **306 su 306**: 11,7 a testa, e nessun avviso da
+  nessuna parte. La tendina del calcolatore è l'intersezione fra l'elenco della
+  regulation e la lista del singolo Pokémon (`loadMovesDB()`), quindi una mossa fuori
+  dalle 460 spariva in silenzio. Peggiori: Hisuian Zoroark 50/73, Mega Gallade e Gallade
+  84/105, Hawlucha 54/74, Infernape 68/88. **Crunch** non compariva su Incineroar, e
+  **Pawmot mostrava 51 mosse invece delle 64** integrate da Bulbapedia quattro giorni prima.
+- ✅ **Le 460 non erano un elenco di legalità, ed è dimostrato da due parti opposte.**
+  Erano le chiavi di `data/moves_ma.json` (04/05/2026, «PokeAPI + patch Champions Reg
+  M-A (Serebii)»), diventate il filtro l'11/08 con la costruzione del catalogo. Mancavano
+  **Endure** e **Substitute**, che **332 voci di Champions su 333** imparano; e
+  contenevano **126 mosse che nessuna voce di Champions impara**, comprese le esclusive di
+  Pokémon che nel gioco non ci sono (Behemoth Bash, Bolt Beak, Defend Order). La «patch
+  Champions» inoltre non ha lasciato traccia: confrontati i 460 record con
+  `catalog/moves.json` su `type`, `category`, `bp` e `priority`, **una sola differenza su
+  460**, ed è `Freeze Dry` scritto senza trattino — per quello l'elenco era 460 e non 461.
+- ✅ **Decisione di Davide**: «i cataloghi saranno sempre di Champions, quindi la lista
+  mosse sarà sempre quella in relazione alla regulation». L'elenco non è più un dato
+  curato: lo **deriva** `scripts/allinea_mosse_regulation.py` dall'unione delle mosse del
+  roster secondo la sorgente `moveset` dichiarata in `regulations.json`. **MA 460 → 492**
+  (+159 / −127), **MB 460 → 494** (+161 / −127). Nessuna fonte nuova è servita: tutte e
+  164 le mosse mancanti avevano già la voce in `catalog/moves.json`.
+- ✅ **Le 127 che escono non tolgono niente a nessuno**: le specie con una lista hanno per
+  costruzione le loro mosse dentro l'unione, e le uniche che ricadono sull'elenco della
+  regulation sono **Mega Meowstic (Male)** e **(Female)**, che una lista non ce l'hanno —
+  e per loro l'elenco passa da 460 a 492, cioè ne guadagnano.
+- ✅ **MA e MB non sono più identiche per la prima volta**: differiscono di due mosse,
+  `No Retreat` e `Topsy-Turvy`, che arrivano da specie presenti solo nel roster di MB.
+  Non è una copia, è una differenza dedotta dai dati.
+- ✅ Lo script si **rifiuta** di scrivere se una mossa dell'unione non ha una voce nel
+  catalogo, se l'unione esce vuota, se un nome del roster non esiste, o se una mossa che
+  uscirebbe è usata da un team salvato (guardia provata su una **copia** di `hub.db`:
+  vede `Absorb` messa in un team di MA). Ha `--dry-run`, lascia la copia in
+  `data/archive/regulation_<id>_pre-mosse.json` ed è rieseguibile — al secondo giro dice
+  «già allineato» e non tocca i file.
+- ✅ Verificato: `scripts/prova_mosse_regulation.py` **16 controlli su 16**, con **0 mosse
+  nascoste** su 17219 e 19039 e **0 voci orfane** su 492 e 494; sweep **0 errori** su 27
+  pagine per due lingue; `pokedex` invariata con `moves: null`.
+
+---
+
 ## 14/09/2026
 
 **Gli oggetti del calcolatore davano il numero sbagliato da giugno, su tutte le regulation (§3)**
