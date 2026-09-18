@@ -20,13 +20,15 @@ e da qui rientrano giochi, team, progetti Arduino, build PC e progresso Python.
   rieseguibile; una riga già presente e **diversa** è un conflitto: lo script si
   **ferma** e li elenca. Per procedere serve `--sovrascrivi`, che è il momento in cui
   hai visto cosa stai per perdere
-- ⚠️ **Le password non si toccano mai.** L'export non le contiene di proposito (viene
-  committato), quindi qui non c'è niente con cui riscriverle: sovrascriverle
-  significherebbe distruggere l'unica copia buona con il nulla. Un utente **nuovo**
-  nasce perciò con una password casuale che nessuno conosce — non entra finché un
-  amministratore non gliela reimposta da `/utenti`, e lo script lo dice a schermo.
-  Il verso è quello giusto: un utente che non entra è un problema visibile, un utente
-  che entra con una password nota da tutti no
+- ⚠️ **Le password esistenti non si toccano mai**, qualunque export si legga: stanno in
+  `MAI_SOVRASCRITTE`, e sovrascriverle col nulla significherebbe distruggere l'unica
+  copia buona. Per un utente **nuovo** invece dipende da quale dei due export è:
+  l'export committabile non contiene password, quindi nasce con una **password casuale**
+  che nessuno conosce e non entra finché un amministratore non gliela reimposta da
+  `/utenti`; un backup `--completo` (§1.4, dal 18/09/2026) le contiene, e l'utente
+  rientra con la sua. Lo script dice a schermo quale dei due casi è — ⚠️ e sono due
+  messaggi diversi apposta: dire «rientrati senza password» dopo un backup completo
+  sarebbe **falso**, e manderebbe a reimpostare a mano password già buone
 - ⚠️ **`python_topics` è la trappola**, e ha una rete apposta. L'elenco lo semina
   `init_db()` con gli `id` 1..53 nell'ordine di `PYTHON_TOPICS`: se quell'ordine è
   cambiato fra l'export e oggi, l'`id` 7 nel backup è un argomento **diverso**
@@ -40,8 +42,10 @@ e da qui rientrano giochi, team, progetti Arduino, build PC e progresso Python.
 
 **Cosa NON tocca, e va detto perché il silenzio qui somiglia troppo a una svista:**
 
-- `regulations` non è nell'export (falla 1 di §1.4: è omessa **per caso**, non per
-  scelta, ed è comunque una tabella morta). Finché non entra là, qui non c'è
+- `regulations` **c'è dal 18/09/2026**, ma solo se l'export è un `--completo`: quello
+  committabile non la porta. È una tabella morta — la scrive `init_db()` e non la legge
+  nessuno — e resta nell'elenco proprio per questo: così, con l'export normale, compare
+  fra le «tabelle non presenti nell'export» invece di non comparire affatto
 - `game_releases` è fuori **per scelta**: è la cache di IGDB, si rifà col pulsante
 - le colonne che il DB ha e l'export no restano al loro default: le elenca
 """
@@ -79,6 +83,11 @@ ORDINE = [
     "users", "games", "teams", "team_members",
     "arduino_projects", "python_topics", "pc_builds", "pc_components",
     "python_progress",
+    # ⚠️ Solo il backup `--completo` ce l'ha (§1.4, 18/09/2026). Con l'export
+    # committabile questa riga fa solo comparire `regulations` fra le «tabelle non
+    # presenti nell'export», che è la verità — prima non compariva affatto, ed è così
+    # che una tabella resta fuori da un backup senza che nessuno se ne accorga.
+    "regulations",
 ]
 
 # Come si riconosce "la stessa riga". Il default e' `id`; `python_progress` non ce
@@ -92,7 +101,18 @@ CHIAVI = {"python_progress": ("user_id", "topic_id")}
 # per due ragioni: una password diversa non deve contare come conflitto (tanto non la
 # si riscriverebbe comunque), e l'elenco dei conflitti si stampa a schermo — gli hash
 # non ci vanno.
-MAI_SOVRASCRITTE = {"users": {"password"}}
+MAI_SOVRASCRITTE = {
+    "users": {"password"},
+    # ⚠️ `regulations.created_at` lo scrive `init_db()` **al momento**, quindi due DB
+    # creati a secondi di distanza hanno la stessa riga con un timestamp diverso.
+    # Senza questa riga ogni ripristino di un backup `--completo` su un DB appena
+    # inizializzato si fermerebbe su un conflitto — su una **tabella morta**, per una
+    # data — e l'unica via d'uscita sarebbe `--sovrascrivi`, cioè abituarsi a usare
+    # proprio il flag pericoloso per un caso che pericoloso non è. Misurato scrivendo
+    # `scripts/prova_esporta_completo.py` il 18/09/2026: la prova passava o falliva a
+    # seconda che i due `init_db()` cadessero nello stesso secondo.
+    "regulations": {"created_at"},
+}
 
 
 def leggibile(percorso):
@@ -290,7 +310,11 @@ def main():
             continue
         piani[tabella] = p
 
-    ignorate = [t for t in dati if t not in ORDINE]
+    # Le chiavi che cominciano per `_` non sono tabelle: il backup `--completo` ci mette
+    # `_meta` con la data. Elencarle fra le «sconosciute» farebbe sembrare un problema
+    # una cosa voluta.
+    ignorate = [t for t in dati if t not in ORDINE and not t.startswith("_")]
+    con_password = any("password" in r for r in (dati.get("users") or []))
 
     print(f"Export:  {leggibile(args.file)}")
     print(f"DB:      {leggibile(args.db)}\n")
@@ -434,10 +458,18 @@ def main():
     db.close()
 
     print(f"Scritte {scritte} righe nuove, {sovrascritte} sovrascritte.")
-    if utenti_nuovi:
+    if utenti_nuovi and not con_password:
         print(f"\n⚠️  {utenti_nuovi} utenti sono rientrati **senza password**: l'export")
         print("    non le contiene di proposito. Non possono entrare finché un")
         print("    amministratore non gliela reimposta da /utenti.")
+        print("    Per riaverle serve un backup fatto con `esporta_dati.py --completo`.")
+    elif utenti_nuovi:
+        # ⚠️ Dirlo, e dirlo solo qui: la riga di sopra sarebbe **falsa** con un backup
+        # completo, e un avviso falso è peggio di nessun avviso — manderebbe a
+        # reimpostare a mano password che sono appena rientrate giuste.
+        print(f"\n{utenti_nuovi} utenti sono rientrati **con la loro password**: "
+              "l'export è un backup completo.")
+        print("    Quelli già nel DB tengono la password che hanno: non si sovrascrive.")
     return 0
 
 

@@ -34,6 +34,7 @@ Non sono storia: sono le cose che questo progetto ha già pagato e che tornano a
 | ⚠️ **I dati delle mosse sono quelli di Champions, non di Scarlatto/Violetto** | Dal 18/09/2026, decisione di Davide. Champions **ribilancia** le mosse rispetto ai giochi principali, e il catalogo viene da PokéAPI, cioè da S/V: la sezione «Changes from Scarlet and Violet» della pagina «Pokémon Champions» su Bulbapedia elenca una trentina di differenze. Delle 29 misurabili il catalogo ne aveva **17 già giuste** e 12 no (Slash bp 70→80, Grav Apple 80→90, Crabhammer precisione 90→95, Snap Trap da Erba ad **Acciaio**, …): un numero sbagliato, nessun errore a schermo. Le riallinea `scripts/allinea_dati_mosse_champions.py`. ⚠️ Quella sezione ha in fondo un blocco **commentato** di mosse «that aren't in the game yet» (Gear Grind, Anchor Shot, Hyper Drill, …): quelle **non** vanno scritte. E i **PP** non hanno dove andare — nessuna delle 919 mosse ha quel campo |
 | ⚠️ **Un file di dati si riscrive come lo scrivono gli altri** | Due modi di sporcare un diff, trovati il 18/09/2026 su `pokemon_moves.json` (3 MB). **(1) L'indentazione**: i due scrittori del file usano `indent=1`, uno script nuovo con `indent=2` lo reindenta tutto — **100 000 righe di diff per 33 voci cambiate**, e la modifica vera diventa impossibile da leggere in revisione. ⚠️ `salva_moveset()` in `blueprints/pokemon.py` usa ancora `indent=2`: l'import dal pannello reindenta il file, ed è così da prima, segnalato e non corretto. **(2) L'ordine dei set**: l'hash delle stringhe in Python è randomizzato per processo, quindi iterare un `set` di nomi dà un ordine diverso a ogni giro. Uno script che scrive nell'ordine in cui itera **non è idempotente**, e si vede solo confrontando l'md5 di due giri in **processi separati** — nello stesso processo l'ordine è stabile e la prova passa. Si chiude con `sorted()` e riordinando i dizionari scritti |
 | ⚠️ **Il Pokedex mostra le mosse di Champions, e per 1009 voci su 1342 non ne mostra nessuna** | Dal 18/09/2026, decisione di Davide: «voglio solo ciò che imparano in Champions». `pokedex` è passata da `moveset: main` a `champions`, che copre **333 voci** — il roster del gioco. Tutte le altre, Abra e **Amoonguss** compresi, prendono l'avviso giallo «nessun elenco mosse: sono mostrate tutte» e la tendina da 919. **Non è un guasto**, è la risposta onesta: `null` vuol dire «non lo sappiamo», ed è la stessa che prendono le forme inventate. ⚠️ Vale anche per il **caso della regola #8**, che gira proprio su `pokedex` con Amoonguss: l'avviso giallo su Amoonguss è previsto, il danno si calcola lo stesso perché la mossa si scrive a mano (Buio, fisica, BP 100). Chi «aggiusta» quell'avviso rompe una decisione, non un baco |
+| ⚠️ **Ci sono due export, e uno non deve mai entrare in git** | Dal 18/09/2026. `esporta_dati.py` senza opzioni scrive `data/backup/hub_export.json`, che **viene committato** e per questo **non contiene le password**. `--completo --uscita <percorso>` scrive il backup vero, con gli **hash delle password** e `regulations`. Non ha un percorso di default di proposito: pretende `--uscita` e si **rifiuta** di scrivere se risalendo l'albero dalla destinazione trova un `.git`. In `.gitignore` c'è la seconda rete (`*_completo.json`). ⚠️ Chi aggiunge un default «comodo» dentro al repo, o toglie il controllo per far passare una prova, rimette in piedi esattamente il buco per cui `hub.db` non è versionato |
 | **Risoluzione per nome** | Due chiavi diverse possono avere lo stesso `nome_it`/`nome_en`, e il catalogo Pokémon cita le abilità col nome **inglese** mentre le chiavi sono italiane. Ogni confronto per nome va fatto con `risolviChiave()` / `_INDICE`, mai con un match esatto sulla chiave |
 | **Fallback silenziosi** | Più di un baco qui non dava errore, dava il numero sbagliato: lo Speed Tier che ricadeva su una lista statica, `/api/moves` che leggeva il file di MA, un alias che rispondeva Mega Venusaur. Se un loader ha un ramo di riserva, va verificato **quale dei due** sta rispondendo |
 | **Endpoint fantasma** | **Quattro volte** il JS ha chiamato una risposta che nessuno aveva mai implementato: `/api/regulations`, `d.moves`, `d.regulation` e — trovato il 17/08 e scritto il 19/08 — `/api/team/<id>`. Tutte e quattro fallivano **dentro un `catch` muto**, quindi la pagina si apriva e mancava solo un pezzo, senza un errore a schermo. Sono tutte chiuse, ma la classe resta: **un `catch(e){}` vuoto qui è un baco in attesa**, e il modo di trovarli è leggere cosa il JS chiede e cercarlo nella `url_map` |
@@ -79,7 +80,7 @@ L'ordine che ne esce, e che vale finché Davide non lo cambia:
 > **Cambiato il 14/09/2026**: Davide ha scelto di **finire prima la sezione Pokémon**.
 > Quindi vengono anticipate l'assegnazione delle 7 categorie di oggetti vuote (§3) e la
 > verifica del moveset contro Bulbapedia (§5.2). Le sezioni del §4 vengono dopo.
-4. §1.4 — l'export `--completo`
+4. ~~§1.4 — l'export `--completo`~~ ✅ **chiuso il 18/09/2026**: resta aperta solo la falla 2 (tema e lingua non sono nel DB)
 5. ~~§3 — i bachi noti~~ ✅ **guardati tutti il 10/09/2026**: tre chiusi, uno mezzo,
    uno che non si riproduce, uno lasciato apposta
 6. §5 — il giro di collaudo, la verifica dei moveset, l'inventario del codice morto
@@ -245,9 +246,11 @@ in tutte e tre le regulation valgono `{}`, e un editor si fa quando serviranno.
 > **Quella parte c'è già.** Contato sul DB vero: 33 giochi, 1 team con 1 membro, 1 build PC
 > con 5 componenti, 53 argomenti Python, 2 utenti, tutto in `data/backup/hub_export.json`.
 
-`scripts/esporta_dati.py` copre **8 tabelle** e degli utenti esporta tutte le colonne
-tranne `password` — quindi **i permessi per sezione ci sono già**, stanno in
-`users.sections`, che è una colonna e non una tabella a parte.
+`scripts/esporta_dati.py` copre **9 tabelle** su 11 (erano scritte 8 finché
+`python_progress` non è entrata nell'elenco il 19/08/2026) e degli utenti esporta tutte
+le colonne tranne `password` — quindi **i permessi per sezione ci sono già**, stanno in
+`users.sections`, che è una colonna e non una tabella a parte. Con `--completo` le
+tabelle sono **10**: si aggiunge `regulations`, e resta fuori solo `game_releases`.
 
 **✅ La falla 2 è chiusa il 21/08/2026: `scripts/importa_dati.py` esiste.** Il ritorno
 c'è, è rieseguibile, ha `--dry-run` e **non sovrascrive niente senza averlo detto
@@ -262,27 +265,36 @@ da `init_db()` in una cartella temporanea. Numeri e prove in `STORICO.md`.
 > `team_members.team_id`, `pc_components.build_id` e `python_progress.topic_id`
 > puntano a quegli `id`.
 
-**Le due falle che restano, misurate sul DB vero:**
+**Delle due falle ne resta una:**
 
-1. ⚠️ **Una tabella su nove non è nell'elenco**: `regulations` (1 riga) non è in `TABELLE`.
-   Ma è una **tabella morta** — la scrive solo `init_db()` e non la legge nessuno, le
-   regulation vivono in `data/regulations/*.json` dal 10/08. Da decidere: o entra
-   nell'export, o si toglie dal DB con l'inventario del codice morto. Oggi è omessa **per
-   caso**, non per scelta — e finché è fuori di là, `importa_dati.py` non ha niente da
-   rimettere dentro
+1. ✅ **`regulations` è nel backup dal 18/09/2026.** Non nell'export committabile — lì
+   continua a non esserci — ma in `--completo` sì, e `importa_dati.py` sa rimetterla.
+   Resta una **tabella morta** (la scrive `init_db()`, non la legge nessuno), e proprio
+   per questo è nell'elenco anche dell'import: così con l'export normale compare fra le
+   «tabelle non presenti nell'export» invece di non comparire affatto. ⚠️ La sua
+   `created_at` la scrive `init_db()` **al momento**, quindi due DB creati a secondi di
+   distanza hanno la stessa riga con una data diversa: è in `MAI_SOVRASCRITTE`, altrimenti
+   ogni ripristino su un DB appena inizializzato si fermerebbe su un conflitto — su una
+   tabella morta, per un timestamp — e l'unica uscita sarebbe `--sovrascrivi`
 2. ⚠️ **Due personalizzazioni non sono nel DB**, quindi nessun export potrà mai prenderle:
    il **tema** è in `localStorage` e la **lingua** nel cookie `hub_lang`, entrambi per
    browser. Vanno su colonne di `users` se devono seguire l'utente — cioè esattamente
    quando l'app sarà online e la userai dal telefono e dal PC
 
-**La decisione ancora da prendere: due export, non uno.** Le password sono escluse di
-proposito perché `hub_export.json` **viene committato**. Ma un backup vero le deve
-contenere — e oggi è proprio la parte che il ripristino non sa rimettere. Quindi
-`esporta_dati.py` resta com'è, e serve una modalità **`--completo`** che scriva tutto,
-`regulations` e password comprese, in un file **fuori dal repo** — e che si **rifiuti**
-di scrivere in una cartella versionata, unico modo perché la distinzione non salti per
-distrazione. `importa_dati.py` è già pronto a rileggerlo: si punta con `--file`, e le
-password entrerebbero solo per gli utenti nuovi, mai sovrascrivendo quelle esistenti.
+**✅ I due export esistono, dal 18/09/2026.** `esporta_dati.py` è rimasto com'era e
+scrive il file committabile senza password; `--completo --uscita <percorso>` scrive il
+backup vero, con gli hash e `regulations`. Non ha un percorso di default **di proposito**:
+pretende `--uscita` e si **rifiuta** di scrivere se, risalendo l'albero dalla destinazione,
+trova un `.git` — la rete che tiene in piedi la distinzione, perché un default dentro al
+repo verrebbe committato la prima volta che qualcuno fa `git add -A` senza guardare.
+In `.gitignore` c'è una seconda rete (`*_completo.json`) per il file copiato a mano.
+Il ritorno è `importa_dati.py --file <quel percorso>`, che era già pronto: le password
+entrano **solo** per gli utenti nuovi, e quelle già nel DB non si toccano mai. Lo script
+dice **quale dei due export** ha letto, con due messaggi diversi — «rientrati senza
+password» dopo un backup completo sarebbe falso. Fuori anche dal completo resta
+`game_releases`, la cache IGDB da 6007 righe che si rifà col pulsante.
+`scripts/prova_esporta_completo.py`: **21 prove su 21**.
+
 
 Da incrociare con 1.5: online questo export deve girare **da solo sul server**.
 
@@ -367,6 +379,26 @@ chiudere o essere sospeso, e oggi `esporta_dati.py` lo lancio io a mano da qui.
 | `README.md` | 133 | Stack e struttura. Dice **«v11.1a»** |
 | `README-GitHub.md` | 104 | La vetrina coi badge |
 | `howtouse.txt` | 22 | Appunti a mano. È il germe della guida n. 2 |
+
+> ⚠️ **Quanto è vecchio `DOCUMENTAZIONE_PersonalHub.md`, misurato il 18/09/2026** e non
+> dedotto dalla data in copertina. Non è «un po' indietro»: **dice cose false**, e chi
+> lo legge per capire com'è fatta l'app parte male.
+>
+> - alla riga 196 elenca quattro route come «documentate ma mai implementate»:
+>   `/api/team/<id>`, `/api/stat_champions`, `/api/regulations`, `/api/regulations/save`.
+>   **Tre su quattro esistono** (`/api/team/<int:tid>`, `/pokemon/api/regulations`,
+>   `/pokemon/api/regulations/save`, aggiunte l'11/08 e il 19/08). Solo
+>   `/api/stat_champions` manca davvero. Contate sulla `url_map`: **79 route** in tutto
+> - alla riga 290 dà come voce più grossa del backlog il «**DB Pokedex completo**», che è
+>   stato fatto: il catalogo ha 1025 specie e 1342 voci col roster, e `pokedex` è una
+>   regulation vera dall'11/08/2026
+> - la riga 23 descrive i dati come «roster/mosse/oggetti locali JSON» **per regulation**,
+>   che è il modello di prima della migrazione al catalogo dell'11/08: oggi i dati stanno
+>   in `data/catalog/` e le regulation contengono **solo elenchi di nomi**
+>
+> Quando si scriverà la guida n. 1 il punto di partenza è questo file, ma **va riscritto
+> leggendo il codice**, non aggiornato a toppe: una riga vecchia qui costa più di una
+> riga mancante, perché sembra vera.
 
 ⚠️ **Due numeri di versione diversi** sullo stesso progetto dicono che il problema non è
 scrivere, è **decidere chi dice cosa** e buttare i doppioni. La guida n. 1 nasce dal fondere

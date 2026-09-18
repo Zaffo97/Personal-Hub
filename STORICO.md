@@ -20,6 +20,39 @@ pagina ed esegue `new Function()` su ogni blocco `<script>` **e** su ogni handle
 
 ## 18/09/2026
 
+**L'export completo del DB, quello che un backup deve essere (§1.4)**
+
+- ✅ **Due export, non uno.** `esporta_dati.py` resta com'era e scrive il file
+  committabile senza password; **`--completo --uscita <percorso>`** scrive il backup vero,
+  con gli **hash delle password** e la tabella `regulations` — 10 tabelle su 11. Fuori
+  resta solo `game_releases`, la cache IGDB da 6007 righe che si rifà col pulsante, e i
+  due dati che nel DB non ci sono proprio: il tema (`localStorage`) e la lingua (cookie).
+- ✅ **Nessun percorso di default, ed è la parte importante.** `--completo` pretende
+  `--uscita` e **si rifiuta** di scrivere se, risalendo l'albero dalla destinazione, trova
+  un `.git`: provato che rifiuta `data/backup/`, che rifiuta anche una sottocartella
+  profonda come `data/archive/giu/ancora/`, e che in nessuno dei due casi lascia il file.
+  Un default «comodo» dentro al repo verrebbe committato al primo `git add -A` distratto,
+  ed è lo stesso buco per cui `hub.db` non è versionato. Seconda rete in `.gitignore`.
+- ✅ **Il ritorno era già pronto e non è stato toccato quasi per niente**: `importa_dati.py
+  --file <percorso>` rilegge il completo, le password entrano **solo** per gli utenti
+  nuovi e quelle già nel DB non si toccano mai. Ora però dice **quale dei due export** ha
+  letto, con due messaggi diversi: «rientrati senza password» dopo un backup completo
+  sarebbe **falso**, e manderebbe a reimpostare a mano password appena rientrate giuste.
+- ⚠️ ✅ **Il conflitto scoperto scrivendo la prova**: `regulations.created_at` lo scrive
+  `init_db()` **al momento**, quindi due DB creati a secondi di distanza hanno la stessa
+  riga con una data diversa — e il ripristino si **fermava**, su una tabella morta, per un
+  timestamp, lasciando come unica uscita `--sovrascrivi`, cioè abituando a usare proprio
+  il flag pericoloso. Ora quella colonna è in `MAI_SOVRASCRITTE`. ⚠️ La prova passava o
+  falliva a seconda che i due `init_db()` cadessero nello stesso secondo: ora la
+  differenza di data si **crea apposta**, così misura la regola e non l'orologio.
+- ✅ Verificato: `scripts/prova_esporta_completo.py` **21 prove su 21**, ognuna su un DB
+  suo creato da `init_db()` in una cartella temporanea — giro completo export → import con
+  l'utente che rientra **con la sua password**, quella di `admin` già presente intatta,
+  secondo import che non scrive. `prova_importa_dati.py` resta **20 su 20**, sweep 0
+  errori, `controlla_proprietario.py` 0 query scoperte.
+
+---
+
 **Il Pokedex passa alle mosse di Champions, e i due controlli di §5.2 hanno una risposta**
 
 - ✅ **I metodi: il dump non gonfia le MT, e non è un'impressione.** Scaricato `machines.csv`

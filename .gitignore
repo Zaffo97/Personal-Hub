@@ -26,3 +26,10 @@ desktop.ini
 
 # cache locale delle risposte PokeAPI (rigenerabile)
 data/cache/
+
+# Il backup `--completo` di scripts/esporta_dati.py: contiene gli hash delle
+# password, come hub.db. Lo script si **rifiuta** gia' di scriverlo dentro una
+# cartella versionata, e quella e' la rete vera; questa e' la seconda, per il
+# giorno che il file ci finisce copiato a mano.
+hub_completo*.json
+*_completo.json

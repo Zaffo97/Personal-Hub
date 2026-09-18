@@ -48,6 +48,12 @@ la libreria giochi importata da Steam, i team, i progetti Arduino e le build del
 lo dice e non tocca il file, quindi eseguirlo è sempre sicuro. Le password non
 finiscono nell'export, di proposito.
 
+> ⚠️ **Questo comando, non l'altro.** Dal 18/09/2026 lo stesso script ha una modalità
+> `--completo --uscita <percorso>` che scrive **anche gli hash delle password**: è il
+> backup vero, va tenuto **fuori da qualunque repo** — lo script si rifiuta di scriverlo
+> dentro una cartella versionata — e **non c'entra niente con il push**. Prima di
+> spingere si esegue `esporta_dati.py` e basta.
+
 > ⚠️ Nota onesta sul perché la regola è scritta così: **non ho modo di sapere quanti
 > token restano.** Non posso accorgermi di essere "verso la fine". L'unico innesco su
 > cui posso contare è **il commit**: se ho appena committato, propongo il push.
