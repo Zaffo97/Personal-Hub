@@ -327,8 +327,12 @@ def main():
     # (Pawmot, da Bulbapedia, 14/09/2026). Senza questo passaggio, rigenerare il file le
     # cancellerebbe in silenzio. Il dump vince: dove ora ha una lista sua, l'integrazione
     # non si applica e viene detta, perché va tolta.
-    from blueprints.pokemon import applica_integrazioni_moveset
+    from blueprints.pokemon import applica_integrazioni_moveset, applica_toppe_moveset
     integrate, superate = applica_integrazioni_moveset(voci)
+    # ⚠️ E le **toppe**: le singole mosse che la versione 1.2.0 ha aggiunto o tolto e
+    # che il dump, fermo prima, non conosce. Stessa ragione delle integrazioni —
+    # rigenerare il file le perderebbe — ma agiscono su liste che il dump **ha**.
+    toppate, toppe_superate = applica_toppe_moveset(voci)
 
     precedente = carica_json(USCITA, {}) or {}
     prima = precedente.get("voci") or {}
@@ -366,6 +370,11 @@ def main():
         print(f"\n  liste integrate da data/catalog/moveset_integrazioni.json: {integrate}")
     if superate:
         print(f"  ⚠️  integrazioni SUPERATE, il dump ora ha la sua lista: {superate}")
+    if toppate:
+        print(f"  toppe applicate (mosse della 1.2.0): {len(toppate)} voci")
+    if toppe_superate:
+        print(f"  ⚠️  toppe SUPERATE, il dump si è allineato o non ha la lista: "
+              f"{toppe_superate}")
         print("      vanno tolte dal file delle integrazioni")
 
     inventate = sorted(s["senza_slug"] + s["senza_righe"])

@@ -20,6 +20,62 @@ pagina ed esegue `new Function()` su ogni blocco `<script>` **e** su ogni handle
 
 ## 18/09/2026
 
+**Le liste di Champions portate alla versione 1.2.0, e i dati mossa con loro (§5.2)**
+
+- ✅ **La fonte che ha sciolto i quattro punti aperti non era la pagina learnset**: è la
+  **nota ufficiale di aggiornamento della 1.2.0** (9 settembre 2026), citata in «Pokémon
+  Champions#Version history» su Bulbapedia. È una **lista chiusa** dei cambi di mossa —
+  Politoed non può più usare *Pound*, Archaludon né *Mirror Coat* né *Metal Burst*,
+  *Slash* «can now be used», PP di *Wish* e *Strength Sap* da 12 a 8 — e dice anche che
+  la 1.2.0 ha aggiunto il roster di **Regulation M-C**, cioè le 25 voci che il dump non ha.
+- ✅ **Applicate 33 voci**: *Slash* a **29**, le tre rimozioni, *Psychic Fangs* al posto di
+  *Psychic* su Ariados, e le quattro mosse mancanti a Mawile e Houndstone. Lo fa
+  `scripts/applica_toppe_champions.py`, che **non contiene un elenco di nomi**: ricostruisce
+  il confronto con le 232 pagine Bulbapedia in cache e **si ferma** su ogni differenza che
+  non sia in `DECISIONI` (con motivo e fonte) o in `IGNORATE`. Ha riconosciuto tutte e 35
+  le differenze del rapporto del 14/09, zero indecise.
+- ✅ **Livello nuovo, `toppe`**, in `moveset_integrazioni.json`: aggiunge e toglie **singole
+  mosse** sopra una lista che il dump **ha già**, mentre `voci` sostituisce una lista intera
+  e solo dove il dump non ne ha una. Le riapplica `applica_toppe_moveset()`, chiamata dalle
+  stesse due strade che rigenerano `pokemon_moves.json` — senza, una mossa tolta a mano
+  tornerebbe al giro dopo senza errori. Una toppa su una voce senza lista **non ne inventa
+  una**, e una che non serve più viene detta **superata**.
+- ⚠️ ✅ **Il difetto trovato provando lo script su sé stesso**: con le toppe già applicate la
+  differenza sparisce, quindi il secondo giro avrebbe scritto `toppe: {}` **cancellando il
+  proprio lavoro in silenzio**. Ora `disfa_toppe()` riporta le liste allo stato del dump
+  prima di misurare — lossless, perché nelle liste `champions` il metodo è `train` su tutte
+  le 20 699 righe. Due giri completi: **stesso md5** su tutti e due i file.
+- ⚠️ ✅ **Trovato per strada: i dati delle mosse erano di Scarlatto/Violetto, non di
+  Champions.** La sezione «Changes from Scarlet and Violet» elenca una trentina di
+  ribilanciamenti; delle 29 misurabili il catalogo ne aveva **17 già giuste e 12 no**.
+  Corretti da `scripts/allinea_dati_mosse_champions.py`: *Slash* 70→**80**, *Grav Apple*
+  80→**90**, *Meteor Assault* 150→**170**, *Snipe Shot* 80→**85**, *Crabhammer* 90→**95**,
+  *Syrup Bomb* 85→**90**, *Make It Rain* precisione **95** e Att.Sp. **−2**, *Toxic Thread*
+  Velocità **−2**, *Snap Trap* da Erba ad **Acciaio**, *Freeze-Dry* che non congela più,
+  *Dire Claw* slicing e *Double Shock* punch. Il blocco **commentato** della pagina
+  («not in the game yet»: Gear Grind, Anchor Shot, Hyper Drill…) è lasciato fuori di
+  proposito, e i PP non hanno dove andare — 0 mosse su 919 hanno quel campo.
+- ⚠️ ✅ **Altri due difetti trovati misurando il proprio diff**, tutti e due muti.
+  Lo script scriveva con `indent=2` mentre i due scrittori di `pokemon_moves.json`
+  usano `indent=1`: **100 000 righe di diff per 33 voci**, cioè una modifica
+  illeggibile in revisione — ora sono **102**. E iterava un **set** di nomi, il cui
+  ordine cambia da processo a processo perché l'hash delle stringhe è randomizzato:
+  due giri scrivevano lo stesso contenuto in ordine diverso. Si vedeva **solo**
+  confrontando l'md5 fra processi separati. Ora `sorted()` ovunque e i dizionari
+  delle mosse riordinati alla fine: **tre giri, stesso md5** su tutti e due i file.
+- ✅ **L'elenco derivato si è aggiornato da solo**, che era il punto: rilanciato
+  `allinea_mosse_regulation.py`, *Slash* è entrata e *Pound* è uscita dalle liste di MA e MB
+  senza toccarle a mano (492 e 494, invariate nel totale).
+- ✅ Verificato: `scripts/prova_champions_1_2_0.py` **21 su 21**, `prova_mosse_regulation.py`
+  **16 su 16**, più `prova_import_specie` 30/30, `prova_build_catalog` 9/9,
+  `prova_catalogo_vivo` 11/11, `prova_regulation_nuova` 32/32 (il 460 scritto dentro è
+  diventato 492), `controlla_abilita` a posto, sweep **0 errori**. In browser: regola #8
+  invariata su `pokedex` (85-102 = 38.5%–46.2%), Absol 72 mosse con **Lacerazione** che
+  autocompila **BP 80** e calcola 56-66 su Rillaboom, Politoed 56 senza *Pound* (che non è
+  più nemmeno nel `MOVES_DB` di MA), Archaludon 50 senza *Mirror Coat* e con *Slash*.
+
+---
+
 **L'elenco mosse di MA e MB non era quello di Champions: era il dump di maggio (§3)**
 
 - ⚠️ ✅ **Il filtro `moves` nascondeva 3239 mosse legali su 17219 in MA**, 3583 su 19039

@@ -1190,6 +1190,58 @@ def applica_integrazioni_moveset(voci):
     return applicate, superate
 
 
+def applica_toppe_moveset(voci):
+    """Aggiunge e toglie **singole mosse** su liste che il dump ha già.
+
+    Scritto il 18/09/2026 per la versione 1.2.0 di Champions. È il caso opposto a
+    `applica_integrazioni_moveset()`, che sostituisce una lista intera e **solo**
+    dove il dump non ne ha una: qui la lista del dump c'è ed è giusta quasi tutta,
+    e va corretta di una mossa. Il changelog ufficiale della 1.2.0 dice che Politoed
+    non può più usare Pound, Archaludon né Mirror Coat né Metal Burst, e che Slash
+    ora si può usare; il dump di PokéAPI è fermo prima di quella versione.
+
+    ⚠️ Vale la stessa ragione per cui esistono le integrazioni: `pokemon_moves.json`
+    lo **rigenerano** `importa_mosse_specie.py` e l'import dal pannello, e una mossa
+    tolta a mano lì dentro tornerebbe al giro dopo **senza nessun errore**.
+
+    ⚠️ Una toppa non inventa: se la mossa da togliere non c'è più, o quella da
+    aggiungere c'è già, la toppa è **superata** — il dump ha recuperato il ritardo —
+    e va tolta dal file. Non si applica silenziosamente a vuoto.
+
+    Torna `(applicate, superate)`, due elenchi di `"voce/sorgente"`.
+    """
+    try:
+        with open(file_integrazioni_moveset(), encoding="utf-8") as f:
+            toppe = (json.load(f) or {}).get("toppe") or {}
+    except (OSError, ValueError):
+        return [], []
+    applicate, superate = [], []
+    for chiave, sorgenti in toppe.items():
+        for sorgente, blocco in sorgenti.items():
+            blocco_voce = (voci.get(chiave) or {}).get(sorgente) or {}
+            elenco = blocco_voce.get("moves")
+            if elenco is None:
+                # Nessuna lista da toppare: senza questo la toppa **creerebbe** una
+                # lista di una mossa sola, che è peggio di non averne nessuna.
+                superate.append(f"{chiave}/{sorgente}")
+                continue
+            aggiunte = blocco.get("aggiunte") or {}
+            rimosse = blocco.get("rimosse") or []
+            serviva = (any(m not in elenco for m in aggiunte)
+                       or any(m in elenco for m in rimosse))
+            for mossa, metodo in aggiunte.items():
+                elenco.setdefault(mossa, metodo)
+            for mossa in rimosse:
+                elenco.pop(mossa, None)
+            # ⚠️ Riordinata: una mossa aggiunta finirebbe **in fondo** al dizionario, e
+            # il file scritto dopo avrebbe un ordine diverso da quello del dump, che è
+            # alfabetico. Non cambia il contenuto, ma rende il diff illeggibile e fa
+            # sembrare non idempotente uno script che lo è.
+            blocco_voce["moves"] = dict(sorted(elenco.items()))
+            (applicate if serviva else superate).append(f"{chiave}/{sorgente}")
+    return applicate, superate
+
+
 def salva_moveset(nuove):
     """Aggiunge o aggiorna voci in `pokemon_moves.json`, tenendo `_meta`.
 
@@ -1205,8 +1257,10 @@ def salva_moveset(nuove):
         dati = {}
     voci = dati.get("voci") or {}
     voci.update(nuove)
-    # una voce reimportata dal dump non deve perdere la lista integrata
+    # una voce reimportata dal dump non deve perdere la lista integrata, né le
+    # mosse che la 1.2.0 ha aggiunto o tolto e che nel dump non si vedono
     applica_integrazioni_moveset(voci)
+    applica_toppe_moveset(voci)
     dati["voci"] = voci
     meta = dati.get("_meta") or {}
     # La provenienza si scrive **accanto** a quella del dump, non al posto: il grosso
@@ -1237,6 +1291,10 @@ def api_catalogo_pesca():
     # L'anteprima mostra quello che l'import scriverà davvero, integrazioni comprese:
     # dire «non è in Champions» di Pawmot sarebbe falso, e lo è dalla 1.2.0.
     applicate, _ = applica_integrazioni_moveset(mosse)
+    # Le toppe si applicano anche qui — l'anteprima deve dire il vero — ma **non**
+    # entrano in `integrate`: quella nota dice «PokéAPI non ce l'ha», e per una voce
+    # toppata sarebbe falsa, la lista ce l'ha e le manca una mossa.
+    applica_toppe_moveset(mosse)
     integrate = {a.split("/")[0] for a in applicate}
     mosse = {k: v for k, v in mosse.items() if k in voci}
     problemi = [p for p in problemi

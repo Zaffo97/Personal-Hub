@@ -162,8 +162,12 @@ def prove(dove):
             conteggi[reg["id"]] = (len(P._load_roster(reg)),
                                    len(P.load_moves(reg["id"]).get("moves", {})),
                                    len(P.load_items(reg["id"]).get("items", {})))
-        esito("MA dice 279 / 460 / 58, non i 208 / 461 / 58 dei file vecchi",
-              conteggi["ma"] == (279, 460, 58), str(conteggi["ma"]))
+        # 492 e non più 460 dal 18/09/2026: l'elenco mosse della regulation non è più
+        # il dump di maggio, lo deriva `scripts/allinea_mosse_regulation.py` dalle
+        # mosse del roster. Il senso della prova resta quello: MA legge il **filtro**,
+        # non i file storici, che direbbero 208 / 461.
+        esito("MA dice 279 / 492 / 58, non i 208 / 461 / 58 dei file vecchi",
+              conteggi["ma"] == (279, 492, 58), str(conteggi["ma"]))
         # 1342 e non più 1343 dal 13/09/2026: il roster di Pokedex è specie più forme, e
         # la fusione del doppione di Floette ha tolto `eternal-flower-floette`, che era
         # lo stesso Pokémon della forma annidata `Floette (Eternal Flower)`.

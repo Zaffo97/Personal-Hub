@@ -27,9 +27,12 @@ Non sono storia: sono le cose che questo progetto ha già pagato e che tornano a
 |---|---|
 | **Dati mancanti** | `moves: null` **non** vuol dire «nessuna mossa», vuol dire «non lo sappiamo». Le forme inventate non stanno su PokéAPI: se `null` valesse zero, diventerebbero inutilizzabili. Stessa logica per `roster: null` = tutto il catalogo |
 | ⚠️ **Una voce senza `slug` sparisce dal moveset, e sembra una forma inventata** | Trovata il 13/09/2026. `indice_catalogo()` in `importa_mosse_specie.py` prende **solo** le voci del catalogo che hanno il campo `slug`: è il verso giusto (senza slug non c'è niente da cercare nel dump), ma vuol dire che una forma **vera** a cui lo slug manca esce dal moveset **insieme** alle Mega fan-made, e a schermo prende lo stesso avviso giallo «nessun elenco mosse». Nessun errore, e il rapporto dell'import la elenca sotto «forme che PokéAPI non conosce», che per lei è **falso**. Così i tre Gourgeist e Floette Fiore Eterno sono rimasti senza le loro 397 e 229 righe di mosse dal 12/08 al 13/09. La regola: **prima di dare per inventata una voce senza moveset, cercarne lo slug nel dump.** Lo script è `scripts/aggiungi_slug_forme.py`, e lo slug non si scrive a occhio — le sei base stat devono combaciare con quelle del dump, altrimenti si prende l'elenco mosse di un altro Pokémon senza accorgersene |
-| ⚠️ **Il moveset di Champions è fermo a M-B** | Trovato il 14/09/2026 con `scripts/verifica_moveset.py`. La lista `champions` di PokéAPI arriva a Regulation M-B e non ha la **versione 1.2.0**: 26 voci arrivate con quella versione restano senza lista, e a schermo prendono l'avviso giallo «nessun elenco mosse», esattamente come una forma inventata. **Nessun errore.** Riscaricare il dump non serve, perché è PokéAPI a non averla. Prima di dare per mancante una specie di Champions, guardare la frase «available from Version …» sulla sua pagina Bulbapedia |
+| ⚠️ **Il moveset di Champions è fermo a M-B** | Trovato il 14/09/2026 con `scripts/verifica_moveset.py`. La lista `champions` di PokéAPI arriva a Regulation M-B e non ha la **versione 1.2.0** (uscita il 9 settembre 2026): 26 voci arrivate con quella versione restano senza lista, e a schermo prendono l'avviso giallo «nessun elenco mosse», esattamente come una forma inventata. **Nessun errore.** Riscaricare il dump non serve, perché è PokéAPI a non averla. Prima di dare per mancante una specie di Champions, guardare la frase «available from Version …» sulla sua pagina Bulbapedia. ⚠️ Dal 18/09/2026 le **mosse** della 1.2.0 sono allineate (vedi la riga qui sotto sulle toppe), ma quelle 25 voci senza lista **no**: sono il roster di **Regulation M-C**, che la nota ufficiale dice aggiunto proprio con la 1.2.0 |
 | ⚠️ **Le liste integrate stanno fuori da `pokemon_moves.json`** | Dal 14/09/2026 (Pawmot). `pokemon_moves.json` lo **rigenerano** `importa_mosse_specie.py` e l'import dal pannello: una lista scritta a mano lì dentro sparirebbe al giro dopo, senza errori. Le integrazioni stanno quindi in `data/catalog/moveset_integrazioni.json`, con fonte e versione, e tutte e due le strade le riapplicano con `applica_integrazioni_moveset()`. **Il dump vince**: dove PokéAPI avrà una lista sua, l'integrazione non si applica e l'import la segnala come «superata», da togliere. Non si modifica il blocco `champions` a mano |
 | ⚠️ **L'elenco `moves` di una regulation è derivato, non curato** | Dal 18/09/2026. Lo scrive `scripts/allinea_mosse_regulation.py` dall'unione delle mosse del roster, e **non si aggiorna da solo**: un Pokémon aggiunto a MA porta con sé mosse che restano fuori dalla tendina del calcolatore **senza nessun avviso**, perché quella tendina è l'intersezione fra l'elenco della regulation e la lista del singolo Pokémon. È esattamente il baco che lo script ha chiuso (3239 mosse nascoste su 17219 in MA), e si riapre da sé se lo script non viene rilanciato. **Dopo ogni modifica a un roster: `python scripts/allinea_mosse_regulation.py`.** Modificarlo a mano dall'editor contenuti funziona, ma il giro dopo lo script lo riscrive |
+| ⚠️ **Due livelli sopra il dump, e fanno cose diverse** | Dal 18/09/2026 `moveset_integrazioni.json` ha **due** sezioni, e confonderle non dà errore. `voci` sostituisce una **lista intera** e **solo dove il dump non ne ha una** — il dump vince, è il caso di Pawmot. `toppe` aggiunge e toglie **singole mosse** sopra una lista che il dump **ha già**, ed è il caso della versione 1.2.0: `applica_toppe_moveset()`. Una toppa su una voce senza lista non ne inventa una (sarebbe una lista di una mossa sola), e una toppa che non serve più viene detta **superata**, da togliere. ⚠️ E chi scrive le toppe deve **disfare quelle già presenti prima di misurare**: `pokemon_moves.json` le contiene già, e confrontando quello la differenza sparisce — il secondo giro cancellerebbe il proprio lavoro in silenzio. È il motivo di `disfa_toppe()` in `scripts/applica_toppe_champions.py` |
+| ⚠️ **I dati delle mosse sono quelli di Champions, non di Scarlatto/Violetto** | Dal 18/09/2026, decisione di Davide. Champions **ribilancia** le mosse rispetto ai giochi principali, e il catalogo viene da PokéAPI, cioè da S/V: la sezione «Changes from Scarlet and Violet» della pagina «Pokémon Champions» su Bulbapedia elenca una trentina di differenze. Delle 29 misurabili il catalogo ne aveva **17 già giuste** e 12 no (Slash bp 70→80, Grav Apple 80→90, Crabhammer precisione 90→95, Snap Trap da Erba ad **Acciaio**, …): un numero sbagliato, nessun errore a schermo. Le riallinea `scripts/allinea_dati_mosse_champions.py`. ⚠️ Quella sezione ha in fondo un blocco **commentato** di mosse «that aren't in the game yet» (Gear Grind, Anchor Shot, Hyper Drill, …): quelle **non** vanno scritte. E i **PP** non hanno dove andare — nessuna delle 919 mosse ha quel campo |
+| ⚠️ **Un file di dati si riscrive come lo scrivono gli altri** | Due modi di sporcare un diff, trovati il 18/09/2026 su `pokemon_moves.json` (3 MB). **(1) L'indentazione**: i due scrittori del file usano `indent=1`, uno script nuovo con `indent=2` lo reindenta tutto — **100 000 righe di diff per 33 voci cambiate**, e la modifica vera diventa impossibile da leggere in revisione. ⚠️ `salva_moveset()` in `blueprints/pokemon.py` usa ancora `indent=2`: l'import dal pannello reindenta il file, ed è così da prima, segnalato e non corretto. **(2) L'ordine dei set**: l'hash delle stringhe in Python è randomizzato per processo, quindi iterare un `set` di nomi dà un ordine diverso a ogni giro. Uno script che scrive nell'ordine in cui itera **non è idempotente**, e si vede solo confrontando l'md5 di due giri in **processi separati** — nello stesso processo l'ordine è stabile e la prova passa. Si chiude con `sorted()` e riordinando i dizionari scritti |
 | **Risoluzione per nome** | Due chiavi diverse possono avere lo stesso `nome_it`/`nome_en`, e il catalogo Pokémon cita le abilità col nome **inglese** mentre le chiavi sono italiane. Ogni confronto per nome va fatto con `risolviChiave()` / `_INDICE`, mai con un match esatto sulla chiave |
 | **Fallback silenziosi** | Più di un baco qui non dava errore, dava il numero sbagliato: lo Speed Tier che ricadeva su una lista statica, `/api/moves` che leggeva il file di MA, un alias che rispondeva Mega Venusaur. Se un loader ha un ramo di riserva, va verificato **quale dei due** sta rispondendo |
 | **Endpoint fantasma** | **Quattro volte** il JS ha chiamato una risposta che nessuno aveva mai implementato: `/api/regulations`, `d.moves`, `d.regulation` e — trovato il 17/08 e scritto il 19/08 — `/api/team/<id>`. Tutte e quattro fallivano **dentro un `catch` muto**, quindi la pagina si apriva e mancava solo un pezzo, senza un errore a schermo. Sono tutte chiuse, ma la classe resta: **un `catch(e){}` vuoto qui è un baco in attesa**, e il modo di trovarli è leggere cosa il JS chiede e cercarlo nella `url_map` |
@@ -548,7 +551,7 @@ quattro cose richiedono **fonti diverse**:
 | **La differenza fra M-A e M-B** | Nel dump c'è **un solo** version group `champions`: se le due regulation **bandiscono** mosse diverse, quella differenza non è in nessun dato che abbiamo. ⚠️ Dal 18/09/2026 i due elenchi **non sono più identici** (MA 492, MB 494), ma la differenza viene dal **roster**, non da un divieto: `No Retreat` e `Topsy-Turvy` sono lì perché le impara una specie che sta solo in MB. Per gli **oggetti** il buco resta intero: MB copia i 58 di MA |
 | **Le 16 forme inventate** | Sono forme di Davide, PokéAPI non le conosce. Non è solo il moveset: è la stessa fonte che servirà per le loro stat e abilità. Restano fuori — dichiarate, non riempite. ⚠️ **Erano scritte 20 fino al 13/09/2026, e il numero era sbagliato**: quattro di quelle venti — i tre Gourgeist e Floette Fiore Eterno — sono forme **vere**, che il dump conosce. Vedi la trappola dello `slug` in cima |
 | **`Pawmot`** | ✅ **Chiuso il 14/09/2026.** La spiegazione del 12/08 («buco del dump») era sbagliata: Pawmot **è in Champions dalla versione 1.2.0**, che PokéAPI non ha. Ora ha la sua lista, integrata da Bulbapedia (64 mosse). Vedi §5.2 e la trappola delle integrazioni in cima |
-| **Le regulation future** | Se la prossima non è basata su Champions non ha un version group nel dump: il suo elenco va dalla schermata contenuti o da uno script dedicato |
+| **Le regulation future** | ⚠️ **Regulation M-C esiste**, e non è una supposizione: la nota ufficiale della versione **1.2.0** (9 settembre 2026) dice «Pokémon and held items have been added for Regulation Set M-C». Sono le **25 voci** che `verifica_moveset.py` trova su Bulbapedia e non nel dump. Quindi il giorno che si vorrà aggiungere M-C il roster c'è già, e le liste si prendono una alla volta con `integra_moveset_bulbapedia.py`; quello che **non** si sa è quali oggetti M-C aggiunga. (Da non confondere con la `mc` tolta il 13/09/2026: quella era una regulation di prova, vuota.) Se invece la prossima non è basata su Champions non ha un version group nel dump, e il suo elenco va dalla schermata contenuti o da uno script dedicato |
 
 > Il metodo resta quello del roster: dove esiste una fonte la si importa con uno script
 > rieseguibile che **si ferma su ciò che non risolve**; dove non esiste, il dato si lascia
@@ -713,24 +716,38 @@ Le anomalie fuori scope si segnalano, non si correggono al volo.
 > e Bulbapedia è già alla **versione 1.2.0**. La cache locale è identica al dump pubblicato,
 > quindi riscaricarlo non cambia niente.
 >
-> **⬜ Le decisioni che servono, di Davide:**
+> **✅ Le decisioni sono prese il 18/09/2026, e le liste sono allineate alla 1.2.0.**
 >
-> 1. ✅ **Pawmot integrato il 14/09/2026** da Bulbapedia (64 mosse), su decisione di Davide.
->    Le altre **25 voci arrivate con la 1.2.0** restano senza lista: nessuna è in un roster,
->    e servirebbero a una regulation futura. Si integrano una alla volta con
+> La fonte che ha sciolto tutto **non** è la pagina learnset: è la **nota ufficiale di
+> aggiornamento della 1.2.0** (9 settembre 2026), citata in «Pokémon Champions#Version
+> history» su Bulbapedia. È una **lista chiusa** dei cambi di mossa, e dice:
+> Politoed non può più usare *Pound*, Archaludon né *Mirror Coat* né *Metal Burst*,
+> *Slash* «can now be used», e i PP di *Wish* e *Strength Sap* passano da 12 a 8.
+>
+> 1. ✅ **Pawmot integrato il 14/09/2026** da Bulbapedia (64 mosse). Le altre **25 voci
+>    arrivate con la 1.2.0** restano senza lista, e ora si sa **cosa sono**: la nota dice
+>    «Pokémon and held items have been added for **Regulation Set M-C**». Nessuna è in un
+>    roster. Si integrano una alla volta con
 >    `python scripts/integra_moveset_bulbapedia.py --voci <chiave>`
-> 2. **Le mosse cambiate con la 1.2.0**: Slash aggiunta a 29 specie, più Charm, Draining Kiss e
->    Misty Terrain a Mawile e Bulldoze a Houndstone; tolte Metal Burst e Mirror Coat ad
->    Archaludon e Pound a Politoed (Bulbapedia scrive «Prior to Version 1.2.0»). Se MA e MB
->    si giocano sulla versione corrente, oggi il calcolatore ha le liste di prima
-> 3. **Tre disaccordi che nessuna versione spiega**, dove sospetto Bulbapedia e non il dump:
->    Gardevoir (5 mosse — Alluring Voice, Aura Sphere, Body Slam, Calm Mind, Charge Beam — che
->    sulla sua pagina **non compaiono né fra le accessibili né fra le perse**, mentre su Gallade
->    ci sono), U-turn di Blaziken (stessa cosa) e Ariados (Psychic nel dump, Psychic Fangs su
->    Bulbapedia e Psychic fra le perse)
-> 4. **Morpeko (Hangry Mode)**: nel dump ha 5 mosse in meno della forma normale (Assurance,
->    Payback, Rising Voltage, Round, Snore), e Bulbapedia ha un blocco solo per tutte e due.
->    Questo sembra un difetto del dump
+> 2. ✅ **Applicate**: *Slash* a **29 voci**, le tre rimozioni di Politoed e Archaludon,
+>    *Psychic Fangs* al posto di *Psychic* su Ariados, e le quattro mosse che mancavano a
+>    Mawile e Houndstone. Le scrive `scripts/applica_toppe_champions.py`, che **non ha un
+>    elenco di nomi dentro**: ricostruisce il confronto con Bulbapedia e si ferma su ogni
+>    differenza che non sia in `DECISIONI` o in `IGNORATE`. I PP non si applicano: il
+>    catalogo non ha quel campo
+> 3. ✅ **Gardevoir e Blaziken: il dump aveva ragione, e non era un sospetto.** La pagina
+>    Champions di Gardevoir è alfabetica e **comincia da «Charm»**: le cinque mosse che il
+>    dump ha in più — *Alluring Voice, Aura Sphere, Body Slam, Calm Mind, Charge Beam* —
+>    sono **esattamente** le cinque che vengono prima di Charm. È la testa della lista
+>    tagliata via. Su Blaziken *U-turn* è un'omissione isolata (la lista va da Acrobatics a
+>    Will-O-Wisp senza buchi, la mossa non è fra le perse, e compare su 48 delle 232 pagine).
+>    Nessuna delle due è nel changelog della 1.2.0. **Non si tocca niente**, ed è la regola
+>    che resta: *un'assenza da una pagina non è una smentita*
+> 4. ⬜ **Morpeko (Hangry Mode)** resta aperta: nel dump ha 5 mosse in meno della forma
+>    normale (Assurance, Payback, Rising Voltage, Round, Snore), e Bulbapedia ha un blocco
+>    solo per tutte e due, quindi non dice niente su questa differenza. **Tutte e due le
+>    forme sono in MA e MB**, quindi si vede: 60 mosse contro 65. Sembra un difetto del
+>    dump, ma nessuna fonte lo conferma, e la regola del punto 3 vale anche qui
 >
 > Le differenze delle **forme di Rotom** non sono errori: Bulbapedia mette le mosse proprie
 > di ogni forma (Overheat, Hydro Pump, …) sulla pagina unica di Rotom, il dump le separa.
