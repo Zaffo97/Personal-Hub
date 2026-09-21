@@ -20,6 +20,46 @@ pagina ed esegue `new Function()` su ogni blocco `<script>` **e** su ogni handle
 
 ## 21/09/2026
 
+**Le toppe della 1.2.0 arrivano anche alle forme (§5.2)**
+
+- ⚠️ **Il difetto, trovato da `verifica_moveset.py`**: le toppe erano scritte come elenco
+  di **33 chiavi di specie**, e si fermavano lì. **19 forme** di quelle specie — Mega
+  Absol, Mega Charizard X e Y, Mega Gallade, Aegislash (Blade Forme), Mimikyu (Busted
+  Form), … — erano rimaste senza lo *Slash* della 1.2.0, e Mega Mawile senza *Charm*,
+  *Draining Kiss* e *Misty Terrain*. **Tutte e 19 sono in MA e in MB**: a schermo Absol
+  poteva scegliere Slash e Mega Absol no, cioè lo stesso Pokémon a metà partita. Nessun
+  errore, solo la tendina più corta.
+- ✅ **La prova che non era una differenza vera**: **19 su 19** erano copie **esatte**
+  della lista della loro specie, a parte le mosse che la toppa nomina. Prima del 18/09
+  forma e specie avevano la stessa lista; è stata la toppa a separarle.
+- ✅ **La cura sta in `applica_toppe_moveset()`**, cioè in **un punto solo** per tutti e
+  quattro i percorsi che applicano le toppe (import in blocco, import dal pannello,
+  `applica_toppe_champions.py`, le prove). Una toppa raggiunge le forme della specie, ma
+  **solo** quelle la cui lista — tolte le mosse che la toppa nomina — è **identica** a
+  quella della specie. Il confronto ignora le mosse nominate di proposito: regge sia sul
+  file appena rigenerato dal dump (dove nessuna delle due ce l'ha) sia su uno già toppato
+  a metà (dove la specie sì e la forma no), e resta idempotente.
+- ✅ **Una forma con una lista sua non viene toccata e viene dichiarata**: finisce nel
+  terzo valore di ritorno, che l'import stampa. Oggi quell'elenco è **vuoto**, perché
+  l'unica forma con una lista propria fra le 33 specie toppate — Hisuian Samurott — una
+  toppa sua ce l'ha già.
+- ✅ **Numeri**: `champions` da 20 700 a **20 721 mosse** (+21: 18 *Slash* più le 3 di
+  Mega Mawile), toppe applicate da 33 a **52 voci**. Il giro di `verifica_moveset.py`
+  passa da **26 forme con differenze a 8**, e le 8 rimaste hanno tutte già una
+  spiegazione: 5 Rotom (Bulbapedia mette le mosse di ogni forma sulla pagina unica),
+  Mega Blaziken e Mega Gardevoir (rispecchiano il troncamento noto della pagina della
+  specie) e **Morpeko (Hangry Mode)**, che resta l'unica domanda aperta.
+- ✅ **Verifiche**: `prova_champions_1_2_0.py` **28 su 28** — il conto di *Slash* non è
+  più «29 secco» ma **29 voci nominate + 19 forme**, più un terzo controllo che nessuna
+  forma di una specie con Slash sia rimasta indietro: era quello a valere zero, ed era
+  proprio il difetto. Più `prova_moveset_main.py` 19 su 19, `prova_mosse_regulation.py`
+  16 su 16, `prova_import_specie.py` 30 su 30, `prova_regulation_nuova.py` 32 su 32,
+  `prova_build_catalog.py` 9 su 9, `prova_catalogo_vivo.py` 11 su 11. Idempotenza in
+  processi separati, e `allinea_mosse_regulation.py --dry-run` con MA 492 e MB 494
+  invariate (le mosse c'erano già nell'unione, mancavano alle singole forme).
+
+---
+
 **Il blocco `main` del moveset non è più rotto, e resta (§5.2, §5.3)**
 
 - ✅ **La decisione di Davide prima dei numeri**: «in questo momento non mi interessa altro

@@ -294,12 +294,18 @@ def main():
           "(copia in data/archive/moveset_integrazioni_pre-toppe.json)")
 
     # ── 2. e il file che l'app legge ─────────────────────────────────────────
-    applicate, superate = applica_toppe_moveset(moveset)
+    applicate, superate, forme_proprie = applica_toppe_moveset(moveset)
     moveset_doc["voci"] = moveset
     with open(MOVESET_FILE, "w", encoding="utf-8") as f:
         json.dump(moveset_doc, f, ensure_ascii=False, indent=1)
     print(f"Applicate a data/catalog/pokemon_moves.json: {len(applicate)} voci"
           + (f", superate {superate}" if superate else ""))
+    if forme_proprie:
+        # Dal 21/09/2026 una toppa raggiunge anche le forme della specie. Queste no:
+        # hanno una lista **loro**, quindi la fonte le distingue e applicargliela
+        # sarebbe inventare. Va letto, non ignorato: l'altra spiegazione possibile e'
+        # che sia la lista della forma a essere rimasta indietro.
+        print(f"Forme con una lista propria, non toccate: {forme_proprie}")
     print("\n⚠️  Ora rilancia `python scripts/allinea_mosse_regulation.py`: "
           "l'elenco mosse delle regulation è derivato dalle liste appena cambiate.")
     return 0

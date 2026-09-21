@@ -355,7 +355,7 @@ def main():
     # ⚠️ E le **toppe**: le singole mosse che la versione 1.2.0 ha aggiunto o tolto e
     # che il dump, fermo prima, non conosce. Stessa ragione delle integrazioni —
     # rigenerare il file le perderebbe — ma agiscono su liste che il dump **ha**.
-    toppate, toppe_superate = applica_toppe_moveset(voci)
+    toppate, toppe_superate, toppe_forme_proprie = applica_toppe_moveset(voci)
 
     precedente = carica_json(USCITA, {}) or {}
     prima = precedente.get("voci") or {}
@@ -411,6 +411,11 @@ def main():
         print(f"  ⚠️  toppe SUPERATE, il dump si è allineato o non ha la lista: "
               f"{toppe_superate}")
         print("      vanno tolte dal file delle integrazioni")
+    if toppe_forme_proprie:
+        # Non e' un guasto: e' una forma che la fonte distingue dalla sua specie, e
+        # quindi non prende la toppa della specie. Va **letta**, perche' l'altra
+        # spiegazione possibile e' che la lista della forma sia rimasta indietro.
+        print(f"  forme con una lista propria, non toppate: {toppe_forme_proprie}")
 
     inventate = sorted(s["senza_slug"] + s["senza_righe"])
     print(f"\nRESTANO FUORI  {len(inventate)}")

@@ -54,18 +54,28 @@ def main():
           "Mirror Coat" not in arch and "Metal Burst" not in arch, f"{len(arch)} mosse")
     con_slash = [k for k, v in voci.items()
                  if "Slash" in (((v.get("champions") or {}).get("moves")) or {})]
-    # ⚠️ 29 voci **scelte**, più le forme che **ereditano** da una di quelle. Il numero
-    # era 29 secco fino al 21/09/2026, e il trentesimo è comparso rigenerando il file:
-    # `Charizard (Gigantamax Form)` dichiara `eredita_da: Charizard`, quindi la sua
-    # lista **è** quella di Charizard — che la toppa della 1.2.0 tocca. Il file del
-    # 18/09 le aveva disallineate perché scritto da `applica_toppe_champions.py`, che
-    # lavora sul JSON dal disco dove le due liste sono due oggetti separati. Contarle a
-    # parte è il punto: un 30 che diventasse 31 per un'altra ragione deve fallire.
-    scelte = [k for k in con_slash if "eredita_da" not in voci[k]]
-    per_eredita = sorted(k for k in con_slash if "eredita_da" in voci[k])
-    esito("Slash è nelle liste di 29 voci", len(scelte) == 29, f"{len(scelte)} voci")
-    esito("più le forme che ereditano da una di quelle",
-          per_eredita == ["Charizard (Gigantamax Form)"], f"{per_eredita}")
+    # ⚠️ Il numero era **29 secco** fino al 21/09/2026, e contarlo così nascondeva il
+    # difetto: la toppa è scritta con la **chiave di una specie**, e si fermava lì. Le
+    # forme delle specie toppate — Mega Absol, Mega Charizard X e Y, Aegislash (Blade
+    # Forme), Mimikyu (Busted Form), … — restavano **senza** Slash pur essendo tutte in
+    # MA e MB: a schermo Absol poteva sceglierlo e Mega Absol no. Quindi il conto si
+    # spezza in due, e la seconda metà è quella che allora valeva zero.
+    with open(file_integrazioni_moveset(), encoding="utf-8") as f:
+        nomi_toppati = set((json.load(f) or {}).get("toppe") or {})
+    specie_di = {nf: k for k, d in load_catalog("pokemon").items()
+                 for nf in (d.get("forms") or {})}
+    scelte = [k for k in con_slash if k in nomi_toppati]
+    per_forma = sorted(k for k in con_slash if k not in nomi_toppati)
+    esito("Slash è nelle liste delle 29 voci nominate dalla toppa",
+          len(scelte) == 29, f"{len(scelte)} voci")
+    esito("e in quelle delle forme di quelle specie, nessuna esclusa",
+          per_forma and all(specie_di.get(k) in nomi_toppati for k in per_forma),
+          f"{len(per_forma)} forme, fra cui {per_forma[:3]}")
+    senza = sorted(nf for nf, sp in specie_di.items()
+                   if sp in con_slash and nf not in con_slash
+                   and (((voci.get(nf) or {}).get("champions") or {}).get("moves")))
+    esito("nessuna forma di una specie con Slash ne è rimasta fuori",
+          not senza, senza[:6] or "0 rimaste indietro")
     esito("fra queste Absol, Garchomp e Weavile",
           {"absol", "garchomp", "weavile"} <= set(con_slash))
 
@@ -95,7 +105,7 @@ def main():
     finto = {"politoed": {"champions": {"vg": "champions",
                                         "moves": {"Pound": "train", "Bubble Beam": "train"}}},
              "absol": {"champions": {"vg": "champions", "moves": {"Bite": "train"}}}}
-    applicate, superate = applica_toppe_moveset(finto)
+    applicate, superate, _ = applica_toppe_moveset(finto)
     dopo_pol = finto["politoed"]["champions"]["moves"]
     dopo_abs = finto["absol"]["champions"]["moves"]
     esito("dopo la rigenerazione Politoed riperde Pound", "Pound" not in dopo_pol,
@@ -108,11 +118,11 @@ def main():
     # Il dump si è allineato da solo: la toppa è superata e va detta, non applicata.
     allineato = {"politoed": {"champions": {"vg": "champions",
                                             "moves": {"Bubble Beam": "train"}}}}
-    _, sup = applica_toppe_moveset(allineato)
+    _, sup, _ = applica_toppe_moveset(allineato)
     esito("un dump già allineato marca la toppa come superata",
           "politoed/champions" in sup, f"superate {len(sup)}")
     senza = {"politoed": {}}
-    _, sup2 = applica_toppe_moveset(senza)
+    _, sup2, _ = applica_toppe_moveset(senza)
     esito("e su una voce senza lista non ne inventa una",
           "politoed/champions" in sup2 and not senza["politoed"].get("champions"))
 

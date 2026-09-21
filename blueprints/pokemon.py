@@ -1208,14 +1208,31 @@ def applica_toppe_moveset(voci):
     aggiungere c'è già, la toppa è **superata** — il dump ha recuperato il ritardo —
     e va tolta dal file. Non si applica silenziosamente a vuoto.
 
-    Torna `(applicate, superate)`, due elenchi di `"voce/sorgente"`.
+    ⚠️ **Dal 21/09/2026 arriva anche alle forme della specie**, che una toppa scritta
+    per chiave non raggiungeva: e solo a quelle la cui lista, tolte le mosse che la
+    toppa nomina, è **identica** a quella della specie. Una forma con una lista sua
+    finisce nel terzo elenco invece di essere toccata.
+
+    Torna `(applicate, superate, con_lista_propria)`, tre elenchi di `"voce/sorgente"`.
     """
     try:
         with open(file_integrazioni_moveset(), encoding="utf-8") as f:
             toppe = (json.load(f) or {}).get("toppe") or {}
     except (OSError, ValueError):
-        return [], []
-    applicate, superate = [], []
+        return [], [], []
+    catalogo = load_catalog("pokemon")
+    applicate, superate, con_lista_propria = [], [], []
+
+    def tocca(elenco, aggiunte, rimosse):
+        """Applica una toppa a una lista. Torna `True` se serviva davvero."""
+        serviva = (any(m not in elenco for m in aggiunte)
+                   or any(m in elenco for m in rimosse))
+        for mossa, metodo in aggiunte.items():
+            elenco.setdefault(mossa, metodo)
+        for mossa in rimosse:
+            elenco.pop(mossa, None)
+        return serviva
+
     for chiave, sorgenti in toppe.items():
         for sorgente, blocco in sorgenti.items():
             blocco_voce = (voci.get(chiave) or {}).get(sorgente) or {}
@@ -1227,19 +1244,47 @@ def applica_toppe_moveset(voci):
                 continue
             aggiunte = blocco.get("aggiunte") or {}
             rimosse = blocco.get("rimosse") or []
-            serviva = (any(m not in elenco for m in aggiunte)
-                       or any(m in elenco for m in rimosse))
-            for mossa, metodo in aggiunte.items():
-                elenco.setdefault(mossa, metodo)
-            for mossa in rimosse:
-                elenco.pop(mossa, None)
+            serviva = tocca(elenco, aggiunte, rimosse)
             # ⚠️ Riordinata: una mossa aggiunta finirebbe **in fondo** al dizionario, e
             # il file scritto dopo avrebbe un ordine diverso da quello del dump, che è
             # alfabetico. Non cambia il contenuto, ma rende il diff illeggibile e fa
             # sembrare non idempotente uno script che lo è.
             blocco_voce["moves"] = dict(sorted(elenco.items()))
             (applicate if serviva else superate).append(f"{chiave}/{sorgente}")
-    return applicate, superate
+
+            # ⚠️ **E le forme della specie.** Una toppa è scritta con la **chiave** di
+            # una specie, e fino al 21/09/2026 si fermava lì: le 19 forme delle specie
+            # toppate — Mega Absol, Mega Charizard X e Y, Aegislash (Blade Forme),
+            # Mimikyu (Busted Form), … — sono rimaste **senza** lo `Slash` della 1.2.0
+            # che la loro specie aveva preso, e sono tutte in MA e MB. A schermo voleva
+            # dire che Absol poteva scegliere Slash e Mega Absol no, che è lo stesso
+            # Pokémon a metà partita. Nessun errore, solo la tendina più corta.
+            #
+            # Il criterio non indovina: si tocca una forma **solo** se la sua lista,
+            # ignorando le mosse che la toppa nomina, è **identica** a quella della
+            # specie — cioè se la fonte non sa niente di specifico su quella forma.
+            # Ignorare le mosse nominate è ciò che rende il confronto stabile: regge
+            # sia sul file appena rigenerato dal dump (dove nessuna delle due ce l'ha)
+            # sia su quello già toppato a metà (dove la specie sì e la forma no).
+            toccate = set(aggiunte) | set(rimosse)
+            resto_specie = set(elenco) - toccate
+            for nome_forma in (catalogo.get(chiave) or {}).get("forms") or {}:
+                if nome_forma in toppe:
+                    continue      # ha una toppa sua: la applica il suo giro
+                blocco_forma = (voci.get(nome_forma) or {}).get(sorgente) or {}
+                lista = blocco_forma.get("moves")
+                if lista is None:
+                    continue      # niente lista: una toppa non ne inventa una
+                if (set(lista) - toccate) != resto_specie:
+                    # Una lista sua vuol dire che la fonte **distingue** le due forme
+                    # (le Rotom, Hisuian Samurott): applicarle la toppa della specie
+                    # sarebbe inventare. Si dichiara e si lascia stare.
+                    con_lista_propria.append(f"{nome_forma}/{sorgente}")
+                    continue
+                if tocca(lista, aggiunte, rimosse):
+                    applicate.append(f"{nome_forma}/{sorgente}")
+                blocco_forma["moves"] = dict(sorted(lista.items()))
+    return applicate, superate, con_lista_propria
 
 
 def salva_moveset(nuove):
