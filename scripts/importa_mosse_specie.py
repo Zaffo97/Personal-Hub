@@ -351,7 +351,7 @@ def main():
     # cancellerebbe in silenzio. Il dump vince: dove ora ha una lista sua, l'integrazione
     # non si applica e viene detta, perché va tolta.
     from blueprints.pokemon import (applica_integrazioni_moveset, applica_toppe_moveset,
-                                    riallinea_forme_eredi)
+                                    applica_eredita_dichiarata, riallinea_forme_eredi)
     integrate, superate = applica_integrazioni_moveset(voci)
     # ⚠️ E le **toppe**: le singole mosse che la versione 1.2.0 ha aggiunto o tolto e
     # che il dump, fermo prima, non conosce. Stessa ragione delle integrazioni —
@@ -359,6 +359,8 @@ def main():
     toppate, toppe_superate, toppe_forme_proprie = applica_toppe_moveset(voci)
     # ⚠️ E le forme che dichiarano `eredita_da`: l'eredita' e' costruita prima che
     # integrazioni e toppe entrino, e **un blocco nuovo sulla specie non le raggiunge**.
+    # ⚠️ L'eredita' dichiarata va **dopo** le toppe: copia la lista finale della specie.
+    eredi_dichiarati, eredi_superati = applica_eredita_dichiarata(voci)
     eredi_rimessi = riallinea_forme_eredi(voci)
 
     precedente = carica_json(USCITA, {}) or {}
@@ -415,6 +417,13 @@ def main():
         print(f"  ⚠️  toppe SUPERATE, il dump si è allineato o non ha la lista: "
               f"{toppe_superate}")
         print("      vanno tolte dal file delle integrazioni")
+    if eredi_dichiarati:
+        print(f"  forme che prendono la lista della loro specie, perche' una fonte "
+              f"per-forma lo dice: {eredi_dichiarati}")
+    if eredi_superati:
+        print(f"  ⚠️  eredita' SUPERATE, la forma ora ha una lista sua nel dump: "
+              f"{eredi_superati}")
+        print("      vanno tolte dal file delle integrazioni")
     if eredi_rimessi:
         print(f"  forme che ereditano, riallineate alla loro base: {eredi_rimessi}")
     if toppe_forme_proprie:
@@ -430,6 +439,9 @@ def main():
     # mosse**, perché i loro unici giochi sono `legends-za` e `mega-dimension`, i due
     # version group che nel dump hanno **zero righe**. Chiamarle inventate ha lasciato
     # per un mese fuori dal moveset cinque Mega vere di Regulation M-C.
+    # Quelle che nel frattempo una lista l'hanno presa (l'eredità dichiarata) non sono
+    # più «senza»: contarle lì direbbe il falso, che è il difetto appena corretto.
+    s["senza_righe"] = [n for n in s["senza_righe"] if n not in voci]
     if s["senza_righe"]:
         print(f"\nCONOSCIUTE DAL DUMP, MA SENZA NEMMENO UNA MOSSA  {len(s['senza_righe'])}")
         print("  lo slug è in pokemon.csv: non sono inventate. Il dump non ha righe per")

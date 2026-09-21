@@ -1190,6 +1190,70 @@ def applica_integrazioni_moveset(voci):
     return applicate, superate
 
 
+def applica_eredita_dichiarata(voci):
+    """Dà a una forma la lista della sua specie, dove una fonte dice che è la stessa.
+
+    Scritto il 21/09/2026 per le **6 Mega di Regulation M-C** — Mega Salamence, Mega
+    Absol Z, Mega Garchomp Z, Mega Lucario Z, Mega Golisopod, Mega Baxcalibur. Sono in
+    Champions, ma il dump di PokéAPI non ha righe di mosse per loro (i loro giochi,
+    `legends-za` e `mega-dimension`, nel dump sono vuoti) e Bulbapedia **non dà un
+    blocco alle Mega**: le tratta come la specie, quindi
+    `integra_moveset_bulbapedia.py` si rifiuta — giustamente — di integrarle.
+
+    Non è una deduzione: la fonte è **Pokémon Zone**, che ha una pagina **per ogni
+    Mega** con la sua tabella «Learnable Moves». Confrontate tutte e sei con la lista
+    della loro specie il 21/09/2026: **6 su 6 identiche**, stesso conteggio
+    (Golisopod 67, Absol 72, Salamence 62, Garchomp 59, Lucario 83, Baxcalibur 51).
+    L'unica differenza di testo era `Mud-Slap` contro `Mud Slap`, che è l'alias di nome
+    già noto. Serebii dice la stessa cosa dall'altro verso: una **lista sola** per
+    Absol, Mega Absol e Mega Absol Z.
+
+    ⚠️ **Il dump vince**, come per le integrazioni: se un domani PokéAPI riempirà
+    `mega-dimension`, la forma avrà una lista sua e questa eredità verrà detta
+    **superata**, da togliere. E se la specie non ha la lista, non se ne inventa una.
+
+    ⚠️ La derivazione è **dichiarata dentro il blocco** (`eredita_da`), non a livello
+    di voce: a livello di voce vorrebbe dire «tutti i blocchi», e a queste Mega la
+    lista `main` della specie non spetta — nei giochi principali non esistono.
+
+    Torna `(applicate, superate)`.
+    """
+    try:
+        with open(file_integrazioni_moveset(), encoding="utf-8") as f:
+            eredita = (json.load(f) or {}).get("eredita") or {}
+    except (OSError, ValueError):
+        return [], []
+    # ⚠️ Cinque delle sei Mega **non hanno nessuna voce** nel moveset: il dump non ha
+    # righe per loro, quindi `costruisci_moveset()` le lascia fuori del tutto. Qui la
+    # voce si crea, con il suo slug preso dal catalogo — senza questo la funzione
+    # applicava una sola eredità su sei e non lo diceva a nessuno.
+    slug_forme = {nome_forma: (forma or {}).get("slug")
+                  for dati in load_catalog("pokemon").values()
+                  for nome_forma, forma in (dati.get("forms") or {}).items()}
+    applicate, superate = [], []
+    for nome_forma, sorgenti in eredita.items():
+        voce = voci.get(nome_forma)
+        if voce is None:
+            if nome_forma not in slug_forme:
+                continue          # non è nemmeno nel catalogo: non si inventa
+            voce = voci[nome_forma] = {}
+            if slug_forme[nome_forma]:
+                voce["slug"] = slug_forme[nome_forma]
+        for sorgente, blocco in sorgenti.items():
+            if (voce.get(sorgente) or {}).get("moves"):
+                superate.append(f"{nome_forma}/{sorgente}")
+                continue
+            base = voci.get(blocco.get("da")) or {}
+            lista = (base.get(sorgente) or {}).get("moves")
+            if not lista:
+                continue          # la specie non ce l'ha: non si inventa
+            voce[sorgente] = {"moves": dict(lista),
+                              "fonte": blocco.get("fonte"),
+                              "eredita_da": blocco.get("da")}
+            applicate.append(f"{nome_forma}/{sorgente}")
+    return applicate, superate
+
+
 def applica_toppe_moveset(voci):
     """Aggiunge e toglie **singole mosse** su liste che il dump ha già.
 
@@ -1346,7 +1410,9 @@ def salva_moveset(nuove):
     # mosse che la 1.2.0 ha aggiunto o tolto e che nel dump non si vedono
     applica_integrazioni_moveset(voci)
     applica_toppe_moveset(voci)
-    # e le forme che ereditano: l'eredità è costruita prima che le due passino
+    # l'eredità dichiarata va **dopo** le toppe, così copia la lista finale
+    applica_eredita_dichiarata(voci)
+    # e le forme che ereditano: l'eredità è costruita prima che le tre passino
     riallinea_forme_eredi(voci)
     dati["voci"] = voci
     meta = dati.get("_meta") or {}

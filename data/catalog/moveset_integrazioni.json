@@ -2,7 +2,8 @@
  "_meta": {
   "spiegazione": "Liste di mosse che il dump di PokéAPI non ha, integrate a mano da un'altra fonte. Le applica applica_integrazioni_moveset() in blueprints/pokemon.py; dove il dump ha una lista sua, vince il dump.",
   "scritto_da": "scripts/integra_moveset_bulbapedia.py",
-  "toppe_spiegazione": "Singole mosse aggiunte o tolte sopra una lista che il dump HA già: il dump di PokéAPI è fermo prima della versione 1.2.0 di Champions. Le applica applica_toppe_moveset() in blueprints/pokemon.py. Scritte da scripts/applica_toppe_champions.py."
+  "toppe_spiegazione": "Singole mosse aggiunte o tolte sopra una lista che il dump HA già: il dump di PokéAPI è fermo prima della versione 1.2.0 di Champions. Le applica applica_toppe_moveset() in blueprints/pokemon.py. Scritte da scripts/applica_toppe_champions.py.",
+  "eredita_spiegazione": "Forme la cui lista È quella della loro specie, perché una fonte per-forma lo dice. La applica applica_eredita_dichiarata() in blueprints/pokemon.py, dopo le toppe. Il dump vince: dove la forma ha una lista sua, l'eredità è detta superata."
  },
  "voci": {
   "pawmot": {
@@ -2307,6 +2308,62 @@
     "motivi": {
      "Slash": "nota ufficiale di aggiornamento 1.2.0 (9 settembre 2026), citata in «Pokémon Champions#Version history» su Bulbapedia: «The following move can now be used: Slash»"
     }
+   }
+  }
+ },
+ "eredita": {
+  "Mega Salamence": {
+   "champions": {
+    "da": "salamence",
+    "fonte": "pokemon-zone (pagina per-forma di ogni Mega, «Learnable Moves»), confermata da Serebii che dà una lista sola alla specie e alle sue Mega; letto il 21/09/2026",
+    "scritta_il": "2026-09-21",
+    "versione": "1.2.0",
+    "motivo": "Mega di Regulation M-C: il dump non ha righe per lei e Bulbapedia non dà un blocco alle Mega. La pagina per-forma di Pokémon Zone dà esattamente la lista della specie."
+   }
+  },
+  "Mega Absol Z": {
+   "champions": {
+    "da": "absol",
+    "fonte": "pokemon-zone (pagina per-forma di ogni Mega, «Learnable Moves»), confermata da Serebii che dà una lista sola alla specie e alle sue Mega; letto il 21/09/2026",
+    "scritta_il": "2026-09-21",
+    "versione": "1.2.0",
+    "motivo": "Mega di Regulation M-C: il dump non ha righe per lei e Bulbapedia non dà un blocco alle Mega. La pagina per-forma di Pokémon Zone dà esattamente la lista della specie."
+   }
+  },
+  "Mega Garchomp Z": {
+   "champions": {
+    "da": "garchomp",
+    "fonte": "pokemon-zone (pagina per-forma di ogni Mega, «Learnable Moves»), confermata da Serebii che dà una lista sola alla specie e alle sue Mega; letto il 21/09/2026",
+    "scritta_il": "2026-09-21",
+    "versione": "1.2.0",
+    "motivo": "Mega di Regulation M-C: il dump non ha righe per lei e Bulbapedia non dà un blocco alle Mega. La pagina per-forma di Pokémon Zone dà esattamente la lista della specie."
+   }
+  },
+  "Mega Lucario Z": {
+   "champions": {
+    "da": "lucario",
+    "fonte": "pokemon-zone (pagina per-forma di ogni Mega, «Learnable Moves»), confermata da Serebii che dà una lista sola alla specie e alle sue Mega; letto il 21/09/2026",
+    "scritta_il": "2026-09-21",
+    "versione": "1.2.0",
+    "motivo": "Mega di Regulation M-C: il dump non ha righe per lei e Bulbapedia non dà un blocco alle Mega. La pagina per-forma di Pokémon Zone dà esattamente la lista della specie."
+   }
+  },
+  "Mega Golisopod": {
+   "champions": {
+    "da": "golisopod",
+    "fonte": "pokemon-zone (pagina per-forma di ogni Mega, «Learnable Moves»), confermata da Serebii che dà una lista sola alla specie e alle sue Mega; letto il 21/09/2026",
+    "scritta_il": "2026-09-21",
+    "versione": "1.2.0",
+    "motivo": "Mega di Regulation M-C: il dump non ha righe per lei e Bulbapedia non dà un blocco alle Mega. La pagina per-forma di Pokémon Zone dà esattamente la lista della specie."
+   }
+  },
+  "Mega Baxcalibur": {
+   "champions": {
+    "da": "baxcalibur",
+    "fonte": "pokemon-zone (pagina per-forma di ogni Mega, «Learnable Moves»), confermata da Serebii che dà una lista sola alla specie e alle sue Mega; letto il 21/09/2026",
+    "scritta_il": "2026-09-21",
+    "versione": "1.2.0",
+    "motivo": "Mega di Regulation M-C: il dump non ha righe per lei e Bulbapedia non dà un blocco alle Mega. La pagina per-forma di Pokémon Zone dà esattamente la lista della specie."
    }
   }
  }

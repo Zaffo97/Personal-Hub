@@ -20,6 +20,38 @@ pagina ed esegue `new Function()` su ogni blocco `<script>` **e** su ogni handle
 
 ## 21/09/2026
 
+**Le 6 Mega di Regulation M-C hanno la loro lista, e la fonte c'era (§2.3)**
+
+- ✅ **Davide ha chiesto di cercare prima se una fonte esiste, e esisteva.** Bulbapedia
+  non dà un blocco alle Mega — le tratta come la specie, ed è per questo che
+  `integra_moveset_bulbapedia.py` si rifiutava di integrarle. **Pokémon Zone** invece ha
+  una pagina **per ogni Mega**, con la sua tabella «Learnable Moves». Confrontate tutte
+  e sei con la lista della loro specie: **6 su 6 identiche**, stesso conteggio —
+  Golisopod 67, Absol 72, Salamence 62, Garchomp 59, Lucario 83, Baxcalibur 51. L'unica
+  differenza di testo era `Mud-Slap` contro `Mud Slap`, che è l'alias di nome già noto.
+  Serebii dice la stessa cosa dall'altro verso: una **lista sola** per Absol, Mega Absol
+  e Mega Absol Z.
+- ✅ **Scritte come `eredita`, la terza sezione di `moveset_integrazioni.json`**: la
+  lista non si duplica, si **dichiara derivata**. `applica_eredita_dichiarata()` gira
+  **dopo** le toppe, così copia la lista finale della specie, e il dump vince — se un
+  domani PokéAPI riempirà `mega-dimension`, l'eredità verrà detta **superata**.
+- ⚠️ **Il primo giro ne applicò una su sei, e non lo disse**: cinque delle sei Mega non
+  avevano **nessuna voce** nel moseset, perché `costruisci_moveset()` lascia fuori del
+  tutto chi non ha righe nel dump. Ora la voce si crea, col suo slug preso dal catalogo.
+  Il rapporto dell'import non le conta più fra le «conosciute dal dump ma senza nemmeno
+  una mossa», che da 14 sono scese a **9** — e quelle 9 sono le Mega di Leggende Z-A,
+  reali ma in Champions non ancora presenti, quindi è giusto che restino senza.
+- ✅ **Numeri**: `champions` da 362 a **368 voci** e da 22 469 a **22 863 mosse**; le
+  voci del moveset da 1326 a **1331**. `verifica_moveset.py`: **358 identiche su 368**,
+  0 voci che Bulbapedia ha e il dump no.
+- ✅ **Verifiche**: `prova_champions_1_2_0.py` **40 su 40** (sezione nuova sulle 6 Mega:
+  la lista combacia, ognuna dichiara `eredita_da` e la fonte, e **non** si sono prese
+  anche la `main` della specie — a cinque su sei non spetta, nei giochi principali non
+  esistono). Più 19+16+30+32+9+11+21 sulle altre suite, `controlla_abilita.py` pulito,
+  idempotenza in processi separati, MA 492 e MB 494 invariate.
+
+---
+
 **Regulation M-C, Morpeko e una seconda fonte per tutto il resto (§5.2, §2.3)**
 
 Richiesta di Davide: fare le 25 voci di Regulation M-C, e **verificare sempre con siti

@@ -72,15 +72,26 @@ def main():
     # perché **ereditano**. Una voce con Slash che non rientri in nessuno dei quattro è
     # la cosa che questa prova deve trovare.
     altre = [k for k in con_slash if k not in nomi_toppati]
-    per_forma = sorted(k for k in altre if specie_di.get(k) in nomi_toppati)
-    integrate = sorted(k for k in altre
-                       if ((voci.get(k) or {}).get("champions") or {}).get("fonte"))
-    eredi = sorted(k for k in altre if "eredita_da" in (voci.get(k) or {}))
+    # ⚠️ Chi eredita si conta **per primo**, e si guarda `eredita_da` in tutti e due i
+    # posti in cui può stare: a livello di voce (le Gigantamax, che copiano ogni blocco)
+    # e **dentro il blocco** (le 6 Mega di M-C, a cui spetta solo `champions`). Senza
+    # questo, Mega Absol Z e Mega Garchomp Z finirebbero fra le «forme toppate», che
+    # non sono: lo Slash ce l'hanno perché è nella lista che ereditano.
+    eredi = sorted(k for k in altre
+                   if "eredita_da" in (voci.get(k) or {})
+                   or ((voci.get(k) or {}).get("champions") or {}).get("eredita_da"))
+    per_forma = sorted(k for k in altre
+                       if k not in eredi and specie_di.get(k) in nomi_toppati)
+    integrate = sorted(k for k in altre if k not in eredi
+                       and ((voci.get(k) or {}).get("champions") or {}).get("fonte"))
     inspiegate = sorted(set(altre) - set(per_forma) - set(integrate) - set(eredi))
     esito("Slash è nelle liste delle 29 voci nominate dalla toppa",
           len(scelte) == 29, f"{len(scelte)} voci")
+    # 18, non 19: la diciannovesima forma toccata dalla toppa è **Mega Mawile**, che
+    # prende le tre mosse di Mawile e non Slash, quindi qui non compare. E Charizard
+    # Gigantamax è fra chi **eredita**, non fra le forme propagate.
     esito("e in quelle delle forme di quelle specie",
-          len(per_forma) == 19, f"{len(per_forma)} forme, fra cui {per_forma[:3]}")
+          len(per_forma) == 18, f"{len(per_forma)} forme, fra cui {per_forma[:3]}")
     esito("nessuna voce ha Slash senza una ragione fra le quattro",
           not inspiegate,
           inspiegate[:5] or f"{len(integrate)} integrate, {len(eredi)} che ereditano")
@@ -178,8 +189,8 @@ def main():
     con = sum(1 for n in tutte if mosse_legali(n, pokedex)[0])
     # 333 fino al 21/09/2026, poi 362: +25 sono le voci di Regulation M-C integrate da
     # Bulbapedia, +4 le loro forme Gigantamax che ereditano la lista nuova.
-    esito("362 voci del Pokedex hanno un elenco, le altre no",
-          con == 362, f"{con} su {len(tutte)}")
+    esito("368 voci del Pokedex hanno un elenco, le altre no",
+          con == 368, f"{con} su {len(tutte)}")
     esito("Incineroar nel Pokedex mostra le sue 77 di Champions",
           len(mosse_legali("Incineroar", pokedex)[0] or []) == 77)
     esito("Abra non ha più l'elenco da una mossa sola",
@@ -250,7 +261,36 @@ def main():
     esito("le cinque mosse che mancavano alla Hangry ci sono",
           {"Assurance", "Payback", "Rising Voltage", "Round", "Snore"} <= hangry)
 
-    print("\n== 11. Growth è di tipo Erba in Champions ==")
+    print("\n== 11. le 6 Mega di M-C prendono la lista della loro specie ==")
+    # ⚠️ Non è una deduzione: **Pokémon Zone** ha una pagina per **ogni Mega**, con la
+    # sua tabella «Learnable Moves», e confrontate il 21/09/2026 danno **6 su 6** la
+    # lista identica a quella della specie (Golisopod 67, Absol 72, Salamence 62,
+    # Garchomp 59, Lucario 83, Baxcalibur 51). Bulbapedia non dà un blocco alle Mega e
+    # il dump non ha righe per loro: senza questa fonte restavano senza elenco.
+    mega_mc = {"Mega Salamence": "salamence", "Mega Absol Z": "absol",
+               "Mega Garchomp Z": "garchomp", "Mega Lucario Z": "lucario",
+               "Mega Golisopod": "golisopod", "Mega Baxcalibur": "baxcalibur"}
+    storte, senza_fonte = [], []
+    for forma, specie in mega_mc.items():
+        blocco = (voci.get(forma) or {}).get("champions") or {}
+        if (blocco.get("moves") or {}) != (((voci.get(specie) or {})
+                                            .get("champions") or {}).get("moves") or {}):
+            storte.append(forma)
+        if blocco.get("eredita_da") != specie or not blocco.get("fonte"):
+            senza_fonte.append(forma)
+    esito("tutte e 6 hanno esattamente la lista della loro specie",
+          not storte, storte or "6 su 6")
+    esito("e ognuna dichiara da chi eredita e da quale fonte",
+          not senza_fonte, senza_fonte or "eredita_da + fonte su tutte e 6")
+    # ⚠️ La derivazione è dichiarata **dentro il blocco**, non a livello di voce: a
+    # livello di voce vorrebbe dire «tutti i blocchi», e a cinque di queste sei la lista
+    # `main` della specie non spetta — nei giochi principali non esistono.
+    con_main = [f for f in mega_mc if "main" in (voci.get(f) or {})]
+    esito("e non si sono prese anche la lista `main` della specie",
+          con_main == ["Mega Salamence"],
+          f"{con_main} (Mega Salamence ce l'ha di suo: è una Mega di ORAS)")
+
+    print("\n== 12. Growth è di tipo Erba in Champions ==")
     # ⚠️ Non viene da Bulbapedia: la sezione «Changes from Scarlet and Violet» **non lo
     # cita**, e per questo il 18/09 era rimasto Normale. Lo dicono Game8 e Serebii.
     esito("Growth: type erba", (mosse.get("Growth") or {}).get("type") == "grass",
