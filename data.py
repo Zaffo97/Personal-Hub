@@ -75,10 +75,39 @@ SEZIONI = [
     ("arduino",    "🔌 Arduino",        "/arduino",   ["arduino"]),
     ("python",     "🐍 Python Tracker", "/python",    ["python_tracker"]),
     ("pcbuilder",  "🖥️ PC Builder",     "/pcbuilder", ["pcbuilder"]),
+    ("fantacalcio", "⚽ Fantacalcio",    "/fantacalcio", ["fantacalcio"]),
 ]
 SEZIONI_SLUG = [s[0] for s in SEZIONI]
 # blueprint -> sezione, ricavata da SEZIONI così le due non possono divergere
 BLUEPRINT_SEZIONE = {bp: slug for slug, _, _, bps in SEZIONI for bp in bps}
+
+# ── Fantacalcio ──────────────────────────────────────────────────────────────
+# ⚠️ La **chiave** è il dato: è quello che fantacalcio.it scrive in
+# `data-filter-role-classic` e che finisce in `fanta_players.ruolo_classic`. Non si
+# traduce e non si rinomina; l'etichetta qui sotto è solo per lo schermo.
+RUOLI_FANTA = {"p": "Portiere", "d": "Difensore", "c": "Centrocampista",
+               "a": "Attaccante"}
+# L'ordine in cui una rosa si legge, che non è quello alfabetico delle chiavi.
+ORDINE_RUOLI_FANTA = ["p", "d", "c", "a"]
+
+# Quanti giocatori per ruolo ha un modulo. La chiave è il modulo come lo scrive
+# l'utente ("3-4-3"), e il portiere è sempre uno: un modulo dice i dieci di
+# movimento. ⚠️ Non è un elenco di moduli **ammessi** — quello lo decide la lega,
+# nella sua colonna `moduli` — è la traduzione da modulo a conto per ruolo.
+def scomponi_modulo(modulo):
+    """`{"p":1,"d":3,"c":4,"a":3}` da "3-4-3", o `None` se non è un modulo.
+
+    ⚠️ Torna `None` invece di indovinare: un modulo scritto male deve fermare la
+    validazione, non farla passare con un conto sbagliato.
+    """
+    pezzi = [p.strip() for p in str(modulo or "").split("-")]
+    if len(pezzi) != 3 or not all(p.isdigit() for p in pezzi):
+        return None
+    d, c, a = (int(p) for p in pezzi)
+    if d + c + a != 10:
+        return None
+    return {"p": 1, "d": d, "c": c, "a": a}
+
 
 # ── Categorie di oggetti e abilità ───────────────────────────────────────────
 # ⚠️ La **chiave** è il dato: sta in `category` dentro il catalogo, è il `value` delle

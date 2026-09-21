@@ -20,6 +20,60 @@ pagina ed esegue `new Function()` su ogni blocco `<script>` **e** su ogni handle
 
 ## 21/09/2026
 
+**Fantacalcio: le fondamenta dei dati (§4.2)**
+
+La sezione era un segnaposto dal 10/09/2026 — «solo il titolo, e finché resta così non
+si scrive codice». Davide l'ha definita: inserire la formazione avendo tutti i
+giocatori di Serie A, le probabili dei propri giocatori, un consiglio, e le regole di
+**due leghe**, tutte e due **Classic**, con le regole **strutturate**.
+
+- ✅ **Le fonti, cercate prima di scrivere e tutte su un sito solo.** Le tre pagine di
+  `fantacalcio.it` (l'ex Fantagazzetta) sono **renderizzate dal server**, quindi si
+  leggono con `requests` + `HTMLParser` **senza login**: quotazioni (597 giocatori,
+  ruolo Classic e Mantra, QI/QA/FVM), statistiche (gli stessi 597, media voto,
+  fantamedia, gol, assist, cartellini) e probabili formazioni (761 voci, il modulo di
+  ogni squadra, 20 ballottaggi). ⚠️ Il download **Excel** del listone invece pretende
+  un account — `/api/v1/Excel/prices/21/1` risponde **401** — e leggere le pagine
+  evita anche di mettere credenziali nel progetto.
+- ✅ **Si incrociano per `id`**: ogni giocatore porta il suo id numerico nell'URL,
+  uguale in tutte e tre le pagine. Il nome è abbreviato (`Martinez L.`) e legarli per
+  nome sarebbe la stessa classe di baco già pagata sul catalogo Pokémon.
+- ✅ **Cosa c'è**: `fantacalcio_it.py` legge e basta, `scripts/importa_listone.py` è
+  l'unico che scrive, più `blueprints/fantacalcio.py`, due template e la voce in
+  sidebar. Nel DB: il listone condiviso (`fanta_players`, 597 voci), le leghe con le
+  regole in colonne (`fanta_leagues`) e le rose (`fanta_roster`).
+- ✅ **Il mercato, che Davide ha chiesto di mettere subito**: `importa_listone.py
+  --scarica` è rieseguibile, e chi esce dalla Serie A viene **spento, non cancellato**
+  — cancellarlo porterebbe via la riga di rosa che lo nomina. Lo script dice quanti
+  degli spenti sono **in una tua rosa**, e la pagina li mostra col cartellino «fuori
+  listone». Provato: secondo giro a 0 nuovi, 0 aggiornati, 0 spenti.
+- ⚠️ **Solo tre valori vengono dal regolamento ufficiale**, letto lo stesso giorno: gol
+  +3, ammonizione −0,5, espulsione −1 (e i cartellini si fermano a −1 comunque
+  combinati). Assist, gol subito, porta inviolata, rigori e autogol il regolamento
+  **non li fissa**, perché cambiano da lega a lega: i default sono convenzionali e la
+  scheda della lega lo dichiara campo per campo.
+- ⚠️ **Due trappole trovate costruendo, e tutte e due danno «tutto a posto» quando non
+  lo è.** (1) `controlla_proprietario.py` cerca le query **per nome di tabella** e
+  `sweep_pagine.py` ha un **elenco di URL scritto a mano**: una sezione nuova non è in
+  nessuno dei due e tutti e due dicevano «0 problemi» **senza averla guardata** —
+  allargando il raggio sono saltate fuori **4 query scoperte**, poi dichiarate. (2)
+  Passare `None` a una colonna con un `DEFAULT` **scavalca il default**: una lega
+  nuova nasceva coi bonus a `NULL` invece che a +3, e l'ha presa la prova al primo
+  giro.
+- ✅ **L'export**: `fanta_leagues` e `fanta_roster` sono entrate in `esporta_dati.py` e
+  in `importa_dati.py` — sono dati che nessuna fonte ricostruisce. Il listone no, si
+  rifà in un minuto; ⚠️ la conseguenza è che un ripristino su un DB vuoto va fatto
+  **dopo** aver reimportato il listone.
+- ✅ **Verifiche**: `prova_fantacalcio.py` **26 su 26** (fra cui: un secondo utente non
+  vede, non modifica, non cancella e non tocca la rosa altrui; un modulo che non fa 10
+  viene rifiutato; un campo vuoto non azzera; chi esce dal listone resta in rosa e lo
+  dichiara). Più `controlla_proprietario.py` a **93 query, 0 scoperte**, lo **sweep a 0
+  errori** sulle due pagine nuove in tutte e due le lingue, e le altre nove suite
+  rieseguite — 224 controlli in tutto. Le pagine vere rese sul listone importato: 597
+  giocatori dichiarati a schermo con la data.
+
+---
+
 **Le due Mega Meowstic: un dato sbagliato teneva fuori una voce vera**
 
 - ⚠️ **Il difetto**: erano le ultime due voci del catalogo senza `slug`, e il backlog le

@@ -34,6 +34,8 @@ Non sono storia: sono le cose che questo progetto ha già pagato e che tornano a
 | ⚠️ **Tre livelli sopra il dump, e fanno cose diverse** | Dal 21/09/2026 `moveset_integrazioni.json` ha una **terza** sezione: `eredita`. Dà a una forma la lista della sua **specie**, dove una fonte per-forma dice che sono la stessa — le 6 Mega di Regulation M-C, che il dump non ha e a cui Bulbapedia non dà un blocco. La applica `applica_eredita_dichiarata()` **dopo** le toppe, così copia la lista finale, e **crea la voce** se il moveset non ce l'ha (cinque delle sei non esistevano affatto: il primo giro ne applicò una su sei senza dirlo). Il dump vince, come per `voci`: se un domani avrà righe per loro, l'eredità è detta **superata**. ⚠️ La derivazione è dichiarata **dentro il blocco** (`eredita_da`) e non a livello di voce: a livello di voce vorrebbe dire «tutti i blocchi», e a cinque di quelle sei la lista `main` della specie **non spetta** — nei giochi principali non esistono |
 | ⚠️ **Due livelli di toppa sopra il dump, e fanno cose diverse** | Dal 18/09/2026 `moveset_integrazioni.json` ha **due** sezioni, e confonderle non dà errore. `voci` sostituisce una **lista intera** e **solo dove il dump non ne ha una** — il dump vince, è il caso di Pawmot. `toppe` aggiunge e toglie **singole mosse** sopra una lista che il dump **ha già**, ed è il caso della versione 1.2.0: `applica_toppe_moveset()`. Una toppa su una voce senza lista non ne inventa una (sarebbe una lista di una mossa sola), e una toppa che non serve più viene detta **superata**, da togliere. ⚠️ E chi scrive le toppe deve **disfare quelle già presenti prima di misurare**: `pokemon_moves.json` le contiene già, e confrontando quello la differenza sparisce — il secondo giro cancellerebbe il proprio lavoro in silenzio. È il motivo di `disfa_toppe()` in `scripts/applica_toppe_champions.py` |
 | ⚠️ **In `main` vince il gioco più recente, e «più recente» non vuol dire «più completo»** | Dal 21/09/2026. `main` prende l'ultimo version group in cui la voce compare, e fino a quel giorno bastava questo: il risultato era che **Leggende Arceus** e **Let's Go**, che hanno un sistema di mosse ridotto, vincevano su Scarlatto/Violetto per **77 voci** — Abra con **una** mossa sola, e nessun errore da nessuna parte. Ora `VG_FUORI_SERIE` in `pokeapi.py` li tiene fuori, e li usa **solo come ripiego** per chi non compare altrove (Partner Pikachu ed Eevee). ⚠️ Due cose da sapere prima di toccarlo: **`legends-za` e `mega-dimension` sono nell'elenco pur avendo zero righe oggi**, perché hanno order 30 e 31 e il giorno che PokéAPI li riempie diventerebbero da soli la sorgente di centinaia di voci — il rapporto dell'import stampa quante righe ha ognuno degli esclusi, così se uno smette di essere vuoto si va a guardare; e la regola è **una sola funzione**, `scegli_vg_main()`, importata da tutti e due gli scrittori (`importa_mosse_specie.py` e `pokeapi.moveset()`, l'import dal pannello), perché finché erano due copie una restava indietro — ed è esattamente così che il difetto è sopravvissuto |
+| ⚠️ **Una tabella nuova nasce FUORI dal raggio dei controlli, e lo zero diventa falso** | Dal 21/09/2026, trovata aggiungendo il Fantacalcio. `controlla_proprietario.py` cerca le query **per nome di tabella** (`RADICI`, `FIGLIE`, `ALTRE`) e `sweep_pagine.py` ha un **elenco di URL scritto a mano**: una sezione nuova non è in nessuno dei due, quindi tutti e due rispondono «0 problemi» **senza averla guardata**. È peggio di un errore, perché ha l'aria di una conferma. Aggiungendo le tabelle al raggio sono saltate fuori **4 query scoperte** che prima non si vedevano. La regola: **una sezione nuova si aggiunge ai due elenchi nello stesso commit in cui nasce**, e lo stesso vale per l'export (`esporta_dati.py`), o i suoi dati non finiscono in nessun backup |
+| ⚠️ **Passare `None` a una colonna con un `DEFAULT` scavalca il default** | Dal 21/09/2026, presa da `prova_fantacalcio.py` al primo giro. Il salvataggio di una lega costruiva l'`INSERT` con **tutte** le colonne delle regole, mettendo `None` dove il form non aveva niente: in SQLite un `NULL` **esplicito** è un valore, non un'assenza, quindi il `DEFAULT 3` del bonus gol non entrava mai e una lega nuova nasceva coi bonus a `NULL`. Nessun errore: il bonus semplicemente non c'era. La cura è non mettere la colonna nella query — che nell'`UPDATE` vuol dire anche «lascia il valore di prima», cioè la stessa cosa detta bene |
 | ⚠️ **«PokéAPI non la conosce» quasi mai vuol dire «è inventata»** | Misurato il 21/09/2026, e per un mese si è creduto il contrario. Il rapporto dell'import stampava 16 voci sotto la frase «forme che PokéAPI non conosce», e il backlog le chiamava «forme di Davide»: **falso per 14 su 16**. I loro slug — `darkrai-mega`, `absol-mega-z`, `golisopod-mega`, … — sono **tutti in `pokemon.csv`**. PokéAPI le conosce benissimo; quello che non ha sono le **righe di mosse**, perché i loro unici giochi sono `legends-za` e `mega-dimension`, i due version group che nel dump hanno **zero righe** (gli stessi che `VG_FUORI_SERIE` sorveglia). Fra quelle 14 ce n'erano **cinque Mega vere di Regulation M-C** — Mega Absol Z, Mega Garchomp Z, Mega Lucario Z, Mega Golisopod, Mega Baxcalibur — confermate da Serebii **e** da Game8. E **nemmeno le due Mega Meowstic** erano sconosciute, scoperto lo stesso giorno: `meowstic-male-mega` e `meowstic-female-mega` sono nel dump **con le loro righe di mosse**. Mancava solo lo `slug` nel catalogo, e mancava perché `aggiungi_slug_forme.py` si **rifiutava** di scriverlo: le sei base stat della femmina non combaciavano, perché la voce era rimasta a **466**, il totale della forma **non** Mega. Cioè un dato sbagliato teneva fuori una voce vera, e il rifiuto era il verso giusto. Corretto a 566 su tre fonti concordi. Quindi delle 16 la frase era falsa per **tutte e 16**. ⚠️ La regola generale, che era già scritta dal 13/09 e non era stata applicata a questa conclusione: **prima di dare per inventata una voce senza moveset, cercarne lo slug nel dump.** Ora il rapporto dell'import stampa i due gruppi separati, con l'etichetta giusta |
 | ⚠️ **Una toppa è scritta con la chiave di una specie, e le forme non sono la specie** | Trovata il 21/09/2026 da `verifica_moveset.py`. Le toppe della 1.2.0 nominavano **33 specie**, e si fermavano lì: **19 forme** di quelle specie — Mega Absol, Mega Charizard X e Y, Aegislash (Blade Forme), Mimikyu (Busted Form), … — sono rimaste senza lo *Slash* che la loro specie aveva preso, e **sono tutte in MA e MB**. A schermo voleva dire che Absol poteva sceglierlo e Mega Absol no, che è lo stesso Pokémon a metà partita. Nessun errore, solo la tendina più corta. Ora `applica_toppe_moveset()` raggiunge anche le forme, ma **solo** quelle la cui lista, tolte le mosse che la toppa nomina, è **identica** a quella della specie: una forma con una lista sua (le Rotom, Hisuian Samurott) finisce in un terzo elenco che l'import stampa, e non viene toccata. Il confronto ignora le mosse nominate proprio perché regga sia sul file appena rigenerato dal dump sia su uno già toppato a metà. ⚠️ Chi aggiunge una toppa nuova non deve elencare le forme a mano: se lo fa, quella forma viene saltata dalla propagazione (`if nome_forma in toppe`) ed è giusto così, ma la sua lista va scritta intera |
 | ⚠️ **L'eredità è costruita prima che integrazioni e toppe entrino** | Dal 21/09/2026. In `costruisci_moveset()` la forma Gigantamax copia il dizionario della specie: **mutare** una lista condivisa si propaga, **aggiungere un blocco nuovo alla specie no**. Integrando le 25 voci di Regulation M-C è successo esattamente questo: Cinderace, Inteleon, Rillaboom e Toxtricity hanno preso la loro lista `champions` da Bulbapedia, e le loro quattro Gigantamax — che dichiarano `eredita_da` — sono rimaste **senza**, con l'avviso giallo «nessun elenco mosse». Nessun errore. Ora `riallinea_forme_eredi()` gira **dopo** integrazioni e toppe in tutti i percorsi che scrivono il file, e `prova_moveset_main.py` controlla che ogni voce con `eredita_da` abbia davvero la lista della sua base |
@@ -94,8 +96,9 @@ L'ordine che ne esce, e che vale finché Davide non lo cambia:
 7. §1.6 — le due guide, che vanno **dopo** il collaudo
 8. §1.5 — l'app online
 
-> **Aggiunta il 10/09/2026**: la sezione **Fantacalcio** (§4.2) è chiesta ma non ancora
-> definita. Sta con le altre sezioni al punto 3 finché Davide non le dà un posto suo.
+> **Aggiunta il 10/09/2026, definita il 21/09/2026**: la sezione **Fantacalcio**
+> (§4.2) non è più un segnaposto — le fondamenta dei dati sono in piedi e il resto
+> (formazione, probabili, consiglio) è scritto lì con le sue risposte.
 
 ---
 
@@ -253,7 +256,7 @@ in tutte e tre le regulation valgono `{}`, e un editor si fa quando serviranno.
 > **Quella parte c'è già.** Contato sul DB vero: 33 giochi, 1 team con 1 membro, 1 build PC
 > con 5 componenti, 53 argomenti Python, 2 utenti, tutto in `data/backup/hub_export.json`.
 
-`scripts/esporta_dati.py` copre **9 tabelle** su 11 (erano scritte 8 finché
+`scripts/esporta_dati.py` copre **11 tabelle** su 13 (erano 9 su 11 finché il 21/09/2026 non sono entrate `fanta_leagues` e `fanta_roster`; il listone `fanta_players` resta fuori di proposito, si rifà con `importa_listone.py`) (erano scritte 8 finché
 `python_progress` non è entrata nell'elenco il 19/08/2026) e degli utenti esporta tutte
 le colonne tranne `password` — quindi **i permessi per sezione ci sono già**, stanno in
 `users.sections`, che è una colonna e non una tabella a parte. Con `--completo` le
@@ -622,7 +625,7 @@ quattro cose richiedono **fonti diverse**:
 | 🤖 **Arduino** | ⬜ Richiamo a Tinkercad per disegnare il progetto e verificare i connettori |
 | 💻 **PC Builder** | ⬜ Wishlist Amazon o altri · ⬜ prezzo componente · ⬜ percentuale di compatibilità fra i pezzi (valutare UserBenchmark) · ⬜ gestire l'uscita di nuovi pezzi nel tempo |
 | 🐍 **Python** | ⬜ Spazio per inserire i propri progetti e testarli · ⬜ idee per rendere la sezione più utile |
-| ⚽ **Fantacalcio** | ⬜ Sezione nuova, chiesta il 10/09/2026 — i dettagli si studiano dopo (vedi §4.2) |
+| ⚽ **Fantacalcio** | 🟨 **Iniziata il 21/09/2026**: listone, leghe con regole strutturate e rose (vedi §4.2). Restano formazione, probabili e consiglio |
 
 ### 4.1 🟨 Gaming — il calendario delle uscite (chiesto il 13/08, costruito il 16/08/2026)
 
@@ -695,25 +698,78 @@ non basta mai, e l'avviso a schermo lo dice.
   entrasse molto altro andrebbero rimisurate, non ritoccate a occhio
 
 
-### 4.2 ⬜ Fantacalcio — sezione nuova, tutta da definire
+### 4.2 🟨 Fantacalcio — le fondamenta ci sono, dal 21/09/2026
 
-Chiesta da Davide il **10/09/2026**. Per ora c'è **solo il titolo**: i dettagli si studiano
-più avanti, quindi qui non c'è né un progetto né una fonte dati scelta. È un segnaposto
-perché il lavoro non si perda, **non** una specifica — e finché resta così non si scrive
-codice.
+Chiesta il 10/09/2026, **definita e iniziata il 21/09/2026**. Le quattro domande che
+stavano qui hanno una risposta, data da Davide:
 
-Le domande da sciogliere prima di iniziare, nessuna delle quali ha oggi una risposta:
+- **cosa deve fare**: inserire la propria formazione avendo tutti i giocatori di
+  Serie A, vedere le probabili formazioni dei propri giocatori, avere un consiglio, e
+  ricordare le regole — **due leghe, quindi due regolamenti e due formazioni**
+- **i dati**: il listone di Fantagazzetta, cioè `fantacalcio.it`
+- **quanto è personale**: leghe e rose sono per utente, il listone è condiviso
+- **le regole**: **strutturate**, non un testo — così l'app può applicarle
+- **il sistema**: tutte e due le leghe **Classic**
 
-- **cosa deve fare**: seguire la propria rosa durante la stagione, consultare voti e
-  statistiche, preparare l'asta, o più cose insieme
-- **da dove arrivano i dati**: una API, uno scraping, o un import a mano come Steam e
-  IGDB — con la stessa domanda sulla licenza che si è posta per IGDB
-- **quanto è personale**: se ci sono dati per utente valgono le regole di §1.1 — una
-  `SELECT` nuova sui contenuti nasce **scoperta**, e `controlla_proprietario.py` è il
-  solo segnale
-- **tradotta o no**: il pulsante lingua compare solo dove la sezione è tradotta
-  (`sezioni_tradotte` in `base.html`). Una sezione nuova nasce **italiana**, come Arduino
-  e PC Builder, salvo decisione contraria
+**✅ Le tre fonti, misurate il 21/09/2026 e tutte su un sito solo.** Le pagine di
+`fantacalcio.it` sono **renderizzate dal server**, quindi si leggono con `requests` +
+`HTMLParser` come la wiki, **senza login**. ⚠️ Il download Excel del listone invece
+**pretende un account**: `/api/v1/Excel/prices/21/1` risponde **401**, e per questo si
+leggono le pagine — evita anche di mettere credenziali nel progetto.
+
+| Pagina | Cosa dà | Misurato |
+|---|---|---|
+| `/quotazioni-fantacalcio` | ruolo Classic e Mantra, squadra, QI, QA, FVM | 597 giocatori |
+| `/statistiche-serie-a` | media voto, fantamedia, gol, assist, cartellini, rigori | 597, 11 colonne |
+| `/probabili-formazioni-serie-a` | giornata, modulo di ogni squadra, undici, ballottaggi | 761 voci, 20 ballottaggi |
+
+⚠️ **Si incrociano per `id`, non per nome.** Ogni giocatore porta il suo id numerico
+nell'URL (`/serie-a/squadre/inter/martinez-l/2764`), **uguale in tutte e tre** le
+pagine. Il nome è abbreviato (`Martinez L.`) e due squadre possono avere due
+`Martinez`: legare per nome qui è la stessa classe di baco già pagata sul catalogo
+Pokémon.
+
+**✅ Cosa c'è, dal 21/09/2026** — `fantacalcio_it.py` (legge e basta),
+`scripts/importa_listone.py` (l'unico che scrive), `blueprints/fantacalcio.py`, due
+template, e `scripts/prova_fantacalcio.py` (26 prove su 26):
+
+- il **listone in `hub.db`**: 597 giocatori, 20 squadre, con ruolo, quotazioni e
+  statistiche
+- le **due leghe** con le regole in colonne: moduli ammessi, panchinari, modificatore
+  di difesa e dodici fra bonus e malus
+- la **rosa** per lega, con il prezzo pagato, e il conto di quali moduli sono
+  copribili
+- ⚠️ **l'aggiornamento del mercato**, che è la parte che Davide ha chiesto di mettere
+  subito: `importa_listone.py --scarica` è rieseguibile e chi esce dalla Serie A viene
+  **spento, non cancellato** — cancellarlo porterebbe via la riga di rosa che lo
+  nomina. Lo script dice quanti degli spenti sono in una tua rosa, che è l'unica cosa
+  che ti riguarda davvero, e la pagina della lega li mostra col cartellino «fuori
+  listone» invece di nasconderli
+
+⚠️ **Solo tre valori vengono dal regolamento ufficiale** di fantacalcio.it, letto il
+21/09/2026: gol **+3**, ammonizione **−0,5**, espulsione **−1**, e i cartellini si
+fermano a −1 comunque siano combinati. Tutti gli altri (assist, gol subito, porta
+inviolata, rigori, autogol) il regolamento **non li fissa**, perché cambiano da lega a
+lega: i default sono quelli convenzionali e vanno corretti lega per lega. È
+esattamente il motivo per cui le regole stanno in colonne.
+
+**⬜ Cosa resta, in ordine di quanto è stato chiesto:**
+
+- ⬜ **inserire la formazione**: la validazione contro il modulo e i panchinari. Il
+  pezzo di conto c'è già (`scomponi_modulo()` in `data.py`, e la pagina dice quali
+  moduli la rosa copre), manca la formazione come dato salvato per giornata
+- ⬜ **le probabili formazioni**: la pagina è già stata letta e ha modulo, undici e
+  ballottaggi, ma non è ancora importata. Serve una tabella per giornata
+- ⬜ **il consiglio**. Davide: «per questa fonte non saprei dove pescare» — e una
+  fonte esterna **non serve**: fantamedia, titolarità dalle probabili e ballottaggio
+  bastano a calcolarlo dai dati che avremo, dichiarando su cosa si basa. Un sito che
+  dice «schiera X» sarebbe un oracolo non verificabile, cioè il contrario della regola
+  di questo progetto
+- ⬜ **il secondo sistema**: il listone porta anche i ruoli **Mantra** e sono già nel
+  DB, ma oggi non li legge nessuno. Il giorno che una lega passasse a Mantra il dato
+  c'è
+- ⬜ **la licenza**: si legge un sito pubblico per uso personale, come già si fa con
+  Bulbapedia. Se la sezione uscisse di casa (§1.5) la domanda va riaperta
 
 ---
 

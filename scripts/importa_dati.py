@@ -83,6 +83,11 @@ ORDINE = [
     "users", "games", "teams", "team_members",
     "arduino_projects", "python_topics", "pc_builds", "pc_components",
     "python_progress",
+    # ⚠️ Fantacalcio: la rosa **dopo** la lega, perché la nomina. E il listone
+    # (`fanta_players`) non è in nessuno dei due export — si rifà con
+    # `scripts/importa_listone.py`, che va lanciato **prima** di questo ripristino,
+    # altrimenti le rose puntano a giocatori che non ci sono ancora.
+    "fanta_leagues", "fanta_roster",
     # ⚠️ Solo il backup `--completo` ce l'ha (§1.4, 18/09/2026). Con l'export
     # committabile questa riga fa solo comparire `regulations` fra le «tabelle non
     # presenti nell'export», che è la verità — prima non compariva affatto, ed è così

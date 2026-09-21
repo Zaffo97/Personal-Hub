@@ -1,0 +1,193 @@
+{% extends "base.html" %}
+{% block title %}Fantacalcio &ndash; Hub{% endblock %}
+{% block topbar_title %}&#9917; Fantacalcio{% endblock %}
+{% block extra_head %}
+<style>
+#legaModal{display:none;position:fixed;inset:0;background:rgba(0,0,0,.6);z-index:999;
+  align-items:center;justify-content:center;padding:1rem}
+#legaModal.open{display:flex}
+.modal-box{background:var(--surface);border:1px solid var(--border);border-radius:var(--radius-xl);
+  width:100%;max-width:820px;max-height:92dvh;display:flex;flex-direction:column;overflow:hidden}
+.modal-header{display:flex;align-items:center;justify-content:space-between;
+  padding:.75rem 1.1rem;border-bottom:1px solid var(--border)}
+.modal-body{flex:1;padding:1rem;overflow-y:auto}
+.modal-footer{padding:.75rem 1.1rem;border-top:1px solid var(--border);display:flex;gap:.6rem;flex-wrap:wrap}
+.regole-griglia{display:grid;grid-template-columns:repeat(auto-fill,minmax(210px,1fr));gap:.6rem}
+.regola-uff{color:var(--text-faint);font-size:.68rem}
+</style>
+{% endblock %}
+{% block content %}
+<div class="page-header">
+  <div class="flex items-center justify-between flex-wrap gap-2">
+    <div><h1>&#9917; Fantacalcio</h1>
+      <p class="text-muted text-sm">Le tue leghe, le loro regole e le rose</p></div>
+    <div class="flex gap-2 items-center">
+      {% if e_admin and proprietari %}
+      <label class="text-xs text-muted">Utente:</label>
+      <select class="form-select" style="max-width:200px;font-size:.75rem"
+              onchange="location.href = this.value ? '/fantacalcio/?utente=' + this.value : '/fantacalcio/'">
+        <option value="">Tutti</option>
+        {% for pr in proprietari %}
+        <option value="{{ pr.id }}"{% if filtro_utente == pr.id %} selected{% endif %}>{{ pr.username }} ({{ pr.quanti }})</option>
+        {% endfor %}
+      </select>
+      {% endif %}
+      <button class="btn btn-primary" onclick="apriLega()">+ Nuova lega</button>
+    </div>
+  </div>
+</div>
+
+{# Lo stato del listone: senza questo non si sa se i numeri delle rose sono di
+   oggi o di tre mesi fa, e un listone vecchio non dà errore, dà il dato sbagliato. #}
+<div class="card mb-3">
+  <div class="card-header"><div class="card-title">Il listone</div></div>
+  <div style="padding:.75rem 1rem" class="text-sm">
+    {% if listone.attivi %}
+      <strong>{{ listone.attivi }}</strong> giocatori attivi
+      {% if listone.spenti %}&middot; {{ listone.spenti }} non più in Serie A (spenti, non cancellati){% endif %}
+      {% if listone.visto %}&middot; aggiornato il <strong>{{ listone.visto }}</strong>{% endif %}
+      <div class="text-xs text-muted mt-1">
+        Si aggiorna da riga di comando, e va rifatto a ogni mercato:
+        <code>python scripts/importa_listone.py --scarica</code>
+      </div>
+    {% else %}
+      <span class="text-muted">Il listone non è ancora stato importato.</span>
+      <div class="text-xs text-muted mt-1"><code>python scripts/importa_listone.py</code></div>
+    {% endif %}
+  </div>
+</div>
+
+{% if leghe %}
+<div style="display:grid;grid-template-columns:repeat(auto-fill,minmax(320px,1fr));gap:.85rem">
+{% for l in leghe %}
+<div class="card mb-0">
+  <div class="card-header">
+    <div>
+      <div class="card-title">{{ l.nome }}</div>
+      <div class="text-xs text-muted mt-1">
+        {{ l.quanti }} in rosa &middot; {{ l.n_panchinari }} panchinari
+        {% if l.mod_difesa %}&middot; modificatore difesa{% endif %}
+      </div>
+      {% if e_admin %}<div class="text-xs mt-1" style="color:var(--text-faint)">&#128100; {{ nomi_utenti.get(l.user_id) or 'senza proprietario' }}</div>{% endif %}
+    </div>
+    <span class="badge badge-neutral">Classic</span>
+  </div>
+  <div style="padding:.75rem 1rem">
+    {% if l.moduli %}<div class="text-xs text-muted mb-2">Moduli: {{ l.moduli }}</div>{% endif %}
+    {% if l.note %}<p class="text-sm text-muted mb-2">{{ l.note[:140] }}{% if l.note|length > 140 %}...{% endif %}</p>{% endif %}
+    <div class="flex gap-1 flex-wrap">
+      <a class="btn btn-sm btn-primary" href="{{ url_for('fantacalcio.lega', lid=l.id) }}">Rosa e regole</a>
+      <button class="btn btn-sm" onclick='modificaLega({{ l|tojson }})'>Modifica</button>
+      <form method="post" action="{{ url_for('fantacalcio.lega_elimina', lid=l.id) }}"
+            onsubmit="return confirm('Eliminare la lega {{ l.nome|e }} e la sua rosa?')">
+        <button class="btn btn-sm btn-danger" type="submit">Elimina</button>
+      </form>
+    </div>
+  </div>
+</div>
+{% endfor %}
+</div>
+{% else %}
+<div class="card"><div style="padding:1.2rem" class="text-muted text-sm">
+  Non c'è ancora nessuna lega. Creane una: ne gestisci due, con regole diverse.
+</div></div>
+{% endif %}
+
+<div id="legaModal">
+  <div class="modal-box">
+    <form method="post" action="{{ url_for('fantacalcio.lega_salva') }}">
+      <div class="modal-header">
+        <strong id="legaTitolo">Nuova lega</strong>
+        <button type="button" class="btn btn-sm" onclick="chiudiLega()">&times;</button>
+      </div>
+      <div class="modal-body">
+        <input type="hidden" name="lega_id" id="lega_id" value="0">
+        <div class="form-group">
+          <label class="form-label">Nome della lega</label>
+          <input class="form-input" name="nome" id="f_nome" required maxlength="80">
+        </div>
+        <div class="form-group">
+          <label class="form-label">Moduli ammessi</label>
+          <input class="form-input" name="moduli" id="f_moduli"
+                 placeholder="3-4-3,3-5-2,4-3-3">
+          <div class="text-xs text-muted mt-1">Separati da virgola. I dieci di
+            movimento devono fare 10: un modulo che non torna viene rifiutato.</div>
+        </div>
+        <div class="form-group">
+          <label class="form-label">Panchinari</label>
+          <input class="form-input" name="n_panchinari" id="f_panchinari" type="number" min="0" max="25" value="7">
+        </div>
+        <div class="form-group">
+          <label class="form-label">
+            <input type="checkbox" name="mod_difesa" id="f_mod_difesa" value="1">
+            Modificatore di difesa
+          </label>
+        </div>
+        <div class="form-group">
+          <label class="form-label">Bonus e malus</label>
+          <div class="regole-griglia">
+            {% for colonna, etichetta, ufficiale in regole %}
+            <div>
+              <label class="text-xs">{{ etichetta }}</label>
+              <input class="form-input" name="{{ colonna }}" id="f_{{ colonna }}"
+                     type="number" step="0.5">
+              <div class="regola-uff">{% if ufficiale %}dal regolamento ufficiale{% else %}varia da lega a lega{% endif %}</div>
+            </div>
+            {% endfor %}
+          </div>
+          <div class="text-xs text-muted mt-2">
+            Solo gol, ammonizione ed espulsione sono fissati dal regolamento ufficiale
+            di fantacalcio.it; gli altri li decide la lega, ed è per questo che stanno qui.
+          </div>
+        </div>
+        <div class="form-group">
+          <label class="form-label">Note</label>
+          <textarea class="form-input" name="note" id="f_note" rows="4"
+                    placeholder="Le regole della lega che non stanno in un numero"></textarea>
+        </div>
+      </div>
+      <div class="modal-footer">
+        <button class="btn btn-primary" type="submit">Salva</button>
+        <button class="btn" type="button" onclick="chiudiLega()">Annulla</button>
+      </div>
+    </form>
+  </div>
+</div>
+
+<script>
+{# I campi numerici delle regole, presi dal server: ripeterli qui a mano vorrebbe
+   dire che aggiungerne uno domani lo lascerebbe fuori dal form senza avvisare. #}
+const CAMPI_REGOLE = {{ regole|map(attribute=0)|list|tojson }};
+
+function apriLega(){
+  document.getElementById('legaTitolo').textContent = 'Nuova lega';
+  document.getElementById('lega_id').value = 0;
+  document.getElementById('f_nome').value = '';
+  document.getElementById('f_moduli').value = '3-4-3,3-5-2,4-3-3,4-4-2,4-5-1,5-3-2,5-4-1';
+  document.getElementById('f_panchinari').value = 7;
+  document.getElementById('f_mod_difesa').checked = false;
+  document.getElementById('f_note').value = '';
+  {# Vuoti di proposito: il DB ha i suoi default, e un valore scritto qui li
+     scavalcherebbe con una copia che poi diverge. #}
+  CAMPI_REGOLE.forEach(c => { const e = document.getElementById('f_' + c); if (e) e.value = ''; });
+  document.getElementById('legaModal').classList.add('open');
+}
+
+function modificaLega(l){
+  document.getElementById('legaTitolo').textContent = 'Modifica ' + l.nome;
+  document.getElementById('lega_id').value = l.id;
+  document.getElementById('f_nome').value = l.nome || '';
+  document.getElementById('f_moduli').value = l.moduli || '';
+  document.getElementById('f_panchinari').value = l.n_panchinari;
+  document.getElementById('f_mod_difesa').checked = !!l.mod_difesa;
+  document.getElementById('f_note').value = l.note || '';
+  CAMPI_REGOLE.forEach(c => {
+    const e = document.getElementById('f_' + c);
+    if (e) e.value = (l[c] === null || l[c] === undefined) ? '' : l[c];
+  });
+  document.getElementById('legaModal').classList.add('open');
+}
+
+function chiudiLega(){ document.getElementById('legaModal').classList.remove('open'); }
+</script>
+{% endblock %}

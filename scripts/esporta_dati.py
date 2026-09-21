@@ -77,6 +77,15 @@ TABELLE = [
     # `python_topics` verrebbe esportata comunque, ma con la sua colonna `done`
     # ferma alla fotografia del giorno della migrazione.
     "python_progress",
+    # ⚠️ Fantacalcio, dal 21/09/2026. Le **leghe** e le **rose** sono dati tuoi e
+    # non li ricostruisce nessuna fonte: le regole di una lega e il prezzo pagato per
+    # ogni giocatore esistono solo qui. `fanta_players` invece **non** c'è, ed è
+    # voluto: è il listone, cioè una copia di fantacalcio.it che si rifà in un minuto
+    # con `scripts/importa_listone.py` — stessa ragione per cui resta fuori la cache
+    # IGDB. ⚠️ La conseguenza da sapere: ripristinando su un DB vuoto, le rose
+    # puntano a giocatori che ancora non ci sono, quindi il listone va reimportato
+    # **prima**.
+    "fanta_leagues", "fanta_roster",
 ]
 
 # In più, solo con `--completo`. `regulations` è una **tabella morta** — la scrive solo

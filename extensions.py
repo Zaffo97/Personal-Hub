@@ -216,6 +216,62 @@ def init_db():
         id INTEGER PRIMARY KEY,
         build_id INTEGER REFERENCES pc_builds(id) ON DELETE CASCADE,
         category TEXT, name TEXT, price REAL DEFAULT 0, notes TEXT);
+    -- ── Fantacalcio (§4.2) ────────────────────────────────────────────────
+    -- `fanta_players` e' il **listone**, ed e' un dato condiviso come il catalogo
+    -- Pokemon: non ha un proprietario e non deve averlo. La chiave primaria e'
+    -- l'id di fantacalcio.it, non un progressivo nostro, perche' e' quello che
+    -- lega le tre pagine della fonte fra loro e i nostri dati alla fonte.
+    -- ⚠️ `attivo` esiste per il **mercato**: un giocatore che a gennaio lascia la
+    -- Serie A esce dal listone, ma puo' stare nella rosa di qualcuno. Si spegne,
+    -- non si cancella - cancellarlo porterebbe via la riga di rosa con se'.
+    CREATE TABLE IF NOT EXISTS fanta_players(
+        id INTEGER PRIMARY KEY,
+        nome TEXT NOT NULL, slug TEXT,
+        squadra TEXT, squadra_slug TEXT,
+        ruolo_classic TEXT, ruolo_mantra TEXT, ruolo_mantra_esteso TEXT,
+        qi INTEGER, qa INTEGER, fvm INTEGER,
+        partite_a_voto INTEGER, media_voto REAL, fantamedia REAL,
+        gol INTEGER, gol_subiti INTEGER, rigori TEXT, rigori_parati INTEGER,
+        assist INTEGER, ammonizioni INTEGER, espulsioni INTEGER,
+        attivo INTEGER DEFAULT 1,
+        visto_il TEXT,
+        aggiornato_il TIMESTAMP DEFAULT CURRENT_TIMESTAMP);
+    -- Le leghe, con le loro regole. Sono **dati dell'utente**: ogni SELECT qui
+    -- sopra va filtrata con ambito_utente(), e una query nuova nasce scoperta.
+    -- ⚠️ Dei valori di default solo TRE vengono dal regolamento ufficiale di
+    -- fantacalcio.it, letto il 21/09/2026: gol +3, ammonizione -0,5, espulsione
+    -- -1 (e i cartellini si fermano a -1 comunque siano combinati). Tutti gli
+    -- altri sono quelli **convenzionali**, che il regolamento ufficiale non fissa
+    -- perche' cambiano da lega a lega: sono un punto di partenza da correggere,
+    -- ed e' esattamente il motivo per cui queste regole stanno in colonne e non
+    -- in un testo libero.
+    CREATE TABLE IF NOT EXISTS fanta_leagues(
+        id INTEGER PRIMARY KEY, user_id INTEGER,
+        nome TEXT NOT NULL,
+        sistema TEXT DEFAULT 'classic',
+        moduli TEXT DEFAULT '3-4-3,3-5-2,4-3-3,4-4-2,4-5-1,5-3-2,5-4-1',
+        n_panchinari INTEGER DEFAULT 7,
+        mod_difesa INTEGER DEFAULT 0,
+        bonus_gol_p REAL DEFAULT 3, bonus_gol_d REAL DEFAULT 3,
+        bonus_gol_c REAL DEFAULT 3, bonus_gol_a REAL DEFAULT 3,
+        bonus_assist REAL DEFAULT 1,
+        malus_amm REAL DEFAULT -0.5, malus_esp REAL DEFAULT -1,
+        malus_gol_subito REAL DEFAULT -1,
+        bonus_imbattibilita REAL DEFAULT 1,
+        bonus_rigore_parato REAL DEFAULT 3,
+        malus_rigore_sbagliato REAL DEFAULT -3,
+        malus_autogol REAL DEFAULT -2,
+        note TEXT,
+        created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP);
+    -- La rosa: quali giocatori sono miei, in quale lega, e a che prezzo.
+    -- ⚠️ Nessun ON DELETE CASCADE verso `fanta_players`: il listone si aggiorna,
+    -- la rosa no. Un giocatore spento resta in rosa e la pagina lo dichiara.
+    CREATE TABLE IF NOT EXISTS fanta_roster(
+        id INTEGER PRIMARY KEY,
+        league_id INTEGER REFERENCES fanta_leagues(id) ON DELETE CASCADE,
+        player_id INTEGER REFERENCES fanta_players(id),
+        prezzo REAL DEFAULT 0, note TEXT,
+        UNIQUE(league_id, player_id));
     """)
     # L'admin di un DB nuovo nasce gia' con lo schema forte. Sui DB esistenti
     # questa INSERT non fa nulla (OR IGNORE) e l'hash vecchio viene riscritto al

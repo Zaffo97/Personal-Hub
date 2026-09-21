@@ -76,6 +76,7 @@ def create_app():
     from blueprints.python_tracker import bp as python_bp
     from blueprints.pcbuilder      import bp as pcbuilder_bp
     from blueprints.admin          import bp as admin_bp
+    from blueprints.fantacalcio    import bp as fantacalcio_bp
 
     app.register_blueprint(auth_bp)
     app.register_blueprint(dashboard_bp)
@@ -85,6 +86,7 @@ def create_app():
     app.register_blueprint(arduino_bp)
     app.register_blueprint(python_bp)
     app.register_blueprint(pcbuilder_bp)
+    app.register_blueprint(fantacalcio_bp)
     app.register_blueprint(admin_bp)
 
     return app

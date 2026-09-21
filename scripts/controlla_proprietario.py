@@ -53,11 +53,16 @@ SORGENTI = [os.path.join(BASE, "blueprints"), BASE]
 # Le quattro radici hanno la colonna. I due figli il proprietario lo **ereditano**
 # dal padre con una join, quindi una query su di loro è a posto se passa per l'id
 # del padre — che a sua volta va filtrato: per questo restano in elenco.
-RADICI = ("games", "teams", "arduino_projects", "pc_builds")
-FIGLIE = ("team_members", "pc_components")
+RADICI = ("games", "teams", "arduino_projects", "pc_builds", "fanta_leagues")
+FIGLIE = ("team_members", "pc_components", "fanta_roster")
 # `python_topics` è l'elenco fisso dei 53 argomenti, condiviso di suo: quello che è
 # personale è la spunta, che dal blocco Python vivrà in `python_progress`.
-ALTRE = ("python_topics",)
+# `fanta_players` è il **listone**: condiviso come il catalogo Pokémon, nessun
+# proprietario e non deve averlo. Sta in elenco per essere **contato e dichiarato**
+# invece che invisibile — una tabella fuori dal raggio fa dire zero a questo script
+# senza che nessuno l'abbia guardata, ed è successo: le due tabelle del Fantacalcio
+# sono state aggiunte il 21/09/2026 proprio dopo aver visto che non c'erano.
+ALTRE = ("python_topics", "fanta_players")
 TABELLE = RADICI + FIGLIE + ALTRE
 
 CITA = re.compile(r"\b(?:FROM|INTO|UPDATE|JOIN)\s+(%s)\b" % "|".join(TABELLE), re.I)
@@ -76,6 +81,35 @@ CITA_CALCOLATA = re.compile(r"\b(?:FROM|INTO|UPDATE|JOIN)\s+\{…\}", re.I)
 #     stanno in file, non in `hub.db`, e chi le cancella deve sapere se qualcuno le
 #     sta usando, non solo se le usa lui.
 ECCEZIONI = {
+    # ── Fantacalcio (21/09/2026) ────────────────────────────────────────────
+    # `fanta_players` è il **listone**: condiviso come il catalogo Pokémon, senza
+    # proprietario e senza doverne avere uno. Le tre query qui sotto lo leggono e
+    # basta. ⚠️ Fino al 21/09/2026 queste tabelle erano **fuori dal raggio** di
+    # questo script, che quindi diceva «0 scoperte» senza averle guardate: la
+    # categoria giusta per un dato condiviso è «dichiarata», non «invisibile».
+    ("blueprints/fantacalcio.py", "fantacalcio",
+     "SELECT COUNT(*) AS attivi, MAX(visto_il) AS visto, "
+     "(SELECT COUNT(*) FROM fanta_players WHERE attivo=0) AS spenti "
+     "FROM fanta_players WHERE attivo=1"):
+        "il listone è un dato condiviso: quanti giocatori ci sono e da quando è "
+        "la stessa risposta per tutti",
+    ("blueprints/fantacalcio.py", "rosa_aggiungi",
+     "SELECT nome FROM fanta_players WHERE id=?"):
+        "legge il nome dal listone condiviso, per dire quale giocatore è stato "
+        "aggiunto: non tocca nessuna riga di nessuno",
+    ("blueprints/fantacalcio.py", "api_giocatori",
+     "SELECT id, nome, squadra, ruolo_classic, qa, fvm, fantamedia, attivo "
+     "FROM fanta_players WHERE nome LIKE ? "
+     "ORDER BY attivo DESC, fvm DESC, nome LIMIT 25"):
+        "la ricerca nel listone condiviso, per scegliere chi mettere in rosa",
+    # E la scrittura: la rosa eredita il proprietario dalla lega, e la lega è
+    # stata verificata **due righe sopra** con `_lega_mia()`, che esce se non è
+    # di chi sta salvando.
+    ("blueprints/fantacalcio.py", "rosa_aggiungi",
+     "INSERT INTO fanta_roster(league_id, player_id, prezzo, note) "
+     "VALUES(?,?,?,?)"):
+        "la lega è stata appena verificata con _lega_mia(): se non è di chi "
+        "salva, la route è già uscita prima di arrivare qui",
     ("blueprints/pokemon.py", "_team_upsert",
      "DELETE FROM team_members WHERE team_id=?"):
         "i membri seguono il team, e il team è stato appena verificato: se non è di "
