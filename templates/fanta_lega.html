@@ -91,7 +91,7 @@
         {% elif s == 'non_gioca' %}{% set conta.non_gioca = conta.non_gioca + 1 %}{% endif %}
       {% endfor %}
       <div class="text-sm">
-        <span class="prob prob-titolare">{{ conta.titolare }} titolari</span>
+        <span class="prob prob-titolare">{{ conta.titolare }} titolare{% if conta.titolare != 1 %}i{% endif %}</span>
         <span class="prob prob-panchina">{{ conta.panchina }} in panchina</span>
         {% if conta.fuori %}<span class="prob prob-fuori">{{ conta.fuori }} non convocati</span>{% endif %}
         {% if conta.non_gioca %}<span class="prob prob-non_gioca">{{ conta.non_gioca }} non giocano</span>{% endif %}
@@ -247,7 +247,8 @@
       <div class="regole-lista">
         {% for media, punti in soglie %}
         <div class="text-sm">media da <strong>{{ media }}</strong> &rarr;
-          <strong>{{ '%+g'|format(punti) }}</strong> punti</div>
+          <strong>{{ '%+g'|format(punti) }}</strong>
+          punt{% if punti == 1 or punti == -1 %}o{% else %}i{% endif %}</div>
         {% endfor %}
       </div>
       <div class="text-xs text-muted mt-2">

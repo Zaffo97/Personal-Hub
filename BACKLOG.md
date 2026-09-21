@@ -818,9 +818,36 @@ compare **accanto a ogni tendina**, non solo l'etichetta «(ufficiale)».
 
 **⬜ Cosa resta, in ordine di quanto è stato chiesto:**
 
-- ⬜ **inserire la formazione**: la validazione contro il modulo e i panchinari. Il
-  pezzo di conto c'è già (`scomponi_modulo()` in `data.py`, e la pagina dice quali
-  moduli la rosa copre), manca la formazione come dato salvato per giornata
+- ⬜ **inserire la formazione — il prossimo blocco**, definito da Davide il
+  21/09/2026: **un campo da gioco come quello dell'app Fantagazzetta**. Le sue
+  parole: campo **dinamico**, che cambia disposizione al cambio di modulo, dove si
+  inseriscono i propri giocatori **in base al ruolo del posto scelto**. Sta
+  **dentro la lega**, non in una pagina a sé: ogni lega ha la sua formazione.
+
+  Quello che c'è già e non va rifatto: `scomponi_modulo()` in `data.py` dà i
+  reparti di un modulo, la pagina della lega sa quali moduli la rosa copre, e le
+  **probabili** dicono per ogni giocatore se è titolare, in panchina, non convocato
+  o se la sua squadra non gioca — cioè l'informazione che serve **mentre** si
+  schiera, ed è il motivo per cui le probabili sono state fatte prima.
+
+  ⚠️ Da decidere prima di scrivere, e sono decisioni di Davide:
+  - **la formazione è per giornata?** Il numero di giornata c'è già (arriva dalle
+    probabili), e legarla lì vorrebbe dire poter rileggere le formazioni passate.
+    L'alternativa — una formazione sola che si sovrascrive — è più semplice ma
+    perde lo storico;
+  - **i panchinari sono in ordine**, nel fantacalcio: l'ordine decide chi subentra
+    per primo. Vanno salvati come lista ordinata, non come insieme, o le
+    sostituzioni non si potranno mai calcolare;
+  - **quanto stretta la validazione**: rifiutare una formazione che non rispetta il
+    modulo, o accettarla dichiarandola sbagliata? (Il modulo della lega è già
+    validato al salvataggio, quindi qui si sa cosa è ammesso.)
+  - **il ruolo di un posto in campo**: un modulo Classic è `1-D-C-A`, quindi la
+    casella sa già che ruolo vuole. ⚠️ Ma il campo «come Fantagazzetta» disegna i
+    reparti su più file (3-4-2-1 e simili), e quelli sono i moduli **veri della
+    Serie A**, non quelli del fantacalcio, che sono a tre numeri. Sono due cose
+    diverse con lo stesso nome — vedi la nota in `extensions.py` su
+    `fanta_probabili_squadre.modulo` — e confonderle non darebbe errore, darebbe
+    un campo con gli uomini nei posti sbagliati
 - ✅ **le probabili formazioni** — fatte il 21/09/2026, vedi lo storico. Ci sono
   `fantacalcio_it.probabili()`, `scripts/importa_probabili.py`, due tabelle per
   giornata e la pagina `/fantacalcio/probabili`; la pagina della lega dice, per ogni
