@@ -727,7 +727,10 @@ può rimetterli in piedi.
 
 ⚠️ **Prima di iniziare**: `graphify-out/` è una fotografia, non uno specchio. Va rifatto
 (`/graphify . --update`) **obbligatoriamente** prima di 5.2 e 5.3, che sono i due lavori in
-cui il grafo deve essere completo.
+cui il grafo deve essere completo. ✅ **Rifatto il 21/09/2026** dopo i quattro blocchi della
+giornata: 1029 → **1321 nodi** e 2005 → **2291 archi**, 221 comunità, 35 file riestratti
+(31 di codice via AST, 4 documenti via subagent). Salute del grafo: nessun arco
+penzolante, mancante o collassato.
 
 ### 5.1 ⬜ Il giro completo della web app
 
