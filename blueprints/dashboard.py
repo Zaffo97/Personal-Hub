@@ -23,6 +23,9 @@ def dashboard():
     cond, par = ambito_utente()
     uid = utente_id()
 
+    # Con l'alias: stessa condizione, stessi parametri, ma detta su `l.user_id`.
+    cond_l, par_l = ambito_utente("l.user_id")
+
     def se(slug, query, default=0):
         return db.execute(query, par).fetchone()[0] if slug in permesse else default
 
@@ -39,6 +42,13 @@ def dashboard():
         "teams":        se("pokemon", f"SELECT COUNT(*) FROM teams WHERE {cond}"),
         "arduino":      se("arduino", f"SELECT COUNT(*) FROM arduino_projects WHERE {cond}"),
         "builds":       se("pcbuilder", f"SELECT COUNT(*) FROM pc_builds WHERE {cond}"),
+        "fanta_leghe":  se("fantacalcio", f"SELECT COUNT(*) FROM fanta_leagues WHERE {cond}"),
+        # ⚠️ La rosa non ha un `user_id` suo: il proprietario le arriva dalla lega,
+        # quindi il conteggio passa **dalla** `fanta_leagues`. Una COUNT diretta su
+        # `fanta_roster` conterebbe le rose di tutti, ed è la trappola di §1.1.
+        "fanta_rosa":   se("fantacalcio",
+                           "SELECT COUNT(*) FROM fanta_roster r JOIN fanta_leagues l "
+                           f"ON l.id=r.league_id WHERE {cond_l}"),
         "python_done":  done, "python_total": total,
         "python_pct":   round(done / total * 100) if total else 0,
     }

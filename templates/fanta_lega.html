@@ -20,6 +20,14 @@
 #ris div{padding:.35rem .6rem;cursor:pointer;font-size:.78rem}
 #ris div:hover{background:var(--surface-off)}
 .regole-lista{display:grid;grid-template-columns:repeat(auto-fill,minmax(190px,1fr));gap:.4rem}
+/* La probabile di un giocatore: quattro stati, e sono davvero quattro cose diverse.
+   «non convocato» e «la sua squadra non gioca» non si mescolano. */
+.prob{font-size:.66rem;font-weight:700;padding:.05rem .32rem;border-radius:var(--radius-sm);
+  white-space:nowrap}
+.prob-titolare{background:rgba(22,163,74,.16);color:#16a34a}
+.prob-panchina{background:rgba(217,119,6,.16);color:#d97706}
+.prob-fuori{background:rgba(220,38,38,.14);color:#dc2626}
+.prob-non_gioca{background:var(--surface-off);color:var(--text-muted)}
 </style>
 {% endblock %}
 {% block content %}
@@ -48,6 +56,49 @@
   </div>
 </div>
 {% endif %}
+
+{# Le probabili della giornata, ma solo per i tuoi. La pagina intera sta altrove. #}
+<div class="card mb-3">
+  <div class="card-header">
+    <div class="card-title">
+      &#128203; Probabili formazioni
+      {% if giornata %}<span class="text-xs text-muted">&mdash; giornata {{ giornata }}</span>{% endif %}
+    </div>
+    {% if giornata %}
+    <a class="btn btn-secondary btn-sm"
+       href="{{ url_for('fantacalcio.probabili', giornata=giornata) }}">Tutte le partite</a>
+    {% endif %}
+  </div>
+  <div style="padding:.75rem 1rem">
+    {% if not giornata %}
+      <div class="text-sm text-muted">
+        Nessuna giornata importata. Si prendono con
+        <code>python scripts/importa_probabili.py --scarica</code>.
+      </div>
+    {% else %}
+      {% set conta = namespace(titolare=0, panchina=0, fuori=0, non_gioca=0) %}
+      {% for g in rosa %}
+        {% set s = probabili.get(g.id, {}).get('stato') %}
+        {% if s == 'titolare' %}{% set conta.titolare = conta.titolare + 1 %}
+        {% elif s == 'panchina' %}{% set conta.panchina = conta.panchina + 1 %}
+        {% elif s == 'fuori' %}{% set conta.fuori = conta.fuori + 1 %}
+        {% elif s == 'non_gioca' %}{% set conta.non_gioca = conta.non_gioca + 1 %}{% endif %}
+      {% endfor %}
+      <div class="text-sm">
+        <span class="prob prob-titolare">{{ conta.titolare }} titolari</span>
+        <span class="prob prob-panchina">{{ conta.panchina }} in panchina</span>
+        {% if conta.fuori %}<span class="prob prob-fuori">{{ conta.fuori }} non convocati</span>{% endif %}
+        {% if conta.non_gioca %}<span class="prob prob-non_gioca">{{ conta.non_gioca }} non giocano</span>{% endif %}
+      </div>
+      <div class="text-xs text-muted mt-2">
+        ⚠️ Le formazioni cambiano fino al fischio d'inizio: questa è la fotografia
+        importata{% if probabili_aggiornate %} il {{ probabili_aggiornate }}{% endif %}, non un dato
+        che si aggiorna da sé. «Non convocato» vuol dire che la sua squadra gioca e lui
+        non è nell'elenco; «non gioca» che la sua squadra non è in questa giornata.
+      </div>
+    {% endif %}
+  </div>
+</div>
 
 {% if copertura %}
 <div class="card mb-3">
@@ -109,12 +160,29 @@
     </div>
     <div>
       {% for g in per_ruolo[r] %}
+      {% set p = probabili.get(g.id) %}
       <div class="giocatore {% if not g.attivo %}spento{% endif %}">
         <div>
           <div class="g-nome">{{ g.nome }}
             {% if not g.attivo %}<span class="badge badge-warning">fuori listone</span>{% endif %}
+            {% if p %}
+              {% if p.stato == 'titolare' %}
+                <span class="prob prob-titolare">titolare {{ p.percentuale }}%</span>
+              {% elif p.stato == 'panchina' %}
+                <span class="prob prob-panchina">panchina {{ p.percentuale }}%</span>
+              {% elif p.stato == 'fuori' %}
+                <span class="prob prob-fuori">non convocato</span>
+              {% else %}
+                <span class="prob prob-non_gioca">non gioca</span>
+              {% endif %}
+            {% endif %}
           </div>
           <div class="g-dati">
+            {% if p and p.squadra %}
+              vs {{ p.squadra.avversario or '—' }}
+              ({% if p.squadra.in_casa %}in casa{% else %}fuori{% endif %})
+              &middot; {{ p.squadra.modulo or '—' }} &middot;
+            {% endif %}
             {{ g.squadra or '—' }} &middot; QA {{ g.qa if g.qa is not none else '—' }}
             &middot; FVM {{ g.fvm if g.fvm is not none else '—' }}
             {% if g.fantamedia is not none %}&middot; FM {{ g.fantamedia }}{% endif %}

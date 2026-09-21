@@ -68,6 +68,19 @@
       <div class="text-xs text-muted mt-1">configurazioni salvate</div>
     </div></a>
   {% endif %}
+  {% if 'fantacalcio' in sezioni_permesse %}
+  {# Conta le **tue** leghe e i **tuoi** giocatori: il listone, che e' condiviso,
+     sta nella sua pagina. Le altre card qui contano tutte cose tue. #}
+  <a href="/fantacalcio" style="text-decoration:none">
+    <div class="card mb-0" style="padding:.85rem 1rem;cursor:pointer;transition:.15s"
+         onmouseover="this.style.borderColor='var(--primary)'" onmouseout="this.style.borderColor='var(--border)'">
+      <div class="text-xs text-muted mb-1">&#9917; Fantacalcio</div>
+      <div style="font-size:1.6rem;font-weight:700">{{ stats.fanta_leghe }}</div>
+      <div class="text-xs text-muted mt-1">
+        {% if stats.fanta_leghe %}{{ stats.fanta_rosa }} giocatori in rosa{% else %}nessuna lega{% endif %}
+      </div>
+    </div></a>
+  {% endif %}
 </div>
 
 {# Anche i pannelli in basso seguono i permessi: "Nessun gioco" a chi la sezione

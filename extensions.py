@@ -272,6 +272,39 @@ def init_db():
         player_id INTEGER REFERENCES fanta_players(id),
         prezzo REAL DEFAULT 0, note TEXT,
         UNIQUE(league_id, player_id));
+    -- Le probabili formazioni, una giornata per volta. Dato **condiviso** come il
+    -- listone (le formazioni della Serie A non sono di nessun utente) e
+    -- **rigenerabile dalla fonte**: per questo non entra nell'export, esattamente
+    -- come `fanta_players`. Quello che l'export deve salvare sono le leghe e le
+    -- rose, che nessuna fonte sa ricostruire.
+    -- La chiave e' (giornata, squadra): la pagina si riscrive di continuo fino al
+    -- fischio d'inizio, quindi l'import **sovrascrive** la giornata che rilegge e
+    -- lascia stare le altre.
+    CREATE TABLE IF NOT EXISTS fanta_probabili_squadre(
+        giornata INTEGER NOT NULL,
+        squadra_slug TEXT NOT NULL,
+        squadra TEXT, modulo TEXT,
+        avversario TEXT, avversario_slug TEXT,
+        in_casa INTEGER, match_id INTEGER,
+        aggiornato_il TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+        PRIMARY KEY(giornata, squadra_slug));
+    -- ⚠️ `player_id` **non** e' una foreign key verso `fanta_players`, ed e' una
+    -- scelta: il 21/09/2026 dodici convocati delle probabili non erano nel listone
+    -- (sono giocatori veri che la fonte non quota). Con il vincolo sarebbero stati
+    -- buttati via in silenzio; senza, entrano e l'import dice quanti sono. Chi
+    -- legge deve quindi fare una LEFT JOIN, non una JOIN.
+    -- Il `modulo` qui e' quello **vero della squadra di Serie A** (3-4-2-1, quattro
+    -- numeri): non ha niente a che vedere con i moduli del fantacalcio, che sono a
+    -- tre e stanno in `fanta_leagues.moduli`. Confonderli non darebbe errore.
+    CREATE TABLE IF NOT EXISTS fanta_probabili(
+        giornata INTEGER NOT NULL,
+        player_id INTEGER NOT NULL,
+        nome TEXT, squadra_slug TEXT, ruolo TEXT,
+        titolare INTEGER, percentuale INTEGER,
+        aggiornato_il TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+        PRIMARY KEY(giornata, player_id));
+    CREATE INDEX IF NOT EXISTS ix_probabili_giocatore
+        ON fanta_probabili(player_id);
     """)
     # L'admin di un DB nuovo nasce gia' con lo schema forte. Sui DB esistenti
     # questa INSERT non fa nulla (OR IGNORE) e l'hash vecchio viene riscritto al

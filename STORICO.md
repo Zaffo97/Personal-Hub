@@ -80,6 +80,52 @@ giocatori di Serie A, le probabili dei propri giocatori, un consiglio, e le rego
   era a 0 errori anche col link rotto. Ora verificato con un parser HTML sulla pagina
   resa: **9 voci di menu**, ognuna col suo `href`, e 19 `<a>` con 19 chiusure.
 
+**Fantacalcio: le probabili formazioni (§4.2)**
+
+Il secondo dei tre pezzi chiesti da Davide, fatto **prima** della formazione di
+proposito: la schermata per schierare ha senso se mentre schieri vedi chi gioca
+davvero, e il contrario vorrebbe dire scriverla due volte.
+
+- ✅ **Letta la pagina, e misurata due volte.** `/probabili-formazioni-serie-a`:
+  **10 partite, 20 moduli, 482 convocati** (220 titolari, 262 in panchina), ognuno
+  col ruolo e la sua **percentuale di titolarità** (da 1 a 90). La pagina dice la
+  formazione **due volte** — la disegna sul campo e la riscrive in una scheda — e il
+  lettore usa la scheda (è l'unica col ruolo e la percentuale) tenendo il campo come
+  **controprova**: 20 squadre × 11 giocatori, e se i due elenchi non combaciano lo
+  dice invece di scrivere. La squadra di ogni voce arriva dall'**URL**, non dal
+  titolo della scheda, per la stessa ragione di sempre.
+- ⚠️ ✅ **Corretta la riga del backlog che diceva «761 voci, 20 ballottaggi»**: 761
+  era il totale degli `a.player-name` della pagina (220 dal campo + 482 dalle schede
+  + una sessantina altrove) e i «ballottaggi» non esistono come marcatore. Il dato
+  vero è la percentuale.
+- ⚠️ ✅ **Il baco preso dal doppio conteggio**: il parser chiudeva la partita al primo
+  `</li>`, cioè al primo separatore, e **le dieci squadre in trasferta restavano
+  senza modulo** — dieci su venti, senza nessun errore. È emerso perché una regex
+  grezza contava 20 moduli e il parser 10: la seconda misura è servita a quello.
+- ✅ **`scripts/importa_probabili.py`**, l'unico che scrive: **sovrascrive la giornata
+  per intero** (un giocatore che sparisce dai convocati deve sparire, non restare a
+  dire che è in panchina) e si rifiuta di scrivere sotto le 20 squadre o senza una
+  giornata. Provato: 482 → 482 al secondo giro, e chi esce dai convocati esce dalla
+  riga. ⚠️ Stampa **sempre** l'età della cache in ore, perché qui la copia invecchia
+  in ore e non in mesi.
+- ✅ **I quattro stati a schermo**, che sono la parte che si sbaglia facilmente:
+  titolare, panchina, **non convocato** (la sua squadra gioca, lui non c'è) e **non
+  gioca** (la sua squadra non è in questa giornata). Le ultime due non si mescolano:
+  scambiarle vorrebbe dire schierare uno che non scende in campo.
+- ✅ **`/fantacalcio/probabili`**: le dieci partite coi due undici, la panchina e le
+  percentuali, e in blu i giocatori che hai in rosa. Le formazioni sono pubbliche e
+  si leggono senza filtro; «di chi è in rosa» passa da `ambito_utente()`, ed è
+  provato che a un secondo utente **nessun** giocatore risulta suo.
+- ✅ **La card Fantacalcio in dashboard** (leghe e giocatori in rosa), che mancava:
+  conta le tue leghe passando dalla lega, perché `fanta_roster` non ha un `user_id`.
+- ✅ **Verifiche**: `prova_fantacalcio.py` da 26 a **48 su 48** (fra cui: il modulo
+  della squadra in trasferta, campo e scheda che non combaciano, una pagina senza
+  giornata, la soglia delle 20 squadre, il secondo import che non raddoppia, i
+  quattro stati nella stessa pagina); `controlla_proprietario.py` a **106 query, 0
+  scoperte** con le due tabelle nuove nel raggio e dieci letture **dichiarate**;
+  **sweep a 0 errori** su 48 pagine comprese le tre del Fantacalcio. Sulle pagine
+  vere: **482 righe giocatore a schermo contro 482 nel DB**, 10 partite, 20 moduli.
+
 ---
 
 **Le due Mega Meowstic: un dato sbagliato teneva fuori una voce vera**

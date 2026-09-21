@@ -58,6 +58,57 @@ def _lega_mia(db, lid):
     return dict(r) if r else None
 
 
+def _giornata_probabili(db, chiesta=None):
+    """La giornata da mostrare: quella chiesta, se c'è il dato, altrimenti l'ultima.
+
+    ⚠️ **Non si inventa un numero.** Con l'archivio vuoto torna `None` e le pagine
+    dicono che le probabili non sono state importate: un `1` di ripiego mostrerebbe
+    una giornata vuota come se fosse una giornata senza convocati.
+    """
+    if chiesta:
+        r = db.execute("SELECT giornata FROM fanta_probabili_squadre WHERE giornata=? "
+                       "LIMIT 1", (chiesta,)).fetchone()
+        if r:
+            return r["giornata"]
+    r = db.execute("SELECT MAX(giornata) AS g FROM fanta_probabili_squadre").fetchone()
+    return r["g"] if r and r["g"] else None
+
+
+def _probabili_della_rosa(db, giornata, rosa):
+    """Attacca a ogni giocatore della rosa la sua probabile, se c'è.
+
+    ⚠️ Un giocatore senza riga nelle probabili **non è «non convocato»**: può
+    esserlo, oppure la sua squadra può non giocare quella giornata (rinvii,
+    recuperi). Sono due cose diverse e la pagina le dice diverse, perché è
+    esattamente il caso in cui un'etichetta sbagliata farebbe schierare un giocatore
+    che non scende in campo. Chi decide è `fanta_probabili_squadre`: se la squadra
+    è lì, la giornata la gioca.
+    """
+    if not giornata or not rosa:
+        return {}
+    squadre = {r["squadra_slug"]: dict(r) for r in db.execute(
+        "SELECT * FROM fanta_probabili_squadre WHERE giornata=?", (giornata,)).fetchall()}
+    ids = [g["id"] for g in rosa]
+    segni = ",".join("?" * len(ids))
+    righe = {r["player_id"]: dict(r) for r in db.execute(
+        f"SELECT * FROM fanta_probabili WHERE giornata=? AND player_id IN ({segni})",
+        [giornata] + ids).fetchall()}
+    fuori = {}
+    for g in rosa:
+        squadra = squadre.get(g["squadra_slug"])
+        voce = righe.get(g["id"])
+        if voce:
+            stato = "titolare" if voce["titolare"] else "panchina"
+        elif squadra:
+            stato = "fuori"          # la squadra gioca, lui non è fra i convocati
+        else:
+            stato = "non_gioca"      # la sua squadra non è in questa giornata
+        fuori[g["id"]] = {"stato": stato,
+                          "percentuale": (voce or {}).get("percentuale"),
+                          "squadra": squadra}
+    return fuori
+
+
 def _numeri(f):
     """**Solo** le regole che il form ha davvero mandato, già convertite.
 
@@ -97,6 +148,12 @@ def fantacalcio():
         "SELECT COUNT(*) AS attivi, MAX(visto_il) AS visto, "
         "(SELECT COUNT(*) FROM fanta_players WHERE attivo=0) AS spenti "
         "FROM fanta_players WHERE attivo=1").fetchone()
+    # Lo stesso motivo per cui si dichiara la data del listone: una giornata vecchia
+    # non dà errore, dà una formazione che non è più quella.
+    stato_probabili = db.execute(
+        "SELECT giornata, COUNT(*) AS quanti, MAX(aggiornato_il) AS quando "
+        "FROM fanta_probabili GROUP BY giornata "
+        "ORDER BY giornata DESC LIMIT 1").fetchone()
     nomi_utenti = {r["id"]: r["username"] for r in
                    db.execute("SELECT id, username FROM users")} if e_admin() else {}
     proprietari = []
@@ -108,6 +165,7 @@ def fantacalcio():
     db.close()
     return render_template("fantacalcio.html", leghe=leghe,
                            listone=dict(listone) if listone else {},
+                           probabili=dict(stato_probabili) if stato_probabili else {},
                            regole=REGOLE, ufficiali=UFFICIALI,
                            proprietari=proprietari, filtro_utente=di,
                            nomi_utenti=nomi_utenti)
@@ -211,6 +269,13 @@ def lega(lid):
         "ORDER BY CASE p.ruolo_classic WHEN 'p' THEN 0 WHEN 'd' THEN 1 "
         "WHEN 'c' THEN 2 ELSE 3 END, p.nome",
         (lid,) + tuple(par)).fetchall()]
+
+    # Le probabili della giornata, attaccate alla rosa. Dato condiviso: non passa
+    # da `ambito_utente()` perché le formazioni della Serie A non sono di nessuno.
+    giornata = _giornata_probabili(db, _i(request.args.get("giornata")))
+    probabili = _probabili_della_rosa(db, giornata, rosa)
+    aggiornate = db.execute("SELECT MAX(aggiornato_il) AS q FROM fanta_probabili "
+                            "WHERE giornata=?", (giornata,)).fetchone() if giornata else None
     db.close()
 
     per_ruolo = {r: [g for g in rosa if g["ruolo_classic"] == r]
@@ -232,7 +297,9 @@ def lega(lid):
                            per_ruolo=per_ruolo, ruoli=RUOLI_FANTA,
                            ordine=ORDINE_RUOLI_FANTA, spenti=spenti,
                            copertura=copertura, speso=speso,
-                           regole=REGOLE, ufficiali=UFFICIALI)
+                           regole=REGOLE, ufficiali=UFFICIALI,
+                           giornata=giornata, probabili=probabili,
+                           probabili_aggiornate=(aggiornate["q"] if aggiornate else None))
 
 
 @bp.route("/lega/<int:lid>/rosa/aggiungi", methods=["POST"])
@@ -281,6 +348,56 @@ def rosa_rimuovi(lid, rid):
     flash("Tolto dalla rosa" if cur.rowcount else "Non trovato",
           "success" if cur.rowcount else "error")
     return redirect(url_for("fantacalcio.lega", lid=lid))
+
+
+@bp.route("/probabili")
+@login_required
+def probabili():
+    """Le probabili della giornata, partita per partita, coi **tuoi** segnati.
+
+    Le formazioni sono un dato condiviso e si leggono senza filtro. Quello che
+    invece è tuo è **quali di quei giocatori hai in rosa**, e quella parte passa da
+    `ambito_utente()` sulle leghe: `fanta_roster` non ha un proprietario suo (§1.1).
+    """
+    db = get_db()
+    giornata = _giornata_probabili(db, _i(request.args.get("giornata")))
+    giornate = [r["giornata"] for r in db.execute(
+        "SELECT DISTINCT giornata FROM fanta_probabili_squadre ORDER BY giornata DESC")]
+    squadre, voci, miei, aggiornate = {}, {}, {}, None
+    if giornata:
+        squadre = {r["squadra_slug"]: dict(r) for r in db.execute(
+            "SELECT * FROM fanta_probabili_squadre WHERE giornata=? "
+            "ORDER BY match_id, in_casa DESC", (giornata,)).fetchall()}
+        for r in db.execute(
+                "SELECT * FROM fanta_probabili WHERE giornata=? "
+                "ORDER BY titolare DESC, CASE ruolo WHEN 'p' THEN 0 WHEN 'd' THEN 1 "
+                "WHEN 'c' THEN 2 ELSE 3 END, percentuale DESC, nome", (giornata,)):
+            voci.setdefault(r["squadra_slug"], []).append(dict(r))
+        cond, par = ambito_utente("l.user_id")
+        for r in db.execute(
+                "SELECT r.player_id, l.id AS lid, l.nome AS lega FROM fanta_roster r "
+                f"JOIN fanta_leagues l ON l.id=r.league_id WHERE {cond}", par):
+            miei.setdefault(r["player_id"], []).append(
+                {"lid": r["lid"], "lega": r["lega"]})
+        fila = db.execute("SELECT MAX(aggiornato_il) AS q FROM fanta_probabili "
+                          "WHERE giornata=?", (giornata,)).fetchone()
+        aggiornate = fila["q"] if fila else None
+    db.close()
+
+    # Una voce per partita: le squadre stanno nel DB una per riga, e l'avversario
+    # ce l'hanno dentro. Si rimettono insieme per `match_id`, non per nome.
+    partite, viste = [], set()
+    for slug, s in squadre.items():
+        if slug in viste:
+            continue
+        altro = squadre.get(s["avversario_slug"] or "")
+        casa, fuori = (s, altro) if s["in_casa"] else (altro, s)
+        viste.update({slug, s["avversario_slug"]})
+        partite.append({"casa": casa, "fuori": fuori,
+                        "match_id": s["match_id"]})
+    return render_template("fanta_probabili.html", giornata=giornata,
+                           giornate=giornate, partite=partite, voci=voci,
+                           miei=miei, ruoli=RUOLI_FANTA, aggiornate=aggiornate)
 
 
 @bp.route("/api/giocatori")

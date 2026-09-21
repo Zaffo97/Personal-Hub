@@ -32,6 +32,7 @@
         {% endfor %}
       </select>
       {% endif %}
+      <a class="btn" href="{{ url_for('fantacalcio.probabili') }}">&#128203; Probabili</a>
       <button class="btn btn-primary" onclick="apriLega()">+ Nuova lega</button>
     </div>
   </div>
@@ -53,6 +54,29 @@
     {% else %}
       <span class="text-muted">Il listone non è ancora stato importato.</span>
       <div class="text-xs text-muted mt-1"><code>python scripts/importa_listone.py</code></div>
+    {% endif %}
+  </div>
+</div>
+
+{# ⚠️ Stesso motivo del riquadro qui sopra, con una scadenza molto più corta: le
+   probabili cambiano fino al fischio d'inizio, quindi la data conta più del numero. #}
+<div class="card mb-3">
+  <div class="card-header">
+    <div class="card-title">Le probabili formazioni</div>
+    <a class="btn btn-secondary btn-sm" href="{{ url_for('fantacalcio.probabili') }}">Apri</a>
+  </div>
+  <div style="padding:.75rem 1rem" class="text-sm">
+    {% if probabili.giornata %}
+      <strong>Giornata {{ probabili.giornata }}</strong> &middot;
+      {{ probabili.quanti }} convocati
+      {% if probabili.quando %}&middot; importate il <strong>{{ probabili.quando }}</strong>{% endif %}
+      <div class="text-xs text-muted mt-1">
+        Cambiano fino al fischio d'inizio, e non si aggiornano da sole:
+        <code>python scripts/importa_probabili.py --scarica</code>
+      </div>
+    {% else %}
+      <span class="text-muted">Nessuna giornata importata.</span>
+      <div class="text-xs text-muted mt-1"><code>python scripts/importa_probabili.py --scarica</code></div>
     {% endif %}
   </div>
 </div>

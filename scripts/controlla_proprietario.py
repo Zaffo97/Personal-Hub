@@ -62,7 +62,12 @@ FIGLIE = ("team_members", "pc_components", "fanta_roster")
 # invece che invisibile — una tabella fuori dal raggio fa dire zero a questo script
 # senza che nessuno l'abbia guardata, ed è successo: le due tabelle del Fantacalcio
 # sono state aggiunte il 21/09/2026 proprio dopo aver visto che non c'erano.
-ALTRE = ("python_topics", "fanta_players")
+# Le probabili formazioni sono condivise per la stessa ragione del listone: le
+# formazioni della Serie A non sono di nessun utente. Entrano in elenco il
+# 21/09/2026 **insieme al codice che le scrive**, che è la regola imparata due
+# blocchi fa: una tabella fuori dal raggio fa dire «0 scoperte» a vuoto.
+ALTRE = ("python_topics", "fanta_players", "fanta_probabili",
+         "fanta_probabili_squadre")
 TABELLE = RADICI + FIGLIE + ALTRE
 
 CITA = re.compile(r"\b(?:FROM|INTO|UPDATE|JOIN)\s+(%s)\b" % "|".join(TABELLE), re.I)
@@ -102,6 +107,52 @@ ECCEZIONI = {
      "FROM fanta_players WHERE nome LIKE ? "
      "ORDER BY attivo DESC, fvm DESC, nome LIMIT 25"):
         "la ricerca nel listone condiviso, per scegliere chi mettere in rosa",
+    # ── Le probabili formazioni (21/09/2026) ────────────────────────────────
+    # Stessa categoria del listone: la formazione che il Genoa schiera domenica è
+    # la stessa per tutti quelli che entrano nell'hub. Quello che invece è **tuo**
+    # è quali di quei giocatori hai in rosa, e quella query — `probabili()` riga
+    # 378 — passa da `ambito_utente("l.user_id")` come le altre.
+    ("blueprints/fantacalcio.py", "_giornata_probabili",
+     "SELECT giornata FROM fanta_probabili_squadre WHERE giornata=? LIMIT 1"):
+        "chiede se di quella giornata esiste il dato: la risposta è la stessa per "
+        "tutti, e serve a non mostrare una giornata vuota",
+    ("blueprints/fantacalcio.py", "_giornata_probabili",
+     "SELECT MAX(giornata) AS g FROM fanta_probabili_squadre"):
+        "qual è l'ultima giornata importata: dato condiviso, non dipende da chi "
+        "guarda",
+    ("blueprints/fantacalcio.py", "_probabili_della_rosa",
+     "SELECT * FROM fanta_probabili_squadre WHERE giornata=?"):
+        "le venti squadre che giocano quella giornata, coi loro moduli: le "
+        "formazioni della Serie A non sono di nessun utente",
+    ("blueprints/fantacalcio.py", "_probabili_della_rosa",
+     "SELECT * FROM fanta_probabili WHERE giornata=? AND player_id IN ({…})"):
+        "i convocati, letti **per gli id della rosa già filtrata**: la lista degli "
+        "id arriva da una query che è passata da ambito_utente()",
+    ("blueprints/fantacalcio.py", "fantacalcio",
+     "SELECT giornata, COUNT(*) AS quanti, MAX(aggiornato_il) AS quando "
+     "FROM fanta_probabili GROUP BY giornata ORDER BY giornata DESC LIMIT 1"):
+        "lo stato dell'import (che giornata, quanti, da quando), come per il "
+        "listone: è la stessa risposta per tutti",
+    ("blueprints/fantacalcio.py", "lega",
+     "SELECT MAX(aggiornato_il) AS q FROM fanta_probabili WHERE giornata=?"):
+        "quando è stata importata la giornata, per dichiararlo a schermo",
+    ("blueprints/fantacalcio.py", "probabili",
+     "SELECT MAX(aggiornato_il) AS q FROM fanta_probabili WHERE giornata=?"):
+        "quando è stata importata la giornata, per dichiararlo a schermo",
+    ("blueprints/fantacalcio.py", "probabili",
+     "SELECT DISTINCT giornata FROM fanta_probabili_squadre ORDER BY giornata DESC"):
+        "le giornate in archivio, per la tendina: dato condiviso",
+    ("blueprints/fantacalcio.py", "probabili",
+     "SELECT * FROM fanta_probabili_squadre WHERE giornata=? "
+     "ORDER BY match_id, in_casa DESC"):
+        "le dieci partite della giornata con i moduli: dato condiviso",
+    ("blueprints/fantacalcio.py", "probabili",
+     "SELECT * FROM fanta_probabili WHERE giornata=? ORDER BY titolare DESC, "
+     "CASE ruolo WHEN 'p' THEN 0 WHEN 'd' THEN 1 WHEN 'c' THEN 2 ELSE 3 END, "
+     "percentuale DESC, nome"):
+        "i convocati della giornata: la pagina li mostra tutti perché sono un "
+        "dato pubblico, e segna in blu quelli che risultano in una **tua** rosa "
+        "da una query filtrata a parte",
     # E la scrittura: la rosa eredita il proprietario dalla lega, e la lega è
     # stata verificata **due righe sopra** con `_lega_mia()`, che esce se non è
     # di chi sta salvando.

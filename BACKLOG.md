@@ -35,6 +35,8 @@ Non sono storia: sono le cose che questo progetto ha già pagato e che tornano a
 | ⚠️ **Due livelli di toppa sopra il dump, e fanno cose diverse** | Dal 18/09/2026 `moveset_integrazioni.json` ha **due** sezioni, e confonderle non dà errore. `voci` sostituisce una **lista intera** e **solo dove il dump non ne ha una** — il dump vince, è il caso di Pawmot. `toppe` aggiunge e toglie **singole mosse** sopra una lista che il dump **ha già**, ed è il caso della versione 1.2.0: `applica_toppe_moveset()`. Una toppa su una voce senza lista non ne inventa una (sarebbe una lista di una mossa sola), e una toppa che non serve più viene detta **superata**, da togliere. ⚠️ E chi scrive le toppe deve **disfare quelle già presenti prima di misurare**: `pokemon_moves.json` le contiene già, e confrontando quello la differenza sparisce — il secondo giro cancellerebbe il proprio lavoro in silenzio. È il motivo di `disfa_toppe()` in `scripts/applica_toppe_champions.py` |
 | ⚠️ **In `main` vince il gioco più recente, e «più recente» non vuol dire «più completo»** | Dal 21/09/2026. `main` prende l'ultimo version group in cui la voce compare, e fino a quel giorno bastava questo: il risultato era che **Leggende Arceus** e **Let's Go**, che hanno un sistema di mosse ridotto, vincevano su Scarlatto/Violetto per **77 voci** — Abra con **una** mossa sola, e nessun errore da nessuna parte. Ora `VG_FUORI_SERIE` in `pokeapi.py` li tiene fuori, e li usa **solo come ripiego** per chi non compare altrove (Partner Pikachu ed Eevee). ⚠️ Due cose da sapere prima di toccarlo: **`legends-za` e `mega-dimension` sono nell'elenco pur avendo zero righe oggi**, perché hanno order 30 e 31 e il giorno che PokéAPI li riempie diventerebbero da soli la sorgente di centinaia di voci — il rapporto dell'import stampa quante righe ha ognuno degli esclusi, così se uno smette di essere vuoto si va a guardare; e la regola è **una sola funzione**, `scegli_vg_main()`, importata da tutti e due gli scrittori (`importa_mosse_specie.py` e `pokeapi.moveset()`, l'import dal pannello), perché finché erano due copie una restava indietro — ed è esattamente così che il difetto è sopravvissuto |
 | ⚠️ **Una tabella nuova nasce FUORI dal raggio dei controlli, e lo zero diventa falso** | Dal 21/09/2026, trovata aggiungendo il Fantacalcio. `controlla_proprietario.py` cerca le query **per nome di tabella** (`RADICI`, `FIGLIE`, `ALTRE`) e `sweep_pagine.py` ha un **elenco di URL scritto a mano**: una sezione nuova non è in nessuno dei due, quindi tutti e due rispondono «0 problemi» **senza averla guardata**. È peggio di un errore, perché ha l'aria di una conferma. Aggiungendo le tabelle al raggio sono saltate fuori **4 query scoperte** che prima non si vedevano. La regola: **una sezione nuova si aggiunge ai due elenchi nello stesso commit in cui nasce**, e lo stesso vale per l'export (`esporta_dati.py`), o i suoi dati non finiscono in nessun backup |
+| ⚠️ **Un parser HTML che chiude un blocco al primo tag di chiusura lo chiude a metà** | Dal 21/09/2026, scrivendo il lettore delle probabili. `_Probabili` chiudeva la partita al primo `</li>` incontrato dopo averla aperta — ma dentro una partita ci sono decine di `li` (i giocatori del campo, i separatori), quindi il primo separatore la chiudeva, e tutto quello che veniva dopo finiva fuori: il sintomo era che **le dieci squadre in trasferta restavano senza modulo**, esattamente dieci su venti, e **nessun errore**. La cura è contare gli annidamenti (`_liv_li`, `_liv_div`), non fidarsi del primo tag che passa. ⚠️ E il modo in cui è saltato fuori è la vera lezione: la stessa pagina era stata misurata **due volte con strumenti diversi** — una regex grezza contava 20 moduli, il parser ne dava 10 — e il numero che non tornava era il baco. Su una fonte nuova la prima misura va fatta due volte, da due strade |
+| ⚠️ **La cache delle probabili invecchia in ORE, non in mesi** | Dal 21/09/2026. Le tre pagine di fantacalcio.it stanno nella stessa cache, ma non hanno la stessa scadenza: il listone cambia a ogni mercato, le **probabili cambiano fino al fischio d'inizio** — un titolare diventa panchinaro il sabato mattina. Rileggere la cache e scrivere nel DB **non dà nessun errore**, dà una formazione vecchia con l'aria di essere quella di oggi. Per questo `importa_probabili.py` stampa **sempre** l'età della copia in ore e dice `--scarica`: praticamente ogni giro delle probabili vuole `--scarica`, al contrario del listone |
 | ⚠️ **Lo sweep controlla il JavaScript, non che l'HTML sia ben formato** | Dal 21/09/2026, trovata da Davide cliccando «Fantacalcio» in sidebar e finendo sul PC Builder. Il blocco `{% if 'fantacalcio' … %}` era finito **dentro l'attributo `class`** del link PC Builder, che non veniva mai chiuso: il parser fonde i due `<a>` in uno solo, e resta un `href="/pcbuilder"` con scritto «Fantacalcio». `sweep_pagine.py` era a **0 errori** anche così, perché rende la pagina ed esegue `new Function()` sugli script e sugli handler — un tag mai chiuso non è JavaScript, quindi non lo guarda nessuno. Un link aggiunto a `base.html` va verificato **sulla pagina resa con un parser HTML** (href per href, e `<a>` aperti = chiusi), non a occhio sul template: l'errore si legge male proprio perché il pezzo giusto è tutto lì, solo nel posto sbagliato |
 | ⚠️ **Passare `None` a una colonna con un `DEFAULT` scavalca il default** | Dal 21/09/2026, presa da `prova_fantacalcio.py` al primo giro. Il salvataggio di una lega costruiva l'`INSERT` con **tutte** le colonne delle regole, mettendo `None` dove il form non aveva niente: in SQLite un `NULL` **esplicito** è un valore, non un'assenza, quindi il `DEFAULT 3` del bonus gol non entrava mai e una lega nuova nasceva coi bonus a `NULL`. Nessun errore: il bonus semplicemente non c'era. La cura è non mettere la colonna nella query — che nell'`UPDATE` vuol dire anche «lascia il valore di prima», cioè la stessa cosa detta bene |
 | ⚠️ **«PokéAPI non la conosce» quasi mai vuol dire «è inventata»** | Misurato il 21/09/2026, e per un mese si è creduto il contrario. Il rapporto dell'import stampava 16 voci sotto la frase «forme che PokéAPI non conosce», e il backlog le chiamava «forme di Davide»: **falso per 14 su 16**. I loro slug — `darkrai-mega`, `absol-mega-z`, `golisopod-mega`, … — sono **tutti in `pokemon.csv`**. PokéAPI le conosce benissimo; quello che non ha sono le **righe di mosse**, perché i loro unici giochi sono `legends-za` e `mega-dimension`, i due version group che nel dump hanno **zero righe** (gli stessi che `VG_FUORI_SERIE` sorveglia). Fra quelle 14 ce n'erano **cinque Mega vere di Regulation M-C** — Mega Absol Z, Mega Garchomp Z, Mega Lucario Z, Mega Golisopod, Mega Baxcalibur — confermate da Serebii **e** da Game8. E **nemmeno le due Mega Meowstic** erano sconosciute, scoperto lo stesso giorno: `meowstic-male-mega` e `meowstic-female-mega` sono nel dump **con le loro righe di mosse**. Mancava solo lo `slug` nel catalogo, e mancava perché `aggiungi_slug_forme.py` si **rifiutava** di scriverlo: le sei base stat della femmina non combaciavano, perché la voce era rimasta a **466**, il totale della forma **non** Mega. Cioè un dato sbagliato teneva fuori una voce vera, e il rifiuto era il verso giusto. Corretto a 566 su tre fonti concordi. Quindi delle 16 la frase era falsa per **tutte e 16**. ⚠️ La regola generale, che era già scritta dal 13/09 e non era stata applicata a questa conclusione: **prima di dare per inventata una voce senza moveset, cercarne lo slug nel dump.** Ora il rapporto dell'import stampa i due gruppi separati, con l'etichetta giusta |
@@ -722,7 +724,15 @@ leggono le pagine — evita anche di mettere credenziali nel progetto.
 |---|---|---|
 | `/quotazioni-fantacalcio` | ruolo Classic e Mantra, squadra, QI, QA, FVM | 597 giocatori |
 | `/statistiche-serie-a` | media voto, fantamedia, gol, assist, cartellini, rigori | 597, 11 colonne |
-| `/probabili-formazioni-serie-a` | giornata, modulo di ogni squadra, undici, ballottaggi | 761 voci, 20 ballottaggi |
+| `/probabili-formazioni-serie-a` | giornata, modulo di ogni squadra, undici, panchina e **percentuale di titolarità** | 10 partite, 20 moduli, 482 convocati (220 titolari) |
+
+⚠️ **La riga delle probabili era misurata male**, e l'ha corretta il lavoro del
+21/09/2026 che l'ha letta davvero: «761 voci, 20 ballottaggi» contava tutti gli
+`a.player-name` della pagina — i 220 del campo disegnato, i 482 delle schede e una
+sessantina altrove — e i «ballottaggi» non esistono come marcatore. Quello che il
+sito dichiara è una **percentuale** per ogni convocato (da 1 a 90), ed è quella che
+viene salvata: un ballottaggio, se serve, si deduce da lì **dichiarando la soglia**,
+non si legge da un campo che non c'è.
 
 ⚠️ **Si incrociano per `id`, non per nome.** Ogni giocatore porta il suo id numerico
 nell'URL (`/serie-a/squadre/inter/martinez-l/2764`), **uguale in tutte e tre** le
@@ -731,11 +741,20 @@ pagine. Il nome è abbreviato (`Martinez L.`) e due squadre possono avere due
 Pokémon.
 
 **✅ Cosa c'è, dal 21/09/2026** — `fantacalcio_it.py` (legge e basta),
-`scripts/importa_listone.py` (l'unico che scrive), `blueprints/fantacalcio.py`, due
-template, e `scripts/prova_fantacalcio.py` (26 prove su 26):
+`scripts/importa_listone.py` e `scripts/importa_probabili.py` (gli unici che
+scrivono), `blueprints/fantacalcio.py`, tre template, e
+`scripts/prova_fantacalcio.py` (48 prove su 48):
 
 - il **listone in `hub.db`**: 597 giocatori, 20 squadre, con ruolo, quotazioni e
   statistiche
+- le **probabili della giornata**: 10 partite, i moduli veri delle venti squadre di
+  Serie A e 482 convocati con la loro **percentuale di titolarità**, in due tabelle
+  con chiave `(giornata, …)`. La pagina `/fantacalcio/probabili` le mostra partita
+  per partita segnando i tuoi; quella della lega dice, per ogni giocatore in rosa,
+  quale dei **quattro** stati è il suo — titolare, panchina, **non convocato** (la
+  sua squadra gioca, lui non c'è) o **non gioca** (la sua squadra non è in questa
+  giornata). ⚠️ Le ultime due si confondono facilmente e non sono la stessa cosa:
+  scambiarle vorrebbe dire schierare qualcuno che non scende in campo
 - le **due leghe** con le regole in colonne: moduli ammessi, panchinari, modificatore
   di difesa e dodici fra bonus e malus
 - la **rosa** per lega, con il prezzo pagato, e il conto di quali moduli sono
@@ -759,13 +778,22 @@ esattamente il motivo per cui le regole stanno in colonne.
 - ⬜ **inserire la formazione**: la validazione contro il modulo e i panchinari. Il
   pezzo di conto c'è già (`scomponi_modulo()` in `data.py`, e la pagina dice quali
   moduli la rosa copre), manca la formazione come dato salvato per giornata
-- ⬜ **le probabili formazioni**: la pagina è già stata letta e ha modulo, undici e
-  ballottaggi, ma non è ancora importata. Serve una tabella per giornata
+- ✅ **le probabili formazioni** — fatte il 21/09/2026, vedi lo storico. Ci sono
+  `fantacalcio_it.probabili()`, `scripts/importa_probabili.py`, due tabelle per
+  giornata e la pagina `/fantacalcio/probabili`; la pagina della lega dice, per ogni
+  giocatore in rosa, se è titolare, in panchina, **non convocato** o se la sua
+  squadra **non gioca**. ⬜ Quello che resta qui è una scelta di Davide: oggi
+  l'archivio tiene **tutte** le giornate importate e nessuno le cancella — finché
+  sono una manciata va bene, ma non c'è una potatura
 - ⬜ **il consiglio**. Davide: «per questa fonte non saprei dove pescare» — e una
-  fonte esterna **non serve**: fantamedia, titolarità dalle probabili e ballottaggio
-  bastano a calcolarlo dai dati che avremo, dichiarando su cosa si basa. Un sito che
-  dice «schiera X» sarebbe un oracolo non verificabile, cioè il contrario della regola
-  di questo progetto
+  fonte esterna **non serve**: fantamedia e **percentuale di titolarità** (che ora è
+  nel DB, giocatore per giocatore) bastano a calcolarlo dai dati che abbiamo,
+  dichiarando su cosa si basa. Un sito che dice «schiera X» sarebbe un oracolo non
+  verificabile, cioè il contrario della regola di questo progetto.
+  ⚠️ Da decidere prima di scriverlo: **quanto pesa la percentuale contro la
+  fantamedia**. È il numero che decide il consiglio, e sceglierlo «a occhio» qui
+  vorrebbe dire inventare un dato — va misurato su qualche giornata vera o deciso da
+  Davide e **scritto nella pagina**, non nascosto nel codice
 - ⬜ **il secondo sistema**: il listone porta anche i ruoli **Mantra** e sono già nel
   DB, ma oggi non li legge nessuno. Il giorno che una lega passasse a Mantra il dato
   c'è
