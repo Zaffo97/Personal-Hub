@@ -107,6 +107,23 @@ ECCEZIONI = {
      "FROM fanta_players WHERE nome LIKE ? "
      "ORDER BY attivo DESC, fvm DESC, nome LIMIT 25"):
         "la ricerca nel listone condiviso, per scegliere chi mettere in rosa",
+    # ── La rosa incollata (21/09/2026) ──────────────────────────────────────
+    ("blueprints/fantacalcio.py", "_listone",
+     "SELECT id, nome, squadra, squadra_slug, ruolo_classic, qa, fvm, "
+     "fantamedia, attivo FROM fanta_players"):
+        "il listone condiviso, letto **intero** perché l'abbinamento di un nome "
+        "incollato deve poter dire quanti omonimi ha: una query per riga non "
+        "saprebbe mai che «Thuram» sono due giocatori",
+    ("blueprints/fantacalcio.py", "rosa_incolla_conferma",
+     "SELECT id FROM fanta_players"):
+        "gli id che esistono nel listone condiviso, per rifiutare un player_id "
+        "che il browser si è inventato: è un controllo sul dato, non una lettura "
+        "di righe di qualcuno",
+    ("blueprints/fantacalcio.py", "rosa_incolla_conferma",
+     "INSERT INTO fanta_roster(league_id, player_id, prezzo) VALUES(?,?,?)"):
+        "`fanta_roster` è una figlia: il proprietario le arriva dalla lega, che "
+        "`_lega_mia()` ha verificato in cima alla route — com'è già per la "
+        "rosa_aggiungi di un giocatore per volta",
     # ── L'aggiornamento, in `fanta_import.py` (21/09/2026) ──────────────────
     # Questo file scrive i due dati **condivisi**, listone e probabili: non hanno
     # un proprietario e non devono averlo, come il catalogo Pokémon. Lo chiamano

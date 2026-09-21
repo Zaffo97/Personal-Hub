@@ -43,6 +43,7 @@ Non sono storia: sono le cose che questo progetto ha già pagato e che tornano a
 | ⚠️ **Il valore di partenza di un form non è il DEFAULT della tabella** | Dal 21/09/2026, trovato provando il JS in browser (lo sweep non poteva: era sintatticamente perfetto). Le tendine nuove delle regole precompilavano dai **valori ufficiali**, e le due voci che il regolamento non fissa — porta inviolata e autogol — non essendoci, partivano dal **primo valore della tendina**, cioè `0`. Una lega nuova nasceva con l'autogol che non toglie niente, mentre la tabella ha `DEFAULT -2`. Nessun errore, solo una regola sparita. Ora `VALORE_PARTENZA` è un dizionario **diverso** da `VALORE_UFFICIALE` e i due non si confondono. ⚠️ Fin quando il campo era vuoto il difetto non poteva esistere — era il DB a decidere: **dare un valore iniziale a un campo sposta la decisione dal DB al form**, e da lì in poi i due devono concordare |
 | ⚠️ **La cache delle probabili invecchia in ORE, non in mesi** | Dal 21/09/2026. Le tre pagine di fantacalcio.it stanno nella stessa cache, ma non hanno la stessa scadenza: il listone cambia a ogni mercato, le **probabili cambiano fino al fischio d'inizio** — un titolare diventa panchinaro il sabato mattina. Rileggere la cache e scrivere nel DB **non dà nessun errore**, dà una formazione vecchia con l'aria di essere quella di oggi. Per questo `importa_probabili.py` stampa **sempre** l'età della copia in ore e dice `--scarica`: praticamente ogni giro delle probabili vuole `--scarica`, al contrario del listone |
 | ⚠️ **Lo sweep controlla il JavaScript, non che l'HTML sia ben formato** | Dal 21/09/2026, trovata da Davide cliccando «Fantacalcio» in sidebar e finendo sul PC Builder. Il blocco `{% if 'fantacalcio' … %}` era finito **dentro l'attributo `class`** del link PC Builder, che non veniva mai chiuso: il parser fonde i due `<a>` in uno solo, e resta un `href="/pcbuilder"` con scritto «Fantacalcio». `sweep_pagine.py` era a **0 errori** anche così, perché rende la pagina ed esegue `new Function()` sugli script e sugli handler — un tag mai chiuso non è JavaScript, quindi non lo guarda nessuno. Un link aggiunto a `base.html` va verificato **sulla pagina resa con un parser HTML** (href per href, e `<a>` aperti = chiusi), non a occhio sul template: l'errore si legge male proprio perché il pezzo giusto è tutto lì, solo nel posto sbagliato |
+| ⚠️ **Lo sweep guardava solo le pagine che si aprono con una `GET`** | Dal 21/09/2026, con l'anteprima della rosa incollata. `sweep_pagine.py` scorreva un elenco di URL e faceva `c.get()` su ognuno: una pagina che **esiste solo mandando un form** non era in nessun elenco, quindi lo sweep avrebbe detto «0 errori» senza averla mai resa — ed è una pagina piena di form, tendine e `<script>`, cioè esattamente quello che quello script esiste per controllare. È la stessa forma della trappola sulle tabelle nuove: un elenco scritto a mano che non si accorge di quello che non contiene. Ora c'è `PAGINE_POST` (URL + dati), e i dati di prova contengono di proposito un nome ambiguo e uno inesistente, perché la pagina resa abbia davvero dentro una tendina e una riga «non trovata». La regola: **una pagina nuova si aggiunge all'elenco giusto dei due nello stesso commit in cui nasce** |
 | ⚠️ **Passare `None` a una colonna con un `DEFAULT` scavalca il default** | Dal 21/09/2026, presa da `prova_fantacalcio.py` al primo giro. Il salvataggio di una lega costruiva l'`INSERT` con **tutte** le colonne delle regole, mettendo `None` dove il form non aveva niente: in SQLite un `NULL` **esplicito** è un valore, non un'assenza, quindi il `DEFAULT 3` del bonus gol non entrava mai e una lega nuova nasceva coi bonus a `NULL`. Nessun errore: il bonus semplicemente non c'era. La cura è non mettere la colonna nella query — che nell'`UPDATE` vuol dire anche «lascia il valore di prima», cioè la stessa cosa detta bene |
 | ⚠️ **«PokéAPI non la conosce» quasi mai vuol dire «è inventata»** | Misurato il 21/09/2026, e per un mese si è creduto il contrario. Il rapporto dell'import stampava 16 voci sotto la frase «forme che PokéAPI non conosce», e il backlog le chiamava «forme di Davide»: **falso per 14 su 16**. I loro slug — `darkrai-mega`, `absol-mega-z`, `golisopod-mega`, … — sono **tutti in `pokemon.csv`**. PokéAPI le conosce benissimo; quello che non ha sono le **righe di mosse**, perché i loro unici giochi sono `legends-za` e `mega-dimension`, i due version group che nel dump hanno **zero righe** (gli stessi che `VG_FUORI_SERIE` sorveglia). Fra quelle 14 ce n'erano **cinque Mega vere di Regulation M-C** — Mega Absol Z, Mega Garchomp Z, Mega Lucario Z, Mega Golisopod, Mega Baxcalibur — confermate da Serebii **e** da Game8. E **nemmeno le due Mega Meowstic** erano sconosciute, scoperto lo stesso giorno: `meowstic-male-mega` e `meowstic-female-mega` sono nel dump **con le loro righe di mosse**. Mancava solo lo `slug` nel catalogo, e mancava perché `aggiungi_slug_forme.py` si **rifiutava** di scriverlo: le sei base stat della femmina non combaciavano, perché la voce era rimasta a **466**, il totale della forma **non** Mega. Cioè un dato sbagliato teneva fuori una voce vera, e il rifiuto era il verso giusto. Corretto a 566 su tre fonti concordi. Quindi delle 16 la frase era falsa per **tutte e 16**. ⚠️ La regola generale, che era già scritta dal 13/09 e non era stata applicata a questa conclusione: **prima di dare per inventata una voce senza moveset, cercarne lo slug nel dump.** Ora il rapporto dell'import stampa i due gruppi separati, con l'etichetta giusta |
 | ⚠️ **Una toppa è scritta con la chiave di una specie, e le forme non sono la specie** | Trovata il 21/09/2026 da `verifica_moveset.py`. Le toppe della 1.2.0 nominavano **33 specie**, e si fermavano lì: **19 forme** di quelle specie — Mega Absol, Mega Charizard X e Y, Aegislash (Blade Forme), Mimikyu (Busted Form), … — sono rimaste senza lo *Slash* che la loro specie aveva preso, e **sono tutte in MA e MB**. A schermo voleva dire che Absol poteva sceglierlo e Mega Absol no, che è lo stesso Pokémon a metà partita. Nessun errore, solo la tendina più corta. Ora `applica_toppe_moveset()` raggiunge anche le forme, ma **solo** quelle la cui lista, tolte le mosse che la toppa nomina, è **identica** a quella della specie: una forma con una lista sua (le Rotom, Hisuian Samurott) finisce in un terzo elenco che l'import stampa, e non viene toccata. Il confronto ignora le mosse nominate proprio perché regga sia sul file appena rigenerato dal dump sia su uno già toppato a metà. ⚠️ Chi aggiunge una toppa nuova non deve elencare le forme a mano: se lo fa, quella forma viene saltata dalla propagazione (`if nome_forma in toppe`) ed è giusto così, ma la sua lista va scritta intera |
@@ -633,7 +634,7 @@ quattro cose richiedono **fonti diverse**:
 | 🤖 **Arduino** | ⬜ Richiamo a Tinkercad per disegnare il progetto e verificare i connettori |
 | 💻 **PC Builder** | ⬜ Wishlist Amazon o altri · ⬜ prezzo componente · ⬜ percentuale di compatibilità fra i pezzi (valutare UserBenchmark) · ⬜ gestire l'uscita di nuovi pezzi nel tempo |
 | 🐍 **Python** | ⬜ Spazio per inserire i propri progetti e testarli · ⬜ idee per rendere la sezione più utile |
-| ⚽ **Fantacalcio** | 🟨 **Quasi tutta, dal 21/09/2026**: listone, leghe con regole strutturate, rose, **probabili formazioni** e **campo per schierare** (vedi §4.2). Resta il **consiglio**, più i ruoli Mantra che sono nel DB e non li legge nessuno |
+| ⚽ **Fantacalcio** | 🟨 **Quasi tutta, dal 21/09/2026**: listone, leghe con regole strutturate, rose (una per volta o **incollate in blocco**), **probabili formazioni** e **campo per schierare** (vedi §4.2). Resta il **consiglio**, più i ruoli Mantra che sono nel DB e non li legge nessuno |
 
 ### 4.1 🟨 Gaming — il calendario delle uscite (chiesto il 13/08, costruito il 16/08/2026)
 
@@ -747,8 +748,8 @@ Pokémon.
 
 **✅ Cosa c'è, dal 21/09/2026** — `fantacalcio_it.py` (legge e basta),
 `scripts/importa_listone.py` e `scripts/importa_probabili.py` (gli unici che
-scrivono), `blueprints/fantacalcio.py`, tre template, e
-`scripts/prova_fantacalcio.py` (48 prove su 48):
+scrivono), `blueprints/fantacalcio.py`, quattro template, e
+`scripts/prova_fantacalcio.py` (**123 prove su 123** al 21/09/2026):
 
 - il **listone in `hub.db`**: 597 giocatori, 20 squadre, con ruolo, quotazioni e
   statistiche
@@ -817,6 +818,32 @@ regolamento davvero non fissa: quelli sono convenzionali e vanno decisi lega per
 lega. È il motivo per cui le regole stanno in colonne, e ora il valore ufficiale
 compare **accanto a ogni tendina**, non solo l'etichetta «(ufficiale)».
 
+**✅ La rosa si incolla, dal 21/09/2026.** Messa davanti al consiglio su scelta di
+Davide, e il motivo stava nel DB: con tutto il resto in piedi la rosa vera era ferma
+a **un giocatore su ~25**, perché si aggiungeva uno per volta con la ricerca — e
+formazione, copertura dei moduli e consiglio girano tutti su una rosa che non c'era.
+Si incolla la lista, si **guarda l'anteprima** e si scrive solo quello che si spunta.
+
+⚠️ **L'anteprima non è comodità, è la parte sicura**: un nome abbinato male non dà
+nessun errore, e sul listone del 21/09/2026 l'ambiguità ha tre forme misurate — **0**
+nomi identici fra due giocatori, **24 cognomi** condivisi (`Martinez L.`/`Martinez
+Jo.`, otto `De …`), e **5 nomi che sono anche il prefisso di un altro**: `Thuram`
+esiste **e** c'è `Thuram K.`, come `Colombo`, `Pessina`, `Rrahmani`, `Terracciano`.
+L'ultimo è il caso che si sbaglia in silenzio, perché l'abbinamento esatto **è**
+univoco: per questo un nome con omonimi non è mai «sicuro», è «da confermare» con
+l'altro in tendina, e una riga «da scegliere» nasce **senza niente selezionato**.
+Un nome scritto male **non viene indovinato** — niente distanza di edit.
+
+⚠️ E una cosa da sapere prima di toccare l'abbinamento: le regole che restringono
+(squadra, ruolo, iniziale del nome proprio) si applicano **solo se lasciano un
+candidato**, e quando non combaciano si **dichiarano** invece di sparire. Una riga
+che chiede `Bastoni JUV` e trova il Bastoni dell'Inter non è una riga sicura: o la
+sigla è sbagliata, o il giocatore giusto è un altro.
+
+⬜ Quello che resta aperto qui: **non si toglie in blocco** (una riga per volta, con
+la conferma), e il prezzo si corregge solo nell'anteprima — una volta in rosa, per
+cambiarlo bisogna togliere e rimettere.
+
 **⬜ Cosa resta, in ordine di quanto è stato chiesto:**
 
 - ✅ **inserire la formazione** — fatta il 21/09/2026, com'è stata chiesta: **un
@@ -861,10 +888,36 @@ compare **accanto a ogni tendina**, non solo l'etichetta «(ufficiale)».
   nel DB, giocatore per giocatore) bastano a calcolarlo dai dati che abbiamo,
   dichiarando su cosa si basa. Un sito che dice «schiera X» sarebbe un oracolo non
   verificabile, cioè il contrario della regola di questo progetto.
-  ⚠️ Da decidere prima di scriverlo: **quanto pesa la percentuale contro la
-  fantamedia**. È il numero che decide il consiglio, e sceglierlo «a occhio» qui
-  vorrebbe dire inventare un dato — va misurato su qualche giornata vera o deciso da
-  Davide e **scritto nella pagina**, non nascosto nel codice
+
+  **Tre decisioni di Davide, prese il 21/09/2026** (le domande gli sono state fatte
+  prima di scrivere una riga, e valgono quando si apre questo lavoro):
+
+  - ✅ **la fantamedia la ricalcoliamo con le regole della lega.** Non la colonna
+    `fantamedia` del sito, che è calcolata coi bonus standard di FantaGazzetta: dai
+    dati grezzi che sono già nel DB (gol, assist, ammonizioni, espulsioni, gol
+    subiti, rigori parati) più le colonne delle regole. Se una lega dà +1 all'assist
+    e l'altra +3, il consiglio cambia — ed è il motivo per cui le regole stanno in
+    colonne. ⚠️ **Porta inviolata e autogol restano fuori**: la statistica non c'è,
+    e va dichiarato invece di stimato
+  - ✅ **poche partite a voto si dichiarano, non si correggono.** Le partite a voto
+    si mostrano accanto a ogni numero e chi ne ha meno di 3 porta un avviso, ma il
+    valore non si tocca; chi ne ha **zero** non ha fantamedia e finisce in un elenco
+    a parte, «dato insufficiente», invece di valere 0 o un numero inventato. ⚠️ A
+    settembre questo non è un dettaglio: il 21/09/2026 il listone ha **Odenthal, 1
+    partita a voto e fantamedia 10.0**, davanti a qualunque titolare vero. La strada
+    scartata era tirare la media verso quella del ruolo, che è più solida
+    statisticamente ma ha dentro una costante scelta a occhio
+  - ⚠️ **la formula la decide la fonte, non noi.** Alla domanda «come pesa la
+    percentuale di titolarità contro la fantamedia» Davide ha risposto: **quello che
+    consigliano di più sulla piattaforma, o altre fonti affidabili**. Quindi il primo
+    passo di questo lavoro **non è scrivere codice**: è andare a leggere cosa usa
+    davvero chi lo fa di mestiere (la guida di Leghe Fantacalcio, le pagine del
+    consiglio di fantacalcio.it, i vademecum), riportare **cosa dice e dove l'ha
+    detto**, e solo dopo scegliere. Le tre strade viste finora: il **prodotto**
+    `percentuale × fantamedia` (che sono punti attesi e non ha nessun peso da
+    scegliere), la **somma pesata** con un α da decidere, e la **percentuale come
+    filtro** sopra una soglia. Qualunque sia, va **scritta nella pagina**: un
+    consiglio che non dice su cosa si basa è l'oracolo non verificabile di sopra
 - ⬜ **il secondo sistema**: il listone porta anche i ruoli **Mantra** e sono già nel
   DB, ma oggi non li legge nessuno. Il giorno che una lega passasse a Mantra il dato
   c'è

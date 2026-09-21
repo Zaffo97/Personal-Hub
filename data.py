@@ -1,6 +1,7 @@
 import os
 import json
 import re
+import unicodedata
 
 DATA_DIR = os.path.join(os.path.dirname(__file__), "data")
 
@@ -244,6 +245,310 @@ def modificatore_difesa(media, soglie=None):
         if media >= minimo:
             return punti
     return 0.0
+
+
+# ── La rosa incollata ────────────────────────────────────────────────────────
+# Una rosa di fantacalcio sono ~25 giocatori, e metterli in rosa uno per volta con
+# la ricerca vuol dire 25 ricerche: è il motivo per cui il 21/09/2026, con tutto il
+# resto della sezione in piedi, la rosa vera era ferma a **un** giocatore. Qui si
+# incolla la lista e si scrive **dopo** aver visto cosa è stato riconosciuto: mai
+# alla cieca, perché un nome abbinato male non dà nessun errore — dà la rosa di
+# qualcun altro.
+#
+# ⚠️ **Quanto è ambiguo un nome, misurato sul listone del 21/09/2026** (597
+# giocatori, 597 chiavi distinte):
+#
+#   * **0** nomi identici fra due giocatori: un nome scritto **per intero** come lo
+#     scrive la fonte (`Martinez L.`) è sempre univoco;
+#   * **24 cognomi** condivisi da due o più giocatori — `Martinez L.`/`Martinez Jo.`,
+#     `Pellegrini Lo.`/`Pellegrini Lu.`, otto `De …`: un cognome secco **non basta**,
+#     e va mostrata la scelta;
+#   * e il caso che si sarebbe sbagliato in silenzio: **5 nomi che sono anche il
+#     prefisso di un altro** — `Thuram` (INT, attaccante) esiste **e** c'è
+#     `Thuram K.` (JUV, centrocampista), come `Colombo`/`Colombo L.`,
+#     `Pessina`/`Pessina Mas.`, `Rrahmani`/`Rrahmani Al.`,
+#     `Terracciano`/`Terracciano F.`. Scrivendo «Thuram» l'abbinamento esatto **è**
+#     univoco e un codice ragionevole lo prenderebbe senza fiatare. Per questo un
+#     nome che ha degli omonimi non è mai «ok»: è **«da confermare»**, con gli altri
+#     in tendina e quello esatto già scelto.
+#
+# Quello che **non** si fa: indovinare un nome scritto male. Niente distanza di
+# edit, niente «forse intendevi»: una riga che non combacia si dichiara non
+# trovata. Un errore di battitura corretto a caso è esattamente il valore
+# plausibile e falso di cui parla la regola #3.
+
+# I modi in cui un ruolo può essere scritto in una lista incollata, singolare e
+# plurale: il plurale serve perché una rosa esportata è spesso **raggruppata per
+# ruolo**, e «Portieri» su una riga da sola è un'intestazione, non un giocatore.
+RUOLI_SCRITTI = {
+    "p": "p", "por": "p", "portiere": "p", "portieri": "p",
+    "d": "d", "dif": "d", "difensore": "d", "difensori": "d",
+    "c": "c", "cen": "c", "centrocampista": "c", "centrocampisti": "c",
+    "a": "a", "att": "a", "attaccante": "a", "attaccanti": "a",
+}
+
+# La virgola fra due cifre è il separatore decimale italiano, non un separatore di
+# campi: `Sommer, 12,5` ha una virgola di ognuno dei due tipi. Si distinguono
+# guardando cosa hanno intorno, che è la stessa lezione di `soglie_mod_difesa()`.
+_VIRGOLA_DECIMALE = re.compile(r"(?<=\d),(?=\d)")
+_PEZZO = re.compile(r"[^\s;|,\t]+")
+
+
+def chiave_nome(nome):
+    """La forma con cui due nomi si confrontano: minuscolo, senza accenti né punti.
+
+    ⚠️ I punti diventano **spazi**, non niente: `Martinez L.` e `Martinez Lo.`
+    restano due chiavi diverse (`martinez l` e `martinez lo`), mentre togliendoli
+    del tutto si otterrebbero `martinezl` e `martinezlo` — ancora diverse, ma
+    `Esposito F.P.` diventerebbe `espositofp`, che non combacia più con niente di
+    scritto a mano. E gli accenti si spogliano perché `Koné` e `Kone` sono lo
+    stesso giocatore: nel listone vero ci sono tutti e due i modi.
+    """
+    grezzo = unicodedata.normalize("NFKD", str(nome or ""))
+    grezzo = grezzo.encode("ascii", "ignore").decode("ascii").lower()
+    return " ".join(re.sub(r"[^a-z0-9]+", " ", grezzo).split())
+
+
+def _come_numero(pezzo):
+    """Il numero che quel pezzo è, o `None`. `12.` e `12)` contano, `F.P.` no."""
+    try:
+        return float(str(pezzo).rstrip(".)"))
+    except ValueError:
+        return None
+
+
+def indice_squadre(giocatori):
+    """`{chiave: squadra}` per riconoscere «INT», «Inter» o «inter» in una riga.
+
+    Sia la sigla (`squadra`) sia lo slug (`squadra_slug`) portano alla stessa
+    sigla, che è quella che poi si confronta con `giocatori`.
+    """
+    fuori = {}
+    for g in giocatori:
+        sigla = (g.get("squadra") or "").strip()
+        if not sigla:
+            continue
+        for forma in (sigla, g.get("squadra_slug") or ""):
+            if forma:
+                fuori[chiave_nome(forma)] = sigla
+    return fuori
+
+
+def analizza_riga_rosa(riga, squadre=None):
+    """Una riga incollata, scomposta: nome, squadra, ruolo, prezzo.
+
+    Torna `{"grezzo", "nome", "squadra", "ruolo", "prezzo", "intestazione",
+    "dubbia"}`. Accetta le forme che una rosa incollata ha davvero — `Sommer`,
+    `Sommer 15`, `P Sommer INT 15`, `1. Sommer;INT;15`, una riga di un foglio con
+    i tab — perché non c'è un formato: c'è quello che esce dalla piattaforma di
+    turno o da un messaggio in chat.
+
+    Come si decide cos'è un pezzo, in quest'ordine:
+
+    - un **numero** è l'indice se sta in testa (`1. Sommer`), il prezzo altrimenti.
+      Con più di un prezzo possibile la riga si dichiara `dubbia` invece di
+      scegliere: un numero in mezzo può essere tutto, e indovinare qui vorrebbe
+      dire scrivere in rosa un prezzo che nessuno ha pagato;
+    - un **ruolo** è `P`/`D`/`C`/`A` (o `por`, `difensori`, …) **senza il punto**:
+      ⚠️ il punto è quello che distingue il ruolo dall'iniziale del nome, che nel
+      listone è dappertutto (`Adams A.`, `Martinez L.`). Con `Adams A` — iniziale
+      senza punto — la `A` viene letta come ruolo e il nome resta `Adams`, che è
+      ambiguo: la riga finisce «da scegliere», cioè si sbaglia **verso la
+      domanda**, non verso il giocatore sbagliato;
+    - una **squadra** è una sigla o uno slug che esiste nel listone, e serve a
+      disambiguare: `Martinez INT p` è uno solo;
+    - tutto il resto è il **nome**.
+
+    Una riga fatta di **solo ruolo** (`Difensori`) è un'intestazione: non è un
+    giocatore e non è un errore.
+    """
+    grezzo = str(riga or "").strip()
+    testo = _VIRGOLA_DECIMALE.sub(".", grezzo)
+    pezzi = [p.strip("-–—•*·()[]\"'") for p in _PEZZO.findall(testo)]
+    nome, squadra, ruolo, numeri, dubbia = [], None, None, [], False
+    for posto, pezzo in enumerate(pezzi):
+        if not pezzo:
+            continue
+        valore = _come_numero(pezzo)
+        if valore is not None:
+            numeri.append((posto, valore))
+            continue
+        chiave = chiave_nome(pezzo)
+        if "." not in pezzo and chiave in RUOLI_SCRITTI:
+            if ruolo is None:
+                ruolo = RUOLI_SCRITTI[chiave]
+            else:
+                dubbia = True
+            continue
+        if squadre and chiave in squadre:
+            if squadra is None:
+                squadra = squadre[chiave]
+                continue
+            dubbia = True
+        nome.append(pezzo)
+    # Il prezzo: i numeri che non sono l'indice di testa. Più di uno e la riga si
+    # dichiara, perché il secondo potrebbe essere il prezzo e potrebbe essere
+    # qualunque altra cosa.
+    prezzi = [v for posto, v in numeri if posto > 0]
+    if len(prezzi) > 1:
+        dubbia = True
+    # ⚠️ Lo `strip` finale **non** tocca il punto, e la prova l'ha preso subito:
+    # togliendolo, `Thuram K.` diventava `Thuram K` a schermo. Per l'abbinamento
+    # non cambiava niente (`chiave_nome()` ignora i punti), ed è proprio per
+    # questo che sarebbe passato inosservato — l'anteprima avrebbe mostrato per
+    # venticinque righe un nome scritto diverso da come lo scrive la fonte.
+    return {"grezzo": grezzo,
+            "nome": " ".join(nome).strip(" ,-"),
+            "squadra": squadra, "ruolo": ruolo,
+            "prezzo": prezzi[-1] if prezzi else None,
+            "intestazione": not nome and ruolo is not None and not prezzi,
+            "dubbia": dubbia}
+
+
+def _ordina_candidati(candidati, esatto=None):
+    """Chi va mostrato per primo: l'abbinamento esatto, poi gli attivi di più valore.
+
+    ⚠️ `attivo` prima di `fvm` e non il contrario: un giocatore **fuori listone** è
+    quasi sempre la risposta sbagliata a un nome incollato oggi, per quanto valesse
+    a settembre.
+    """
+    return sorted(candidati,
+                  key=lambda g: (g["id"] != (esatto or {}).get("id"),
+                                 not g.get("attivo", 1),
+                                 -(g.get("fvm") or 0), g.get("nome") or ""))
+
+
+def leggi_rosa_incollata(testo, giocatori, gia_in_rosa=()):
+    """Le righe incollate, abbinate al listone. **Non scrive niente.**
+
+    `giocatori` sono le righe del listone (`id`, `nome`, `squadra`,
+    `squadra_slug`, `ruolo_classic`, `fvm`, `attivo`), `gia_in_rosa` gli id che
+    quella lega ha già. Torna una lista di dict, uno per riga non vuota, con:
+
+        grezzo, nome, prezzo, squadra, ruolo, candidati, scelto, stato,
+        gia, doppione, dubbia, scarti
+
+    I quattro stati, che sono quattro cose diverse e la pagina le dice diverse:
+
+    - **`ok`** — un solo giocatore, nome esatto, nessun omonimo: si scrive;
+    - **`conferma`** — un candidato ma da guardare, perché il nome ha **omonimi**
+      (`Thuram`, che è anche `Thuram K.`), perché l'abbinamento non era esatto, o
+      perché quello che c'era scritto sulla riga **non combacia** col giocatore
+      trovato (`scarti`: la squadra, il ruolo). È già scelto, ma è dichiarato;
+    - **`scegli`** — più candidati e nessuno esatto: **niente** è scelto, e la
+      riga non si scrive finché non lo decide qualcuno;
+    - **`niente`** — nessun candidato. Non si indovina.
+
+    ⚠️ Il ruolo di un'intestazione (`Difensori`) **scende sulle righe dopo**: è il
+    modo in cui una rosa raggruppata per ruolo si incolla intera, ed è anche quello
+    che rende univoco un cognome condiviso da due giocatori di ruolo diverso.
+    Il contrario — ignorarla — farebbe finire quattro righe su cinque in «scegli».
+    """
+    squadre = indice_squadre(giocatori)
+    per_chiave, per_cognome = {}, {}
+    for g in giocatori:
+        chiave = chiave_nome(g.get("nome"))
+        per_chiave.setdefault(chiave, []).append(g)
+        if chiave:
+            per_cognome.setdefault(chiave.split()[0], []).append(g)
+
+    fuori, presi, ruolo_corrente = [], set(), None
+    for riga in str(testo or "").splitlines():
+        voce = analizza_riga_rosa(riga, squadre)
+        if voce["intestazione"]:
+            ruolo_corrente = voce["ruolo"]
+            continue
+        if not voce["nome"]:
+            continue
+        cercato = voce["ruolo"] or ruolo_corrente
+        chiave = chiave_nome(voce["nome"])
+        esatti = list(per_chiave.get(chiave, []))
+        # Gli omonimi: chi ha lo stesso nome **più qualcosa** (`Thuram K.` per
+        # `Thuram`). Servono in tutti e due i casi — se l'esatto c'è sono la
+        # ragione per cui va confermato, se non c'è sono i candidati.
+        piu_lunghi = [g for g in giocatori
+                      if chiave and chiave_nome(g.get("nome")).startswith(chiave + " ")]
+        if esatti:
+            candidati, esatto = esatti + piu_lunghi, esatti[0]
+        elif piu_lunghi:
+            candidati, esatto = piu_lunghi, None
+        else:
+            # L'ultima rete: il cognome. Prende sia «Martinez» sia «Lautaro
+            # Martinez», che nel listone è `Martinez L.` e per chiave non
+            # combacerebbe con nessuno dei due versi.
+            parole = chiave.split()
+            candidati = list(per_cognome.get(parole[0], []))
+            if len(parole) > 1:
+                for g in per_cognome.get(parole[-1], []):
+                    if g not in candidati:
+                        candidati.append(g)
+            esatto = None
+
+        # Squadra e ruolo **restringono**, e solo se restano dei candidati: una
+        # sigla scritta male non deve far sparire l'unico giocatore giusto — la
+        # riga si vede comunque, con la scelta in mano a chi guarda.
+        scarti = []
+        for campo, atteso in (("squadra", voce["squadra"]), ("ruolo_classic", cercato)):
+            if atteso:
+                ridotti = [g for g in candidati if (g.get(campo) or "") == atteso]
+                if ridotti:
+                    candidati = ridotti
+                    if esatto is not None and esatto not in ridotti:
+                        esatto = None
+                elif candidati:
+                    # Niente combacia: i candidati restano tutti, ma la cosa si
+                    # **dichiara**. ⚠️ Una squadra scritta sulla riga che non è
+                    # quella del giocatore trovato non è un dettaglio: o la sigla
+                    # è sbagliata, o il giocatore giusto è un altro che nel
+                    # listone non c'è. Buttarla via lascerebbe una riga «sicura»
+                    # che dice il contrario di quello che c'era scritto.
+                    scarti.append(campo)
+
+        # E restringe anche **l'iniziale**, con la stessa regola: se il nome
+        # incollato è per intero (`Lautaro Martinez`) e i candidati si distinguono
+        # per un'iniziale (`Martinez L.` contro `Martinez Jo.`), tiene quelli la cui
+        # iniziale comincia davvero una delle parole scritte. Non è un indovinello:
+        # `l` sta in «Lautaro» e `jo` non sta in niente, quindi resta uno.
+        # ⚠️ Se non resta nessuno — «Martinez» secco, che non ha un nome proprio da
+        # confrontare — non tocca niente e la riga va **in scelta**. È sempre la
+        # stessa preferenza: sbagliare verso la domanda.
+        # ⚠️ Il confronto **esclude il cognome**, e senza questa riga la regola si
+        # ribalta: «Adams» da solo, contro `Adams A.` e `Adams C.`, sceglierebbe
+        # `Adams A.` perché la «a» comincia «adams». Cioè inventerebbe una risposta
+        # proprio nel caso in cui non c'è niente da confrontare. Preso qui il
+        # 21/09/2026, col primo giro di prove.
+        if len(candidati) > 1 and esatto is None:
+            ridotti = []
+            for g in candidati:
+                pezzi_nome = chiave_nome(g.get("nome")).split()
+                cognome, extra = pezzi_nome[0], pezzi_nome[1:]
+                parole = [w for w in chiave.split() if w != cognome]
+                if extra and parole and all(
+                        any(w.startswith(pezzo) for w in parole) for pezzo in extra):
+                    ridotti.append(g)
+            if len(ridotti) == 1:
+                candidati = ridotti
+
+        candidati = _ordina_candidati(candidati, esatto)
+        if not candidati:
+            stato, scelto = "niente", None
+        elif esatto is not None and len(candidati) == 1 and not scarti:
+            stato, scelto = "ok", esatto
+        elif esatto is not None:
+            stato, scelto = "conferma", esatto
+        elif len(candidati) == 1:
+            stato, scelto = "conferma", candidati[0]
+        else:
+            stato, scelto = "scegli", None
+
+        voce.update({"candidati": candidati, "scelto": scelto, "stato": stato,
+                     "ruolo": cercato, "scarti": scarti,
+                     "gia": bool(scelto and scelto["id"] in set(gia_in_rosa)),
+                     "doppione": bool(scelto and scelto["id"] in presi)})
+        if scelto:
+            presi.add(scelto["id"])
+        fuori.append(voce)
+    return fuori
 
 
 # ── Categorie di oggetti e abilità ───────────────────────────────────────────

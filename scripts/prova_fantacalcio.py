@@ -804,6 +804,202 @@ def prove(dove):
               righe() == prima, f"{len(righe())} righe")
 
 
+    # ── 13. la rosa incollata ───────────────────────────────────────────────
+    # ⚠️ Questo blocco si fa una **lega sua**, perché le prove di prima hanno
+    # riempito la rosa della prima: una rosa vuota è l'unico posto in cui si può
+    # dire con certezza quante righe ha scritto un incolla.
+    print("\n== 13. la rosa incollata ==")
+    from data import analizza_riga_rosa, leggi_rosa_incollata, chiave_nome
+
+    # Le tre forme di ambiguità misurate sul listone vero, in piccolo:
+    # `Thuram` esiste **e** c'è `Thuram K.` (nome che è prefisso di un altro),
+    # i due `Martinez` condividono il cognome, e `Koné` ha un accento che nessuno
+    # scrive quando incolla.
+    db = extensions.get_db()
+    for pid, nome, sq, slug, ruolo in (
+            (201, "Thuram K.", "JUV", "juventus", "c"),
+            (202, "Martinez L.", "INT", "inter", "a"),
+            (203, "Martinez Jo.", "INT", "inter", "p"),
+            (204, "Koné M.", "ROM", "roma", "c"),
+            (205, "Adams A.", "VEN", "venezia", "a"),
+            (206, "Adams C.", "TOR", "torino", "a")):
+        db.execute("INSERT INTO fanta_players(id,nome,squadra,squadra_slug,"
+                   "ruolo_classic,qa,fvm,attivo,visto_il) "
+                   "VALUES(?,?,?,?,?,10,20,1,'2026-09-21')",
+                   (pid, nome, sq, slug, ruolo))
+    db.execute("INSERT INTO fanta_leagues(user_id,nome,moduli,n_panchinari) "
+               "VALUES(?,'Seconda Lega','3-4-3',7)", (ids["davide"],))
+    db.commit()
+    lid2 = db.execute("SELECT id FROM fanta_leagues WHERE nome='Seconda Lega'"
+                      ).fetchone()["id"]
+    listone = [dict(r) for r in db.execute(
+        "SELECT id, nome, squadra, squadra_slug, ruolo_classic, qa, fvm, attivo "
+        "FROM fanta_players")]
+    db.close()
+
+    # --- la riga, scomposta -------------------------------------------------
+    r = analizza_riga_rosa("1. Thuram K. JUV 18", {"juv": "JUV"})
+    esito("una riga con indice, squadra e prezzo si scompone",
+          r["nome"] == "Thuram K." and r["squadra"] == "JUV" and r["prezzo"] == 18.0,
+          f"nome={r['nome']!r} sq={r['squadra']} prezzo={r['prezzo']}")
+    r = analizza_riga_rosa("Barella, 12,5")
+    esito("⚠️ la virgola decimale non è un separatore: 12,5 resta 12.5",
+          r["nome"] == "Barella" and r["prezzo"] == 12.5,
+          f"nome={r['nome']!r} prezzo={r['prezzo']}")
+    r = analizza_riga_rosa("Difensori")
+    esito("una riga col solo ruolo è un'intestazione, non un giocatore",
+          r["intestazione"] and r["ruolo"] == "d")
+    # ⚠️ Il punto è tutto: `A.` è l'iniziale di un nome, `A` è il ruolo. Senza
+    # questa distinzione ogni `Adams A.` del listone perderebbe la sua iniziale.
+    r = analizza_riga_rosa("Adams A.")
+    esito("⚠️ «A.» col punto resta parte del nome, non diventa il ruolo",
+          r["nome"] == "Adams A." and r["ruolo"] is None, f"nome={r['nome']!r}")
+    r = analizza_riga_rosa("A Adams")
+    esito("e «A» senza punto è il ruolo",
+          r["nome"] == "Adams" and r["ruolo"] == "a", f"nome={r['nome']!r}")
+    r = analizza_riga_rosa("Thuram 3 5")
+    esito("due numeri in una riga la dichiarano dubbia invece di scegliere",
+          r["dubbia"], f"prezzo={r['prezzo']}")
+    esito("gli accenti non contano nel confronto dei nomi",
+          chiave_nome("Koné M.") == chiave_nome("Kone M.") == "kone m")
+
+    # --- l'abbinamento ------------------------------------------------------
+    def leggi(testo, gia=()):
+        return {v["grezzo"]: v for v in leggi_rosa_incollata(testo, listone, gia)}
+
+    v = leggi("Bastoni 22\nThuram\nMartinez\nLautaro Martinez\nAdams\n"
+              "Kone M.\nZibaldone 4")
+    esito("un nome esatto e senza omonimi è «ok»",
+          v["Bastoni 22"]["stato"] == "ok" and v["Bastoni 22"]["prezzo"] == 22.0)
+    # ⚠️ Il caso che si sarebbe sbagliato in silenzio: «Thuram» **è** un nome
+    # esatto del listone, e un codice ragionevole l'avrebbe preso e messo in rosa.
+    # Ma c'è anche `Thuram K.`, che è un altro giocatore in un'altra squadra e in
+    # un altro ruolo.
+    esito("⚠️ un nome esatto CON un omonimo non è «ok»: è da confermare",
+          v["Thuram"]["stato"] == "conferma"
+          and len(v["Thuram"]["candidati"]) == 2
+          and v["Thuram"]["scelto"]["id"] == 4,
+          f"stato={v['Thuram']['stato']} candidati={len(v['Thuram']['candidati'])}")
+    esito("un cognome condiviso da due giocatori non ne scegli uno",
+          v["Martinez"]["stato"] == "scegli" and v["Martinez"]["scelto"] is None
+          and len(v["Martinez"]["candidati"]) == 2)
+    esito("ma col nome proprio davanti l'iniziale lo risolve",
+          v["Lautaro Martinez"]["stato"] == "conferma"
+          and v["Lautaro Martinez"]["scelto"]["id"] == 202,
+          str((v["Lautaro Martinez"]["scelto"] or {}).get("nome")))
+    # ⚠️ Questa è la prova che ha trovato il baco al primo giro: «Adams» da solo,
+    # contro `Adams A.` e `Adams C.`, veniva risolto in `Adams A.` perché la «a»
+    # dell'iniziale comincia anche «adams». Cioè si inventava una risposta dove
+    # non c'era niente da confrontare.
+    esito("⚠️ «Adams» da solo resta da scegliere, non diventa «Adams A.»",
+          v["Adams"]["stato"] == "scegli" and v["Adams"]["scelto"] is None,
+          str((v["Adams"]["scelto"] or {}).get("nome")))
+    esito("un nome senza accenti trova quello con l'accento",
+          v["Kone M."]["stato"] == "ok" and v["Kone M."]["scelto"]["id"] == 204)
+    esito("un nome che non esiste non viene indovinato",
+          v["Zibaldone 4"]["stato"] == "niente"
+          and not v["Zibaldone 4"]["candidati"])
+
+    # L'intestazione che scende sulle righe dopo, e la squadra che disambigua.
+    # ⚠️ Qui le due righe sono **la stessa riga scritta due volte** e vanno lette
+    # in ordine, non per nome: la prima versione di questa prova le metteva in un
+    # dizionario per `grezzo` e ne perdeva una, dicendo NO a un codice giusto.
+    doppia = leggi_rosa_incollata("Portieri\nMartinez\nAttaccanti\nMartinez", listone)
+    esito("⚠️ l'intestazione del ruolo rende univoco un cognome condiviso",
+          [x["scelto"]["id"] for x in doppia] == [203, 202],
+          str([(x["stato"], (x["scelto"] or {}).get("nome")) for x in doppia]))
+    v = leggi("Martinez INT p")
+    esito("e la squadra e il ruolo sulla riga fanno lo stesso",
+          v["Martinez INT p"]["scelto"]["id"] == 203)
+    # ⚠️ Una sigla sbagliata non deve far sparire il giocatore: la riga si vede
+    # comunque, con la scelta in mano a chi guarda. Ma non resta «sicura» — o la
+    # sigla è sbagliata, o il giocatore giusto è un altro, e in tutti e due i casi
+    # è una riga da guardare. Anche questa l'ha trovata la prova: prima diceva
+    # «ok» su una riga che chiedeva un giocatore della Juve e ne trovava uno
+    # dell'Inter.
+    v = leggi("Bastoni JUV")
+    esito("⚠️ una squadra che non combacia non cancella il candidato ma lo dichiara",
+          v["Bastoni JUV"]["stato"] == "conferma"
+          and v["Bastoni JUV"]["scarti"] == ["squadra"],
+          f"stato={v['Bastoni JUV']['stato']} scarti={v['Bastoni JUV']['scarti']}")
+
+    # --- la pagina: guarda, poi scrive --------------------------------------
+    def in_rosa():
+        db = extensions.get_db()
+        fuori = [r["player_id"] for r in db.execute(
+            "SELECT player_id FROM fanta_roster WHERE league_id=? ORDER BY player_id",
+            (lid2,))]
+        db.close()
+        return fuori
+
+    with app.test_client() as c:
+        with c.session_transaction() as s:
+            s["username"] = "davide"
+            s["role"] = "user"
+            s["user_id"] = ids["davide"]
+        testo = "Bastoni 22\nThuram\nMartinez\nZibaldone"
+        r = c.post(f"/fantacalcio/lega/{lid2}/rosa/incolla", data={"testo": testo})
+        pagina = r.data.decode("utf-8", "replace")
+        esito("l'anteprima si apre", r.status_code == 200 and "righe lette" in pagina)
+        esito("⚠️ e non ha scritto NIENTE in rosa", in_rosa() == [],
+              f"{len(in_rosa())} righe")
+        esito("la riga da scegliere ha una tendina, non un id fisso",
+              'name="pid_2"' in pagina and 'name="pid_2" value=' not in pagina)
+
+        # La conferma scrive **solo** le righe spuntate: la spunta è la decisione.
+        r = c.post(f"/fantacalcio/lega/{lid2}/rosa/incolla/conferma", data={
+            "riga_0": "on", "pid_0": "2", "prezzo_0": "22",
+            "pid_1": "4", "prezzo_1": "",           # non spuntata: non entra
+            "riga_2": "on", "pid_2": "", "prezzo_2": "",   # scelta lasciata vuota
+        }, follow_redirects=True)
+        esito("entra solo la riga spuntata", in_rosa() == [2], str(in_rosa()))
+        db = extensions.get_db()
+        esito("col prezzo che avevo scritto io",
+              db.execute("SELECT prezzo FROM fanta_roster WHERE league_id=? AND "
+                         "player_id=2", (lid2,)).fetchone()["prezzo"] == 22.0)
+        db.close()
+
+        # Un id che non è nel listone non entra, per quanto sia spuntato.
+        c.post(f"/fantacalcio/lega/{lid2}/rosa/incolla/conferma", data={
+            "riga_0": "on", "pid_0": "99999", "prezzo_0": "5"}, follow_redirects=True)
+        esito("⚠️ un player_id inventato dal browser non entra in rosa",
+              in_rosa() == [2], str(in_rosa()))
+
+        # Lo stesso giocatore due volte, e uno che c'era già: il vincolo UNIQUE
+        # non deve diventare un errore in faccia.
+        r = c.post(f"/fantacalcio/lega/{lid2}/rosa/incolla/conferma", data={
+            "riga_0": "on", "pid_0": "3", "prezzo_0": "7",
+            "riga_1": "on", "pid_1": "3", "prezzo_1": "7",
+            "riga_2": "on", "pid_2": "2", "prezzo_2": "9",
+        }, follow_redirects=True)
+        esito("un doppione e uno già in rosa non raddoppiano niente",
+              in_rosa() == [2, 3], str(in_rosa()))
+        esito("e la pagina lo dice invece di dare un errore",
+              "già in rosa da prima" in r.data.decode("utf-8", "replace"))
+
+        # L'anteprima di un giocatore già in rosa parte **senza** la spunta.
+        r = c.post(f"/fantacalcio/lega/{lid2}/rosa/incolla",
+                   data={"testo": "Bastoni"})
+        esito("chi è già in rosa è segnato «già in rosa»",
+              "già in rosa" in r.data.decode("utf-8", "replace"))
+
+    # --- e la lega è di chi ce l'ha -----------------------------------------
+    with app.test_client() as c:
+        with c.session_transaction() as s:
+            s["username"] = "altro"
+            s["role"] = "user"
+            s["user_id"] = ids["altro"]
+        r = c.post(f"/fantacalcio/lega/{lid2}/rosa/incolla",
+                   data={"testo": "Barella"}, follow_redirects=True)
+        esito("un altro utente non apre l'anteprima di una lega non sua",
+              b"Lega non trovata" in r.data)
+        prima = in_rosa()
+        c.post(f"/fantacalcio/lega/{lid2}/rosa/incolla/conferma", data={
+            "riga_0": "on", "pid_0": "4", "prezzo_0": "1"}, follow_redirects=True)
+        esito("⚠️ e non può scrivere nella rosa di un altro", in_rosa() == prima,
+              str(in_rosa()))
+
+
 def main():
     ap = argparse.ArgumentParser(description=__doc__.splitlines()[0])
     ap.add_argument("--tieni", action="store_true",

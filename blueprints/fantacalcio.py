@@ -23,7 +23,8 @@ from extensions import (get_db, login_required, _i, ambito_utente, solo_mie,
                         utente_id, e_admin)
 from data import (RUOLI_FANTA, ORDINE_RUOLI_FANTA, scomponi_modulo,
                   MOD_DIFESA_SOGLIE, soglie_mod_difesa, scrivi_soglie,
-                  modificatore_difesa, controlla_formazione)
+                  modificatore_difesa, controlla_formazione,
+                  leggi_rosa_incollata)
 import fanta_import as I
 
 bp = Blueprint("fantacalcio", __name__, url_prefix="/fantacalcio")
@@ -639,6 +640,112 @@ def rosa_rimuovi(lid, rid):
     db.close()
     flash("Tolto dalla rosa" if cur.rowcount else "Non trovato",
           "success" if cur.rowcount else "error")
+    return redirect(url_for("fantacalcio.lega", lid=lid))
+
+
+def _listone(db):
+    """Il listone intero, coi campi che servono ad abbinare un nome incollato.
+
+    Dato **condiviso** come il catalogo Pokémon: non passa da `ambito_utente()` e
+    non deve. Sono 597 righe (misurate il 21/09/2026) e si leggono in una volta
+    perché l'abbinamento deve poter dire «questo nome ne trova due»: una query per
+    riga incollata non saprebbe mai quanti omonimi ci sono.
+    """
+    return [dict(r) for r in db.execute(
+        "SELECT id, nome, squadra, squadra_slug, ruolo_classic, qa, fvm, "
+        "fantamedia, attivo FROM fanta_players").fetchall()]
+
+
+def _ids_in_rosa(db, lid):
+    """Gli id già in quella rosa. Passa **dalla lega**, come ogni lettura di §1.1."""
+    cond, par = ambito_utente("l.user_id")
+    return {r["player_id"] for r in db.execute(
+        "SELECT r.player_id FROM fanta_roster r "
+        "JOIN fanta_leagues l ON l.id = r.league_id "
+        f"WHERE r.league_id=? AND {cond}", (lid,) + tuple(par)).fetchall()}
+
+
+@bp.route("/lega/<int:lid>/rosa/incolla", methods=["POST"])
+@login_required
+def rosa_incolla(lid):
+    """L'anteprima della rosa incollata: **legge e mostra, non scrive niente.**
+
+    Una rosa sono ~25 giocatori e la ricerca ne aggiunge uno per volta: è il
+    motivo per cui questa pagina esiste. Il passo in due tempi però non è una
+    comodità, è la parte che la rende sicura — l'abbinamento di un nome può
+    sbagliare **senza dare errore** (`Thuram` sono due giocatori in due squadre e
+    due ruoli), e l'unico modo di accorgersene è vederlo prima che sia scritto.
+
+    ⚠️ È un `POST` anche se non scrive: il testo incollato è un dato, non un
+    parametro da mettere in un URL, e una rosa di venticinque nomi in querystring
+    sarebbe anche troppo lunga.
+    """
+    db = get_db()
+    lega = _lega_mia(db, lid)
+    if lega is None:
+        db.close()
+        flash("Lega non trovata", "error")
+        return redirect(url_for("fantacalcio.fantacalcio"))
+    testo = request.form.get("testo") or ""
+    righe = leggi_rosa_incollata(testo, _listone(db), _ids_in_rosa(db, lid))
+    db.close()
+    if not righe:
+        flash("Non ho letto nessun nome: incolla una riga per giocatore", "error")
+        return redirect(url_for("fantacalcio.lega", lid=lid))
+    conto = {s: len([r for r in righe if r["stato"] == s])
+             for s in ("ok", "conferma", "scegli", "niente")}
+    return render_template("fanta_rosa_incolla.html", lega=lega, righe=righe,
+                           testo=testo, conto=conto, ruoli=RUOLI_FANTA)
+
+
+@bp.route("/lega/<int:lid>/rosa/incolla/conferma", methods=["POST"])
+@login_required
+def rosa_incolla_conferma(lid):
+    """Scrive in rosa **solo** le righe spuntate, e dice riga per riga com'è andata.
+
+    ⚠️ Di quello che torna dal browser non si fida niente: il `player_id` viene
+    ricontrollato nel listone (un id inventato non entra) e la lega è la solita
+    `_lega_mia()`. Il nome che l'anteprima mostrava non viene nemmeno riletto —
+    quello che conta è l'id, come per l'incrocio delle tre pagine della fonte.
+    """
+    db = get_db()
+    lega = _lega_mia(db, lid)
+    if lega is None:
+        db.close()
+        flash("Lega non trovata", "error")
+        return redirect(url_for("fantacalcio.fantacalcio"))
+
+    validi = {r["id"] for r in db.execute("SELECT id FROM fanta_players").fetchall()}
+    indici = sorted({_i(k[4:]) for k in request.form if k.startswith("pid_")
+                     and _i(k[4:]) is not None})
+    aggiunti, saltati, ignoti = 0, 0, 0
+    for n in indici:
+        if not request.form.get(f"riga_{n}"):
+            continue                      # la spunta è la decisione: senza, non si scrive
+        pid = _i(request.form.get(f"pid_{n}"))
+        if pid is None or pid not in validi:
+            ignoti += 1
+            continue
+        try:
+            prezzo = float(str(request.form.get(f"prezzo_{n}") or 0).replace(",", "."))
+        except ValueError:
+            prezzo = 0.0
+        try:
+            db.execute("INSERT INTO fanta_roster(league_id, player_id, prezzo) "
+                       "VALUES(?,?,?)", (lid, pid, prezzo))
+            aggiunti += 1
+        except Exception:
+            # L'unico vincolo è UNIQUE(league_id, player_id): averlo già in rosa
+            # non è un errore, è una riga che non serve.
+            saltati += 1
+    db.commit()
+    db.close()
+    pezzi = [f"{aggiunti} in rosa"]
+    if saltati:
+        pezzi.append(f"{saltati} già in rosa da prima")
+    if ignoti:
+        pezzi.append(f"{ignoti} senza un giocatore valido")
+    flash(", ".join(pezzi), "success" if aggiunti else "error")
     return redirect(url_for("fantacalcio.lega", lid=lid))
 
 

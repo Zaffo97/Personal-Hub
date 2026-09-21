@@ -62,6 +62,22 @@ PAGINE = [
     "/fantacalcio/lega/1/formazione",
 ]
 
+# Le pagine che **si aprono con una POST**, aggiunte il 21/09/2026 con l'anteprima
+# della rosa incollata. ⚠️ Prima qui c'erano solo delle GET, e una pagina che si
+# raggiunge solo mandando un form non era in nessun elenco: lo sweep avrebbe detto
+# «0 errori» senza averla mai resa — la stessa forma della trappola di §1.1 sulle
+# tabelle nuove. Una pagina d'anteprima ha un form, una tendina per riga e uno
+# `<script>`, cioe' esattamente la roba che questo script esiste per controllare.
+#
+# I dati sono quelli **minimi** per farla comparire, e il testo incollato contiene
+# di proposito un nome ambiguo (`Thuram`, che nel listone e' anche `Thuram K.`) e
+# uno inesistente: cosi' la pagina resa ha davvero dentro una tendina e una riga
+# «non trovata», invece della sola forma facile.
+PAGINE_POST = [
+    ("/fantacalcio/lega/1/rosa/incolla",
+     {"testo": "Difensori\nThuram\nBastoni 22\nNomeCheNonEsiste 3"}),
+]
+
 
 def moderno(codice):
     """Smussa ciò che `esprima` 4.0.1 (2018) non sa leggere ma i browser sì.
@@ -161,6 +177,16 @@ def main():
                 r = c.get(pagina, follow_redirects=True)
                 if r.status_code != 200:
                     print(f"  {pagina:<26} status {r.status_code}")
+                    totale += 1
+                    continue
+                totale += controlla(esprima, pagina, r.get_data(as_text=True))
+            # Le pagine che si aprono solo mandando un form. ⚠️ `--pagina` le
+            # salta: chiedere una pagina sola vuol dire guardare quella, e una
+            # POST con dei dati addosso non e' «una pagina sola».
+            for pagina, dati in ([] if args.pagina else PAGINE_POST):
+                r = c.post(pagina, data=dati, follow_redirects=True)
+                if r.status_code != 200:
+                    print(f"  {pagina:<26} status {r.status_code} (POST)")
                     totale += 1
                     continue
                 totale += controlla(esprima, pagina, r.get_data(as_text=True))

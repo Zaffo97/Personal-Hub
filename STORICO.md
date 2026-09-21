@@ -227,6 +227,68 @@ lega, che si sovrascrive** (niente storico per giornata) e **validazione severa*
 
 ---
 
+**Fantacalcio: la rosa si incolla invece di cercarla venticinque volte (§4.2)**
+
+Scelta di Davide messa davanti al consiglio, e il motivo stava nel DB: con listone,
+probabili, regole e campo già in piedi, la rosa vera era ferma a **un giocatore su
+~25**, perché si aggiungeva uno per volta con la ricerca. Formazione, copertura dei
+moduli e consiglio girano tutti su una rosa che non c'era.
+
+- ✅ **Si incolla e si guarda prima di scrivere.** `POST
+  /fantacalcio/lega/<id>/rosa/incolla` è **solo** l'anteprima — non scrive niente,
+  e c'è una prova che lo dice — e la scrittura è un secondo `POST` che prende
+  **solo le righe spuntate**. Il passo in due tempi non è comodità: un nome
+  abbinato male non dà nessun errore, dà in rosa il giocatore di qualcun altro.
+- ✅ **Le righe che una rosa incollata ha davvero**: `Bastoni 22`,
+  `1. Di Gregorio JUV 18`, `Barella;INT;24`, una riga di foglio coi tab. ⚠️ La
+  **virgola decimale non è un separatore** (`12,5` resta 12.5), ⚠️ il **punto
+  distingue il ruolo dall'iniziale** (`A` è attaccante, `A.` è parte di `Adams
+  A.`), e una riga col **solo ruolo** (`Difensori`) è un'intestazione che vale per
+  le righe dopo — che è anche ciò che rende univoco un cognome condiviso da due
+  giocatori di ruolo diverso.
+- ⚠️ **Quanto è ambiguo un nome, misurato sul listone**: **0** nomi identici fra due
+  giocatori, ma **24 cognomi** condivisi (`Martinez L.`/`Martinez Jo.`, otto `De …`)
+  e — il caso che si sarebbe sbagliato in silenzio — **5 nomi che sono anche il
+  prefisso di un altro**: `Thuram` (INT, attaccante) esiste **e** c'è `Thuram K.`
+  (JUV, centrocampista), come `Colombo`, `Pessina`, `Rrahmani`, `Terracciano`.
+  Scrivendo «Thuram» l'abbinamento esatto **è** univoco e un codice ragionevole
+  l'avrebbe preso: per questo un nome con omonimi non è mai «sicuro», è **«da
+  confermare»**, con l'altro in tendina.
+- ✅ **Quattro stati, detti diversi**: *sicura* (nome esatto, nessun omonimo), *da
+  confermare* (un candidato ma da guardare), *da scegliere* (più candidati, **niente
+  preselezionato**) e *non trovata*. ⚠️ **Un nome scritto male non viene
+  indovinato**: niente distanza di edit, niente «forse intendevi».
+- ⚠️ ✅ **Tre bachi presi dalle prove al primo giro.** (1) «Adams» da solo, contro
+  `Adams A.` e `Adams C.`, veniva risolto in `Adams A.` — la regola sull'iniziale
+  confrontava anche **il cognome**, e la «a» comincia «adams»: inventava una
+  risposta dove non c'era niente da confrontare. (2) `Thuram K.` diventava `Thuram
+  K` a schermo, perché lo `strip` finale mangiava il punto; per l'abbinamento non
+  cambiava niente — ed è per questo che sarebbe passato inosservato. (3) Una riga
+  che chiedeva `Bastoni JUV` e trovava il Bastoni dell'Inter restava **«sicura»**:
+  ora la squadra o il ruolo che **non combaciano** si dichiarano e la riga scende a
+  «da confermare», perché o la sigla è sbagliata o il giocatore giusto è un altro.
+- ⚠️ **Lo sweep controllava solo pagine che si aprono con una `GET`.** Una pagina
+  che esiste solo mandando un form non era in nessun elenco, quindi avrebbe detto
+  «0 errori» senza averla mai resa — la stessa forma della trappola sulle tabelle
+  nuove. Aggiunto `PAGINE_POST`, e l'anteprima ci sta con un testo che contiene di
+  proposito un nome ambiguo e uno inesistente.
+- ✅ **Verifiche**: `prova_fantacalcio.py` da 95 a **123 su 123** (fra cui: l'anteprima
+  che non scrive niente, solo le righe spuntate che entrano, una scelta lasciata
+  vuota che non entra, un `player_id` inventato dal browser che non entra, un
+  doppione e un «già in rosa» che non raddoppiano, e un secondo utente che non apre
+  l'anteprima né scrive nella rosa altrui); **130 query 0 scoperte** (le tre nuove
+  dichiarate), **sweep 0 errori** su 27 pagine per lingua — la ventisettesima è
+  l'anteprima, ed è la prima che si apre con una `POST`. Pagina resa e passata a un
+  **parser HTML**: tag tutti chiusi, i due form
+  coi loro `action`, 11 spunte su 12 righe (la non trovata non ce l'ha), 2 tendine
+  sulle due righe ambigue, e ogni `data-riga` che combacia col suo `name`. ⬜ Quello
+  che questa verifica **non** dice: i due pulsanti «Spunta tutte»/«Nessuna» e la
+  tendina che accende la spunta sono JavaScript **corretto di sintassi** (sweep) su
+  selettori che **esistono** nella pagina resa, ma non sono stati cliccati in un
+  browser — la pagina chiede il login, e la password la mette Davide.
+
+---
+
 **Le due Mega Meowstic: un dato sbagliato teneva fuori una voce vera**
 
 - ⚠️ **Il difetto**: erano le ultime due voci del catalogo senza `slug`, e il backlog le
