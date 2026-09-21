@@ -71,6 +71,14 @@ giocatori di Serie A, le probabili dei propri giocatori, un consiglio, e le rego
   errori** sulle due pagine nuove in tutte e due le lingue, e le altre nove suite
   rieseguite — 224 controlli in tutto. Le pagine vere rese sul listone importato: 597
   giocatori dichiarati a schermo con la data.
+- ⚠️ ✅ **La voce Fantacalcio in sidebar portava al PC Builder** (trovata da Davide
+  cliccandola, lo stesso giorno). Il blocco `{% if 'fantacalcio' … %}` era finito
+  **dentro l'attributo `class`** del link PC Builder, che non veniva mai chiuso: il
+  parser fondeva i due `<a>` in uno solo con `href="/pcbuilder"`, quindi il testo
+  «Fantacalcio» era cliccabile ma portava altrove. ⚠️ **Lo sweep non lo vedeva**: rende
+  le pagine e controlla il **JavaScript**, non che l'HTML sia ben formato, e infatti
+  era a 0 errori anche col link rotto. Ora verificato con un parser HTML sulla pagina
+  resa: **9 voci di menu**, ognuna col suo `href`, e 19 `<a>` con 19 chiusure.
 
 ---
 

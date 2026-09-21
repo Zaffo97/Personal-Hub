@@ -229,10 +229,10 @@ function tipoVis(tipo){
     <a href="/python" class="nav-item {% if request.endpoint=='python_tracker' %}active{% endif %}"><em>🐍</em> Python Tracker</a>
     {% endif %}
     {% if 'pcbuilder' in sezioni_permesse %}
-    <a href="/pcbuilder" class="nav-item {% if request.endpoint and 'pcbuilder' in request.endpoint %}active{% endif %}
+    <a href="/pcbuilder" class="nav-item {% if request.endpoint and 'pcbuilder' in request.endpoint %}active{% endif %}"><em>🖥️</em> PC Builder</a>
+    {% endif %}
     {% if 'fantacalcio' in sezioni_permesse %}
     <a href="/fantacalcio" class="nav-item {% if request.endpoint and request.endpoint.startswith('fantacalcio.') %}active{% endif %}"><em>&#9917;</em> Fantacalcio</a>
-    {% endif %}"><em>🖥️</em> PC Builder</a>
     {% endif %}
 
 <div class="sidebar-section" style="margin-top:.6rem">Tools</div>
