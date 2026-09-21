@@ -18,6 +18,63 @@ pagina ed esegue `new Function()` su ogni blocco `<script>` **e** su ogni handle
 
 ---
 
+## 21/09/2026
+
+**Il blocco `main` del moveset non è più rotto, e resta (§5.2, §5.3)**
+
+- ✅ **La decisione di Davide prima dei numeri**: «in questo momento non mi interessa altro
+  se non Pokémon Champions, la base dati di tutti i pokemon, le mosse, oggetti e abilità
+  deve comunque esserci per poter costruire facilmente una nuova regulation in futuro».
+  Delle tre strade che il backlog lasciava aperte — sistemarlo, toglierlo dalla tendina,
+  lasciarlo dichiarato — è l'unica che le tiene insieme: `main` resta nel file e nella
+  tendina, e smette di dire il falso.
+- ✅ **Il difetto, riformulato dopo la misura**: non era «Leggende Arceus dà poche mosse»,
+  era che un gioco col **sistema di mosse ridotto vince perché è più recente**. `main`
+  prende l'ultimo version group in cui la voce compare, e per **77 voci** quello era
+  Leggende Arceus (58) o Let's Go (19). Abra aveva **una** mossa — `Teleport` — contro le
+  **49** di Brillante Diamante.
+- ✅ **La cura**: `VG_FUORI_SERIE` esclude `colosseum`, `xd`, `lets-go-*` e
+  `legends-arceus`, e li usa **solo come ripiego** per chi non compare altrove. Misurato
+  sul file riscritto: **74 voci** cambiano gioco, `main` passa da **68 030 a 70 755 mosse**
+  (+2725), **0** voci restano su Leggende Arceus, e su un gioco fuori serie restano solo
+  **Partner Pikachu e Partner Eevee**, che in nessun altro gioco esistono — presi lo
+  stesso, e il rapporto dell'import li **nomina**. Perdono mosse solo Silcoon e Cascoon
+  (3 → 1), e quell'1 è onesto: in Brillante Diamante imparano davvero solo *Rafforzatore*.
+- ✅ **`legends-za` e `mega-dimension` sono nell'elenco pur avendo zero righe**, ed è il
+  punto: hanno order **30** e **31**, cioè stanno **sopra** Scarlatto/Violetto (27). Il
+  giorno che PokéAPI li riempie diventerebbero da soli la sorgente di centinaia di voci
+  senza che nessuno abbia toccato niente. Il rapporto dell'import stampa quante specie e
+  quante mosse ha **ognuno** degli esclusi, con un `<- vuoto oggi, sorvegliato` su quelli a
+  zero: così smettere di essere vuoto è una notizia, non un numero sbagliato.
+- ✅ **Una regola sola per due scrittori.** La stessa scelta la faceva anche
+  `pokeapi.moveset()`, l'import dal pannello, con una seconda copia del `max(candidati)`:
+  una specie importata da lì sarebbe nata col difetto appena chiuso. Ora `VG_FUORI_SERIE` e
+  `scegli_vg_main()` stanno in `pokeapi.py` e l'import in blocco **li importa**, non li
+  ricopia — la prova controlla l'**identità** delle due funzioni, non che si somiglino.
+- ⚠️ **Trovato di passaggio e dichiarato, non nascosto**: rigenerando il file, `champions`
+  è passato da 20 699 a **20 700** mosse. La differenza è una sola voce,
+  `Charizard (Gigantamax Form)`, che guadagna *Slash*. Causa provata: in
+  `costruisci_moveset()` l'eredità Gigantamax è una copia **superficiale**, quindi la Gmax
+  e la sua base **sono lo stesso dizionario** e la toppa della 1.2.0 le tocca tutte e due;
+  `applica_toppe_champions.py`, che il 18/09 aveva scritto il file lavorando sul JSON dal
+  disco, le aveva invece lasciate disallineate. Il verso giusto è questo — `eredita_da`
+  dichiara che la lista **è** quella della base — e ora `prova_moveset_main.py` lo
+  controlla su tutte e 32 le forme che ereditano.
+- ✅ **Verifiche**: `scripts/prova_moveset_main.py` **19 su 19** (nuovo), più le suite già
+  esistenti rieseguite — `prova_champions_1_2_0.py` 27 su 27, `prova_mosse_regulation.py`
+  16 su 16, `prova_import_specie.py` 30 su 30, `prova_regulation_nuova.py` 32 su 32,
+  `prova_build_catalog.py` 9 su 9, `controlla_abilita.py` pulito. **Idempotenza provata in
+  processi separati** (stesso md5 su due giri), che è l'unico modo di vedere l'ordine
+  randomizzato dei `set`. `allinea_mosse_regulation.py --dry-run`: MA 492 e MB 494
+  invariate, niente da riscrivere. In `prova_champions_1_2_0.py` il conto di *Slash* non è
+  stato alzato da 29 a 30: è stato **spezzato** in «29 voci scelte» più «le forme che
+  ereditano», così un 30 che diventasse 31 per un'altra ragione fallisce lo stesso.
+- ⚠️ **Non toccati**: template e JavaScript, quindi niente sweep; il calcolatore, quindi la
+  regola #8 non è stata rieseguita — a schermo l'unica differenza è lo *Slash* sulla Gmax
+  di Charizard nel Pokedex, perché tutte e tre le regulation leggono `champions`.
+
+---
+
 ## 18/09/2026
 
 **L'export completo del DB, quello che un backup deve essere (§1.4)**

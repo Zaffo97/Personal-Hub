@@ -31,6 +31,8 @@ Non sono storia: sono le cose che questo progetto ha già pagato e che tornano a
 | ⚠️ **Le liste integrate stanno fuori da `pokemon_moves.json`** | Dal 14/09/2026 (Pawmot). `pokemon_moves.json` lo **rigenerano** `importa_mosse_specie.py` e l'import dal pannello: una lista scritta a mano lì dentro sparirebbe al giro dopo, senza errori. Le integrazioni stanno quindi in `data/catalog/moveset_integrazioni.json`, con fonte e versione, e tutte e due le strade le riapplicano con `applica_integrazioni_moveset()`. **Il dump vince**: dove PokéAPI avrà una lista sua, l'integrazione non si applica e l'import la segnala come «superata», da togliere. Non si modifica il blocco `champions` a mano |
 | ⚠️ **L'elenco `moves` di una regulation è derivato, non curato** | Dal 18/09/2026. Lo scrive `scripts/allinea_mosse_regulation.py` dall'unione delle mosse del roster, e **non si aggiorna da solo**: un Pokémon aggiunto a MA porta con sé mosse che restano fuori dalla tendina del calcolatore **senza nessun avviso**, perché quella tendina è l'intersezione fra l'elenco della regulation e la lista del singolo Pokémon. È esattamente il baco che lo script ha chiuso (3239 mosse nascoste su 17219 in MA), e si riapre da sé se lo script non viene rilanciato. **Dopo ogni modifica a un roster: `python scripts/allinea_mosse_regulation.py`.** Modificarlo a mano dall'editor contenuti funziona, ma il giro dopo lo script lo riscrive |
 | ⚠️ **Due livelli sopra il dump, e fanno cose diverse** | Dal 18/09/2026 `moveset_integrazioni.json` ha **due** sezioni, e confonderle non dà errore. `voci` sostituisce una **lista intera** e **solo dove il dump non ne ha una** — il dump vince, è il caso di Pawmot. `toppe` aggiunge e toglie **singole mosse** sopra una lista che il dump **ha già**, ed è il caso della versione 1.2.0: `applica_toppe_moveset()`. Una toppa su una voce senza lista non ne inventa una (sarebbe una lista di una mossa sola), e una toppa che non serve più viene detta **superata**, da togliere. ⚠️ E chi scrive le toppe deve **disfare quelle già presenti prima di misurare**: `pokemon_moves.json` le contiene già, e confrontando quello la differenza sparisce — il secondo giro cancellerebbe il proprio lavoro in silenzio. È il motivo di `disfa_toppe()` in `scripts/applica_toppe_champions.py` |
+| ⚠️ **In `main` vince il gioco più recente, e «più recente» non vuol dire «più completo»** | Dal 21/09/2026. `main` prende l'ultimo version group in cui la voce compare, e fino a quel giorno bastava questo: il risultato era che **Leggende Arceus** e **Let's Go**, che hanno un sistema di mosse ridotto, vincevano su Scarlatto/Violetto per **77 voci** — Abra con **una** mossa sola, e nessun errore da nessuna parte. Ora `VG_FUORI_SERIE` in `pokeapi.py` li tiene fuori, e li usa **solo come ripiego** per chi non compare altrove (Partner Pikachu ed Eevee). ⚠️ Due cose da sapere prima di toccarlo: **`legends-za` e `mega-dimension` sono nell'elenco pur avendo zero righe oggi**, perché hanno order 30 e 31 e il giorno che PokéAPI li riempie diventerebbero da soli la sorgente di centinaia di voci — il rapporto dell'import stampa quante righe ha ognuno degli esclusi, così se uno smette di essere vuoto si va a guardare; e la regola è **una sola funzione**, `scegli_vg_main()`, importata da tutti e due gli scrittori (`importa_mosse_specie.py` e `pokeapi.moveset()`, l'import dal pannello), perché finché erano due copie una restava indietro — ed è esattamente così che il difetto è sopravvissuto |
+| ⚠️ **Una forma Gigantamax condivide l'oggetto della sua base, non una copia** | Trovata il 21/09/2026. In `costruisci_moveset()` l'eredità è una copia **superficiale**: `voce["champions"]` della Gmax **è lo stesso dizionario** della specie base. Per l'import in blocco è il verso giusto — `eredita_da` dichiara proprio che la lista è quella della base, quindi una toppa applicata a `charizard` arriva anche alla sua Gmax — ma `applica_toppe_champions.py` lavora sul JSON **dal disco**, dove le due liste sono due oggetti separati, e lì la propagazione non c'è. Risultato: il file del 18/09/2026 aveva `Charizard (Gigantamax Form)` **senza** lo *Slash* della 1.2.0 che la sua base aveva, e nessuno se n'è accorto. La rigenerazione del 21/09 le ha riallineate (`champions` 20 699 → 20 700 mosse, una sola voce). La rete: `prova_moveset_main.py` controlla che **ogni** forma con `eredita_da` abbia davvero la lista della sua base |
 | ⚠️ **I dati delle mosse sono quelli di Champions, non di Scarlatto/Violetto** | Dal 18/09/2026, decisione di Davide. Champions **ribilancia** le mosse rispetto ai giochi principali, e il catalogo viene da PokéAPI, cioè da S/V: la sezione «Changes from Scarlet and Violet» della pagina «Pokémon Champions» su Bulbapedia elenca una trentina di differenze. Delle 29 misurabili il catalogo ne aveva **17 già giuste** e 12 no (Slash bp 70→80, Grav Apple 80→90, Crabhammer precisione 90→95, Snap Trap da Erba ad **Acciaio**, …): un numero sbagliato, nessun errore a schermo. Le riallinea `scripts/allinea_dati_mosse_champions.py`. ⚠️ Quella sezione ha in fondo un blocco **commentato** di mosse «that aren't in the game yet» (Gear Grind, Anchor Shot, Hyper Drill, …): quelle **non** vanno scritte. E i **PP** non hanno dove andare — nessuna delle 919 mosse ha quel campo |
 | ⚠️ **Un file di dati si riscrive come lo scrivono gli altri** | Due modi di sporcare un diff, trovati il 18/09/2026 su `pokemon_moves.json` (3 MB). **(1) L'indentazione**: i due scrittori del file usano `indent=1`, uno script nuovo con `indent=2` lo reindenta tutto — **100 000 righe di diff per 33 voci cambiate**, e la modifica vera diventa impossibile da leggere in revisione. ⚠️ `salva_moveset()` in `blueprints/pokemon.py` usa ancora `indent=2`: l'import dal pannello reindenta il file, ed è così da prima, segnalato e non corretto. **(2) L'ordine dei set**: l'hash delle stringhe in Python è randomizzato per processo, quindi iterare un `set` di nomi dà un ordine diverso a ogni giro. Uno script che scrive nell'ordine in cui itera **non è idempotente**, e si vede solo confrontando l'md5 di due giri in **processi separati** — nello stesso processo l'ordine è stabile e la prova passa. Si chiude con `sorted()` e riordinando i dizionari scritti |
 | ⚠️ **Il Pokedex mostra le mosse di Champions, e per 1009 voci su 1342 non ne mostra nessuna** | Dal 18/09/2026, decisione di Davide: «voglio solo ciò che imparano in Champions». `pokedex` è passata da `moveset: main` a `champions`, che copre **333 voci** — il roster del gioco. Tutte le altre, Abra e **Amoonguss** compresi, prendono l'avviso giallo «nessun elenco mosse: sono mostrate tutte» e la tendina da 919. **Non è un guasto**, è la risposta onesta: `null` vuol dire «non lo sappiamo», ed è la stessa che prendono le forme inventate. ⚠️ Vale anche per il **caso della regola #8**, che gira proprio su `pokedex` con Amoonguss: l'avviso giallo su Amoonguss è previsto, il danno si calcola lo stesso perché la mossa si scrive a mano (Buio, fisica, BP 100). Chi «aggiusta» quell'avviso rompe una decisione, non un baco |
@@ -806,18 +808,20 @@ In ordine di rischio:
   **229 in Scarlatto/Violetto** coi DLC. L'unico scarto è **BDSP**, dove `machines.csv` ne
   dichiara 17 contro 100 usate: è un buco di quel file di PokéAPI, che noi non leggiamo,
   non un gonfiaggio dei moveset. Il 65,5% di `machine` è la proporzione vera
-- 🟨 **la lista `main` non la legge più nessuno** (18/09/2026). Il campione su generazioni
-  diverse ha trovato il difetto senza bisogno di una seconda fonte: per **77 voci** l'ultimo
-  gioco in cui compaiono è **Leggende Arceus** (58) o **Let's Go** (19), due giochi con un
-  sistema di mosse ridotto — media **7,4 mosse** contro le 56,3 di Scarlatto/Violetto,
-  **1063 in tutto invece di 4562**. Abra aveva **una** mossa. Passando `pokedex` a
-  `champions` il problema **non si vede più**, perché `main` non lo legge nessuna
-  regulation; ma il dato resta nel file (1293 voci) e il difetto tornerebbe intero il giorno
-  che una regulation scegliesse `main`. **La cura misurata**, se servirà: escludere i gruppi
-  fuori serie (`legends-arceus`, `lets-go-*`, `colosseum`, `xd`) come si fa già con
-  `champions`, e usarli solo come ripiego — 74 voci cambiano, **+2686 mosse**, e perdono
-  solo Silcoon e Cascoon (3 → 1). Partner Pikachu ed Eevee restano su Let's Go, che è
-  l'unico gioco in cui esistono
+- ✅ **la lista `main` è stata curata il 21/09/2026**, ed era stata trovata il 18/09 col
+  campione su generazioni diverse, senza bisogno di una seconda fonte: per **77 voci**
+  l'ultimo gioco in cui comparivano era **Leggende Arceus** (58) o **Let's Go** (19), due
+  giochi col sistema di mosse ridotto — Abra aveva **una** mossa, `Teleport`, invece delle
+  49 di Brillante Diamante. Il difetto non era «Leggende Arceus dà poche mosse»: era che un
+  gioco fuori serie **vince perché è più recente**. Ora `VG_FUORI_SERIE` in `pokeapi.py`
+  tiene fuori `colosseum`, `xd`, `lets-go-*`, `legends-arceus` — più `legends-za` e
+  `mega-dimension`, che oggi sono **vuoti** ma hanno order 30 e 31, cioè **sopra**
+  Scarlatto/Violetto. Misurato: **74 voci** cambiano gioco, `main` passa da 68 030 a
+  **70 755 mosse** (+2725), zero voci restano su Leggende Arceus, e le sole due rimaste su
+  un gioco fuori serie sono **Partner Pikachu e Partner Eevee**, che in nessun altro gioco
+  esistono — prese lo stesso, e il rapporto dell'import le **nomina** come ripiego. Perdono
+  mosse solo Silcoon e Cascoon (3 → 1), e quell'1 è onesto: in Brillante Diamante imparano
+  davvero solo *Rafforzatore*. Prova: `scripts/prova_moveset_main.py` (19 su 19)
 - ⬜ **il campione di `main` contro Bulbapedia** resta da fare **solo se** `main` tornerà in
   uso: oggi non lo legge nessuno, e le pagine learnset per generazione hanno una
   struttura diversa da quelle di Champions, quindi il lavoro andrebbe rifatto lo stesso
@@ -840,14 +844,14 @@ perché finché i lavori sono in corso, un file che oggi sembra morto può servi
 - **funzioni e helper** nei blueprint, in `data.py` e in `extensions.py` mai importati
 - **gli script di `scripts/`** — quali sono una-tantum già consumati (`build_catalog.py`,
   gli `importa_*` ed `esporta_dati.py` restano perché rieseguibili)
-- ⚠️ **il blocco `main` di `pokemon_moves.json`** — candidato nuovo dal 18/09/2026, e il
-  più grosso: **1293 voci** e la maggior parte dei 3 MB del file, e da quando `pokedex`
-  usa `champions` **non lo legge nessuna regulation**. Non si toglie a cuor leggero:
-  `sorgenti_moveset()` lo offre ancora nella tendina della regulation, quindi una
-  regulation nuova può sceglierlo domani — e se lo fa, si porta dietro il difetto delle
-  77 voci di Leggende Arceus e Let's Go (vedi §5.2). O si sistema, o si toglie dalla
-  tendina, o si lascia dichiarato: quello che non si può fare è lasciarlo scegliibile
-  **e** rotto
+- ✅ **il blocco `main` di `pokemon_moves.json` NON è codice morto**, e la domanda è
+  chiusa il 21/09/2026 da una decisione di Davide: «la base dati di tutti i pokemon, le
+  mosse, oggetti e abilità deve comunque esserci per poter costruire facilmente una nuova
+  regulation in futuro». Delle tre strade — sistemarlo, toglierlo dalla tendina, lasciarlo
+  dichiarato — è stata presa la prima, l'unica che tiene insieme le due cose: **1293 voci**
+  e 1,7 MB dei 3 restano nel file, `sorgenti_moveset()` continua a offrirlo, e adesso è
+  **giusto** invece che rotto (vedi §5.2). ⚠️ Quindi qui non si tocca: chi farà
+  l'inventario lo troverà non letto da nessuna regulation, e non è una prova che sia morto
 - **i file di dati storici**, la voce più concreta — vedi la trappola in cima. Da dismettere
   **solo** a verifica finita, cioè qui
 - **la tabella `regulations` nel DB** (vedi §1.4, falla 1) e ogni altra colonna che nessuna

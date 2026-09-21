@@ -54,7 +54,18 @@ def main():
           "Mirror Coat" not in arch and "Metal Burst" not in arch, f"{len(arch)} mosse")
     con_slash = [k for k, v in voci.items()
                  if "Slash" in (((v.get("champions") or {}).get("moves")) or {})]
-    esito("Slash è nelle liste di 29 voci", len(con_slash) == 29, f"{len(con_slash)} voci")
+    # ⚠️ 29 voci **scelte**, più le forme che **ereditano** da una di quelle. Il numero
+    # era 29 secco fino al 21/09/2026, e il trentesimo è comparso rigenerando il file:
+    # `Charizard (Gigantamax Form)` dichiara `eredita_da: Charizard`, quindi la sua
+    # lista **è** quella di Charizard — che la toppa della 1.2.0 tocca. Il file del
+    # 18/09 le aveva disallineate perché scritto da `applica_toppe_champions.py`, che
+    # lavora sul JSON dal disco dove le due liste sono due oggetti separati. Contarle a
+    # parte è il punto: un 30 che diventasse 31 per un'altra ragione deve fallire.
+    scelte = [k for k in con_slash if "eredita_da" not in voci[k]]
+    per_eredita = sorted(k for k in con_slash if "eredita_da" in voci[k])
+    esito("Slash è nelle liste di 29 voci", len(scelte) == 29, f"{len(scelte)} voci")
+    esito("più le forme che ereditano da una di quelle",
+          per_eredita == ["Charizard (Gigantamax Form)"], f"{per_eredita}")
     esito("fra queste Absol, Garchomp e Weavile",
           {"absol", "garchomp", "weavile"} <= set(con_slash))
 

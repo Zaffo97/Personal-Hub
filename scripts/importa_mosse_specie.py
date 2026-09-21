@@ -17,8 +17,10 @@ DUE ELENCHI PER VOCE, non uno, perché sono due cose diverse:
 
 - **`main`** — le mosse dei giochi principali, prese dal **version group più recente in
   cui quella voce compare** (di norma Scarlatto/Violetto; chi non c'è ricade su
-  Spada/Scudo e via indietro). È l'elenco giusto per la regulation `pokedex`, che non
-  filtra nulla
+  Spada/Scudo e via indietro), **saltando i giochi fuori serie** di `VG_FUORI_SERIE`.
+  ⚠️ Oggi **non lo legge nessuna regulation** — tutte e tre usano `champions` dal
+  18/09/2026 — ma resta la base da cui costruirne una non basata su Champions, e per
+  questo deve essere giusto anche mentre nessuno lo guarda
 - **`champions`** — il moveset di **Pokémon Champions**, che nel dump è un version
   group suo (`champions`, id 32, 19810 righe su 319 voci). È l'elenco giusto per `ma` e
   `mb`, che da Champions vengono. Non è la stessa lista: Incineroar in Champions **non
@@ -49,6 +51,13 @@ import time
 
 RADICE = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 sys.path.insert(0, RADICE)
+
+# ⚠️ Importate, non ricopiate. La regola di quale version group finisce in `main` la
+# applicano **due** scrittori — questo script e `pokeapi.moveset()`, l'import dal
+# pannello — e finche' erano due copie una restava indietro: e' esattamente cosi' che
+# il difetto delle 77 voci e' sopravvissuto. Stanno in `pokeapi.py` perche' e' il
+# modulo piu' basso dei due e non importa niente del progetto.
+from pokeapi import VG_FUORI_SERIE, scegli_vg_main  # noqa: E402
 
 # La console di Windows e' cp1252 e non sa scrivere "Nidoran♀": senza questo il
 # rapporto finale muore su UnicodeEncodeError dopo che il lavoro e' gia' stato fatto.
@@ -214,7 +223,7 @@ def costruisci_moveset(quali):
         return nome[:-len(coda)] if nome.endswith(coda) else None
 
     voci_catalogo, senza_slug, per_nome = indice_catalogo()
-    fuori, usati_vg, senza_righe = {}, collections.Counter(), []
+    fuori, usati_vg, senza_righe, ripiego = {}, collections.Counter(), [], []
 
     for chiave, slug in sorted(voci_catalogo.items()):
         per_vg = per_slug.get(slug)
@@ -224,16 +233,15 @@ def costruisci_moveset(quali):
         voce = {"slug": slug}
 
         if "main" in quali:
-            # il version group più recente in cui la voce compare, Champions escluso
-            candidati = [(gruppi[v][1], v) for v in per_vg
-                         if v in gruppi and v != id_champions]
-            if candidati:
-                _, vg = max(candidati)
+            vg, di_ripiego = scegli_vg_main(per_vg, gruppi, id_champions)
+            if vg is not None:
                 voce["main"] = {
                     "vg": gruppi[vg][0],
                     "moves": {n: ",".join(m) for n, m in sorted(per_vg[vg].items())},
                 }
                 usati_vg[gruppi[vg][0]] += 1
+                if di_ripiego:
+                    ripiego.append((chiave, gruppi[vg][0]))
 
         if "champions" in quali and id_champions in per_vg:
             voce["champions"] = {
@@ -261,10 +269,23 @@ def costruisci_moveset(quali):
         senza_righe.remove(chiave)
         ereditate.append(chiave)
 
+    # Quanto c'e' davvero nei version group esclusi. Serve a due cose opposte: dire che
+    # l'esclusione ha morso qualcosa di reale (Leggende Arceus ha 247 specie), e
+    # accorgersi del giorno in cui uno che oggi e' vuoto — `legends-za`,
+    # `mega-dimension` — smette di esserlo.
+    fuori_serie = {}
+    for id_vg, (nome_vg, _) in gruppi.items():
+        if nome_vg not in VG_FUORI_SERIE:
+            continue
+        specie = sum(1 for per_vg in per_slug.values() if id_vg in per_vg)
+        mosse = sum(len(per_vg[id_vg]) for per_vg in per_slug.values() if id_vg in per_vg)
+        fuori_serie[nome_vg] = (specie, mosse)
+
     return fuori, dict(senza_slug=senza_slug, senza_righe=sorted(senza_righe),
                        usati_vg=usati_vg, righe_ignorate=righe_ignorate,
                        voci_catalogo=len(voci_catalogo), riallineate=riallineate,
-                       ereditate=sorted(ereditate), gmax_senza_base=sorted(gmax_senza_base))
+                       ereditate=sorted(ereditate), gmax_senza_base=sorted(gmax_senza_base),
+                       ripiego=sorted(ripiego), fuori_serie=fuori_serie)
 
 
 # ── scrittura ────────────────────────────────────────────────────────────────
@@ -277,9 +298,11 @@ def scrivi(voci, dry):
             "generato_da": "scripts/importa_mosse_specie.py",
             "spiegazione": (
                 "`main` = mosse dei giochi principali, dal version group più recente in cui "
-                "la voce compare. `champions` = moveset di Pokémon Champions, la fonte di "
-                "ma/mb. Il valore dice come si impara la mossa: level-up:<livello>, machine, "
-                "egg, tutor, train."
+                "la voce compare, esclusi i giochi fuori serie (Colosseum, XD, Let's Go, "
+                "Leggende) che hanno un sistema di mosse ridotto e vincerebbero solo perché "
+                "più recenti. `champions` = moveset di Pokémon Champions, la fonte di ma/mb. "
+                "Il valore dice come si impara la mossa: level-up:<livello>, machine, egg, "
+                "tutor, train."
             ),
         },
         "voci": voci,
@@ -358,6 +381,18 @@ def main():
         print("\n  version group usati per `main`:")
         for nome, n in s["usati_vg"].most_common():
             print(f"    {nome:20s} {n:5d} voci")
+
+    if s.get("fuori_serie"):
+        print("\n  version group FUORI SERIE, esclusi da `main` (solo ripiego):")
+        for nome in sorted(s["fuori_serie"]):
+            specie, mosse = s["fuori_serie"][nome]
+            nota = "   <- vuoto oggi, sorvegliato" if not specie else ""
+            print(f"    {nome:32s} {specie:4d} specie  {mosse:6d} mosse{nota}")
+    if s.get("ripiego"):
+        print(f"\n  voci prese lo stesso da un gioco fuori serie, perche' non"
+              f" compaiono altrove: {len(s['ripiego'])}")
+        for chiave, nome_vg in s["ripiego"]:
+            print(f"    \u00b7 {chiave}  ({nome_vg})")
 
     if s["ereditate"]:
         print(f"\n  Gigantamax che ereditano dalla specie base: {len(s['ereditate'])}")

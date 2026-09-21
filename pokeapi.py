@@ -11,8 +11,10 @@ combaciano invece di divergere per una versione diversa. E il moveset sta tutto 
 file, quindi una specie costa una lettura e non una chiamata di rete.
 
 ⚠️ **Le regole di Pokémon Champions, decise da Davide il 21/08/2026**: la voce nuova
-porta **tutti e due** gli elenchi di mosse quando il dump li ha — `main` per `pokedex`
-e `champions` per `ma`/`mb`. Delle 1323 voci col moveset oggi solo **329** hanno
+porta **tutti e due** gli elenchi di mosse quando il dump li ha — `champions` e `main`.
+⚠️ Dal 18/09/2026 `champions` lo usano **tutte e tre** le regulation, `pokedex`
+compresa: `main` non lo legge nessuno, e resta come base per una regulation futura che
+non venga da Champions. Delle 1323 voci col moveset oggi solo **329** hanno
 l'elenco `champions`: dove Champions non conosce la specie l'elenco **non si inventa**,
 resta assente, e a schermo compare l'avviso giallo «sono mostrate tutte» che già
 esiste. Le IV non c'entrano con questo file: il calcolatore le usa fisse a 31
@@ -34,6 +36,54 @@ UA = {"User-Agent": "personal-hub/1.0 (import specie da interfaccia, uso persona
 
 IT, EN = "8", "9"
 VG_CHAMPIONS = "champions"
+
+# ⚠️ I version group **fuori serie**, esclusi da `main` e usati solo come ripiego.
+#
+# `main` prende il gioco **più recente** in cui la voce compare, e fino al 21/09/2026
+# bastava questo. Il difetto non era «Leggende Arceus dà poche mosse»: era che un gioco
+# col sistema di mosse ridotto **vince perché è più recente**, e il risultato non dava
+# nessun errore — dava il numero sbagliato. Abra aveva **una** mossa (`Teleport`, da
+# Leggende Arceus) invece delle 49 di Brillante Diamante, e in tutto 77 voci su 1293
+# stavano così: 1063 mosse invece di 4562.
+#
+# Escluderli vuol dire «per `main` questi giochi non contano», non «questi giochi non
+# esistono»: se una voce compare **solo** lì la si prende lo stesso, e il rapporto lo
+# dice. Oggi è il caso di Partner Pikachu e Partner Eevee, che in nessun altro gioco ci
+# sono.
+#
+# ⚠️ `legends-za` e `mega-dimension` sono nell'elenco pur avendo **zero righe** nel dump
+# di oggi, ed è il punto: hanno order **30** e **31**, cioè stanno **sopra**
+# Scarlatto/Violetto (27). Il giorno che PokéAPI li riempie diventerebbero da soli la
+# sorgente di centinaia di voci senza che nessuno abbia toccato niente, e Leggende Z-A è
+# della stessa famiglia di Leggende Arceus. Il rapporto finale stampa quante righe ha
+# ognuno degli esclusi: se uno smette di essere vuoto, si va a guardare invece di
+# scoprirlo da un numero sbagliato.
+VG_FUORI_SERIE = {
+    "colosseum", "xd",                  # gli spin-off GameCube
+    "lets-go-pikachu-lets-go-eevee",    # Let's Go: niente MT, mosse ridotte
+    "legends-arceus",                   # Leggende Arceus: sistema di mosse suo
+    "legends-za", "mega-dimension",     # Leggende Z-A e il suo DLC: vuoti oggi
+}
+
+
+def scegli_vg_main(per_vg, gruppi, id_champions):
+    """Da quale version group prendere `main`, e se è stato un **ripiego**.
+
+    Torna `(vg, di_ripiego)`. La regola resta «il gioco più recente in cui la voce
+    compare», ma i giochi di `VG_FUORI_SERIE` non partecipano alla gara: partecipano
+    solo se non è rimasto nessun altro, e in quel caso `di_ripiego` è `True` e il
+    rapporto lo nomina. Senza questa distinzione una voce che sta **solo** lì
+    sparirebbe da `main`, che è il contrario di quello che serve.
+    """
+    candidati = [(gruppi[v][1], v) for v in per_vg
+                 if v in gruppi and v != id_champions]
+    if not candidati:
+        return None, False
+    in_serie = [c for c in candidati if gruppi[c[1]][0] not in VG_FUORI_SERIE]
+    if in_serie:
+        return max(in_serie)[1], False
+    return max(candidati)[1], True
+
 
 # I file del dump che servono a costruire una voce completa. `pokemon_moves.csv` è il
 # grosso (10 MB): sta in fondo perché è l'unico che si legge filtrando.
@@ -325,10 +375,8 @@ def moveset(slug_voluti):
     fuori = {}
     for slug, per_vg in per_slug.items():
         voce = {"slug": slug}
-        candidati = [(gruppi[v][1], v) for v in per_vg
-                     if v in gruppi and v != id_champions]
-        if candidati:
-            _, vg = max(candidati)          # il version group più recente
+        vg, _di_ripiego = scegli_vg_main(per_vg, gruppi, id_champions)
+        if vg is not None:
             voce["main"] = {"vg": gruppi[vg][0],
                             "moves": {n: ",".join(m) for n, m in sorted(per_vg[vg].items())}}
         if id_champions in per_vg:
