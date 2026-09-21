@@ -47,6 +47,10 @@
         </select>
       </form>
       {% endif %}
+      <form method="post" action="{{ url_for('fantacalcio.aggiorna', quale='probabili') }}">
+        <input type="hidden" name="torna_a" value="/fantacalcio/probabili">
+        <button class="btn btn-secondary" type="submit">&#8635; Aggiorna ora</button>
+      </form>
       <a class="btn" href="{{ url_for('fantacalcio.fantacalcio') }}">&larr; Le leghe</a>
     </div>
   </div>

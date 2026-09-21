@@ -238,13 +238,27 @@ def init_db():
         aggiornato_il TIMESTAMP DEFAULT CURRENT_TIMESTAMP);
     -- Le leghe, con le loro regole. Sono **dati dell'utente**: ogni SELECT qui
     -- sopra va filtrata con ambito_utente(), e una query nuova nasce scoperta.
-    -- ⚠️ Dei valori di default solo TRE vengono dal regolamento ufficiale di
-    -- fantacalcio.it, letto il 21/09/2026: gol +3, ammonizione -0,5, espulsione
-    -- -1 (e i cartellini si fermano a -1 comunque siano combinati). Tutti gli
-    -- altri sono quelli **convenzionali**, che il regolamento ufficiale non fissa
-    -- perche' cambiano da lega a lega: sono un punto di partenza da correggere,
-    -- ed e' esattamente il motivo per cui queste regole stanno in colonne e non
-    -- in un testo libero.
+    -- ⚠️ Dei valori di default **sette** vengono dal regolamento ufficiale, che
+    -- `/regolamenti/leghe-private` elenca per esteso (riletto il 21/09/2026): gol
+    -- +3 rigori compresi, assist +1, ammonizione -0,5, espulsione -1, gol subito
+    -- -1, rigore parato +3, rigore sbagliato -3. I cartellini si fermano a -1
+    -- comunque siano combinati. Restano **convenzionali** solo `bonus_imbattibilita`
+    -- e `malus_autogol`, che il regolamento davvero non fissa perche' cambiano da
+    -- lega a lega: quelli sono un punto di partenza da correggere, ed e' il motivo
+    -- per cui queste regole stanno in colonne e non in un testo libero.
+    -- (Fino a quel giorno qui era scritto «solo TRE»: era la prima lettura, fatta
+    -- sulla pagina sbagliata, non una regola diversa.)
+    -- ⚠️ `bonus_gol` e' **uno solo**, dal 21/09/2026. Prima erano quattro colonne
+    -- (una per ruolo) e per il regolamento ufficiale di fantacalcio.it il gol vale
+    -- **+3 comunque**, chiunque lo segni: quattro caselle da riempire con lo stesso
+    -- numero erano quattro occasioni di sbagliarne una. La migrazione piu' sotto
+    -- travasa il vecchio valore e toglie le quattro colonne, ma **solo** se in ogni
+    -- lega erano uguali fra loro: dove non lo fossero, resterebbero li' invece di
+    -- perdere in silenzio una differenza voluta.
+    -- Il modificatore di difesa ha la **struttura** del regolamento ufficiale
+    -- (media del portiere + migliori 3 difensori, esclusi bonus e malus, e serve
+    -- che almeno 4 difensori portino voto) e i **valori** in `mod_difesa_soglie`,
+    -- perche' quelli la piattaforma li lascia personalizzare.
     CREATE TABLE IF NOT EXISTS fanta_leagues(
         id INTEGER PRIMARY KEY, user_id INTEGER,
         nome TEXT NOT NULL,
@@ -252,8 +266,9 @@ def init_db():
         moduli TEXT DEFAULT '3-4-3,3-5-2,4-3-3,4-4-2,4-5-1,5-3-2,5-4-1',
         n_panchinari INTEGER DEFAULT 7,
         mod_difesa INTEGER DEFAULT 0,
-        bonus_gol_p REAL DEFAULT 3, bonus_gol_d REAL DEFAULT 3,
-        bonus_gol_c REAL DEFAULT 3, bonus_gol_a REAL DEFAULT 3,
+        mod_difesa_portiere INTEGER DEFAULT 1,
+        mod_difesa_soglie TEXT,
+        bonus_gol REAL DEFAULT 3,
         bonus_assist REAL DEFAULT 1,
         malus_amm REAL DEFAULT -0.5, malus_esp REAL DEFAULT -1,
         malus_gol_subito REAL DEFAULT -1,
@@ -493,6 +508,41 @@ def init_db():
         db.execute("ALTER TABLE game_releases ADD COLUMN hypes INTEGER")
         db.commit()
     except Exception:
+        pass
+
+    # ── Fantacalcio: le regole della lega, rifatte il 21/09/2026 ─────────────
+    # Le due colonne nuove del modificatore di difesa. Come sopra: la CREATE TABLE
+    # vale solo per i DB nuovi, qui c'e' gia' una lega vera.
+    for colonna, tipo in (("mod_difesa_portiere", "INTEGER DEFAULT 1"),
+                          ("mod_difesa_soglie", "TEXT"),
+                          ("bonus_gol", "REAL DEFAULT 3")):
+        try:
+            db.execute(f"ALTER TABLE fanta_leagues ADD COLUMN {colonna} {tipo}")
+            db.commit()
+        except Exception:
+            pass
+    # ⚠️ Il travaso dei quattro bonus gol in uno. La regola e' **non perdere in
+    # silenzio**: se in qualche lega i quattro valori erano diversi fra loro, quella
+    # differenza era voluta, quindi le colonne vecchie **restano dove sono** e il
+    # travaso non si fa. Dove invece erano uguali - il caso normale, ed e' quello
+    # che il regolamento ufficiale prevede - il valore si sposta e le quattro
+    # colonne se ne vanno.
+    try:
+        vecchie = [r[1] for r in db.execute("PRAGMA table_info(fanta_leagues)")]
+        if "bonus_gol_a" in vecchie:
+            diverse = db.execute(
+                "SELECT COUNT(*) FROM fanta_leagues WHERE bonus_gol_p<>bonus_gol_d "
+                "OR bonus_gol_d<>bonus_gol_c OR bonus_gol_c<>bonus_gol_a").fetchone()[0]
+            if not diverse:
+                db.execute("UPDATE fanta_leagues SET bonus_gol=COALESCE(bonus_gol_a,3) "
+                           "WHERE bonus_gol IS NULL")
+                for colonna in ("bonus_gol_p", "bonus_gol_d", "bonus_gol_c",
+                                "bonus_gol_a"):
+                    db.execute(f"ALTER TABLE fanta_leagues DROP COLUMN {colonna}")
+                db.commit()
+    except Exception:
+        # Un DROP COLUMN che non passa (SQLite vecchio) non deve impedire l'avvio:
+        # le colonne restano, e il codice legge `bonus_gol` che ormai c'e'.
         pass
     db.commit()
     db.close()

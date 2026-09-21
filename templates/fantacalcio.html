@@ -41,19 +41,31 @@
 {# Lo stato del listone: senza questo non si sa se i numeri delle rose sono di
    oggi o di tre mesi fa, e un listone vecchio non dà errore, dà il dato sbagliato. #}
 <div class="card mb-3">
-  <div class="card-header"><div class="card-title">Il listone</div></div>
+  <div class="card-header">
+    <div class="card-title">Il listone</div>
+    {# Un POST, non un link: scarica due pagine e riscrive righe, e un GET si
+       rifarebbe da solo a ogni ricarica del browser. #}
+    <form method="post" action="{{ url_for('fantacalcio.aggiorna', quale='listone') }}">
+      <button class="btn btn-secondary btn-sm" type="submit">&#8635; Aggiorna ora</button>
+    </form>
+  </div>
   <div style="padding:.75rem 1rem" class="text-sm">
     {% if listone.attivi %}
       <strong>{{ listone.attivi }}</strong> giocatori attivi
       {% if listone.spenti %}&middot; {{ listone.spenti }} non più in Serie A (spenti, non cancellati){% endif %}
       {% if listone.visto %}&middot; aggiornato il <strong>{{ listone.visto }}</strong>{% endif %}
       <div class="text-xs text-muted mt-1">
-        Si aggiorna da riga di comando, e va rifatto a ogni mercato:
+        {% if eta_cache.listone is not none %}
+          Letto da fantacalcio.it {{ eta_cache.listone|round(0)|int }} ore fa.
+        {% endif %}
+        Si rilegge da sé quando la copia passa la settimana &mdash; a ogni mercato
+        conviene non aspettare e premere Aggiorna. Da riga di comando:
         <code>python scripts/importa_listone.py --scarica</code>
       </div>
     {% else %}
       <span class="text-muted">Il listone non è ancora stato importato.</span>
-      <div class="text-xs text-muted mt-1"><code>python scripts/importa_listone.py</code></div>
+      <div class="text-xs text-muted mt-1">Premi <strong>Aggiorna ora</strong>, oppure
+        <code>python scripts/importa_listone.py</code></div>
     {% endif %}
   </div>
 </div>
@@ -63,7 +75,12 @@
 <div class="card mb-3">
   <div class="card-header">
     <div class="card-title">Le probabili formazioni</div>
-    <a class="btn btn-secondary btn-sm" href="{{ url_for('fantacalcio.probabili') }}">Apri</a>
+    <div class="flex gap-1">
+      <form method="post" action="{{ url_for('fantacalcio.aggiorna', quale='probabili') }}">
+        <button class="btn btn-secondary btn-sm" type="submit">&#8635; Aggiorna ora</button>
+      </form>
+      <a class="btn btn-secondary btn-sm" href="{{ url_for('fantacalcio.probabili') }}">Apri</a>
+    </div>
   </div>
   <div style="padding:.75rem 1rem" class="text-sm">
     {% if probabili.giornata %}
@@ -71,12 +88,16 @@
       {{ probabili.quanti }} convocati
       {% if probabili.quando %}&middot; importate il <strong>{{ probabili.quando }}</strong>{% endif %}
       <div class="text-xs text-muted mt-1">
-        Cambiano fino al fischio d'inizio, e non si aggiornano da sole:
-        <code>python scripts/importa_probabili.py --scarica</code>
+        {% if eta_cache.probabili is not none %}
+          Lette da fantacalcio.it {{ eta_cache.probabili|round(1) }} ore fa.
+        {% endif %}
+        Cambiano fino al fischio d'inizio: entrando qui si rileggono da sé se la
+        copia ha più di <strong>tre ore</strong>.
       </div>
     {% else %}
       <span class="text-muted">Nessuna giornata importata.</span>
-      <div class="text-xs text-muted mt-1"><code>python scripts/importa_probabili.py --scarica</code></div>
+      <div class="text-xs text-muted mt-1">Premi <strong>Aggiorna ora</strong>, oppure
+        <code>python scripts/importa_probabili.py --scarica</code></div>
     {% endif %}
   </div>
 </div>
@@ -141,27 +162,75 @@
           <label class="form-label">Panchinari</label>
           <input class="form-input" name="n_panchinari" id="f_panchinari" type="number" min="0" max="25" value="7">
         </div>
+        {# Il modificatore di difesa, con la struttura del regolamento ufficiale e
+           i valori che invece la piattaforma lascia cambiare. #}
         <div class="form-group">
           <label class="form-label">
-            <input type="checkbox" name="mod_difesa" id="f_mod_difesa" value="1">
+            <input type="checkbox" name="mod_difesa" id="f_mod_difesa" value="1"
+                   onchange="mostraDifesa()">
             Modificatore di difesa
           </label>
+          <div id="boxDifesa" style="display:none;padding:.6rem .8rem;margin-top:.4rem;
+               border:1px solid var(--border);border-radius:var(--radius-sm)">
+            <div class="text-xs text-muted mb-2">
+              Media aritmetica dei voti <strong>esclusi bonus e malus</strong>, e si
+              applica solo se almeno <strong>4 difensori</strong> portano voto.
+            </div>
+            <label class="text-xs">
+              <input type="checkbox" name="mod_difesa_portiere" id="f_mod_difesa_portiere"
+                     value="1" checked onchange="comeSiFaLaMedia()">
+              Il portiere entra nella media
+            </label>
+            <div class="text-xs text-muted mb-2" id="comeMedia"></div>
+            <div class="text-xs mb-1" style="font-weight:600">La tabella</div>
+            <div id="soglie">
+              {% for media, punti in soglie_standard %}
+              <div class="flex gap-1 items-center mb-1">
+                <span class="text-xs text-muted" style="width:5.2rem">media da</span>
+                <input class="form-input soglia-media" name="soglia_media" type="number"
+                       step="0.1" min="0" max="10" value="{{ media }}" style="width:5.5rem">
+                <span class="text-xs text-muted">&rarr;</span>
+                <input class="form-input soglia-punti" name="soglia_punti" type="number"
+                       step="0.5" value="{{ punti }}" style="width:5rem">
+                <span class="text-xs text-muted">punti</span>
+              </div>
+              {% endfor %}
+            </div>
+            <div class="text-xs text-muted mt-1">
+              Sono i valori storici di FantaGazzetta, che è il punto di partenza: la
+              piattaforma lascia cambiare i numeri, non la struttura. Sotto la soglia
+              più bassa non c'è bonus.
+            </div>
+          </div>
         </div>
         <div class="form-group">
           <label class="form-label">Bonus e malus</label>
           <div class="regole-griglia">
-            {% for colonna, etichetta, ufficiale in regole %}
+            {% for colonna, etichetta, ufficiale, valori in regole %}
             <div>
               <label class="text-xs">{{ etichetta }}</label>
-              <input class="form-input" name="{{ colonna }}" id="f_{{ colonna }}"
-                     type="number" step="0.5">
+              {# La tendina coi valori usati davvero, più «Altro…» per il resto:
+                 la casella libera resta, ma non è più la prima cosa che si vede. #}
+              <select class="form-select" name="{{ colonna }}" id="f_{{ colonna }}"
+                      onchange="altroSeServe(this)">
+                {% for v in valori %}
+                <option value="{{ v }}">{{ v }}{% if valore_ufficiale.get(colonna) == v %} (ufficiale){% endif %}</option>
+                {% endfor %}
+                <option value="altro">Altro&hellip;</option>
+              </select>
+              <input class="form-input mt-1" name="{{ colonna }}_altro"
+                     id="f_{{ colonna }}_altro" type="number" step="0.25"
+                     style="display:none" placeholder="valore tuo">
               <div class="regola-uff">{% if ufficiale %}dal regolamento ufficiale{% else %}varia da lega a lega{% endif %}</div>
             </div>
             {% endfor %}
           </div>
           <div class="text-xs text-muted mt-2">
-            Solo gol, ammonizione ed espulsione sono fissati dal regolamento ufficiale
-            di fantacalcio.it; gli altri li decide la lega, ed è per questo che stanno qui.
+            ⚠️ Il <strong>gol vale +3 chiunque lo segni</strong>, portiere compreso: il
+            regolamento non lo cambia per ruolo, ed è per questo che qui c'è una casella
+            sola invece di quattro. Sette voci su nove hanno un valore ufficiale, ed è
+            quello segnato nella tendina; <strong>porta inviolata e autogol</strong> no:
+            quelli il regolamento non li fissa, li decide la lega.
           </div>
         </div>
         <div class="form-group">
@@ -183,6 +252,74 @@
    dire che aggiungerne uno domani lo lascerebbe fuori dal form senza avvisare. #}
 const CAMPI_REGOLE = {{ regole|map(attribute=0)|list|tojson }};
 
+{# I valori del regolamento: sono il default di una lega nuova, e sono gli stessi
+   che il DB ha come DEFAULT. Stanno qui una volta sola, presi dal server. #}
+const VALORI_UFFICIALI = {{ valore_ufficiale|tojson }};
+{# ⚠️ Non lo stesso dizionario: porta inviolata e autogol il regolamento non li
+   fissa, ma un valore di partenza ce l'hanno — quello convenzionale, che e' anche
+   il DEFAULT della tabella. Partendo dal primo valore della tendina nascevano a
+   zero, cioe' con l'autogol che non toglie niente. #}
+const VALORI_PARTENZA = {{ valore_partenza|tojson }};
+const SOGLIE_STANDARD = {{ soglie_standard|tojson }};
+{# Le soglie di ogni lega, gia' lette e messe in ordine dal server: rifare qui il
+   parsing della riga «7:6, 6.5:3» sarebbe la seconda copia di una regola che sta
+   in `data.py`, e le due copie divergono sempre. #}
+const SOGLIE_LEGA = {{ soglie_lega|tojson }};
+
+{# «Altro…» scopre la casella libera, e qualunque altra scelta la richiude: se
+   restasse visibile con un numero dentro, si vedrebbero due valori diversi per
+   la stessa regola e non si saprebbe quale vince (vince la tendina). #}
+function altroSeServe(sel){
+  const libero = document.getElementById(sel.id + '_altro');
+  if (!libero) return;
+  const altro = sel.value === 'altro';
+  libero.style.display = altro ? '' : 'none';
+  if (!altro) libero.value = '';
+  else libero.focus();
+}
+
+{# Mette il valore nella tendina; se non e' fra quelli proposti passa ad «Altro…»
+   e lo scrive nella casella libera, invece di far sparire in silenzio un numero
+   che la lega usa davvero. #}
+function scegliValore(campo, valore){
+  const sel = document.getElementById('f_' + campo);
+  const libero = document.getElementById('f_' + campo + '_altro');
+  if (!sel) return;
+  if (valore === null || valore === undefined) { sel.selectedIndex = 0; }
+  else {
+    const testo = String(valore);
+    const trovato = Array.from(sel.options).some(o => Number(o.value) === Number(valore));
+    if (trovato) sel.value = Array.from(sel.options).find(o => Number(o.value) === Number(valore)).value;
+    else { sel.value = 'altro'; if (libero) libero.value = testo; }
+  }
+  altroSeServe(sel);
+}
+
+function mostraDifesa(){
+  const acceso = document.getElementById('f_mod_difesa').checked;
+  document.getElementById('boxDifesa').style.display = acceso ? '' : 'none';
+  comeSiFaLaMedia();
+}
+
+{# Dice a parole quali voti entrano nella media, che e' la differenza fra le due
+   caselle e non si indovina da un'etichetta. #}
+function comeSiFaLaMedia(){
+  const conPortiere = document.getElementById('f_mod_difesa_portiere').checked;
+  document.getElementById('comeMedia').textContent = conPortiere
+    ? 'Media del portiere e dei migliori 3 difensori.'
+    : 'Media dei migliori 4 difensori, senza il portiere.';
+}
+
+function scriviSoglie(soglie){
+  const righe = document.querySelectorAll('#soglie .flex');
+  righe.forEach((riga, i) => {
+    const v = soglie[i] || SOGLIE_STANDARD[i];
+    if (!v) return;
+    riga.querySelector('.soglia-media').value = v[0];
+    riga.querySelector('.soglia-punti').value = v[1];
+  });
+}
+
 function apriLega(){
   document.getElementById('legaTitolo').textContent = 'Nuova lega';
   document.getElementById('lega_id').value = 0;
@@ -190,10 +327,11 @@ function apriLega(){
   document.getElementById('f_moduli').value = '3-4-3,3-5-2,4-3-3,4-4-2,4-5-1,5-3-2,5-4-1';
   document.getElementById('f_panchinari').value = 7;
   document.getElementById('f_mod_difesa').checked = false;
+  document.getElementById('f_mod_difesa_portiere').checked = true;
   document.getElementById('f_note').value = '';
-  {# Vuoti di proposito: il DB ha i suoi default, e un valore scritto qui li
-     scavalcherebbe con una copia che poi diverge. #}
-  CAMPI_REGOLE.forEach(c => { const e = document.getElementById('f_' + c); if (e) e.value = ''; });
+  scriviSoglie(SOGLIE_STANDARD);
+  CAMPI_REGOLE.forEach(c => scegliValore(c, VALORI_PARTENZA[c]));
+  mostraDifesa();
   document.getElementById('legaModal').classList.add('open');
 }
 
@@ -204,11 +342,11 @@ function modificaLega(l){
   document.getElementById('f_moduli').value = l.moduli || '';
   document.getElementById('f_panchinari').value = l.n_panchinari;
   document.getElementById('f_mod_difesa').checked = !!l.mod_difesa;
+  document.getElementById('f_mod_difesa_portiere').checked = l.mod_difesa_portiere !== 0;
   document.getElementById('f_note').value = l.note || '';
-  CAMPI_REGOLE.forEach(c => {
-    const e = document.getElementById('f_' + c);
-    if (e) e.value = (l[c] === null || l[c] === undefined) ? '' : l[c];
-  });
+  scriviSoglie(SOGLIE_LEGA[l.id] || SOGLIE_STANDARD);
+  CAMPI_REGOLE.forEach(c => scegliValore(c, l[c]));
+  mostraDifesa();
   document.getElementById('legaModal').classList.add('open');
 }
 

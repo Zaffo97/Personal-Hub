@@ -21,29 +21,58 @@ from flask import (Blueprint, render_template, request, redirect, url_for,
 
 from extensions import (get_db, login_required, _i, ambito_utente, solo_mie,
                         utente_id, e_admin)
-from data import RUOLI_FANTA, ORDINE_RUOLI_FANTA, scomponi_modulo
+from data import (RUOLI_FANTA, ORDINE_RUOLI_FANTA, scomponi_modulo,
+                  MOD_DIFESA_SOGLIE, soglie_mod_difesa, scrivi_soglie,
+                  modificatore_difesa)
+import fanta_import as I
 
 bp = Blueprint("fantacalcio", __name__, url_prefix="/fantacalcio")
 
 # Le colonne delle regole, in un posto solo: le usano il form, il salvataggio e la
-# scheda che le mostra. ⚠️ Solo le prime tre vengono dal regolamento **ufficiale**
-# di fantacalcio.it (letto il 21/09/2026); le altre non le fissa nessun regolamento
-# perché cambiano da lega a lega, ed è il motivo per cui stanno qui e non in un testo.
+# scheda che le mostra. ⚠️ **Sette su nove** vengono dal regolamento ufficiale, che
+# `/regolamenti/leghe-private` elenca per esteso (riletto il 21/09/2026): il terzo
+# valore di ogni riga dice quali. Porta inviolata e autogol no — quelli il
+# regolamento non li fissa, e sono il motivo per cui queste regole stanno in colonne
+# invece che in un testo da rileggere a occhio.
+#
+# ⚠️ **Il gol è uno solo.** Fino al 21/09/2026 c'erano quattro colonne, una per
+# ruolo. Il regolamento ufficiale — riletto quel giorno su
+# `/regolamenti/leghe-private` — dà **+3 a chiunque segni**, portiere compreso, e
+# quattro caselle da riempire con lo stesso numero erano quattro occasioni di
+# sbagliarne una senza accorgersene.
+#
+# La quarta voce di ogni riga sono i **valori proposti** nella tendina. Non sono
+# una gabbia: la tendina ha sempre «Altro…», che scopre la casella per scrivere un
+# numero qualsiasi. Servono a far vedere subito quello **giusto** — i valori del
+# regolamento sono segnati «(ufficiale)» — invece di lasciare una casella vuota
+# davanti a chi non ricorda se l'ammonizione toglie mezzo punto o uno.
 REGOLE = [
-    ("bonus_gol_p", "Gol del portiere", True),
-    ("bonus_gol_d", "Gol del difensore", False),
-    ("bonus_gol_c", "Gol del centrocampista", False),
-    ("bonus_gol_a", "Gol dell'attaccante", False),
-    ("bonus_assist", "Assist", False),
-    ("malus_amm", "Ammonizione", True),
-    ("malus_esp", "Espulsione", True),
-    ("malus_gol_subito", "Gol subito (portiere)", False),
-    ("bonus_imbattibilita", "Porta inviolata", False),
-    ("bonus_rigore_parato", "Rigore parato", False),
-    ("malus_rigore_sbagliato", "Rigore sbagliato", False),
-    ("malus_autogol", "Autogol", False),
+    ("bonus_gol", "Gol segnato", True, [2, 2.5, 3, 3.5, 4]),
+    ("bonus_assist", "Assist", True, [0, 0.5, 1, 1.5, 2]),
+    ("malus_amm", "Ammonizione", True, [0, -0.25, -0.5, -1]),
+    ("malus_esp", "Espulsione", True, [0, -0.5, -1, -2]),
+    ("malus_gol_subito", "Gol subito (portiere)", True, [0, -0.5, -1]),
+    ("bonus_imbattibilita", "Porta inviolata", False, [0, 0.5, 1, 1.5, 2]),
+    ("bonus_rigore_parato", "Rigore parato", True, [0, 1, 2, 3]),
+    ("malus_rigore_sbagliato", "Rigore sbagliato", True, [0, -1, -2, -3]),
+    ("malus_autogol", "Autogol", False, [0, -1, -2, -3]),
 ]
-UFFICIALI = {c for c, _, ufficiale in REGOLE if ufficiale}
+UFFICIALI = {c for c, _, ufficiale, _ in REGOLE if ufficiale}
+# Il valore che il regolamento ufficiale dà, per le voci che ci sono dentro: la
+# tendina lo segna, così «(ufficiale)» dice **quale** numero lo è, non solo che
+# la voce esiste nel regolamento.
+VALORE_UFFICIALE = {
+    "bonus_gol": 3, "bonus_assist": 1, "malus_amm": -0.5, "malus_esp": -1,
+    "malus_gol_subito": -1, "bonus_rigore_parato": 3, "malus_rigore_sbagliato": -3,
+}
+# ⚠️ Con che valore nasce una lega nuova. **Non** è lo stesso dizionario di sopra:
+# porta inviolata e autogol il regolamento non li fissa, ma un default ce l'hanno
+# lo stesso — quello convenzionale, che è anche il `DEFAULT` scritto nella tabella.
+# Il primo giro lasciava partire queste due da zero, cioè dal primo valore della
+# tendina, e una lega nuova nasceva con l'autogol che non toglie niente: nessun
+# errore, solo una regola sparita. L'ha preso la prova in browser.
+VALORE_PARTENZA = dict(VALORE_UFFICIALE,
+                       bonus_imbattibilita=1, malus_autogol=-2)
 
 
 def _lega_mia(db, lid):
@@ -56,6 +85,67 @@ def _lega_mia(db, lid):
     r = db.execute(f"SELECT * FROM fanta_leagues WHERE id=? AND {cond}",
                    (lid,) + tuple(par)).fetchone()
     return dict(r) if r else None
+
+
+def _aggiorna(db, quale, forza_scrittura=False):
+    """Rilegge dalla fonte e scrive. Torna `(messaggio, categoria)` per il flash.
+
+    ⚠️ **Se la fonte non risponde, la sezione deve aprirsi lo stesso.** Questa
+    funzione viene chiamata anche da una pagina che si sta semplicemente aprendo:
+    un `requests` che va in timeout, o un sito che cambia forma, non possono
+    diventare un errore 500 su una pagina che sa già cosa mostrare. Perciò ogni
+    guaio esce da qui come **messaggio**, e il dato di prima resta dov'è.
+    """
+    # ⚠️ «in una tua rosa» dev'essere **tua**: da web c'è una sessione, e senza
+    # questo l'avviso conterebbe le rose di tutti gli utenti (§1.1). La rosa non
+    # ha un proprietario suo: lo eredita dalla lega, quindi il filtro è su quella.
+    ambito = ambito_utente("l.user_id")
+    try:
+        if quale == "listone":
+            r = I.aggiorna_listone(db, scarica=True, scrivi=True,
+                                   forza=forza_scrittura, ambito=ambito)
+            if not r["ok"]:
+                return f"Listone non aggiornato: {r['motivo']}", "error"
+            pezzi = [f"{r['letti']} giocatori"]
+            if r["nuovi"]:
+                pezzi.append(f"{len(r['nuovi'])} nuovi")
+            if r["spenti"]:
+                quanti = sum(1 for x in r["spenti"] if r["in_rosa"].get(x["id"]))
+                pezzi.append(f"{len(r['spenti'])} usciti dalla Serie A" +
+                             (f" ({quanti} in una tua rosa)" if quanti else ""))
+            return "Listone aggiornato: " + ", ".join(pezzi), "success"
+
+        r = I.aggiorna_probabili(db, scarica=True, scrivi=True,
+                                 forza=forza_scrittura, ambito=ambito)
+        if not r["ok"]:
+            return f"Probabili non aggiornate: {r['motivo']}", "error"
+        return (f"Probabili aggiornate: giornata {r['giornata']}, "
+                f"{r['voci']} convocati, {r['squadre']} squadre"), "success"
+    except Exception as e:
+        # Il tipo dell'errore serve: «timeout» e «la pagina non ha più quella
+        # forma» si rimediano in due modi diversi.
+        return (f"Non sono riuscito a leggere fantacalcio.it "
+                f"({type(e).__name__}). Il dato di prima è rimasto com'era.",
+                "error")
+
+
+def _aggiorna_se_vecchio(db, quale):
+    """L'aggiornamento automatico entrando nella sezione. Torna il messaggio o `None`.
+
+    ⚠️ Non aggiorna **a ogni visita**, e la ragione è che aprire la pagina
+    significherebbe aspettare ogni volta che fantacalcio.it risponda — tre pagine
+    da più di un mega. Aggiorna quando la copia è più vecchia della sua soglia
+    (`fanta_import.VECCHIA_*`): una settimana per il listone, **tre ore** per le
+    probabili, che cambiano fino al fischio d'inizio. Il pulsante «Aggiorna ora»
+    resta per quando non si vuole aspettare la soglia.
+    """
+    serve, _ore = I.serve_aggiornare(db, quale)
+    if not serve:
+        return None
+    messaggio, categoria = _aggiorna(db, quale)
+    # Un aggiornamento automatico riuscito non merita un avviso: la pagina mostra
+    # già la data del dato. Si parla solo quando è andato storto.
+    return None if categoria == "success" else messaggio
 
 
 def _giornata_probabili(db, chiesta=None):
@@ -124,8 +214,15 @@ def _numeri(f):
       di prima resta perché non è stato toccato, che è la stessa cosa detta bene.
     """
     fuori = {}
-    for colonna, _, _ in REGOLE:
+    for colonna, _, _, _ in REGOLE:
         grezzo = f.get(colonna)
+        # ⚠️ Dal 21/09/2026 ogni regola è una tendina, e la tendina manda sempre
+        # qualcosa: `altro` vuol dire «guarda la casella qui accanto», che è
+        # `<colonna>_altro`. Se anche quella è vuota la colonna **non entra nella
+        # query** — la regola di sopra vale ancora, ed è quella che impedisce a un
+        # campo lasciato stare di azzerare un bonus.
+        if str(grezzo).strip() == "altro":
+            grezzo = f.get(colonna + "_altro")
         if grezzo is None or str(grezzo).strip() == "":
             continue
         try:
@@ -139,6 +236,13 @@ def _numeri(f):
 @login_required
 def fantacalcio():
     db = get_db()
+    # Entrando nella sezione: se la copia è più vecchia della sua soglia, si
+    # rilegge. Non blocca la pagina se la fonte non risponde — il guaio diventa un
+    # avviso e i numeri di prima restano.
+    for quale in ("listone", "probabili"):
+        guaio = _aggiorna_se_vecchio(db, quale)
+        if guaio:
+            flash(guaio, "error")
     di = _i(request.args.get("utente")) or None
     cond, par = ambito_utente(di=di)
     leghe = [dict(r) for r in db.execute(
@@ -162,13 +266,41 @@ def fantacalcio():
             "SELECT u.id, u.username, COUNT(l.id) AS quanti FROM users u "
             "JOIN fanta_leagues l ON l.user_id=u.id GROUP BY u.id, u.username "
             "ORDER BY u.username").fetchall()]
+    eta = {q: I.serve_aggiornare(db, q)[1] for q in ("listone", "probabili")}
     db.close()
     return render_template("fantacalcio.html", leghe=leghe,
                            listone=dict(listone) if listone else {},
                            probabili=dict(stato_probabili) if stato_probabili else {},
                            regole=REGOLE, ufficiali=UFFICIALI,
+                           valore_ufficiale=VALORE_UFFICIALE,
+                           valore_partenza=VALORE_PARTENZA,
+                           soglie_standard=MOD_DIFESA_SOGLIE,
+                           soglie_lega={l["id"]: soglie_mod_difesa(
+                               l.get("mod_difesa_soglie")) for l in leghe},
+                           eta_cache=eta,
                            proprietari=proprietari, filtro_utente=di,
                            nomi_utenti=nomi_utenti)
+
+
+@bp.route("/aggiorna/<quale>", methods=["POST"])
+@login_required
+def aggiorna(quale):
+    """Il pulsante «Aggiorna ora»: rilegge dalla fonte adesso, senza aspettare.
+
+    ⚠️ È un `POST` di proposito. Scarica tre pagine da fantacalcio.it e riscrive
+    delle righe: un `GET` così si rifarebbe da solo a ogni ricarica del browser,
+    e basterebbe tenere premuto F5 per martellare la fonte.
+    """
+    if quale not in ("listone", "probabili"):
+        flash("Non so cosa aggiornare", "error")
+        return redirect(url_for("fantacalcio.fantacalcio"))
+    db = get_db()
+    messaggio, categoria = _aggiorna(db, quale)
+    db.close()
+    flash(messaggio, categoria)
+    dove = request.form.get("torna_a")
+    return redirect(dove if dove and dove.startswith("/fantacalcio")
+                    else url_for("fantacalcio.fantacalcio"))
 
 
 @bp.route("/lega/salva", methods=["POST"])
@@ -191,6 +323,23 @@ def lega_salva():
               f"{', '.join(sbagliati)}", "error")
         return redirect(url_for("fantacalcio.fantacalcio"))
 
+    # Le soglie del modificatore di difesa arrivano come tre coppie media/punti.
+    # ⚠️ Si salvano solo se ne è arrivata almeno una **leggibile**: una riga scritta
+    # male non diventa una tabella a caso, si tiene quella di prima. Chi non tocca
+    # niente non le manda affatto, e allora la colonna resta com'è.
+    soglie = []
+    for media, punti in zip(f.getlist("soglia_media"), f.getlist("soglia_punti")):
+        media, punti = (media or "").strip(), (punti or "").strip()
+        if not media or not punti:
+            continue
+        try:
+            soglie.append((float(media.replace(",", ".")),
+                           float(punti.replace(",", "."))))
+        except ValueError:
+            flash(f"Soglia del modificatore che non è un numero: «{media}: {punti}»",
+                  "error")
+            return redirect(url_for("fantacalcio.fantacalcio"))
+
     db = get_db()
     riga = _lega_mia(db, lid) if lid else None
     valori = _numeri(f)
@@ -200,8 +349,12 @@ def lega_salva():
         "moduli": moduli or None,
         "n_panchinari": _i(f.get("n_panchinari"), 7),
         "mod_difesa": 1 if f.get("mod_difesa") else 0,
+        "mod_difesa_portiere": 1 if f.get("mod_difesa_portiere") else 0,
         "note": (f.get("note") or "").strip() or None,
     }
+    if soglie:
+        comuni["mod_difesa_soglie"] = scrivi_soglie(
+            sorted(soglie, key=lambda x: x[0], reverse=True))
     comuni.update(valori)
 
     if lid:
@@ -252,6 +405,11 @@ def lega_elimina(lid):
 @login_required
 def lega(lid):
     db = get_db()
+    # Anche qui: la pagina mostra le probabili della rosa, quindi vale la stessa
+    # regola dell'elenco: se la copia ha più di tre ore si rilegge.
+    guaio = _aggiorna_se_vecchio(db, "probabili")
+    if guaio:
+        flash(guaio, "error")
     riga = _lega_mia(db, lid)
     if riga is None:
         db.close()
@@ -298,6 +456,12 @@ def lega(lid):
                            ordine=ORDINE_RUOLI_FANTA, spenti=spenti,
                            copertura=copertura, speso=speso,
                            regole=REGOLE, ufficiali=UFFICIALI,
+                           valore_ufficiale=VALORE_UFFICIALE,
+                           soglie=soglie_mod_difesa(riga.get("mod_difesa_soglie")),
+                           soglie_standard=MOD_DIFESA_SOGLIE,
+                           esempi_difesa=[(m, modificatore_difesa(
+                               m, soglie_mod_difesa(riga.get("mod_difesa_soglie"))))
+                               for m in (5.5, 6.0, 6.5, 7.0, 7.5)],
                            giornata=giornata, probabili=probabili,
                            probabili_aggiornate=(aggiornate["q"] if aggiornate else None))
 
@@ -360,6 +524,13 @@ def probabili():
     `ambito_utente()` sulle leghe: `fanta_roster` non ha un proprietario suo (§1.1).
     """
     db = get_db()
+    # ⚠️ Solo quando si guarda l'**ultima** giornata: chiedere una giornata
+    # passata è guardare l'archivio, e rileggere la fonte lì vorrebbe dire
+    # riscrivere la giornata di oggi mentre si guarda quella di ieri.
+    if not _i(request.args.get("giornata")):
+        guaio = _aggiorna_se_vecchio(db, "probabili")
+        if guaio:
+            flash(guaio, "error")
     giornata = _giornata_probabili(db, _i(request.args.get("giornata")))
     giornate = [r["giornata"] for r in db.execute(
         "SELECT DISTINCT giornata FROM fanta_probabili_squadre ORDER BY giornata DESC")]

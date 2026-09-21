@@ -47,7 +47,9 @@ giocatori di Serie A, le probabili dei propri giocatori, un consiglio, e le rego
   — cancellarlo porterebbe via la riga di rosa che lo nomina. Lo script dice quanti
   degli spenti sono **in una tua rosa**, e la pagina li mostra col cartellino «fuori
   listone». Provato: secondo giro a 0 nuovi, 0 aggiornati, 0 spenti.
-- ⚠️ **Solo tre valori vengono dal regolamento ufficiale**, letto lo stesso giorno: gol
+- ⚠️ **(Corretto lo stesso giorno: sono sette, non tre** — vedi la voce sulle regole
+  della lega più sotto. Quella che segue era la prima lettura, fatta sulla pagina
+  sbagliata.)  **Solo tre valori vengono dal regolamento ufficiale**, letto lo stesso giorno: gol
   +3, ammonizione −0,5, espulsione −1 (e i cartellini si fermano a −1 comunque
   combinati). Assist, gol subito, porta inviolata, rigori e autogol il regolamento
   **non li fissa**, perché cambiano da lega a lega: i default sono convenzionali e la
@@ -125,6 +127,62 @@ davvero, e il contrario vorrebbe dire scriverla due volte.
   scoperte** con le due tabelle nuove nel raggio e dieci letture **dichiarate**;
   **sweep a 0 errori** su 48 pagine comprese le tre del Fantacalcio. Sulle pagine
   vere: **482 righe giocatore a schermo contro 482 nel DB**, 10 partite, 20 moduli.
+
+**Fantacalcio: aggiornare senza riga di comando, e le regole della lega**
+
+Quattro richieste di Davide, dopo aver visto la sezione funzionare.
+
+- ✅ **Il pulsante e l'automatico.** «Aggiorna ora» è un `POST` (scarica e riscrive:
+  un `GET` si rifarebbe a ogni F5), e l'automatico scatta entrando nella sezione
+  quando la copia ha passato la sua soglia — **una settimana** per il listone,
+  **tre ore** per le probabili. Non a ogni visita: vorrebbe dire aspettare
+  fantacalcio.it ogni volta che si apre la pagina. ⚠️ Se la fonte non risponde la
+  sezione **si apre lo stesso**, col dato di prima e un avviso.
+- ✅ **La logica è in `fanta_import.py`, una volta sola**, e gli script sono ora il
+  rivestimento che stampa il rapporto. Riscriverla nelle route era la strada facile
+  ed è lo stesso errore che tenne in vita per un mese il difetto di `main`.
+- ⚠️ ✅ **Il riuso ha portato un baco, e l'ha preso `controlla_proprietario.py`**:
+  `_rose()` nasceva con `ambito=None` = «conta le rose di tutti». Giusto per uno
+  script (nessuna sessione), **sbagliato** per il pulsante, che diceva «2 dei
+  giocatori usciti sono in una tua rosa» contando rose altrui. Ora il «vedo tutto»
+  si scrive (`TUTTE_LE_ROSE`). Lo strumento ha imparato il caso nuovo — una
+  funzione che **riceve** la condizione invece di chiederla — con un criterio
+  stretto: un primo tentativo più largo marcava filtrata tutta la funzione, rami
+  senza filtro compresi.
+- ✅ **Il gol è una casella sola.** Erano quattro, una per ruolo, e il regolamento dà
+  **+3 a chiunque segni**. La migrazione travasa e toglie le vecchie **solo se erano
+  uguali fra loro**; sul DB vero (una lega, tutte e quattro a 3) è passata pulita.
+- ✅ **Il modificatore di difesa ha la tabella vera.** Struttura dalla guida ufficiale
+  di Leghe Fantacalcio: media di **portiere + migliori 3 difensori** (o **migliori 4
+  difensori** senza portiere), **esclusi bonus e malus**, e serve che almeno **4
+  difensori** portino voto. Valori da FantaGazzetta e modificabili: **+6** da 7,
+  **+3** da 6.5, **+1** da 6. La scheda li mostra con qualche esempio.
+- ✅ **Ogni regola è una tendina** coi valori usati davvero, il valore ufficiale
+  segnato, e «Altro…» che scopre la casella libera.
+- ⚠️ ✅ **Corretto un dato del backlog: i valori ufficiali sono SETTE, non tre.**
+  `/regolamenti/leghe-private` li elenca per esteso — gol +3, assist +1, amm −0,5,
+  esp −1, gol subito −1, rigore parato +3, rigore sbagliato −3. La prima lettura si
+  era fermata sulla pagina sbagliata. Restano convenzionali solo porta inviolata e
+  autogol.
+- ⚠️ ✅ **Due difetti presi da chi doveva prenderli.** (1) La **prova in browser**:
+  le tendine precompilavano dai valori ufficiali, e le due voci che il regolamento
+  non fissa partivano dal primo valore della tendina, cioè **0** — una lega nuova
+  nasceva con l'autogol che non toglie niente, mentre la tabella ha `DEFAULT -2`.
+  Lo sweep non poteva vederlo: il JS era perfetto. (2) La **prova sulle soglie**:
+  `"7,5:8, 6:2"` spezzato sulle virgole dava `7` e `5:8`, perché in italiano la
+  virgola è anche il separatore decimale. Ora le coppie si cercano, non si spezza.
+- ⚠️ ✅ **L'automatismo ha rotto l'isolamento delle prove**, ed è la lezione più
+  generale: da oggi aprire una pagina può scaricare, quindi `prova_fantacalcio.py`
+  andava in rete a ogni `GET` — il sintomo era una prova che trovava **482
+  convocati veri** in un DB temporaneo che doveva averne zero. Ora in cima alle
+  prove la cache è sempre fresca e `scarica()` **solleva**.
+- ✅ **Verifiche**: `prova_fantacalcio.py` da 48 a **81 su 81**,
+  `controlla_proprietario.py` **120 query, 0 scoperte**, **sweep 0 errori** su 48
+  pagine, migrazione eseguita sul DB vero con la lega intatta (`bonus_gol` 3.0,
+  quattro colonne tolte), export rifatto. Il JS nuovo provato **in browser**: la
+  modale parte dai valori giusti, «Altro…» scopre e richiude la casella, un valore
+  fuori elenco (2.75) ci finisce dentro invece di sparire, e togliendo il portiere
+  la frase sulla media cambia.
 
 ---
 

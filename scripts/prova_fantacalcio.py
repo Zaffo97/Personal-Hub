@@ -122,6 +122,21 @@ def prove(dove):
     extensions.CHIAVE = os.path.join(dove, "chiave.txt")
     extensions.init_db()
 
+    # ⚠️ Dal 21/09/2026 **aprire una pagina può scaricare**: le route del
+    # Fantacalcio rileggono la fonte da sé quando la copia è vecchia. Senza queste
+    # due righe la suite andrebbe in rete a ogni `GET` — l'ha fatto davvero, e il
+    # sintomo è stato una prova che trovava 482 convocati veri in un DB di prova
+    # che doveva averne zero. Quindi: la cache è **sempre fresca** (l'automatico
+    # non scatta mai per caso) e `scarica()` **solleva**, così una lettura di rete
+    # non voluta si vede come errore invece di riuscire in silenzio. I blocchi che
+    # provano l'aggiornamento li sostituiscono da sé, e rimettono questi a posto.
+    import fantacalcio_it as F
+    F.eta_cache = lambda nome: 0.0
+
+    def _niente_rete(nome, forza=False):
+        raise AssertionError(f"la prova non deve leggere la rete: {nome}")
+    F.scarica = _niente_rete
+
     db = extensions.get_db()
     db.execute("INSERT INTO users(username,password,display_name,role) "
                "VALUES('davide','x','Davide','user')")
@@ -153,7 +168,8 @@ def prove(dove):
             s["user_id"] = ids["davide"]
         r = c.post("/fantacalcio/lega/salva", data={
             "nome": "Lega Amici", "moduli": "3-4-3,4-4-2", "n_panchinari": "7",
-            "mod_difesa": "1", "bonus_gol_d": "4", "bonus_assist": "1"},
+            "mod_difesa": "1", "mod_difesa_portiere": "1",
+            "bonus_gol": "4", "bonus_assist": "1"},
             follow_redirects=True)
         esito("la creazione risponde", r.status_code == 200)
         db = extensions.get_db()
@@ -162,11 +178,22 @@ def prove(dove):
         esito("la lega è nata col suo proprietario",
               lega is not None and lega["user_id"] == ids["davide"],
               f"user_id={lega['user_id'] if lega else None}")
-        esito("il bonus scritto nel form è quello salvato", lega["bonus_gol_d"] == 4)
+        esito("il bonus scritto nel form è quello salvato", lega["bonus_gol"] == 4)
         esito("e quelli non toccati restano al default del DB",
-              lega["bonus_gol_a"] == 3 and lega["malus_amm"] == -0.5,
-              f"gol_a={lega['bonus_gol_a']} amm={lega['malus_amm']}")
+              lega["bonus_rigore_parato"] == 3 and lega["malus_amm"] == -0.5,
+              f"rig={lega['bonus_rigore_parato']} amm={lega['malus_amm']}")
         esito("il modificatore di difesa è acceso", lega["mod_difesa"] == 1)
+        # ⚠️ Le due voci che il regolamento non fissa hanno lo stesso un valore di
+        # partenza — quello convenzionale, che è il DEFAULT della tabella. Il
+        # primo giro le faceva partire dal primo valore della tendina, cioè zero:
+        # una lega nuova nasceva con l'autogol che non toglie niente, e nessun
+        # errore da nessuna parte. L'ha preso la prova in browser.
+        esito("⚠️ autogol e porta inviolata non nascono a zero",
+              lega["malus_autogol"] == -2 and lega["bonus_imbattibilita"] == 1,
+              f"autogol={lega['malus_autogol']} porta={lega['bonus_imbattibilita']}")
+        esito("⚠️ il gol è UNA colonna sola, non quattro",
+              "bonus_gol" in lega.keys() and "bonus_gol_a" not in lega.keys(),
+              "il regolamento dà +3 a chiunque segni")
         lid = lega["id"]
 
         # --- 2. un modulo che non torna non si salva ------------------------
@@ -184,13 +211,36 @@ def prove(dove):
         print("\n== 3. un campo di regola lasciato vuoto non vale zero ==")
         r = c.post("/fantacalcio/lega/salva", data={
             "lega_id": str(lid), "nome": "Lega Amici", "moduli": "3-4-3,4-4-2",
-            "bonus_gol_d": ""}, follow_redirects=True)
+            "bonus_gol": ""}, follow_redirects=True)
         db = extensions.get_db()
-        dopo = db.execute("SELECT bonus_gol_d FROM fanta_leagues WHERE id=?",
+        dopo = db.execute("SELECT bonus_gol FROM fanta_leagues WHERE id=?",
                           (lid,)).fetchone()
         db.close()
-        esito("il bonus gol del difensore è ancora 4, non 0",
-              dopo["bonus_gol_d"] == 4, str(dopo["bonus_gol_d"]))
+        esito("il bonus gol è ancora 4, non 0", dopo["bonus_gol"] == 4,
+              str(dopo["bonus_gol"]))
+        # ⚠️ La tendina manda sempre qualcosa: «altro» con la casella libera vuota
+        # è l'altro modo di dire «non l'ho toccato», e non deve azzerare niente.
+        r = c.post("/fantacalcio/lega/salva", data={
+            "lega_id": str(lid), "nome": "Lega Amici", "moduli": "3-4-3,4-4-2",
+            "bonus_gol": "altro", "bonus_gol_altro": ""}, follow_redirects=True)
+        db = extensions.get_db()
+        dopo = db.execute("SELECT bonus_gol FROM fanta_leagues WHERE id=?",
+                          (lid,)).fetchone()
+        db.close()
+        esito("⚠️ «Altro…» con la casella vuota non azzera il bonus",
+              dopo["bonus_gol"] == 4, str(dopo["bonus_gol"]))
+        r = c.post("/fantacalcio/lega/salva", data={
+            "lega_id": str(lid), "nome": "Lega Amici", "moduli": "3-4-3,4-4-2",
+            "bonus_gol": "altro", "bonus_gol_altro": "2,5"}, follow_redirects=True)
+        db = extensions.get_db()
+        dopo = db.execute("SELECT bonus_gol FROM fanta_leagues WHERE id=?",
+                          (lid,)).fetchone()
+        db.close()
+        esito("e con un numero dentro vince quello, virgola compresa",
+              dopo["bonus_gol"] == 2.5, str(dopo["bonus_gol"]))
+        c.post("/fantacalcio/lega/salva", data={
+            "lega_id": str(lid), "nome": "Lega Amici", "moduli": "3-4-3,4-4-2",
+            "bonus_gol": "3"}, follow_redirects=True)
 
         # --- 4. la rosa ------------------------------------------------------
         print("\n== 4. la rosa ==")
@@ -290,10 +340,84 @@ def prove(dove):
     esito("«6,5» con la virgola diventa 6.5, non None", F._decimale("6,5") == 6.5)
     esito("«-» vuol dire «non lo sappiamo», non zero",
           F._decimale("-") is None and F._intero("-") is None)
-    from data import scomponi_modulo
+    from data import (scomponi_modulo, soglie_mod_difesa, scrivi_soglie,
+                      modificatore_difesa, MOD_DIFESA_SOGLIE)
     esito("i moduli si scompongono, e quelli che non fanno 10 no",
           scomponi_modulo("3-5-2") == {"p": 1, "d": 3, "c": 5, "a": 2}
           and scomponi_modulo("4-4-4") is None and scomponi_modulo("") is None)
+
+    # --- 7bis. il modificatore di difesa ------------------------------------
+    # La tabella standard è quella del vademecum di FantaGazzetta, letta il
+    # 21/09/2026: +6 da 7, +3 da 6.5, +1 da 6, e sotto il 6 niente.
+    print("\n== 7b. il modificatore di difesa ==")
+    esito("la tabella standard è quella della fonte",
+          MOD_DIFESA_SOGLIE == [(7.0, 6.0), (6.5, 3.0), (6.0, 1.0)])
+    esito("7.2 vale +6, 6.8 vale +3, 6.2 vale +1",
+          (modificatore_difesa(7.2), modificatore_difesa(6.8),
+           modificatore_difesa(6.2)) == (6.0, 3.0, 1.0))
+    esito("⚠️ il confronto è «maggiore o uguale»: 6 esatto vale +1, non 0",
+          modificatore_difesa(6.0) == 1.0)
+    esito("5.9 non vale niente", modificatore_difesa(5.9) == 0.0)
+    esito("⚠️ «non lo sappiamo» non è un voto basso: None vale 0, non un malus",
+          modificatore_difesa(None) == 0.0)
+    esito("una tabella della lega si legge e si riscrive uguale",
+          soglie_mod_difesa("7:6, 6.5:3, 6:1") == MOD_DIFESA_SOGLIE
+          and scrivi_soglie(MOD_DIFESA_SOGLIE) == "7:6, 6.5:3, 6:1",
+          scrivi_soglie(MOD_DIFESA_SOGLIE))
+    esito("le soglie tornano ordinate dalla più alta, comunque siano scritte",
+          soglie_mod_difesa("6:1, 7:6, 6.5:3") == MOD_DIFESA_SOGLIE)
+    esito("⚠️ una riga scritta male torna allo standard, non a una tabella a caso",
+          soglie_mod_difesa("boh") == MOD_DIFESA_SOGLIE
+          and soglie_mod_difesa("7:sei") == MOD_DIFESA_SOGLIE
+          and soglie_mod_difesa(None) == MOD_DIFESA_SOGLIE)
+    esito("⚠️ e nemmeno una tabella a metà: se una coppia non si legge, standard",
+          soglie_mod_difesa("7:6, 6.5:tre, 6:1") == MOD_DIFESA_SOGLIE)
+    # ⚠️ La virgola in italiano è anche il separatore decimale: spezzando la riga
+    # sulle virgole, «7,5:8» diventava «7» e «5:8», cioè un'altra tabella senza
+    # nessun errore. L'ha preso questa prova al primo giro.
+    esito("⚠️ «7,5:8» resta 7.5, non diventa 7 e 5:8",
+          soglie_mod_difesa("7,5:8, 6:2") == [(7.5, 8.0), (6.0, 2.0)],
+          str(soglie_mod_difesa("7,5:8, 6:2")))
+    su_misura = soglie_mod_difesa("7,5:8, 6:2")
+    esito("e una tabella diversa viene usata davvero",
+          modificatore_difesa(7.6, su_misura) == 8.0
+          and modificatore_difesa(6.4, su_misura) == 2.0
+          and modificatore_difesa(5.0, su_misura) == 0.0)
+
+    # --- 7ter. le soglie salvate dal form -----------------------------------
+    print("\n== 7c. le soglie si salvano dalla lega ==")
+    with app.test_client() as c:
+        with c.session_transaction() as s:
+            s["username"] = "davide"
+            s["role"] = "user"
+            s["user_id"] = ids["davide"]
+        c.post("/fantacalcio/lega/salva", data={
+            "lega_id": str(lid), "nome": "Lega Amici", "moduli": "3-4-3,4-4-2",
+            "mod_difesa": "1", "soglia_media": ["7", "6.5", "6"],
+            "soglia_punti": ["8", "4", "2"]}, follow_redirects=True)
+        db = extensions.get_db()
+        riga = db.execute("SELECT mod_difesa_soglie, mod_difesa_portiere "
+                          "FROM fanta_leagues WHERE id=?", (lid,)).fetchone()
+        db.close()
+        esito("la tabella su misura è salvata", riga["mod_difesa_soglie"] == "7:8, 6.5:4, 6:2",
+              str(riga["mod_difesa_soglie"]))
+        esito("⚠️ e togliendo la spunta il portiere esce dalla media",
+              riga["mod_difesa_portiere"] == 0, str(riga["mod_difesa_portiere"]))
+        r = c.get(f"/fantacalcio/lega/{lid}")
+        pagina = r.data.decode("utf-8", "replace")
+        esito("la scheda della lega mostra la tabella e come si fa la media",
+              "migliori 4 difensori" in pagina and "+8" in pagina)
+        # Una soglia che non è un numero non si salva «tanto poi si vede».
+        c.post("/fantacalcio/lega/salva", data={
+            "lega_id": str(lid), "nome": "Lega Amici", "moduli": "3-4-3,4-4-2",
+            "mod_difesa": "1", "soglia_media": ["sette"], "soglia_punti": ["8"]},
+            follow_redirects=True)
+        db = extensions.get_db()
+        dopo = db.execute("SELECT mod_difesa_soglie FROM fanta_leagues WHERE id=?",
+                          (lid,)).fetchone()["mod_difesa_soglie"]
+        db.close()
+        esito("⚠️ una soglia che non è un numero viene rifiutata, e resta la vecchia",
+              dopo == "7:8, 6.5:4, 6:2", str(dopo))
 
     # --- 9. le probabili formazioni -----------------------------------------
     # (id, nome, ruolo, percentuale, slug-nell-url)
@@ -448,6 +572,128 @@ def prove(dove):
               "Barella" in altrui)
         esito("⚠️ ma non gli risulta «mio» nessun giocatore della rosa altrui",
               ">mio<" not in altrui)
+
+    # --- 11. il pulsante e l'aggiornamento automatico ------------------------
+    print("\n== 11. aggiornare: il pulsante e l'automatico ==")
+    import fanta_import as IMP
+    # Una giornata intera finta: venti squadre, così la soglia delle 20 non
+    # scatta e si prova la strada normale, non quella del rifiuto.
+    def venti_squadre(giornata=7):
+        partite = []
+        for n in range(10):
+            casa = (f"casa{n}", f"Casa {n}", "4-3-3",
+                    [(1000 + n * 10 + i, f"Tit{n}_{i}", "d", 90, f"t{n}{i}")
+                     for i in range(3)],
+                    [(1500 + n * 10 + i, f"Pan{n}_{i}", "c", 40, f"p{n}{i}")
+                     for i in range(2)])
+            fuori = (f"fuori{n}", f"Fuori {n}", "3-5-2",
+                     [(2000 + n * 10 + i, f"TitF{n}_{i}", "a", 85, f"tf{n}{i}")
+                      for i in range(3)],
+                     [(2500 + n * 10 + i, f"PanF{n}_{i}", "p", 30, f"pf{n}{i}")
+                      for i in range(2)])
+            partite.append((casa, fuori))
+        return pagina_finta(partite, giornata=giornata)
+
+    vera_scarica, vera_eta = F.scarica, F.eta_cache
+    try:
+        F.scarica = lambda nome, forza=False: venti_squadre()
+        # La cache è «fresca»: entrando nella sezione non si deve rileggere niente.
+        F.eta_cache = lambda nome: 0.1
+        with app.test_client() as c:
+            with c.session_transaction() as s:
+                s["username"] = "davide"
+                s["role"] = "user"
+                s["user_id"] = ids["davide"]
+            c.get("/fantacalcio/")
+            db = extensions.get_db()
+            g7 = db.execute("SELECT COUNT(*) FROM fanta_probabili WHERE giornata=7"
+                            ).fetchone()[0]
+            db.close()
+            esito("⚠️ con la copia fresca entrare nella sezione NON riscarica niente",
+                  g7 == 0, f"righe della giornata 7: {g7}")
+
+            # Copia vecchia: entrando, si rilegge da sé.
+            F.eta_cache = lambda nome: 99.0
+            c.get("/fantacalcio/")
+            db = extensions.get_db()
+            g7 = db.execute("SELECT COUNT(*) FROM fanta_probabili WHERE giornata=7"
+                            ).fetchone()[0]
+            db.close()
+            esito("con la copia vecchia si aggiorna da sé entrando", g7 == 100,
+                  f"righe della giornata 7: {g7}")
+            esito("e la giornata di prima resta nell'archivio",
+                  extensions.get_db().execute(
+                      "SELECT COUNT(DISTINCT giornata) FROM fanta_probabili"
+                  ).fetchone()[0] == 2)
+
+            # Il pulsante: è un POST, e un GET non deve funzionare.
+            r = c.get("/fantacalcio/aggiorna/probabili")
+            esito("⚠️ il pulsante è un POST: da GET non si aggiorna",
+                  r.status_code == 405, str(r.status_code))
+            r = c.post("/fantacalcio/aggiorna/probabili", follow_redirects=True)
+            esito("il pulsante aggiorna e lo dice",
+                  b"Probabili aggiornate" in r.data)
+            r = c.post("/fantacalcio/aggiorna/quelloCheVuoi", follow_redirects=True)
+            esito("e non aggiorna qualcosa che non esiste",
+                  "Non so cosa aggiornare" in r.data.decode("utf-8", "replace"))
+
+            # ⚠️ Il caso che conta: la fonte non risponde. La sezione deve aprirsi
+            # lo stesso, col dato di prima, e dirlo.
+            def rotta(nome, forza=False):
+                raise OSError("la rete non va")
+            F.scarica = rotta
+            r = c.get("/fantacalcio/")
+            pagina = r.data.decode("utf-8", "replace")
+            esito("⚠️ se la fonte non risponde la sezione si apre lo stesso",
+                  r.status_code == 200)
+            esito("e lo dice invece di far finta di niente",
+                  "Non sono riuscito a leggere fantacalcio.it" in pagina)
+            db = extensions.get_db()
+            resta = db.execute("SELECT COUNT(*) FROM fanta_probabili WHERE giornata=7"
+                               ).fetchone()[0]
+            db.close()
+            esito("e il dato di prima è ancora lì", resta == 100, str(resta))
+            r = c.post("/fantacalcio/aggiorna/listone", follow_redirects=True)
+            esito("stessa cosa premendo il pulsante: un errore, non una pagina rotta",
+                  r.status_code == 200
+                  and "Non sono riuscito a leggere" in r.data.decode("utf-8", "replace"))
+
+        # ⚠️ «in una tua rosa» dev'essere tua. Il primo giro contava le rose di
+        # tutti gli utenti, e l'ha preso `controlla_proprietario.py`: la funzione
+        # è la stessa per gli script (che una sessione non ce l'hanno) e per il
+        # web (che ce l'ha), e il default «vedi tutto» era la trappola di §1.1.
+        print("\n== 11b. «in una tua rosa» è davvero tua ==")
+        import fanta_import as IMP2
+        db = extensions.get_db()
+        db.execute("INSERT INTO fanta_leagues(user_id, nome) VALUES(?, 'Lega altrui')",
+                   (ids["altro"],))
+        altrui_id = db.execute("SELECT id FROM fanta_leagues WHERE nome='Lega altrui'"
+                               ).fetchone()["id"]
+        # Lo stesso giocatore uscito dal listone, in rosa a tutti e due.
+        db.execute("INSERT INTO fanta_roster(league_id, player_id, prezzo) VALUES(?,5,1)",
+                   (altrui_id,))
+        db.commit()
+        quante_in_tutto = db.execute(
+            "SELECT COUNT(*) FROM fanta_roster WHERE player_id=5").fetchone()[0]
+        db.close()
+        esito("il giocatore uscito è in due rose, una per utente",
+              quante_in_tutto == 2, str(quante_in_tutto))
+        db = extensions.get_db()
+        tutte = IMP2._rose(db, [5], IMP2.TUTTE_LE_ROSE)
+        db.close()
+        esito("uno script da riga di comando le vede tutte e due",
+              tutte.get(5) == 2, str(tutte))
+        db = extensions.get_db()
+        mie = IMP2._rose(db, [5], ("l.user_id=?", [ids["davide"]]))
+        db.close()
+        esito("⚠️ ma con l'ambito di Davide ne conta UNA, non due",
+              mie.get(5) == 1, str(mie))
+        db = extensions.get_db()
+        sue = IMP2._rose(db, [5], ("l.user_id=?", [ids["altro"]]))
+        db.close()
+        esito("e con l'ambito dell'altro utente conta la sua", sue.get(5) == 1, str(sue))
+    finally:
+        F.scarica, F.eta_cache = vera_scarica, vera_eta
 
 
 def main():

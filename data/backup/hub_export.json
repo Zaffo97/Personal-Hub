@@ -1159,6 +1159,37 @@
     }
   ],
   "python_progress": [],
-  "fanta_leagues": [],
-  "fanta_roster": []
+  "fanta_leagues": [
+    {
+      "id": 1,
+      "user_id": 1,
+      "nome": "La Liga Abajo",
+      "sistema": "classic",
+      "moduli": "3-4-3,3-5-2,4-3-3,4-4-2,4-5-1,5-3-2,5-4-1",
+      "n_panchinari": 7,
+      "mod_difesa": 1,
+      "bonus_assist": 1.0,
+      "malus_amm": -0.5,
+      "malus_esp": -1.0,
+      "malus_gol_subito": -0.5,
+      "bonus_imbattibilita": 0.0,
+      "bonus_rigore_parato": 3.0,
+      "malus_rigore_sbagliato": -3.0,
+      "malus_autogol": -2.0,
+      "note": null,
+      "created_at": "2026-09-21 12:46:29",
+      "mod_difesa_portiere": 1,
+      "mod_difesa_soglie": null,
+      "bonus_gol": 3.0
+    }
+  ],
+  "fanta_roster": [
+    {
+      "id": 1,
+      "league_id": 1,
+      "player_id": 6966,
+      "prezzo": 0.0,
+      "note": null
+    }
+  ]
 }

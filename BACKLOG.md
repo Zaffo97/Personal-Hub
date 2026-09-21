@@ -36,6 +36,10 @@ Non sono storia: sono le cose che questo progetto ha già pagato e che tornano a
 | ⚠️ **In `main` vince il gioco più recente, e «più recente» non vuol dire «più completo»** | Dal 21/09/2026. `main` prende l'ultimo version group in cui la voce compare, e fino a quel giorno bastava questo: il risultato era che **Leggende Arceus** e **Let's Go**, che hanno un sistema di mosse ridotto, vincevano su Scarlatto/Violetto per **77 voci** — Abra con **una** mossa sola, e nessun errore da nessuna parte. Ora `VG_FUORI_SERIE` in `pokeapi.py` li tiene fuori, e li usa **solo come ripiego** per chi non compare altrove (Partner Pikachu ed Eevee). ⚠️ Due cose da sapere prima di toccarlo: **`legends-za` e `mega-dimension` sono nell'elenco pur avendo zero righe oggi**, perché hanno order 30 e 31 e il giorno che PokéAPI li riempie diventerebbero da soli la sorgente di centinaia di voci — il rapporto dell'import stampa quante righe ha ognuno degli esclusi, così se uno smette di essere vuoto si va a guardare; e la regola è **una sola funzione**, `scegli_vg_main()`, importata da tutti e due gli scrittori (`importa_mosse_specie.py` e `pokeapi.moveset()`, l'import dal pannello), perché finché erano due copie una restava indietro — ed è esattamente così che il difetto è sopravvissuto |
 | ⚠️ **Una tabella nuova nasce FUORI dal raggio dei controlli, e lo zero diventa falso** | Dal 21/09/2026, trovata aggiungendo il Fantacalcio. `controlla_proprietario.py` cerca le query **per nome di tabella** (`RADICI`, `FIGLIE`, `ALTRE`) e `sweep_pagine.py` ha un **elenco di URL scritto a mano**: una sezione nuova non è in nessuno dei due, quindi tutti e due rispondono «0 problemi» **senza averla guardata**. È peggio di un errore, perché ha l'aria di una conferma. Aggiungendo le tabelle al raggio sono saltate fuori **4 query scoperte** che prima non si vedevano. La regola: **una sezione nuova si aggiunge ai due elenchi nello stesso commit in cui nasce**, e lo stesso vale per l'export (`esporta_dati.py`), o i suoi dati non finiscono in nessun backup |
 | ⚠️ **Un parser HTML che chiude un blocco al primo tag di chiusura lo chiude a metà** | Dal 21/09/2026, scrivendo il lettore delle probabili. `_Probabili` chiudeva la partita al primo `</li>` incontrato dopo averla aperta — ma dentro una partita ci sono decine di `li` (i giocatori del campo, i separatori), quindi il primo separatore la chiudeva, e tutto quello che veniva dopo finiva fuori: il sintomo era che **le dieci squadre in trasferta restavano senza modulo**, esattamente dieci su venti, e **nessun errore**. La cura è contare gli annidamenti (`_liv_li`, `_liv_div`), non fidarsi del primo tag che passa. ⚠️ E il modo in cui è saltato fuori è la vera lezione: la stessa pagina era stata misurata **due volte con strumenti diversi** — una regex grezza contava 20 moduli, il parser ne dava 10 — e il numero che non tornava era il baco. Su una fonte nuova la prima misura va fatta due volte, da due strade |
+| ⚠️ **Aprire una pagina, da oggi, può SCARICARE — e la suite di prove va isolata** | Dal 21/09/2026, con l'aggiornamento automatico del Fantacalcio: le route rileggono la fonte da sé quando la copia in cache è vecchia. Conseguenza che non era prevista: `prova_fantacalcio.py`, che per regola «non tocca `hub.db` né la rete», ha cominciato a **scaricare davvero** a ogni `GET`. Il sintomo è stato una prova che trovava **482 convocati veri** in un DB temporaneo che doveva averne zero — cioè una prova che passava o falliva a seconda di come andava la linea. La cura sta in cima a `prove()`: `F.eta_cache` torna sempre `0.0` (l'automatico non scatta mai per caso) e `F.scarica` **solleva**, così una lettura di rete non voluta si vede come errore invece di riuscire in silenzio. **Chi aggiunge un automatismo in una route deve chiedersi cosa fa alle prove**, e vale per qualunque sezione |
+| ⚠️ **Un parametro che vale «vedi tutto» quando lo dimentichi** | Dal 21/09/2026. `fanta_import._rose()` nasceva con `ambito=None`, che voleva dire «conta le rose di tutti»: giusto per uno script da riga di comando, che una sessione non ce l'ha — **sbagliato** per il pulsante «Aggiorna», che una sessione ce l'ha, e che così diceva «2 dei giocatori usciti sono in una tua rosa» contando rose altrui. L'ha preso `controlla_proprietario.py`. La regola: quando la stessa funzione la chiamano il web e uno script, il «vedo tutto» **si scrive** (`TUTTE_LE_ROSE`), non si ottiene lasciando fuori un parametro. ⚠️ E lo strumento ha imparato un caso nuovo — una funzione che **riceve** la condizione invece di chiederla a `ambito_utente()` — con un criterio volutamente stretto: il parametro si chiama `ambito` **e** dev'essere letto nel corpo. Un primo tentativo più largo marcava filtrata l'intera funzione, rami senza filtro compresi: la scappatoia esatta che quello strumento esiste per chiudere |
+| ⚠️ **In italiano la virgola è ANCHE il separatore decimale** | Dal 21/09/2026, preso dalla prova al primo giro sulle soglie del modificatore di difesa. `"7,5:8, 6:2"` spezzato sulle virgole dà `7` e `5:8`: una tabella diversa da quella scritta, **senza nessun errore**. Ora le coppie `media:punti` si **cercano** con una regex invece di spezzare la riga, e se dopo averle tolte resta qualcosa che non è un separatore si torna allo standard — meglio un default dichiarato che tre righe su quattro. Vale per qualunque elenco di numeri scritto a mano in questo progetto |
+| ⚠️ **Il valore di partenza di un form non è il DEFAULT della tabella** | Dal 21/09/2026, trovato provando il JS in browser (lo sweep non poteva: era sintatticamente perfetto). Le tendine nuove delle regole precompilavano dai **valori ufficiali**, e le due voci che il regolamento non fissa — porta inviolata e autogol — non essendoci, partivano dal **primo valore della tendina**, cioè `0`. Una lega nuova nasceva con l'autogol che non toglie niente, mentre la tabella ha `DEFAULT -2`. Nessun errore, solo una regola sparita. Ora `VALORE_PARTENZA` è un dizionario **diverso** da `VALORE_UFFICIALE` e i due non si confondono. ⚠️ Fin quando il campo era vuoto il difetto non poteva esistere — era il DB a decidere: **dare un valore iniziale a un campo sposta la decisione dal DB al form**, e da lì in poi i due devono concordare |
 | ⚠️ **La cache delle probabili invecchia in ORE, non in mesi** | Dal 21/09/2026. Le tre pagine di fantacalcio.it stanno nella stessa cache, ma non hanno la stessa scadenza: il listone cambia a ogni mercato, le **probabili cambiano fino al fischio d'inizio** — un titolare diventa panchinaro il sabato mattina. Rileggere la cache e scrivere nel DB **non dà nessun errore**, dà una formazione vecchia con l'aria di essere quella di oggi. Per questo `importa_probabili.py` stampa **sempre** l'età della copia in ore e dice `--scarica`: praticamente ogni giro delle probabili vuole `--scarica`, al contrario del listone |
 | ⚠️ **Lo sweep controlla il JavaScript, non che l'HTML sia ben formato** | Dal 21/09/2026, trovata da Davide cliccando «Fantacalcio» in sidebar e finendo sul PC Builder. Il blocco `{% if 'fantacalcio' … %}` era finito **dentro l'attributo `class`** del link PC Builder, che non veniva mai chiuso: il parser fonde i due `<a>` in uno solo, e resta un `href="/pcbuilder"` con scritto «Fantacalcio». `sweep_pagine.py` era a **0 errori** anche così, perché rende la pagina ed esegue `new Function()` sugli script e sugli handler — un tag mai chiuso non è JavaScript, quindi non lo guarda nessuno. Un link aggiunto a `base.html` va verificato **sulla pagina resa con un parser HTML** (href per href, e `<a>` aperti = chiusi), non a occhio sul template: l'errore si legge male proprio perché il pezzo giusto è tutto lì, solo nel posto sbagliato |
 | ⚠️ **Passare `None` a una colonna con un `DEFAULT` scavalca il default** | Dal 21/09/2026, presa da `prova_fantacalcio.py` al primo giro. Il salvataggio di una lega costruiva l'`INSERT` con **tutte** le colonne delle regole, mettendo `None` dove il form non aveva niente: in SQLite un `NULL` **esplicito** è un valore, non un'assenza, quindi il `DEFAULT 3` del bonus gol non entrava mai e una lega nuova nasceva coi bonus a `NULL`. Nessun errore: il bonus semplicemente non c'era. La cura è non mettere la colonna nella query — che nell'`UPDATE` vuol dire anche «lascia il valore di prima», cioè la stessa cosa detta bene |
@@ -766,12 +770,51 @@ scrivono), `blueprints/fantacalcio.py`, tre template, e
   che ti riguarda davvero, e la pagina della lega li mostra col cartellino «fuori
   listone» invece di nasconderli
 
-⚠️ **Solo tre valori vengono dal regolamento ufficiale** di fantacalcio.it, letto il
-21/09/2026: gol **+3**, ammonizione **−0,5**, espulsione **−1**, e i cartellini si
-fermano a −1 comunque siano combinati. Tutti gli altri (assist, gol subito, porta
-inviolata, rigori, autogol) il regolamento **non li fissa**, perché cambiano da lega a
-lega: i default sono quelli convenzionali e vanno corretti lega per lega. È
-esattamente il motivo per cui le regole stanno in colonne.
+**✅ L'aggiornamento senza riga di comando, dal 21/09/2026.** Chiesto da Davide: un
+pulsante, o meglio l'aggiornamento entrando nella sezione. Ci sono tutti e due —
+**«Aggiorna ora»** (un `POST`, perché scarica e riscrive: un `GET` si rifarebbe a
+ogni F5) e l'**automatico**, che scatta quando la copia in cache ha passato la sua
+soglia: **una settimana** per il listone, **tre ore** per le probabili
+(`fanta_import.VECCHIA_*`). Non a ogni visita, perché vorrebbe dire aspettare
+fantacalcio.it ogni volta che si apre la pagina. ⚠️ Se la fonte non risponde la
+sezione **si apre lo stesso**, col dato di prima e un avviso: una pagina che sa già
+cosa mostrare non può diventare un errore 500 perché la rete è lenta.
+
+⚠️ La logica sta in **`fanta_import.py`**, non negli script: la chiamano tutti e due
+e gli script sono ora solo il rivestimento che stampa il rapporto. Scriverla due
+volte era la strada facile, ed è lo stesso errore che ha tenuto in vita per un mese
+il difetto di `main` nel moveset.
+
+**✅ Le regole della lega, rifatte il 21/09/2026** su tre richieste di Davide:
+
+- **il gol è una casella sola.** Erano quattro (una per ruolo) e il regolamento dà
+  **+3 a chiunque segni**, portiere compreso: quattro caselle da riempire con lo
+  stesso numero erano quattro occasioni di sbagliarne una. La migrazione travasa il
+  valore e toglie le colonne vecchie, ma **solo se erano uguali fra loro** — dove non
+  lo fossero resterebbero, invece di perdere in silenzio una differenza voluta
+- **il modificatore di difesa ha la sua tabella.** La **struttura** viene dalla guida
+  ufficiale di Leghe Fantacalcio (letta il 21/09/2026): media aritmetica del
+  **portiere e dei migliori 3 difensori** — o dei **migliori 4 difensori** se il
+  portiere si esclude — **esclusi bonus e malus**, e serve che almeno **4 difensori**
+  portino voto. I **valori** invece la piattaforma li lascia cambiare, e quelli di
+  partenza sono i tre storici di FantaGazzetta: **+6** da 7, **+3** da 6.5, **+1** da
+  6, niente sotto il 6. La scheda della lega mostra la tabella, come si fa la media, e
+  qualche esempio
+- **ogni regola è una tendina** coi valori che si usano davvero, e il valore del
+  regolamento è segnato «(ufficiale)» — più «Altro…», che scopre la casella libera:
+  la scelta resta, ma non è più una casella vuota davanti a chi non ricorda se
+  l'ammonizione toglie mezzo punto o uno
+
+⚠️ **I valori dal regolamento sono SETTE, non tre** — corretto il 21/09/2026
+rileggendo `/regolamenti/leghe-private`, che li elenca per esteso: gol **+3**
+(rigori compresi), assist **+1** (da fermo +0,5), ammonizione **−0,5**, espulsione
+**−1**, gol subito **−1**, rigore parato **+3**, rigore sbagliato **−3**. La riga di
+prima ne dichiarava tre ed era una **misura incompleta**, non una regola diversa: la
+prima lettura si era fermata alla pagina sbagliata. I cartellini si fermano a −1
+comunque siano combinati. Restano fuori **porta inviolata e autogol**, che il
+regolamento davvero non fissa: quelli sono convenzionali e vanno decisi lega per
+lega. È il motivo per cui le regole stanno in colonne, e ora il valore ufficiale
+compare **accanto a ogni tendina**, non solo l'etichetta «(ufficiale)».
 
 **⬜ Cosa resta, in ordine di quanto è stato chiesto:**
 

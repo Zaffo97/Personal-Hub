@@ -107,6 +107,53 @@ ECCEZIONI = {
      "FROM fanta_players WHERE nome LIKE ? "
      "ORDER BY attivo DESC, fvm DESC, nome LIMIT 25"):
         "la ricerca nel listone condiviso, per scegliere chi mettere in rosa",
+    # ── L'aggiornamento, in `fanta_import.py` (21/09/2026) ──────────────────
+    # Questo file scrive i due dati **condivisi**, listone e probabili: non hanno
+    # un proprietario e non devono averlo, come il catalogo Pokémon. Lo chiamano
+    # sia gli script da riga di comando sia il pulsante «Aggiorna» della pagina.
+    # ⚠️ La parte che invece **è di qualcuno** — «quanti di questi sono in una tua
+    # rosa» — non è qui dentro: sta in `_rose()`, che prende un `ambito` e da web
+    # lo riceve sempre. Il controllo lo vede filtrato, ed è giusto così: senza,
+    # l'avviso avrebbe contato le rose di tutti gli utenti.
+    ("fanta_import.py", "aggiorna_listone", "SELECT * FROM fanta_players"):
+        "il listone condiviso, letto per confrontarlo con quello appena scaricato",
+    ("fanta_import.py", "aggiorna_listone",
+     "INSERT INTO fanta_players(id, {…}, attivo, visto_il, aggiornato_il) "
+     "VALUES(?, {…}, 1, ?, CURRENT_TIMESTAMP) ON CONFLICT(id) DO UPDATE SET {…}, "
+     "attivo=1, visto_il=excluded.visto_il, aggiornato_il=CURRENT_TIMESTAMP"):
+        "scrive il listone, che è di tutti: è il dato che viene dalla fonte",
+    ("fanta_import.py", "aggiorna_listone",
+     "UPDATE fanta_players SET attivo=0, aggiornato_il=CURRENT_TIMESTAMP WHERE id=?"):
+        "spegne chi non è più in Serie A. Riguarda il listone condiviso, non le "
+        "rose: quelle restano, ed è il punto",
+    ("fanta_import.py", "aggiorna_listone",
+     "SELECT COUNT(*) FROM fanta_players WHERE attivo=1"):
+        "quanti giocatori attivi ci sono, per dirlo nel rapporto",
+    ("fanta_import.py", "aggiorna_probabili",
+     "SELECT * FROM fanta_probabili WHERE giornata=?"):
+        "le probabili già scritte per quella giornata, per dire cosa cambia",
+    ("fanta_import.py", "aggiorna_probabili", "SELECT id FROM fanta_players"):
+        "gli id del listone, per dire quali convocati la fonte non quota",
+    ("fanta_import.py", "aggiorna_probabili",
+     "DELETE FROM fanta_probabili WHERE giornata=?"):
+        "la giornata si riscrive per intero: chi sparisce dai convocati deve "
+        "sparire. Dato condiviso",
+    ("fanta_import.py", "aggiorna_probabili",
+     "DELETE FROM fanta_probabili_squadre WHERE giornata=?"):
+        "come sopra, per le venti squadre di quella giornata",
+    ("fanta_import.py", "aggiorna_probabili",
+     "INSERT INTO fanta_probabili_squadre(giornata, squadra_slug, squadra, modulo, "
+     "avversario, avversario_slug, in_casa, match_id, aggiornato_il) "
+     "VALUES(?,?,?,?,?,?,?,?,CURRENT_TIMESTAMP)"):
+        "scrive le partite della giornata: le formazioni della Serie A non sono "
+        "di nessun utente",
+    ("fanta_import.py", "aggiorna_probabili",
+     "INSERT INTO fanta_probabili(giornata, player_id, nome, squadra_slug, ruolo, "
+     "titolare, percentuale, aggiornato_il) VALUES(?,?,?,?,?,?,?,CURRENT_TIMESTAMP)"):
+        "scrive i convocati della giornata, dato condiviso come sopra",
+    ("fanta_import.py", "aggiorna_probabili",
+     "SELECT COUNT(DISTINCT giornata) FROM fanta_probabili"):
+        "quante giornate ci sono in archivio, per dirlo nel rapporto",
     # ── Le probabili formazioni (21/09/2026) ────────────────────────────────
     # Stessa categoria del listone: la formazione che il Genoa schiera domenica è
     # la stessa per tutti quelli che entrano nell'hub. Quello che invece è **tuo**
@@ -314,6 +361,25 @@ def query_del_file(percorso):
         if (isinstance(n, ast.Call) and isinstance(n.func, ast.Name)
                 and n.func.id in ("ambito_utente", "solo_mie")):
             con_ambito.add(funzione_di(n))
+    # ⚠️ Dal 21/09/2026 c'è un secondo modo, e senza questo pezzo una query fatta
+    # **bene** risultava scoperta: `fanta_import._rose()` non chiama
+    # `ambito_utente()` — non potrebbe, la chiamano anche gli script, che una
+    # sessione non ce l'hanno — ma la **riceve** come parametro `ambito` e la
+    # innesta nel `WHERE`. Il criterio è volutamente stretto: il parametro deve
+    # chiamarsi `ambito` **e** dev'essere letto nel corpo della funzione. Una
+    # funzione che lo accetta e non lo usa non conta come filtrata, che è
+    # esattamente il modo in cui questo riconoscimento potrebbe diventare una
+    # scappatoia.
+    for n in ast.walk(albero):
+        if not isinstance(n, (ast.FunctionDef, ast.AsyncFunctionDef)):
+            continue
+        nomi = [a.arg for a in n.args.args + n.args.kwonlyargs]
+        if "ambito" not in nomi:
+            continue
+        usato = any(isinstance(v, ast.Name) and v.id == "ambito"
+                    and isinstance(v.ctx, ast.Load) for v in ast.walk(n))
+        if usato:
+            con_ambito.add(n.name)
 
     fuori = []
     for n in ast.walk(albero):

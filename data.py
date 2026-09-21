@@ -109,6 +109,78 @@ def scomponi_modulo(modulo):
     return {"p": 1, "d": d, "c": c, "a": a}
 
 
+# ── Il modificatore di difesa ────────────────────────────────────────────────
+# Due cose distinte, e le fonti le trattano diverse:
+#
+# **La struttura** viene dalla guida ufficiale di Leghe Fantacalcio, letta il
+# 21/09/2026: la media è aritmetica sui voti del **portiere e dei migliori 3
+# difensori** (o dei **migliori 4 difensori** se il portiere non viene incluso),
+# **esclusi bonus e malus**, e il modificatore si applica solo se almeno **4
+# difensori** portano voto. La guida dice anche, per esteso, che la struttura non
+# si cambia: «puoi solo cambiare i valori nelle apposite caselle».
+#
+# **I valori** invece sono personalizzabili, e quelli qui sotto sono quelli
+# storici di FantaGazzetta (vademecum del 30/08/2026 letto sul sito): +6 da 7 in
+# su, +3 da 6.5, +1 da 6. Sotto il 6 non c'è bonus.
+#
+# ⚠️ Per questo stanno in una colonna della lega e non nel codice: sono il default,
+# non la legge. Una lega che usa altri numeri li scrive nel suo regolamento.
+MOD_DIFESA_SOGLIE = [(7.0, 6.0), (6.5, 3.0), (6.0, 1.0)]
+
+
+_COPPIA = re.compile(r"(\d+(?:[.,]\d+)?)\s*:\s*(-?\d+(?:[.,]\d+)?)")
+
+
+def soglie_mod_difesa(grezzo=None):
+    """Le soglie di una lega, da `"7:6, 6.5:3, 6:1"`, o quelle standard.
+
+    ⚠️ Le coppie si **cercano**, non si spezzano sulla virgola, e il motivo l'ha
+    trovato la prova al primo giro: in italiano la virgola è anche il separatore
+    decimale, quindi `"7,5:8, 6:2"` spezzato sulle virgole dà `7` e `5:8`, cioè
+    una tabella diversa da quella scritta, **senza nessun errore**. Cercando le
+    coppie `media:punti` l'ambiguità non si pone.
+
+    ⚠️ E una riga scritta male non diventa una tabella **a metà**: se dopo aver
+    tolto le coppie riconosciute resta qualcosa che non è un separatore, si torna
+    allo standard — meglio un default dichiarato che tre righe su quattro.
+
+    Le soglie tornano sempre **ordinate dalla più alta**, perché il conto si ferma
+    alla prima che la media raggiunge: l'ordine è parte del significato.
+    """
+    testo = str(grezzo or "").strip()
+    if not testo:
+        return list(MOD_DIFESA_SOGLIE)
+    fuori = []
+    for media, punti in _COPPIA.findall(testo):
+        fuori.append((float(media.replace(",", ".")), float(punti.replace(",", "."))))
+    resto = _COPPIA.sub("", testo)
+    if not fuori or resto.strip(" ,;\t\n"):
+        return list(MOD_DIFESA_SOGLIE)
+    return sorted(fuori, key=lambda x: x[0], reverse=True)
+
+
+def scrivi_soglie(soglie):
+    """L'inverso di `soglie_mod_difesa()`: la riga da salvare in colonna."""
+    def num(x):
+        return str(int(x)) if float(x) == int(x) else str(x)
+    return ", ".join(f"{num(m)}:{num(p)}" for m, p in soglie)
+
+
+def modificatore_difesa(media, soglie=None):
+    """I punti che la tabella dà a quella media, o `0`.
+
+    ⚠️ `None` vuol dire «non lo sappiamo» e torna `0`: un voto che non c'è non è
+    un voto basso. E il confronto è **maggiore o uguale**, come lo scrive la fonte:
+    con la tabella standard una media di esattamente 6 vale +1, non 0.
+    """
+    if media is None:
+        return 0.0
+    for minimo, punti in (soglie or MOD_DIFESA_SOGLIE):
+        if media >= minimo:
+            return punti
+    return 0.0
+
+
 # ── Categorie di oggetti e abilità ───────────────────────────────────────────
 # ⚠️ La **chiave** è il dato: sta in `category` dentro il catalogo, è il `value` delle
 # tendine e il suffisso delle classi CSS (`cat-berry`, `cat-weather_override`). Non si
