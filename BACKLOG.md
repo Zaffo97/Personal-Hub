@@ -36,6 +36,7 @@ Non sono storia: sono le cose che questo progetto ha già pagato e che tornano a
 | ⚠️ **In `main` vince il gioco più recente, e «più recente» non vuol dire «più completo»** | Dal 21/09/2026. `main` prende l'ultimo version group in cui la voce compare, e fino a quel giorno bastava questo: il risultato era che **Leggende Arceus** e **Let's Go**, che hanno un sistema di mosse ridotto, vincevano su Scarlatto/Violetto per **77 voci** — Abra con **una** mossa sola, e nessun errore da nessuna parte. Ora `VG_FUORI_SERIE` in `pokeapi.py` li tiene fuori, e li usa **solo come ripiego** per chi non compare altrove (Partner Pikachu ed Eevee). ⚠️ Due cose da sapere prima di toccarlo: **`legends-za` e `mega-dimension` sono nell'elenco pur avendo zero righe oggi**, perché hanno order 30 e 31 e il giorno che PokéAPI li riempie diventerebbero da soli la sorgente di centinaia di voci — il rapporto dell'import stampa quante righe ha ognuno degli esclusi, così se uno smette di essere vuoto si va a guardare; e la regola è **una sola funzione**, `scegli_vg_main()`, importata da tutti e due gli scrittori (`importa_mosse_specie.py` e `pokeapi.moveset()`, l'import dal pannello), perché finché erano due copie una restava indietro — ed è esattamente così che il difetto è sopravvissuto |
 | ⚠️ **Una tabella nuova nasce FUORI dal raggio dei controlli, e lo zero diventa falso** | Dal 21/09/2026, trovata aggiungendo il Fantacalcio. `controlla_proprietario.py` cerca le query **per nome di tabella** (`RADICI`, `FIGLIE`, `ALTRE`) e `sweep_pagine.py` ha un **elenco di URL scritto a mano**: una sezione nuova non è in nessuno dei due, quindi tutti e due rispondono «0 problemi» **senza averla guardata**. È peggio di un errore, perché ha l'aria di una conferma. Aggiungendo le tabelle al raggio sono saltate fuori **4 query scoperte** che prima non si vedevano. La regola: **una sezione nuova si aggiunge ai due elenchi nello stesso commit in cui nasce**, e lo stesso vale per l'export (`esporta_dati.py`), o i suoi dati non finiscono in nessun backup |
 | ⚠️ **Un parser HTML che chiude un blocco al primo tag di chiusura lo chiude a metà** | Dal 21/09/2026, scrivendo il lettore delle probabili. `_Probabili` chiudeva la partita al primo `</li>` incontrato dopo averla aperta — ma dentro una partita ci sono decine di `li` (i giocatori del campo, i separatori), quindi il primo separatore la chiudeva, e tutto quello che veniva dopo finiva fuori: il sintomo era che **le dieci squadre in trasferta restavano senza modulo**, esattamente dieci su venti, e **nessun errore**. La cura è contare gli annidamenti (`_liv_li`, `_liv_div`), non fidarsi del primo tag che passa. ⚠️ E il modo in cui è saltato fuori è la vera lezione: la stessa pagina era stata misurata **due volte con strumenti diversi** — una regex grezza contava 20 moduli, il parser ne dava 10 — e il numero che non tornava era il baco. Su una fonte nuova la prima misura va fatta due volte, da due strade |
+| ⚠️ **Una foreign key verso una tabella che l'export NON porta rompe il ripristino, ma solo quando la figlia ha righe** | Dal 21/09/2026. `fanta_roster` e `fanta_formazione` nominano `fanta_players`, e il listone **non è nell'export** di proposito (è una copia di fantacalcio.it che si rifà in un minuto). Finché la rosa era **vuota** il ripristino su un DB nuovo funzionava; è bastato **un** giocatore in rosa perché `importa_dati.py` si fermasse con «FOREIGN KEY constraint failed» — un messaggio che non dice né cosa manca né cosa fare. ⚠️ Il difetto era lì da quando la tabella è nata: non l'ha creato la riga in più, l'ha **rivelato**. Ora l'import controlla **prima di scrivere** che i giocatori nominati esistano, e se non ci sono dice di lanciare `importa_listone.py`; `prova_importa_dati.py` ha il caso, e il suo DB di prova semina i giocatori che l'export nomina. La regola generale: quando una tabella esportata punta a una **non** esportata, il caso «ripristino su DB nuovo» va provato con la figlia **piena**, non vuota |
 | ⚠️ **Aprire una pagina, da oggi, può SCARICARE — e la suite di prove va isolata** | Dal 21/09/2026, con l'aggiornamento automatico del Fantacalcio: le route rileggono la fonte da sé quando la copia in cache è vecchia. Conseguenza che non era prevista: `prova_fantacalcio.py`, che per regola «non tocca `hub.db` né la rete», ha cominciato a **scaricare davvero** a ogni `GET`. Il sintomo è stato una prova che trovava **482 convocati veri** in un DB temporaneo che doveva averne zero — cioè una prova che passava o falliva a seconda di come andava la linea. La cura sta in cima a `prove()`: `F.eta_cache` torna sempre `0.0` (l'automatico non scatta mai per caso) e `F.scarica` **solleva**, così una lettura di rete non voluta si vede come errore invece di riuscire in silenzio. **Chi aggiunge un automatismo in una route deve chiedersi cosa fa alle prove**, e vale per qualunque sezione |
 | ⚠️ **Un parametro che vale «vedi tutto» quando lo dimentichi** | Dal 21/09/2026. `fanta_import._rose()` nasceva con `ambito=None`, che voleva dire «conta le rose di tutti»: giusto per uno script da riga di comando, che una sessione non ce l'ha — **sbagliato** per il pulsante «Aggiorna», che una sessione ce l'ha, e che così diceva «2 dei giocatori usciti sono in una tua rosa» contando rose altrui. L'ha preso `controlla_proprietario.py`. La regola: quando la stessa funzione la chiamano il web e uno script, il «vedo tutto» **si scrive** (`TUTTE_LE_ROSE`), non si ottiene lasciando fuori un parametro. ⚠️ E lo strumento ha imparato un caso nuovo — una funzione che **riceve** la condizione invece di chiederla a `ambito_utente()` — con un criterio volutamente stretto: il parametro si chiama `ambito` **e** dev'essere letto nel corpo. Un primo tentativo più largo marcava filtrata l'intera funzione, rami senza filtro compresi: la scappatoia esatta che quello strumento esiste per chiudere |
 | ⚠️ **In italiano la virgola è ANCHE il separatore decimale** | Dal 21/09/2026, preso dalla prova al primo giro sulle soglie del modificatore di difesa. `"7,5:8, 6:2"` spezzato sulle virgole dà `7` e `5:8`: una tabella diversa da quella scritta, **senza nessun errore**. Ora le coppie `media:punti` si **cercano** con una regex invece di spezzare la riga, e se dopo averle tolte resta qualcosa che non è un separatore si torna allo standard — meglio un default dichiarato che tre righe su quattro. Vale per qualunque elenco di numeri scritto a mano in questo progetto |
@@ -632,7 +633,7 @@ quattro cose richiedono **fonti diverse**:
 | 🤖 **Arduino** | ⬜ Richiamo a Tinkercad per disegnare il progetto e verificare i connettori |
 | 💻 **PC Builder** | ⬜ Wishlist Amazon o altri · ⬜ prezzo componente · ⬜ percentuale di compatibilità fra i pezzi (valutare UserBenchmark) · ⬜ gestire l'uscita di nuovi pezzi nel tempo |
 | 🐍 **Python** | ⬜ Spazio per inserire i propri progetti e testarli · ⬜ idee per rendere la sezione più utile |
-| ⚽ **Fantacalcio** | 🟨 **Iniziata il 21/09/2026**: listone, leghe con regole strutturate e rose (vedi §4.2). Restano formazione, probabili e consiglio |
+| ⚽ **Fantacalcio** | 🟨 **Quasi tutta, dal 21/09/2026**: listone, leghe con regole strutturate, rose, **probabili formazioni** e **campo per schierare** (vedi §4.2). Resta il **consiglio**, più i ruoli Mantra che sono nel DB e non li legge nessuno |
 
 ### 4.1 🟨 Gaming — il calendario delle uscite (chiesto il 13/08, costruito il 16/08/2026)
 
@@ -705,7 +706,7 @@ non basta mai, e l'avviso a schermo lo dice.
   entrasse molto altro andrebbero rimisurate, non ritoccate a occhio
 
 
-### 4.2 🟨 Fantacalcio — le fondamenta ci sono, dal 21/09/2026
+### 4.2 🟨 Fantacalcio — manca il consiglio, dal 21/09/2026
 
 Chiesta il 10/09/2026, **definita e iniziata il 21/09/2026**. Le quattro domande che
 stavano qui hanno una risposta, data da Davide:
@@ -818,36 +819,36 @@ compare **accanto a ogni tendina**, non solo l'etichetta «(ufficiale)».
 
 **⬜ Cosa resta, in ordine di quanto è stato chiesto:**
 
-- ⬜ **inserire la formazione — il prossimo blocco**, definito da Davide il
-  21/09/2026: **un campo da gioco come quello dell'app Fantagazzetta**. Le sue
-  parole: campo **dinamico**, che cambia disposizione al cambio di modulo, dove si
-  inseriscono i propri giocatori **in base al ruolo del posto scelto**. Sta
-  **dentro la lega**, non in una pagina a sé: ogni lega ha la sua formazione.
+- ✅ **inserire la formazione** — fatta il 21/09/2026, com'è stata chiesta: **un
+  campo da gioco come quello dell'app Fantagazzetta**, dinamico, che cambia
+  disposizione al cambio di modulo, dove si schiera scegliendo dal **ruolo del
+  posto**. Sta dentro la lega: `/fantacalcio/lega/<id>/formazione`.
 
-  Quello che c'è già e non va rifatto: `scomponi_modulo()` in `data.py` dà i
-  reparti di un modulo, la pagina della lega sa quali moduli la rosa copre, e le
-  **probabili** dicono per ogni giocatore se è titolare, in panchina, non convocato
-  o se la sua squadra non gioca — cioè l'informazione che serve **mentre** si
-  schiera, ed è il motivo per cui le probabili sono state fatte prima.
+  Le due decisioni di Davide, prese quel giorno: **una formazione per lega, che si
+  sovrascrive** (niente giornata, niente storico) e **validazione severa** — quello
+  che non torna non si salva, come per un modulo scritto male.
 
-  ⚠️ Da decidere prima di scrivere, e sono decisioni di Davide:
-  - **la formazione è per giornata?** Il numero di giornata c'è già (arriva dalle
-    probabili), e legarla lì vorrebbe dire poter rileggere le formazioni passate.
-    L'alternativa — una formazione sola che si sovrascrive — è più semplice ma
-    perde lo storico;
-  - **i panchinari sono in ordine**, nel fantacalcio: l'ordine decide chi subentra
-    per primo. Vanno salvati come lista ordinata, non come insieme, o le
-    sostituzioni non si potranno mai calcolare;
-  - **quanto stretta la validazione**: rifiutare una formazione che non rispetta il
-    modulo, o accettarla dichiarandola sbagliata? (Il modulo della lega è già
-    validato al salvataggio, quindi qui si sa cosa è ammesso.)
-  - **il ruolo di un posto in campo**: un modulo Classic è `1-D-C-A`, quindi la
-    casella sa già che ruolo vuole. ⚠️ Ma il campo «come Fantagazzetta» disegna i
-    reparti su più file (3-4-2-1 e simili), e quelli sono i moduli **veri della
-    Serie A**, non quelli del fantacalcio, che sono a tre numeri. Sono due cose
-    diverse con lo stesso nome — vedi la nota in `extensions.py` su
-    `fanta_probabili_squadre.modulo` — e confonderle non darebbe errore, darebbe
-    un campo con gli uomini nei posti sbagliati
+  Come si comporta il campo, che è la parte che si sarebbe potuta fare peggio:
+  - al **cambio di modulo** i giocatori non si buttano via — ognuno resta se c'è
+    ancora un posto del suo ruolo, e chi avanza finisce **in panchina** invece di
+    sparire (da 3-4-3 a 3-5-2 il terzo attaccante deve pur andare da qualche parte);
+  - la **panchina è ordinata** e si riordina con le frecce: nel fantacalcio
+    l'ordine decide chi subentra, quindi è un dato, non una decorazione;
+  - accanto a ogni giocatore, in campo e nell'elenco da cui si sceglie, c'è la sua
+    **probabile** — titolare, panchina, non convocato, non gioca, con la
+    percentuale. È l'informazione che serve **mentre** si schiera, ed è tutto il
+    motivo per cui le probabili sono state fatte prima.
+
+  ⚠️ Il **ruolo lo decide la rosa, non il form**: un `ruolo` mandato dal browser
+  farebbe tornare i conti dei reparti dicendo che un attaccante è un difensore, e
+  la prova lo verifica.
+
+  ⬜ Quello che resta aperto qui: la formazione **non sa se una lega ne ha due**
+  (due leghe, due formazioni: funziona, ma non c'è un modo per copiarne una
+  nell'altra), e **non si controlla da sola** quando le probabili cambiano — se
+  schieri un titolare che venerdì finisce in panchina, il campo te lo mostra solo
+  quando riapri la pagina.
+
 - ✅ **le probabili formazioni** — fatte il 21/09/2026, vedi lo storico. Ci sono
   `fantacalcio_it.probabili()`, `scripts/importa_probabili.py`, due tabelle per
   giornata e la pagina `/fantacalcio/probabili`; la pagina della lega dice, per ogni

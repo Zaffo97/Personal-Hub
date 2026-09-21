@@ -54,8 +54,18 @@ def gira(db, *extra, file=EXPORT):
     return r.returncode, (r.stdout or "") + (r.stderr or "")
 
 
-def db_vergine(dove, nome):
-    """Un DB come lo crea `init_db()` su un PC nuovo: schema, `admin`, i 53 argomenti."""
+def db_vergine(dove, nome, col_listone=True):
+    """Un DB come lo crea `init_db()` su un PC nuovo: schema, `admin`, i 53 argomenti.
+
+    ⚠️ Con `col_listone` ci mette anche i giocatori che l'export nomina. Il listone
+    **non sta nell'export** — è una copia di fantacalcio.it che si rifà in un
+    minuto — ma la rosa e la formazione lo nominano, e su un DB dove
+    `fanta_players` è vuoto quelle righe violano la foreign key. È il passo che un
+    ripristino vero fa **prima** (`importa_listone.py`), e qui si finge.
+
+    Trovato il 21/09/2026: finché la rosa era vuota questa prova passava senza
+    toccare il caso, e si è rotta appena una rosa vera è entrata nell'export.
+    """
     import extensions
     percorso = os.path.join(dove, nome)
     vecchio, extensions.DB = extensions.DB, percorso
@@ -63,6 +73,16 @@ def db_vergine(dove, nome):
         extensions.init_db()
     finally:
         extensions.DB = vecchio
+    if col_listone:
+        export = json.load(io_json(EXPORT))
+        ids = {r["player_id"] for t in ("fanta_roster", "fanta_formazione")
+               for r in export.get(t, []) if r.get("player_id")}
+        if ids:
+            c = sqlite3.connect(percorso)
+            c.executemany("INSERT OR IGNORE INTO fanta_players(id, nome, attivo) "
+                          "VALUES(?, 'finto', 1)", [(i,) for i in sorted(ids)])
+            c.commit()
+            c.close()
     return percorso
 
 
@@ -107,6 +127,26 @@ def prove(dove):
     esito("l'utente rientrato senza password è dichiarato a schermo",
           "senza password" in out)
     esito("la copia di sicurezza è stata lasciata", "Copia di sicurezza" in out)
+
+    # --- 1b. il ripristino senza listone -------------------------------------
+    # ⚠️ Il caso del 21/09/2026: la rosa e la formazione nominano giocatori che
+    # stanno **solo** nel listone, e il listone non è nell'export. Su un DB dove
+    # `fanta_players` è vuoto SQLite diceva «FOREIGN KEY constraint failed», che
+    # non fa capire né cosa manca né cosa fare.
+    export = json.load(io_json(EXPORT))
+    if any(r.get("player_id") for t in ("fanta_roster", "fanta_formazione")
+           for r in export.get(t, [])):
+        nudo = db_vergine(dove, "senza_listone.db", col_listone=False)
+        rc, out = gira(nudo)
+        esito("⚠️ ripristino senza listone: si ferma e dice di importarlo prima",
+              rc == 1 and "importa_listone.py" in out)
+        esito("   e non ha scritto niente", conta(nudo, "games") == 0,
+              f"games={conta(nudo, 'games')}")
+        esito("   il messaggio nomina la tabella che lo causa",
+              "fanta_roster" in out or "fanta_formazione" in out)
+    else:
+        esito("⚠️ (export senza rose: il caso «senza listone» non si può provare)",
+              True, "rimettere una rosa nell'export per riattivarla")
 
     rc, out = gira(base)
     esito("rieseguibile: la seconda volta non fa niente e lo dice",

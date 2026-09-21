@@ -320,6 +320,28 @@ def init_db():
         PRIMARY KEY(giornata, player_id));
     CREATE INDEX IF NOT EXISTS ix_probabili_giocatore
         ON fanta_probabili(player_id);
+    -- La formazione schierata, **una per lega**: decisione di Davide del
+    -- 21/09/2026, contro l'alternativa «una per giornata». Non c'e' quindi una
+    -- colonna `giornata`, ed e' voluto: la formazione della settimana prima non si
+    -- conserva. ⚠️ La conseguenza da sapere prima di scrivere il consiglio: senza
+    -- storico **non sara' verificabile a posteriori** se consigliava bene.
+    --
+    -- Il `modulo` sta in `fanta_leagues.modulo_scelto`, non qui: una formazione ha
+    -- **un** modulo, e tenerlo su ogni riga vorrebbe dire poterlo scrivere diverso
+    -- in undici posti. Una riga qui e' un posto occupato, niente di piu'.
+    --
+    -- `ordine` e' il posto in campo per i titolari e **l'ordine di subentro** per i
+    -- panchinari. ⚠️ Per i panchinari non e' una decorazione: nel fantacalcio e'
+    -- l'ordine che decide chi entra al posto di chi non gioca, quindi una panchina
+    -- salvata come insieme invece che come lista non permetterebbe mai di calcolare
+    -- le sostituzioni.
+    CREATE TABLE IF NOT EXISTS fanta_formazione(
+        league_id INTEGER REFERENCES fanta_leagues(id) ON DELETE CASCADE,
+        player_id INTEGER REFERENCES fanta_players(id),
+        titolare INTEGER NOT NULL,
+        ordine INTEGER NOT NULL,
+        ruolo TEXT,
+        PRIMARY KEY(league_id, player_id));
     """)
     # L'admin di un DB nuovo nasce gia' con lo schema forte. Sui DB esistenti
     # questa INSERT non fa nulla (OR IGNORE) e l'hash vecchio viene riscritto al
@@ -515,7 +537,12 @@ def init_db():
     # vale solo per i DB nuovi, qui c'e' gia' una lega vera.
     for colonna, tipo in (("mod_difesa_portiere", "INTEGER DEFAULT 1"),
                           ("mod_difesa_soglie", "TEXT"),
-                          ("bonus_gol", "REAL DEFAULT 3")):
+                          ("bonus_gol", "REAL DEFAULT 3"),
+                          # Il modulo della formazione schierata. Sta qui e non su
+                          # ogni riga di `fanta_formazione` perche' una formazione
+                          # ne ha **uno**: sulle righe si potrebbe scrivere diverso
+                          # in undici posti senza che nessuno se ne accorga.
+                          ("modulo_scelto", "TEXT")):
         try:
             db.execute(f"ALTER TABLE fanta_leagues ADD COLUMN {colonna} {tipo}")
             db.commit()

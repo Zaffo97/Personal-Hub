@@ -39,7 +39,11 @@
         {% if lega.mod_difesa %}&middot; modificatore difesa{% endif %}
         {% if speso %}&middot; spesi {{ speso|round(0)|int }}{% endif %}
       </p></div>
-    <a class="btn" href="{{ url_for('fantacalcio.fantacalcio') }}">&larr; Le leghe</a>
+    <div class="flex gap-2">
+      <a class="btn btn-primary" href="{{ url_for('fantacalcio.formazione', lid=lega.id) }}">
+        &#9917; Schiera la formazione</a>
+      <a class="btn" href="{{ url_for('fantacalcio.fantacalcio') }}">&larr; Le leghe</a>
+    </div>
   </div>
 </div>
 

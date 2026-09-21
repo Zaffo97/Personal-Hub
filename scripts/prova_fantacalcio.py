@@ -695,6 +695,114 @@ def prove(dove):
     finally:
         F.scarica, F.eta_cache = vera_scarica, vera_eta
 
+    # --- 12. la formazione ---------------------------------------------------
+    # La rosa di prova ha 5 giocatori e non basta per un 3-4-3, quindi qui se ne
+    # aggiunge una vera: undici titolari più qualche panchinaro.
+    print("\n== 12. la formazione ==")
+    db = extensions.get_db()
+    pid = 100
+    per_ruolo = {}
+    for ruolo, quanti in (("p", 2), ("d", 6), ("c", 7), ("a", 5)):
+        for n in range(quanti):
+            pid += 1
+            db.execute("INSERT INTO fanta_players(id,nome,squadra,squadra_slug,"
+                       "ruolo_classic,qa,fvm,attivo,visto_il) "
+                       "VALUES(?,?,'INT','inter',?,10,20,1,'2026-09-21')",
+                       (pid, f"{ruolo.upper()}{n}", ruolo))
+            db.execute("INSERT INTO fanta_roster(league_id,player_id,prezzo) "
+                       "VALUES(?,?,1)", (lid, pid))
+            per_ruolo.setdefault(ruolo, []).append(pid)
+    db.commit()
+    db.close()
+
+    undici = (per_ruolo["p"][:1] + per_ruolo["d"][:3] +
+              per_ruolo["c"][:4] + per_ruolo["a"][:3])       # 3-4-3
+    panca = per_ruolo["d"][3:5] + per_ruolo["c"][4:6]
+
+    def salva(c, dati):
+        r = c.post(f"/fantacalcio/lega/{lid}/formazione/salva", data=dati,
+                   follow_redirects=True)
+        return r.data.decode("utf-8", "replace")
+
+    def righe():
+        db = extensions.get_db()
+        fuori = [dict(x) for x in db.execute(
+            "SELECT * FROM fanta_formazione WHERE league_id=? "
+            "ORDER BY titolare DESC, ordine", (lid,))]
+        db.close()
+        return fuori
+
+    with app.test_client() as c:
+        with c.session_transaction() as s:
+            s["username"] = "davide"
+            s["role"] = "user"
+            s["user_id"] = ids["davide"]
+        r = c.get(f"/fantacalcio/lega/{lid}/formazione")
+        esito("la pagina del campo si apre", r.status_code == 200
+              and b"Formazione" in r.data)
+
+        pagina = salva(c, {"modulo": "3-4-3", "titolare": undici, "panchinaro": panca})
+        esito("una formazione buona si salva", "Formazione salvata" in pagina)
+        dentro = righe()
+        esito("undici titolari e quattro in panchina",
+              sum(1 for x in dentro if x["titolare"]) == 11
+              and sum(1 for x in dentro if not x["titolare"]) == 4,
+              f"{len(dentro)} righe")
+        esito("⚠️ la panchina è salvata IN ORDINE: è l'ordine di subentro",
+              [x["player_id"] for x in dentro if not x["titolare"]] == panca)
+        db = extensions.get_db()
+        esito("e il modulo sta sulla lega, non su ogni riga",
+              db.execute("SELECT modulo_scelto FROM fanta_leagues WHERE id=?",
+                         (lid,)).fetchone()["modulo_scelto"] == "3-4-3")
+        db.close()
+
+        # --- i rifiuti: Davide ha scelto la validazione severa ---------------
+        quante_prima = len(righe())
+        pagina = salva(c, {"modulo": "3-4-3", "titolare": undici[:10]})
+        esito("⚠️ dieci titolari vengono rifiutati, e non si salva niente",
+              "devono essere 11" in pagina and len(righe()) == quante_prima)
+        pagina = salva(c, {"modulo": "3-5-2", "titolare": undici})
+        esito("un 3-4-3 mandato come 3-5-2 viene rifiutato",
+              "ne vuole 5" in pagina and len(righe()) == quante_prima)
+        pagina = salva(c, {"modulo": "4-4-2", "titolare": undici[:10] + undici[:1]})
+        esito("⚠️ lo stesso giocatore due volte viene rifiutato",
+              "due volte" in pagina and len(righe()) == quante_prima)
+        pagina = salva(c, {"modulo": "3-4-3", "titolare": undici[:10] + [9999]})
+        esito("un giocatore che non è in rosa viene rifiutato",
+              "non è in questa rosa" in pagina and len(righe()) == quante_prima)
+        pagina = salva(c, {"modulo": "4-5-1", "titolare": undici})
+        esito("un modulo che la lega non ammette viene rifiutato",
+              "non è fra quelli ammessi" in pagina and len(righe()) == quante_prima)
+        pagina = salva(c, {"modulo": "3-4-3", "titolare": undici,
+                           "panchinaro": per_ruolo["d"][3:6] + per_ruolo["c"][4:7] +
+                                         per_ruolo["a"][3:5] + per_ruolo["p"][1:2]})
+        esito("una panchina più lunga di quella ammessa viene rifiutata",
+              "ammette 7" in pagina and len(righe()) == quante_prima)
+
+        # ⚠️ Il ruolo lo decide la rosa, non il form: se lo decidesse il browser
+        # basterebbe dire che un attaccante è un difensore per far tornare i conti.
+        pagina = salva(c, {"modulo": "3-4-3",
+                           "titolare": per_ruolo["p"][:1] + per_ruolo["a"][:3] +
+                                       per_ruolo["c"][:4] + per_ruolo["a"][3:5] +
+                                       per_ruolo["d"][:1],
+                           "ruolo": ["d"] * 11})
+        esito("⚠️ un ruolo mandato dal form non cambia i conti dei reparti",
+              "difensor" in pagina and len(righe()) == quante_prima)
+
+    # --- la formazione è della lega, e la lega è di qualcuno -----------------
+    with app.test_client() as c:
+        with c.session_transaction() as s:
+            s["username"] = "altro"
+            s["role"] = "user"
+            s["user_id"] = ids["altro"]
+        r = c.get(f"/fantacalcio/lega/{lid}/formazione", follow_redirects=True)
+        esito("un altro utente non apre il campo di una lega non sua",
+              b"Lega non trovata" in r.data or b"Formazione" not in r.data)
+        prima = righe()
+        salva(c, {"modulo": "4-4-2", "titolare": undici})
+        esito("⚠️ e non può nemmeno scrivere la formazione altrui",
+              righe() == prima, f"{len(righe())} righe")
+
 
 def main():
     ap = argparse.ArgumentParser(description=__doc__.splitlines()[0])

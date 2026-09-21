@@ -1179,8 +1179,9 @@
       "note": null,
       "created_at": "2026-09-21 12:46:29",
       "mod_difesa_portiere": 1,
-      "mod_difesa_soglie": null,
-      "bonus_gol": 3.0
+      "mod_difesa_soglie": "7:6, 6.5:3, 6:1",
+      "bonus_gol": 3.0,
+      "modulo_scelto": null
     }
   ],
   "fanta_roster": [
@@ -1191,5 +1192,6 @@
       "prezzo": 0.0,
       "note": null
     }
-  ]
+  ],
+  "fanta_formazione": []
 }

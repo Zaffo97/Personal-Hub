@@ -54,7 +54,7 @@ SORGENTI = [os.path.join(BASE, "blueprints"), BASE]
 # dal padre con una join, quindi una query su di loro è a posto se passa per l'id
 # del padre — che a sua volta va filtrato: per questo restano in elenco.
 RADICI = ("games", "teams", "arduino_projects", "pc_builds", "fanta_leagues")
-FIGLIE = ("team_members", "pc_components", "fanta_roster")
+FIGLIE = ("team_members", "pc_components", "fanta_roster", "fanta_formazione")
 # `python_topics` è l'elenco fisso dei 53 argomenti, condiviso di suo: quello che è
 # personale è la spunta, che dal blocco Python vivrà in `python_progress`.
 # `fanta_players` è il **listone**: condiviso come il catalogo Pokémon, nessun
@@ -154,6 +154,25 @@ ECCEZIONI = {
     ("fanta_import.py", "aggiorna_probabili",
      "SELECT COUNT(DISTINCT giornata) FROM fanta_probabili"):
         "quante giornate ci sono in archivio, per dirlo nel rapporto",
+    # ── La formazione schierata (21/09/2026) ────────────────────────────────
+    # `fanta_formazione` è una **figlia**: il proprietario le arriva dalla lega,
+    # come `team_members` dal team. Le tre query qui sotto stanno tutte dopo un
+    # `_lega_mia()` che esce se la lega non è di chi sta guardando o salvando.
+    ("blueprints/fantacalcio.py", "formazione",
+     "SELECT * FROM fanta_formazione WHERE league_id=? "
+     "ORDER BY titolare DESC, ordine"):
+        "la lega è stata verificata con _lega_mia() poche righe sopra: se non è "
+        "tua, la route è già uscita",
+    ("blueprints/fantacalcio.py", "formazione_salva",
+     "INSERT INTO fanta_formazione(league_id, player_id, titolare, ordine, ruolo) "
+     "VALUES(?,?,?,?,?)"):
+        "stessa lega già verificata; e subito dopo l'UPDATE sulla lega guarda il "
+        "rowcount, che è il controllo vero che quella lega sia di chi salva",
+    ("blueprints/fantacalcio.py", "formazione_salva",
+     "DELETE FROM fanta_formazione WHERE league_id=?"):
+        "è il passo indietro: se l'UPDATE sulla lega non ha toccato niente, la "
+        "formazione appena scritta va tolta. Cancella righe scritte due righe "
+        "sopra da questa stessa richiesta, non righe di qualcun altro",
     # ── Le probabili formazioni (21/09/2026) ────────────────────────────────
     # Stessa categoria del listone: la formazione che il Genoa schiera domenica è
     # la stessa per tutti quelli che entrano nell'hub. Quello che invece è **tuo**

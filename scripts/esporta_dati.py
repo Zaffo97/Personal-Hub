@@ -85,7 +85,11 @@ TABELLE = [
     # IGDB. ⚠️ La conseguenza da sapere: ripristinando su un DB vuoto, le rose
     # puntano a giocatori che ancora non ci sono, quindi il listone va reimportato
     # **prima**.
-    "fanta_leagues", "fanta_roster",
+    # ⚠️ E dal 21/09/2026 anche la **formazione schierata**: è una scelta tua, non
+    # un dato che la fonte sappia rifare. Una sola per lega — Davide ha scelto così
+    # — quindi non pesa, ma senza questa riga un ripristino rimetterebbe in piedi
+    # leghe e rose e lascerebbe il campo vuoto **senza dire niente**.
+    "fanta_leagues", "fanta_roster", "fanta_formazione",
 ]
 
 # In più, solo con `--completo`. `regulations` è una **tabella morta** — la scrive solo

@@ -184,6 +184,47 @@ Quattro richieste di Davide, dopo aver visto la sezione funzionare.
   fuori elenco (2.75) ci finisce dentro invece di sparire, e togliendo il portiere
   la frase sulla media cambia.
 
+**Fantacalcio: il campo per schierare la formazione (§4.2)**
+
+Il terzo pezzo chiesto da Davide, e quello che si vede di più: un campo da gioco
+come quello dell'app Fantagazzetta, dentro ogni lega
+(`/fantacalcio/lega/<id>/formazione`). Le sue due decisioni: **una formazione per
+lega, che si sovrascrive** (niente storico per giornata) e **validazione severa**.
+
+- ✅ **Il campo è dinamico**: le caselle nascono dal modulo, quattro file con
+  l'attacco in alto e il portiere in basso, e ogni casella sa **che ruolo vuole**.
+  Si clicca e si sceglie fra i giocatori di quel ruolo in rosa.
+- ✅ **Al cambio di modulo non si perde nessuno**: chi ha ancora un posto del suo
+  ruolo resta dov'è, chi avanza finisce **in panchina** invece di sparire. Provato
+  in browser passando da 3-4-3 a 3-5-2: il terzo attaccante scende in panchina e
+  si apre una casella di centrocampo.
+- ✅ **La panchina è una lista ordinata**, con le frecce per riordinarla: nel
+  fantacalcio l'ordine decide chi subentra, quindi è un dato.
+- ✅ **Le probabili accanto a ogni giocatore**, in campo e nell'elenco da cui si
+  sceglie: titolare, panchina, non convocato, non gioca, con la percentuale. È il
+  motivo per cui erano state fatte prima.
+- ⚠️ **Il ruolo lo decide la rosa, non il form**: un `ruolo` mandato dal browser
+  farebbe tornare i conti dicendo che un attaccante è un difensore. C'è la prova.
+- ⚠️ ✅ **Un baco preso dalla prova al primo giro**: `UPDATE fanta_leagues … WHERE
+  l.user_id=?` — l'alias `l.` non esiste in un `UPDATE` senza join, e SQLite
+  rispondeva «no such column: l.user_id». `solo_mie()` va chiesta **nella forma
+  che la query può usare**.
+- ⚠️ ✅ **E uno più grosso, che il Fantacalcio ha solo rivelato**: il ripristino da
+  export **non funzionava più**. `fanta_roster` e `fanta_formazione` nominano
+  `fanta_players`, che nell'export non c'è di proposito; finché la rosa era vuota
+  non si vedeva, ed è bastato **un** giocatore perché `importa_dati.py` si
+  fermasse con «FOREIGN KEY constraint failed». Ora controlla **prima di
+  scrivere** e dice di lanciare `importa_listone.py`; la prova ha il caso, col DB
+  di prova che semina i giocatori nominati. Il difetto c'era da quando la tabella
+  è nata: non l'ha creato la riga in più.
+- ✅ **Verifiche**: `prova_fantacalcio.py` da 81 a **95 su 95** (fra cui: dieci
+  titolari rifiutati, un 3-4-3 mandato come 3-5-2, lo stesso giocatore due volte,
+  uno non in rosa, un modulo non ammesso, una panchina troppo lunga, un ruolo
+  mandato dal form, e un secondo utente che non apre né scrive la formazione
+  altrui); `prova_importa_dati.py` da 20 a **23 su 23**, `prova_esporta_completo.py`
+  **21 su 21**, **126 query 0 scoperte**, **sweep 0 errori** su 49 pagine. Provato
+  in browser su un banco con 25 giocatori in rosa, per non toccare i dati veri.
+
 ---
 
 **Le due Mega Meowstic: un dato sbagliato teneva fuori una voce vera**

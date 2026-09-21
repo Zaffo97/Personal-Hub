@@ -87,7 +87,8 @@ ORDINE = [
     # (`fanta_players`) non è in nessuno dei due export — si rifà con
     # `scripts/importa_listone.py`, che va lanciato **prima** di questo ripristino,
     # altrimenti le rose puntano a giocatori che non ci sono ancora.
-    "fanta_leagues", "fanta_roster",
+    # ⚠️ La formazione **dopo** la rosa: nomina i giocatori che la rosa contiene.
+    "fanta_leagues", "fanta_roster", "fanta_formazione",
     # ⚠️ Solo il backup `--completo` ce l'ha (§1.4, 18/09/2026). Con l'export
     # committabile questa riga fa solo comparire `regulations` fra le «tabelle non
     # presenti nell'export», che è la verità — prima non compariva affatto, ed è così
@@ -406,6 +407,41 @@ def main():
         print("\nNiente da fare: il DB ha già tutto quello che c'è nell'export.")
         db.close()
         return 0
+
+    # ⚠️ Il listone non è nell'export, e le righe del Fantacalcio lo nominano: la
+    # rosa dice **quale** giocatore hai comprato, la formazione **chi** hai
+    # schierato. Su un DB dove `fanta_players` è vuoto quelle righe violano la
+    # foreign key, e SQLite lo dice a modo suo — «FOREIGN KEY constraint failed»,
+    # che non fa capire né cosa manca né cosa fare.
+    #
+    # Trovato il 21/09/2026: finché la rosa era vuota il caso non si presentava,
+    # e si è visto **appena una rosa vera è entrata nell'export**. Il commento in
+    # `esporta_dati.py` lo dichiarava da sempre («il listone va reimportato
+    # prima»); quello che mancava era dirlo **qui**, dove serve.
+    mancanti = {}
+    for tabella in ("fanta_roster", "fanta_formazione"):
+        nuove = piani.get(tabella, ([],))[0]
+        for riga in nuove:
+            pid = riga.get("player_id")
+            if pid is None:
+                continue
+            if not db.execute("SELECT 1 FROM fanta_players WHERE id=?", (pid,)).fetchone():
+                mancanti.setdefault(tabella, set()).add(pid)
+    if mancanti:
+        quanti = sum(len(v) for v in mancanti.values())
+        print(f"\n⚠️  {quanti} giocator{'e' if quanti == 1 else 'i'} nominat"
+              f"{'o' if quanti == 1 else 'i'} dal Fantacalcio non "
+              f"{'è' if quanti == 1 else 'sono'} in questo DB:")
+        for tabella, ids in mancanti.items():
+            print(f"     {tabella}: {len(ids)} ({', '.join(str(i) for i in sorted(ids)[:8])}"
+                  f"{'…' if len(ids) > 8 else ''})")
+        print("    Il **listone** non sta nell'export di proposito — è una copia di")
+        print("    fantacalcio.it che si rifà in un minuto — ma la rosa e la")
+        print("    formazione lo nominano, quindi va importato PRIMA:")
+        print("        python scripts/importa_listone.py --scarica")
+        print("    INTERROTTO: niente scritto.")
+        db.close()
+        return 1
 
     if args.dry_run:
         print(f"\n--dry-run: {da_scrivere} righe da inserire, "

@@ -59,6 +59,7 @@ PAGINE = [
     # `/pokemon/team/1/edit`: se la lega 1 non c'e' la pagina redirige, e lo sweep
     # lo dice invece di fingere un ok.
     "/fantacalcio/", "/fantacalcio/lega/1", "/fantacalcio/probabili",
+    "/fantacalcio/lega/1/formazione",
 ]
 
 

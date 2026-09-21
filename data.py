@@ -109,6 +109,71 @@ def scomponi_modulo(modulo):
     return {"p": 1, "d": d, "c": c, "a": a}
 
 
+def nome_ruolo(ruolo, quanti=1):
+    """«portiere» / «portieri». I quattro nomi vanno tutti al plurale in `-i`."""
+    nome = RUOLI_FANTA.get(ruolo, ruolo or "?").lower()
+    return nome if quanti == 1 else nome[:-1] + "i"
+
+
+def controlla_formazione(modulo, titolari, panchinari, rosa, n_panchinari=None):
+    """Cosa non va in una formazione. Lista di frasi, **vuota** se è a posto.
+
+    `titolari` e `panchinari` sono liste di `player_id` **in ordine**; `rosa` è
+    `{player_id: ruolo}` di chi è in quella rosa — il ruolo arriva da lì e non da
+    quello che manda il form, che è la solita differenza fra un dato e un'opinione
+    del browser.
+
+    Davide ha scelto la validazione **severa** (21/09/2026): una formazione che
+    non torna non si salva, come già succede a un modulo scritto male. Quindi
+    questa funzione non decide niente da sé — elenca — ma chi la chiama si ferma
+    se torna qualcosa.
+
+    ⚠️ I controlli sono in quest'ordine di proposito: prima quelli che rendono
+    tutti gli altri senza senso (modulo illeggibile, giocatori non in rosa,
+    doppioni), poi i conti dei reparti. Dire «ti manca un difensore» quando il
+    problema è che il modulo non esiste manda a cercare la cosa sbagliata.
+    """
+    guai = []
+    serve = scomponi_modulo(modulo)
+    if not serve:
+        return [f"«{modulo or '—'}» non è un modulo: i dieci di movimento devono "
+                "fare 10."]
+
+    tutti = list(titolari) + list(panchinari)
+    fuori_rosa = [p for p in tutti if p not in rosa]
+    if fuori_rosa:
+        guai.append(f"{len(fuori_rosa)} giocatore non è in questa rosa."
+                    if len(fuori_rosa) == 1 else
+                    f"{len(fuori_rosa)} giocatori non sono in questa rosa.")
+    visti, doppi = set(), []
+    for p in tutti:
+        if p in visti:
+            doppi.append(p)
+        visti.add(p)
+    if doppi:
+        guai.append("Un giocatore è schierato due volte."
+                    if len(doppi) == 1 else
+                    f"{len(doppi)} giocatori sono schierati due volte.")
+    if guai:
+        return guai
+
+    if len(titolari) != 11:
+        guai.append(f"I titolari sono {len(titolari)}, devono essere 11.")
+    per_ruolo = {}
+    for p in titolari:
+        r = rosa.get(p)
+        per_ruolo[r] = per_ruolo.get(r, 0) + 1
+    for ruolo in ORDINE_RUOLI_FANTA:
+        ha, vuole = per_ruolo.get(ruolo, 0), serve[ruolo]
+        if ha != vuole:
+            guai.append(f"Hai {ha} {nome_ruolo(ruolo, ha)} in campo, il {modulo} "
+                        f"ne vuole {vuole}.")
+    if n_panchinari is not None and len(panchinari) > n_panchinari:
+        guai.append(f"In panchina ce ne sono {len(panchinari)}, questa lega ne "
+                    f"ammette {n_panchinari}.")
+    return guai
+
+
 # ── Il modificatore di difesa ────────────────────────────────────────────────
 # Due cose distinte, e le fonti le trattano diverse:
 #

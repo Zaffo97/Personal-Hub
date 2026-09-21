@@ -23,7 +23,7 @@ from extensions import (get_db, login_required, _i, ambito_utente, solo_mie,
                         utente_id, e_admin)
 from data import (RUOLI_FANTA, ORDINE_RUOLI_FANTA, scomponi_modulo,
                   MOD_DIFESA_SOGLIE, soglie_mod_difesa, scrivi_soglie,
-                  modificatore_difesa)
+                  modificatore_difesa, controlla_formazione)
 import fanta_import as I
 
 bp = Blueprint("fantacalcio", __name__, url_prefix="/fantacalcio")
@@ -464,6 +464,134 @@ def lega(lid):
                                for m in (5.5, 6.0, 6.5, 7.0, 7.5)],
                            giornata=giornata, probabili=probabili,
                            probabili_aggiornate=(aggiornate["q"] if aggiornate else None))
+
+
+def _rosa_della_lega(db, lid):
+    """La rosa, coi campi che servono a schierare. Passa **dalla lega** (§1.1)."""
+    cond, par = ambito_utente("l.user_id")
+    return [dict(r) for r in db.execute(
+        "SELECT r.prezzo, p.* FROM fanta_roster r "
+        "JOIN fanta_leagues l ON l.id = r.league_id "
+        "JOIN fanta_players p ON p.id = r.player_id "
+        f"WHERE r.league_id=? AND {cond} "
+        "ORDER BY CASE p.ruolo_classic WHEN 'p' THEN 0 WHEN 'd' THEN 1 "
+        "WHEN 'c' THEN 2 ELSE 3 END, p.nome",
+        (lid,) + tuple(par)).fetchall()]
+
+
+@bp.route("/lega/<int:lid>/formazione")
+@login_required
+def formazione(lid):
+    """Il campo da gioco: si schiera qui, ed è di questa lega.
+
+    ⚠️ Una formazione sola per lega, senza giornata: è la scelta di Davide del
+    21/09/2026. Le **probabili** invece la giornata ce l'hanno, e si vedono accanto
+    a ogni giocatore mentre si schiera — è tutto il motivo per cui sono state fatte
+    prima di questa pagina.
+    """
+    db = get_db()
+    guaio = _aggiorna_se_vecchio(db, "probabili")
+    if guaio:
+        flash(guaio, "error")
+    lega = _lega_mia(db, lid)
+    if lega is None:
+        db.close()
+        flash("Lega non trovata", "error")
+        return redirect(url_for("fantacalcio.fantacalcio"))
+
+    rosa = _rosa_della_lega(db, lid)
+    giornata = _giornata_probabili(db)
+    probabili = _probabili_della_rosa(db, giornata, rosa)
+    schierati = {r["player_id"]: dict(r) for r in db.execute(
+        "SELECT * FROM fanta_formazione WHERE league_id=? ORDER BY titolare DESC, ordine",
+        (lid,)).fetchall()}
+    db.close()
+
+    moduli = [m.strip() for m in (lega.get("moduli") or "").split(",")
+              if m.strip() and scomponi_modulo(m.strip())]
+    # Il modulo da mostrare: quello salvato se è ancora fra gli ammessi, altrimenti
+    # il primo. ⚠️ Un modulo tolto dalle regole dopo aver schierato lascerebbe la
+    # pagina su un modulo che la lega non ammette più, e il salvataggio lo
+    # rifiuterebbe senza che si capisca perché.
+    scelto = lega.get("modulo_scelto")
+    if scelto not in moduli:
+        scelto = moduli[0] if moduli else None
+
+    per_ruolo = {r: [g for g in rosa if g["ruolo_classic"] == r]
+                 for r in ORDINE_RUOLI_FANTA}
+    return render_template(
+        "fanta_formazione.html", lega=lega, rosa=rosa, per_ruolo=per_ruolo,
+        ruoli=RUOLI_FANTA, ordine=ORDINE_RUOLI_FANTA, moduli=moduli,
+        modulo=scelto, schierati=schierati, probabili=probabili,
+        giornata=giornata,
+        reparti={m: scomponi_modulo(m) for m in moduli})
+
+
+@bp.route("/lega/<int:lid>/formazione/salva", methods=["POST"])
+@login_required
+def formazione_salva(lid):
+    """Salva la formazione, **se torna**.
+
+    Davide ha scelto la validazione severa: quello che non torna non si salva,
+    come già succede a un modulo scritto male. ⚠️ Il ruolo di ogni giocatore lo
+    decide la **rosa**, non il form: un `ruolo` mandato dal browser direbbe che
+    un attaccante è un difensore, e il conto dei reparti tornerebbe lo stesso.
+    """
+    db = get_db()
+    lega = _lega_mia(db, lid)
+    if lega is None:
+        db.close()
+        flash("Lega non trovata", "error")
+        return redirect(url_for("fantacalcio.fantacalcio"))
+
+    modulo = (request.form.get("modulo") or "").strip()
+    titolari = [_i(x) for x in request.form.getlist("titolare") if _i(x)]
+    panchinari = [_i(x) for x in request.form.getlist("panchinaro") if _i(x)]
+    rosa = {g["id"]: g["ruolo_classic"] for g in _rosa_della_lega(db, lid)}
+
+    ammessi = [m.strip() for m in (lega.get("moduli") or "").split(",") if m.strip()]
+    guai = []
+    if ammessi and modulo not in ammessi:
+        guai.append(f"Il modulo {modulo or '—'} non è fra quelli ammessi da questa "
+                    f"lega ({', '.join(ammessi)}).")
+    guai += controlla_formazione(modulo, titolari, panchinari, rosa,
+                                 lega.get("n_panchinari"))
+    if guai:
+        db.close()
+        for g in guai:
+            flash(g, "error")
+        return redirect(url_for("fantacalcio.formazione", lid=lid))
+
+    # Si riscrive per intero: una formazione è una cosa sola, e aggiornarla riga
+    # per riga vorrebbe dire poter lasciare in campo qualcuno che è stato tolto.
+    # ⚠️ Due forme della stessa condizione, e non sono intercambiabili: `UPDATE`
+    # non ha un alias, quindi vuole la colonna nuda. Scritta con l'alias dà
+    # «no such column: l.user_id» — l'ha presa la prova al primo giro.
+    cond, par = solo_mie()
+    db.execute("DELETE FROM fanta_formazione WHERE league_id=? AND league_id IN "
+               f"(SELECT id FROM fanta_leagues WHERE id=? AND {cond})",
+               (lid, lid) + tuple(par))
+    db.executemany(
+        "INSERT INTO fanta_formazione(league_id, player_id, titolare, ordine, ruolo)"
+        " VALUES(?,?,?,?,?)",
+        [(lid, p, 1, i, rosa.get(p)) for i, p in enumerate(titolari)] +
+        [(lid, p, 0, i, rosa.get(p)) for i, p in enumerate(panchinari)])
+    cur = db.execute(f"UPDATE fanta_leagues SET modulo_scelto=? WHERE id=? AND {cond}",
+                     (modulo, lid) + tuple(par))
+    if cur.rowcount == 0:
+        # La lega non è di chi salva: la formazione appena scritta non deve
+        # restare. ⚠️ `_lega_mia()` l'aveva già detto in cima, ma qui si guarda il
+        # `rowcount` perché una scrittura che non tocca niente **non dà errore**.
+        db.execute("DELETE FROM fanta_formazione WHERE league_id=?", (lid,))
+        db.commit()
+        db.close()
+        flash("Lega non trovata", "error")
+        return redirect(url_for("fantacalcio.fantacalcio"))
+    db.commit()
+    db.close()
+    flash(f"Formazione salvata: {modulo}, {len(titolari)} titolari e "
+          f"{len(panchinari)} in panchina", "success")
+    return redirect(url_for("fantacalcio.formazione", lid=lid))
 
 
 @bp.route("/lega/<int:lid>/rosa/aggiungi", methods=["POST"])
