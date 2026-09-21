@@ -844,6 +844,15 @@ sigla è sbagliata, o il giocatore giusto è un altro.
 la conferma), e il prezzo si corregge solo nell'anteprima — una volta in rosa, per
 cambiarlo bisogna togliere e rimettere.
 
+⬜ **Trovato il 21/09/2026 e non corretto perché fuori scope: la classe `form-input`
+non esiste.** La usano **10 campi** in quattro template del Fantacalcio
+(`fantacalcio.html` 7, `fanta_lega.html` 2, `fanta_probabili.html` 1), ma in
+`base.html` la classe si chiama **`form-control`** e `form-input` non è definita da
+nessuna parte — quei campi sono senza stile da quando la sezione è nata. È solo
+cosmetica e nessuno sweep può vederla (il JavaScript è perfetto), ma è una `sed` su
+quattro file: si fa quando si tocca la grafica della sezione. La pagina nuova
+(`fanta_rosa_incolla.html`) usa già `form-control`.
+
 **⬜ Cosa resta, in ordine di quanto è stato chiesto:**
 
 - ✅ **inserire la formazione** — fatta il 21/09/2026, com'è stata chiesta: **un
