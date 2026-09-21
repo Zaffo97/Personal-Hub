@@ -204,8 +204,11 @@ def prove(dove):
               f"fonte={ch.get('fonte')} mosse={len(ch.get('moves') or {})}")
         finto_dump = {CAVIA: {"champions": {"moves": {"Thunder Punch": "train"}}}}
         applicate, superate = P.applica_integrazioni_moveset(finto_dump)
+        # ⚠️ Si guarda **la cavia**, non l'elenco intero: dal 21/09/2026 le integrazioni
+        # sono 26 e non piu' una sola, quindi `superate` contiene anche tutte le altre,
+        # che in questo finto dump non hanno nemmeno la voce.
         esito("dove il dump ha una lista sua vince il dump, e l'integrazione è detta superata",
-              superate == [f"{CAVIA}/champions"] and not applicate
+              f"{CAVIA}/champions" in superate and f"{CAVIA}/champions" not in applicate
               and list(finto_dump[CAVIA]["champions"]["moves"]) == ["Thunder Punch"])
 
         r = c.post("/pokemon/api/catalogo/pokemon/importa", json={"nomi": ["aegislash-shield"]})

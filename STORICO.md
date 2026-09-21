@@ -20,6 +20,74 @@ pagina ed esegue `new Function()` su ogni blocco `<script>` **e** su ogni handle
 
 ## 21/09/2026
 
+**Regulation M-C, Morpeko e una seconda fonte per tutto il resto (§5.2, §2.3)**
+
+Richiesta di Davide: fare le 25 voci di Regulation M-C, e **verificare sempre con siti
+affidabili** (Serebii, Smogon, Game8) se esistono già delle fonti. È la richiesta che ha
+trovato tutto il resto.
+
+- ✅ **Le 25 voci di M-C sono integrate.** Le liste vengono da Bulbapedia; il **roster**
+  è confermato da **Serebii** e da **Game8**, che elencano le stesse 26 specie (le 25 più
+  Pawmot, già fatto il 14/09) e 6 Mega. `champions` passa da **333 a 362 voci** e da
+  20 721 a **22 469 mosse**. `verifica_moveset.py`: le voci «Bulbapedia ha la lista, il
+  dump no» passano da **25 a 0**, e le identiche sono 352 su 362.
+- ✅ **Il controllo incrociato**, che è il punto: le **liste** vengono da Bulbapedia, i
+  **cambi** li elenca Game8, e le due fonti non si copiano. **8 su 8**: Golisopod ha
+  *Close Combat*, *U-turn* e *Gunk Shot* e non ha più *Knock Off*; Indeedee Femmina ha
+  *Sing* e *Terrain Pulse*; Grapploct ha *Mach Punch*; Wigglytuff ha *Moonblast*.
+- ✅ **E il dump ne esce confermato su Regulation M-B**: dei **10 cambi di roster** che
+  Game8 elenca per M-B, il dump li ha **tutti e 10 giusti** — Swampert ha *Wave Crash*,
+  Sceptile *Earth Power*, Scolipede *Leech Life* e *Trailblaze*; Gholdengo e Grimmsnarl
+  non hanno *Thunder Wave*, Metagross non ha *Heavy Slam* né *Knock Off*, Scrafty non ha
+  *Parting Shot*, Overqwil non ha *Mortal Spin*, Annihilape non ha *Final Gambit*.
+- ✅ **Dei 27 dati di mossa confrontabili con Game8, 26 combaciavano.** L'unico scarto è
+  **Growth**, che in Champions è di tipo **Erba**: Bulbapedia non lo cita nella sezione
+  «Changes from Scarlet and Violet», ed è per questo che il 18/09 era rimasto Normale.
+  Confermato anche da Serebii e corretto. È la dimostrazione del perché una fonte sola
+  non basta: qui la prima taceva.
+- ⚠️ **E Game8 sbaglia una riga, il che vale quanto le altre**: dice «Annihilape lost
+  Pound», ma **Annihilape non impara *Pound* in nessun gioco** — né Mankey né Primeape —
+  mentre **Politoed sì**, a livello 1. La nota di Bulbapedia su Politoed regge e la
+  toppa del 18/09 era giusta. Nessuna fonte è sempre giusta: si incrociano.
+- ✅ **Morpeko (Hangry Mode) è chiuso**, ed era l'ultima voce aperta del §5.2. Davide ha
+  chiesto di cercare una terza fonte prima di decidere, e la terza fonte c'era:
+  **Serebii** e **Game8** danno una **lista unica** per Full Belly e Hangry, con dentro
+  le cinque mosse che nel dump mancavano alla Hangry, e dicono esplicitamente che
+  l'unica cosa che dipende dalla forma è il **tipo di Aura Wheel**. Ora 65 e 65, zero
+  differenze. ⚠️ Scritta in `TOPPE_A_MANO` **dentro lo script**, non nel JSON: quella
+  sezione `applica_toppe_champions.py` la **riscrive per intero**, e una toppa aggiunta
+  a mano sarebbe sparita al giro dopo in silenzio.
+- ⚠️ **«PokéAPI non la conosce» quasi mai voleva dire «è inventata».** Il rapporto
+  dell'import stampava 16 voci sotto quella frase e il backlog le chiamava «forme di
+  Davide»: **falso per 14 su 16**. I loro slug — `darkrai-mega`, `absol-mega-z`,
+  `golisopod-mega`, … — sono **tutti in `pokemon.csv`**. Quello che manca sono le righe
+  di mosse, perché i loro unici giochi sono `legends-za` e `mega-dimension`, i due
+  version group che nel dump hanno **zero righe**: gli stessi che stamattina sono
+  finiti in `VG_FUORI_SERIE`. E **cinque di quelle 14 sono Mega vere di Regulation M-C**
+  (Absol Z, Garchomp Z, Lucario Z, Golisopod, Baxcalibur), confermate da Serebii e
+  Game8; le altre sono Mega di **Leggende Z-A**, reali ma non ancora in Champions. Le
+  sole due che PokéAPI davvero non conosce sono le **Mega Meowstic**, senza slug. Il
+  rapporto dell'import ora stampa i due gruppi separati, con l'etichetta giusta.
+- ⚠️ **Un difetto trovato dalla prova scritta stamattina**: integrando le 25 voci,
+  **quattro forme Gigantamax** — Cinderace, Inteleon, Rillaboom, Toxtricity — sono
+  rimaste senza la lista nuova della loro specie, pur dichiarando `eredita_da`. Causa:
+  l'eredità è costruita **prima** che integrazioni e toppe entrino, e aggiungere un
+  blocco nuovo alla specie non raggiunge la copia. Chiuso con `riallinea_forme_eredi()`,
+  che gira dopo le due in tutti i percorsi che scrivono il file.
+- ✅ **Verifiche**: `prova_champions_1_2_0.py` **37 su 37** (tre sezioni nuove: M-C,
+  Morpeko, Growth), `prova_moveset_main.py` 19 su 19, `prova_mosse_regulation.py` 16 su
+  16, `prova_import_specie.py` 30 su 30, `prova_regulation_nuova.py` 32 su 32,
+  `prova_build_catalog.py` 9 su 9, `prova_catalogo_vivo.py` 11 su 11,
+  `prova_esporta_completo.py` 21 su 21, `controlla_abilita.py` pulito. Idempotenza in
+  processi separati. `allinea_mosse_regulation.py --dry-run`: MA 492 e MB 494 invariate,
+  perché nessuna voce di M-C è in un roster.
+- ⬜ **Cosa resta aperto**: le **6 Mega di M-C** (Salamence, Absol Z, Garchomp Z,
+  Lucario Z, Golisopod, Baxcalibur) sono in Champions ma **senza lista**, e lo script si
+  rifiuta di integrarle perché Bulbapedia **non ha un blocco per le Mega** — le tratta
+  come la specie. Decisione di Davide.
+
+---
+
 **Le toppe della 1.2.0 arrivano anche alle forme (§5.2)**
 
 - ⚠️ **Il difetto, trovato da `verifica_moveset.py`**: le toppe erano scritte come elenco

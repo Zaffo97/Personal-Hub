@@ -931,7 +931,7 @@
     "flags": [
       "contact"
     ],
-    "accuracy": 90,
+    "accuracy": 95,
     "nome_it": "Martellata",
     "nome_en": "Crabhammer"
   },
@@ -1079,7 +1079,8 @@
     "desc": "The user lashes out at the target with ruinous claws. This may also leave the target poisoned, paralyzed, or asleep.",
     "effect_chance": 30,
     "flags": [
-      "contact"
+      "contact",
+      "slicing"
     ],
     "accuracy": 100,
     "nome_it": "Artigli Fatali",
@@ -1899,7 +1900,7 @@
     "bp": 70,
     "category": "special",
     "type": "ice",
-    "effect_chance": 10,
+    "effect_chance": 0,
     "desc": "Chi la usa raffredda istantaneamente il bersaglio e può congelarlo. Risulta superefficace contro i Pokémon di tipo Acqua.",
     "accuracy": 100,
     "nome_it": "Liofilizzazione",
@@ -4110,7 +4111,7 @@
     "nome_en": "Slam"
   },
   "Slash": {
-    "bp": 70,
+    "bp": 80,
     "category": "physical",
     "type": "normal",
     "desc": "Attacca il bersaglio con artigli, falci o altro. Probabile brutto colpo.",
@@ -4208,7 +4209,7 @@
   "Snap Trap": {
     "bp": 35,
     "category": "physical",
-    "type": "grass",
+    "type": "steel",
     "effect_chance": 100,
     "desc": "Chi la usa intrappola il bersaglio in una tagliola e lo attacca per quattro o cinque turni.",
     "flags": [
@@ -4583,7 +4584,7 @@
     "type": "grass",
     "desc": "The user sets off an explosion of sticky candy syrup, which coats the target and causes the target's Speed stat to drop each turn for three turns.",
     "effect_chance": 100,
-    "accuracy": 85,
+    "accuracy": 90,
     "nome_it": "Bomba Sciroppata",
     "nome_en": "Syrup Bomb",
     "stat_changes": {
@@ -4768,7 +4769,7 @@
     "nome_it": "Velenotela",
     "nome_en": "Toxic Thread",
     "stat_changes": {
-      "spe": -1
+      "spe": -2
     }
   },
   "Trailblaze": {
@@ -9389,7 +9390,7 @@
     "nome_en": "Dynamax Cannon"
   },
   "Snipe Shot": {
-    "bp": 80,
+    "bp": 85,
     "category": "special",
     "type": "water",
     "desc": "Permette di attaccare un bersaglio ignorando gli effetti di mosse e abilità che attirano altre mosse.",
@@ -9814,7 +9815,7 @@
     "nome_en": "Overdrive"
   },
   "Grav Apple": {
-    "bp": 80,
+    "bp": 90,
     "category": "physical",
     "type": "grass",
     "desc": "Chi la usa fa cadere una mela sul bersaglio da una grande altezza, infliggendogli danni e riducendone la Difesa.",
@@ -9873,7 +9874,7 @@
     "nome_en": "False Surrender"
   },
   "Meteor Assault": {
-    "bp": 150,
+    "bp": 170,
     "category": "physical",
     "type": "fighting",
     "desc": "Chi la usa attacca il bersaglio brandendo un grosso gambo, ma perde l’equilibrio e nel turno successivo non può agire.",
@@ -10603,12 +10604,12 @@
     "category": "special",
     "type": "steel",
     "desc": "",
-    "accuracy": 100,
+    "accuracy": 95,
     "type_it": "Acciaio",
     "nome_it": "Corsa all’Oro",
     "nome_en": "Make It Rain",
     "stat_changes": {
-      "spa": -1
+      "spa": -2
     }
   },
   "Psyblade": {
@@ -10757,7 +10758,10 @@
     "accuracy": 100,
     "type_it": "Elettro",
     "nome_it": "Doppiolampo",
-    "nome_en": "Double Shock"
+    "nome_en": "Double Shock",
+    "flags": [
+      "punch"
+    ]
   },
   "Comeuppance": {
     "bp": 1,

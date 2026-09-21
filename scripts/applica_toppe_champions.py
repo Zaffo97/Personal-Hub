@@ -114,6 +114,40 @@ IGNORATE = {
 
 METODO = "train"          # l'unico metodo di Champions, come nel dump
 
+FONTE_BULBA = "bulbapedia + changelog ufficiale 1.2.0"
+
+# ── Le toppe che questo confronto NON può produrre ───────────────────────────
+# ⚠️ Questo script **riscrive** la sezione `toppe` per intero: una toppa aggiunta a
+# mano nel JSON sparirebbe al giro dopo, in silenzio. Quelle che non nascono dal
+# confronto con Bulbapedia stanno quindi **qui**, e vengono unite a quelle derivate.
+#
+# Morpeko, 21/09/2026. Bulbapedia ha un blocco solo per le due forme, quindi il
+# confronto non può dire niente: nel dump la Hangry ha **5 mosse in meno** della Full
+# Belly (60 contro 65), e tutte e due le forme sono in MA e MB. Due fonti indipendenti,
+# cercate apposta, danno una **lista unica** per le due forme con dentro tutte e cinque
+# le mosse, e dicono che l'unica cosa che dipende dalla forma è il **tipo di Aura
+# Wheel**: Serebii (`serebii.net/pokedex-champions/morpeko/`) e Game8
+# (`game8.co/games/Pokemon-Champions/archives/592458`). Regge anche la misura interna:
+# delle 24 forme che in Champions hanno una lista diversa dalla specie, 23 hanno mosse
+# **proprie** — la Hangry è l'unica che ne ha solo in meno e nessuna sua — e in `main`
+# le due forme sono identiche, 67 e 67.
+TOPPE_A_MANO = {
+    "Morpeko (Hangry Mode)": {"champions": {
+        "fonte": "serebii + game8 (pagine Champions di Morpeko, lette il 21/09/2026)",
+        "versione": "1.2.0",
+        "scritta_il": "2026-09-21",
+        "aggiunte": {m: METODO for m in
+                     ("Assurance", "Payback", "Rising Voltage", "Round", "Snore")},
+        "rimosse": [],
+        "motivi": {m: ("Serebii e Game8 danno una lista unica per Full Belly e Hangry, "
+                       "con questa mossa dentro; l'unica cosa form-dependent è il tipo "
+                       "di Aura Wheel. Nel dump la Hangry non ce l'ha.")
+                   for m in ("Assurance", "Payback", "Rising Voltage", "Round", "Snore")},
+    }},
+}
+
+
+
 
 def disfa_toppe(voci):
     """Riporta `voci` allo stato del dump, togliendo le toppe di un giro precedente.
@@ -253,7 +287,9 @@ def main():
     for voce, b in toppe.items():
         for m in list(b["aggiunte"]) + b["rimosse"]:
             per_mossa.setdefault(m, []).append(voce)
-    print("Toppe da scrivere: %d voci" % len(toppe))
+    print("Toppe da scrivere: %d voci derivate dal confronto, piu' %d decise "
+          "a mano: %s" % (len(toppe), len(TOPPE_A_MANO),
+                          ", ".join(sorted(TOPPE_A_MANO))))
     for mossa, voci in sorted(per_mossa.items(), key=lambda x: (-len(x[1]), x[0])):
         verso = "+" if any(mossa in toppe[v]["aggiunte"] for v in voci) else "−"
         print("  %s %-16s %3d voci: %s%s" % (
@@ -279,13 +315,17 @@ def main():
         "PokéAPI è fermo prima della versione 1.2.0 di Champions. Le applica "
         "applica_toppe_moveset() in blueprints/pokemon.py. Scritte da "
         "scripts/applica_toppe_champions.py.")
-    documento["toppe"] = {
-        voce: {"champions": {"fonte": "bulbapedia + changelog ufficiale 1.2.0",
+    derivate = {
+        voce: {"champions": {"fonte": FONTE_BULBA,
                              "versione": "1.2.0", "scritta_il": oggi,
                              "aggiunte": b["aggiunte"], "rimosse": sorted(b["rimosse"]),
                              "motivi": b["motivi"]}}
         for voce, b in sorted(toppe.items())
     }
+    # ⚠️ Le decise a mano si uniscono, non si perdono: questa riga assegnava il solo
+    # dizionario derivato, quindi una toppa che il confronto non sa produrre sarebbe
+    # sparita al primo giro successivo **senza nessun errore**.
+    documento["toppe"] = dict(sorted({**derivate, **TOPPE_A_MANO}.items()))
     with open(percorso, "w", encoding="utf-8") as f:
         # indent=1 come gli altri due scrittori di questi file: `indent=2` li
         # reindenta tutti e fa un diff da 100 000 righe per 33 voci cambiate.

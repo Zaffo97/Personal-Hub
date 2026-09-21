@@ -1287,6 +1287,46 @@ def applica_toppe_moveset(voci):
     return applicate, superate, con_lista_propria
 
 
+def riallinea_forme_eredi(voci):
+    """Rimette alle forme che dichiarano `eredita_da` i blocchi della loro base.
+
+    ⚠️ Serve perché l'eredità viene costruita **prima** che integrazioni e toppe
+    entrino, e non le vede arrivare. In `costruisci_moveset()` la forma Gigantamax copia
+    il dizionario della specie: mutare una lista condivisa si propaga, ma **aggiungere
+    un blocco nuovo alla specie no**. Trovato il 21/09/2026 integrando le 25 voci di
+    Regulation M-C: Cinderace, Inteleon, Rillaboom e Toxtricity hanno preso la loro
+    lista `champions` da Bulbapedia, e le loro quattro forme Gigantamax — che
+    dichiarano di ereditarla — sono rimaste senza, con l'avviso giallo «nessun elenco
+    mosse». Nessun errore.
+
+    `eredita_da` non è un'indicazione di massima: dice che la lista **è** quella della
+    base, quindi qui si copia, non si fonde. Torna l'elenco dei `"voce/sorgente"`
+    rimessi a posto.
+    """
+    catalogo = load_catalog("pokemon")
+    # `eredita_da` nomina la base col nome visualizzato (`Charizard`), le specie stanno
+    # sotto la chiave del catalogo (`charizard`): senza il ponte non si trova niente.
+    per_nome = {}
+    for chiave, dati in catalogo.items():
+        for n in (dati.get("name"), chiave):
+            if n:
+                per_nome.setdefault(n, chiave)
+    rimessi = []
+    for nome_forma, voce in voci.items():
+        base = voce.get("eredita_da")
+        if not base:
+            continue
+        sorgente = voci.get(per_nome.get(base, base)) or {}
+        for quale, blocco in sorgente.items():
+            if not isinstance(blocco, dict) or "moves" not in blocco:
+                continue
+            if (voce.get(quale) or {}).get("moves") != blocco.get("moves"):
+                voce[quale] = {k: (dict(v) if isinstance(v, dict) else v)
+                               for k, v in blocco.items()}
+                rimessi.append(f"{nome_forma}/{quale}")
+    return rimessi
+
+
 def salva_moveset(nuove):
     """Aggiunge o aggiorna voci in `pokemon_moves.json`, tenendo `_meta`.
 
@@ -1306,6 +1346,8 @@ def salva_moveset(nuove):
     # mosse che la 1.2.0 ha aggiunto o tolto e che nel dump non si vedono
     applica_integrazioni_moveset(voci)
     applica_toppe_moveset(voci)
+    # e le forme che ereditano: l'eredità è costruita prima che le due passino
+    riallinea_forme_eredi(voci)
     dati["voci"] = voci
     meta = dati.get("_meta") or {}
     # La provenienza si scrive **accanto** a quella del dump, non al posto: il grosso

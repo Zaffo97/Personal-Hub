@@ -54,6 +54,14 @@ VALORI = {
     # «Snap Trap had its type changed from Grass to Steel»
     "Snap Trap":       {"type": "steel"},
 
+    # ⚠️ Growth non viene da Bulbapedia: la sezione «Changes from Scarlet and Violet»
+    # **non lo cita**, ed è per questo che il 18/09/2026 è rimasto Normale. Lo hanno
+    # trovato due fonti indipendenti il 21/09/2026, cercate apposta: Game8 («List of
+    # Changes», Regulation M-A: «Growth — Changed from Normal type to Grass type») e
+    # Serebii, che nella sua tabella delle mosse usabili in Champions lo dà **Erba**.
+    # È il motivo per cui una fonte sola non basta: qui la prima taceva.
+    "Growth":          {"type": "grass"},
+
     # «Slash, Trop Kick, and Psyshield Bash had their base power increased from 70 to
     #  80, 85, and 90, respectively»  (Slash: anche «now be used», changelog 1.2.0)
     "Slash":           {"bp": 80},

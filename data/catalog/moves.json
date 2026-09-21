@@ -2101,7 +2101,7 @@
   },
   "Growth": {
     "category": "status",
-    "type": "normal",
+    "type": "grass",
     "desc": "Provoca la crescita immediata del corpo e l’aumento dell’Attacco e dell’Attacco Speciale di chi la usa.",
     "nome_it": "Crescita",
     "nome_en": "Growth",

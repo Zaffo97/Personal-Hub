@@ -350,12 +350,16 @@ def main():
     # (Pawmot, da Bulbapedia, 14/09/2026). Senza questo passaggio, rigenerare il file le
     # cancellerebbe in silenzio. Il dump vince: dove ora ha una lista sua, l'integrazione
     # non si applica e viene detta, perché va tolta.
-    from blueprints.pokemon import applica_integrazioni_moveset, applica_toppe_moveset
+    from blueprints.pokemon import (applica_integrazioni_moveset, applica_toppe_moveset,
+                                    riallinea_forme_eredi)
     integrate, superate = applica_integrazioni_moveset(voci)
     # ⚠️ E le **toppe**: le singole mosse che la versione 1.2.0 ha aggiunto o tolto e
     # che il dump, fermo prima, non conosce. Stessa ragione delle integrazioni —
     # rigenerare il file le perderebbe — ma agiscono su liste che il dump **ha**.
     toppate, toppe_superate, toppe_forme_proprie = applica_toppe_moveset(voci)
+    # ⚠️ E le forme che dichiarano `eredita_da`: l'eredita' e' costruita prima che
+    # integrazioni e toppe entrino, e **un blocco nuovo sulla specie non le raggiunge**.
+    eredi_rimessi = riallinea_forme_eredi(voci)
 
     precedente = carica_json(USCITA, {}) or {}
     prima = precedente.get("voci") or {}
@@ -411,17 +415,34 @@ def main():
         print(f"  ⚠️  toppe SUPERATE, il dump si è allineato o non ha la lista: "
               f"{toppe_superate}")
         print("      vanno tolte dal file delle integrazioni")
+    if eredi_rimessi:
+        print(f"  forme che ereditano, riallineate alla loro base: {eredi_rimessi}")
     if toppe_forme_proprie:
         # Non e' un guasto: e' una forma che la fonte distingue dalla sua specie, e
         # quindi non prende la toppa della specie. Va **letta**, perche' l'altra
         # spiegazione possibile e' che la lista della forma sia rimasta indietro.
         print(f"  forme con una lista propria, non toppate: {toppe_forme_proprie}")
 
-    inventate = sorted(s["senza_slug"] + s["senza_righe"])
-    print(f"\nRESTANO FUORI  {len(inventate)}")
-    print("  forme che PokéAPI non conosce — non ereditano niente, di proposito")
-    for n in inventate:
-        print(f"    · {n}")
+    # ⚠️ Due gruppi, e per tre anni sono stati stampati come uno solo sotto la frase
+    # «forme che PokéAPI non conosce». Il 21/09/2026 si è misurato che era **falsa** per
+    # 14 voci su 16: i loro slug — `darkrai-mega`, `absol-mega-z`, … — sono tutti in
+    # `pokemon.csv`. PokéAPI le conosce benissimo; quello che non ha sono le **righe di
+    # mosse**, perché i loro unici giochi sono `legends-za` e `mega-dimension`, i due
+    # version group che nel dump hanno **zero righe**. Chiamarle inventate ha lasciato
+    # per un mese fuori dal moveset cinque Mega vere di Regulation M-C.
+    if s["senza_righe"]:
+        print(f"\nCONOSCIUTE DAL DUMP, MA SENZA NEMMENO UNA MOSSA  {len(s['senza_righe'])}")
+        print("  lo slug è in pokemon.csv: non sono inventate. Il dump non ha righe per")
+        print("  loro perché i loro giochi (legends-za, mega-dimension) sono vuoti. Una")
+        print("  lista si integra da un'altra fonte, non si inventa qui")
+        for n in s["senza_righe"]:
+            print(f"    · {n}")
+    if s["senza_slug"]:
+        print(f"\nSENZA SLUG, QUINDI FUORI DAL CONFRONTO  {len(s['senza_slug'])}")
+        print("  ⚠️ prima di darle per inventate, cercarne lo slug nel dump: è la")
+        print("  trappola del 13/09/2026, che costò 626 righe di mosse a quattro forme vere")
+        for n in s["senza_slug"]:
+            print(f"    · {n}")
 
     if prima:
         perse = sorted(set(prima) - set(voci))

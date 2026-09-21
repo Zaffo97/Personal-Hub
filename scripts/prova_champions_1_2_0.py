@@ -65,12 +65,25 @@ def main():
     specie_di = {nf: k for k, d in load_catalog("pokemon").items()
                  for nf in (d.get("forms") or {})}
     scelte = [k for k in con_slash if k in nomi_toppati]
-    per_forma = sorted(k for k in con_slash if k not in nomi_toppati)
+    # ⚠️ Dal 21/09/2026 non sono più due soli modi di avere Slash, ma quattro, e vanno
+    # tenuti distinti: la toppa lo dà alle 29 specie nominate e alle **forme** di
+    # quelle; le 25 voci di Regulation M-C hanno una lista **integrata** da Bulbapedia
+    # che è già alla 1.2.0 e Slash ce l'ha dentro da sé; e le Gigantamax lo prendono
+    # perché **ereditano**. Una voce con Slash che non rientri in nessuno dei quattro è
+    # la cosa che questa prova deve trovare.
+    altre = [k for k in con_slash if k not in nomi_toppati]
+    per_forma = sorted(k for k in altre if specie_di.get(k) in nomi_toppati)
+    integrate = sorted(k for k in altre
+                       if ((voci.get(k) or {}).get("champions") or {}).get("fonte"))
+    eredi = sorted(k for k in altre if "eredita_da" in (voci.get(k) or {}))
+    inspiegate = sorted(set(altre) - set(per_forma) - set(integrate) - set(eredi))
     esito("Slash è nelle liste delle 29 voci nominate dalla toppa",
           len(scelte) == 29, f"{len(scelte)} voci")
-    esito("e in quelle delle forme di quelle specie, nessuna esclusa",
-          per_forma and all(specie_di.get(k) in nomi_toppati for k in per_forma),
-          f"{len(per_forma)} forme, fra cui {per_forma[:3]}")
+    esito("e in quelle delle forme di quelle specie",
+          len(per_forma) == 19, f"{len(per_forma)} forme, fra cui {per_forma[:3]}")
+    esito("nessuna voce ha Slash senza una ragione fra le quattro",
+          not inspiegate,
+          inspiegate[:5] or f"{len(integrate)} integrate, {len(eredi)} che ereditano")
     senza = sorted(nf for nf, sp in specie_di.items()
                    if sp in con_slash and nf not in con_slash
                    and (((voci.get(nf) or {}).get("champions") or {}).get("moves")))
@@ -163,8 +176,10 @@ def main():
         tutte.append(k)
         tutte.extend((v.get("forms") or {}).keys())
     con = sum(1 for n in tutte if mosse_legali(n, pokedex)[0])
-    esito("333 voci del Pokedex hanno un elenco, le altre no",
-          con == 333, f"{con} su {len(tutte)}")
+    # 333 fino al 21/09/2026, poi 362: +25 sono le voci di Regulation M-C integrate da
+    # Bulbapedia, +4 le loro forme Gigantamax che ereditano la lista nuova.
+    esito("362 voci del Pokedex hanno un elenco, le altre no",
+          con == 362, f"{con} su {len(tutte)}")
     esito("Incineroar nel Pokedex mostra le sue 77 di Champions",
           len(mosse_legali("Incineroar", pokedex)[0] or []) == 77)
     esito("Abra non ha più l'elenco da una mossa sola",
@@ -175,6 +190,71 @@ def main():
     # calcola lo stesso perché la mossa si scrive a mano (Buio, fisica, BP 100).
     esito("e Amoonguss prende l'avviso, come deve",
           mosse_legali("Amoonguss", pokedex)[0] is None)
+
+    print("\n== 9. Regulation M-C, integrata il 21/09/2026 ==")
+    # Le 25 voci arrivate con la 1.2.0 che PokéAPI non ha: le loro liste vengono da
+    # Bulbapedia, e il roster è confermato da Serebii e da Game8.
+    mc = ["Alolan Persian", "Indeedee (Female)", "Toxtricity (Low Key Form)", "arboliva",
+          "baxcalibur", "cinderace", "farfetchd", "gogoat", "golisopod", "grapploct",
+          "indeedee-male", "inteleon", "mabosstiff", "mr-mime", "perrserker", "persian",
+          "pincurchin", "rillaboom", "salamence", "sirfetchd",
+          "squawkabilly-green-plumage", "swalot", "thievul", "toxtricity-amped",
+          "wigglytuff"]
+    senza_lista = [k for k in mc
+                   if not (((voci.get(k) or {}).get("champions") or {}).get("moves"))]
+    esito("tutte e 25 le voci di M-C hanno la loro lista", not senza_lista,
+          senza_lista[:5] or "25 su 25")
+    non_integrate = [k for k in mc
+                     if ((voci.get(k) or {}).get("champions") or {}).get("fonte")
+                     != "bulbapedia"]
+    esito("e dichiarano la fonte, invece di sembrare venute dal dump",
+          not non_integrate, non_integrate[:5] or "fonte: bulbapedia")
+
+    # ⚠️ Il controllo incrociato che conta: le **liste** vengono da Bulbapedia, questi
+    # **cambi** li elenca Game8 («List of Changes», Regulation M-C). Due fonti che non
+    # si copiano a vicenda.
+    gol = set((((voci.get("golisopod") or {}).get("champions") or {}).get("moves")) or {})
+    esito("Golisopod: Close Combat, U-turn e Gunk Shot sì, Knock Off no (Game8)",
+          {"Close Combat", "U-turn", "Gunk Shot"} <= gol and "Knock Off" not in gol,
+          f"{len(gol)} mosse")
+    ind = set((((voci.get("Indeedee (Female)") or {}).get("champions") or {}).get("moves")) or {})
+    wig = set((((voci.get("wigglytuff") or {}).get("champions") or {}).get("moves")) or {})
+    gra = set((((voci.get("grapploct") or {}).get("champions") or {}).get("moves")) or {})
+    esito("Indeedee Femmina ha Sing e Terrain Pulse, Wigglytuff Moonblast, "
+          "Grapploct Mach Punch (Game8)",
+          {"Sing", "Terrain Pulse"} <= ind and "Moonblast" in wig
+          and "Mach Punch" in gra)
+
+    # Le forme Gigantamax delle specie appena integrate: `eredita_da` dice che la loro
+    # lista È quella della base, e l'eredità è costruita **prima** dell'integrazione.
+    gmax = ["Cinderace (Gigantamax Form)", "Inteleon (Gigantamax Form)",
+            "Rillaboom (Gigantamax Form)", "Toxtricity (Gigantamax Form)"]
+    storte = [g for g in gmax
+              if (((voci.get(g) or {}).get("champions") or {}).get("moves"))
+              != (((voci.get(specie_di.get(g, "")) or {}).get("champions") or {}).get("moves"))]
+    esito("le 4 Gigantamax delle specie integrate hanno la lista della loro base",
+          not storte, storte or "4 su 4")
+
+    print("\n== 10. Morpeko: le due forme hanno la stessa lista ==")
+    # Deciso il 21/09/2026 dopo aver cercato una terza fonte, come chiesto da Davide:
+    # Serebii e Game8 danno una **lista unica** per Full Belly e Hangry, con dentro le
+    # cinque mosse che nel dump mancavano alla Hangry, e dicono che l'unica cosa che
+    # dipende dalla forma è il **tipo di Aura Wheel**.
+    piena = set((((voci.get("morpeko-full-belly-mode") or {}).get("champions") or {})
+                 .get("moves")) or {})
+    hangry = set((((voci.get("Morpeko (Hangry Mode)") or {}).get("champions") or {})
+                  .get("moves")) or {})
+    esito("Full Belly e Hangry hanno esattamente la stessa lista",
+          piena == hangry and len(piena) == 65,
+          f"{len(piena)} e {len(hangry)}, differenze {sorted(piena ^ hangry)}")
+    esito("le cinque mosse che mancavano alla Hangry ci sono",
+          {"Assurance", "Payback", "Rising Voltage", "Round", "Snore"} <= hangry)
+
+    print("\n== 11. Growth è di tipo Erba in Champions ==")
+    # ⚠️ Non viene da Bulbapedia: la sezione «Changes from Scarlet and Violet» **non lo
+    # cita**, e per questo il 18/09 era rimasto Normale. Lo dicono Game8 e Serebii.
+    esito("Growth: type erba", (mosse.get("Growth") or {}).get("type") == "grass",
+          str((mosse.get("Growth") or {}).get("type")))
 
     print(f"\n{sum(esiti)} controlli su {len(esiti)}")
     return 0 if all(esiti) else 1

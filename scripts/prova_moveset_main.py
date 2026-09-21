@@ -188,7 +188,9 @@ def prove_champions():
     voci = carica()["voci"]
     con_ch = {k: v for k, v in voci.items() if "champions" in v}
     tot = sum(len(v["champions"]["moves"]) for v in con_ch.values())
-    esito("le voci di Champions sono ancora 333", len(con_ch) == 333, f"{len(con_ch)}")
+    # 333 dal dump, piu' le 25 voci di Regulation M-C integrate da Bulbapedia il
+    # 21/09/2026 e le 4 forme Gigantamax che ereditano la loro lista nuova.
+    esito("le voci di Champions sono 362", len(con_ch) == 362, f"{len(con_ch)}")
     esito("nessun blocco `champions` porta un `vg`: non lo sceglie nessuna regola",
           all("vg" not in v["champions"] for v in con_ch.values()), f"{tot} mosse")
 
