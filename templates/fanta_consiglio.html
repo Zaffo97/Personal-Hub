@@ -1,0 +1,323 @@
+{% extends "base.html" %}
+{#
+  Il consiglio (§4.2, 21/09/2026). L'ultima cosa che Davide aveva chiesto.
+
+  ⚠️ Metà di questa pagina è la **dichiarazione** di come decide, e non è un
+  ornamento: il criterio non l'ha scelto il codice, e una fonte che dica «schiera X»
+  senza dire perché sarebbe l'oracolo non verificabile che questo progetto evita per
+  regola. Se si cambia l'ordinamento in `data.py`, questa pagina cambia con lui.
+#}
+{% block title %}Consiglio &ndash; {{ lega.nome }}{% endblock %}
+{% block topbar_title %}&#9917; {{ lega.nome }}{% endblock %}
+{% block extra_head %}
+<style>
+.fascia{font-size:.64rem;font-weight:700;padding:.05rem .32rem;border-radius:20px;white-space:nowrap}
+.fascia-sicuro{background:var(--success-dim);color:var(--success)}
+.fascia-favorito{background:rgba(22,163,74,.12);color:#16a34a}
+.fascia-ballottaggio{background:var(--warning-dim);color:var(--warning)}
+.fascia-panchina{background:var(--error-dim);color:var(--error)}
+.fascia-none{background:var(--surface-off);color:var(--text-muted)}
+.ruolo{display:inline-flex;align-items:center;justify-content:center;width:1.2rem;height:1.2rem;
+  border-radius:50%;font-size:.6rem;font-weight:700;color:#fff}
+.ruolo-p{background:#d97706}.ruolo-d{background:#2563eb}
+.ruolo-c{background:#16a34a}.ruolo-a{background:#dc2626}
+.num{text-align:right;font-variant-numeric:tabular-nums;white-space:nowrap}
+.mod{display:grid;grid-template-columns:repeat(auto-fill,minmax(190px,1fr));gap:.5rem}
+.mod-card{border:1px solid var(--border);border-radius:var(--radius-md);padding:.5rem .6rem}
+.mod-best{border-color:var(--primary);background:var(--primary-dim)}
+.thin{opacity:.6}
+.spiega{font-size:.75rem;line-height:1.5}
+.spiega li{margin:.25rem 0 .25rem 1rem}
+.griglia-ruoli{display:grid;grid-template-columns:repeat(auto-fill,minmax(310px,1fr));gap:.85rem}
+</style>
+{% endblock %}
+{% block content %}
+<div class="page-header">
+  <div class="flex items-center justify-between flex-wrap gap-2">
+    <div>
+      <h1>&#129504; Consiglio &mdash; {{ lega.nome }}</h1>
+      <p class="text-muted text-sm">
+        {% if giornata %}Giornata {{ giornata }}{% else %}Nessuna giornata importata{% endif %}
+        &middot; {{ rosa|length }} in rosa
+        {% if probabili_aggiornate %}&middot; probabili del {{ probabili_aggiornate }}{% endif %}
+      </p>
+    </div>
+    <div class="flex gap-2">
+      <a class="btn" href="{{ url_for('fantacalcio.formazione', lid=lega.id) }}">
+        &#9917; Il campo</a>
+      <a class="btn btn-secondary" href="{{ url_for('fantacalcio.lega', lid=lega.id) }}">
+        &larr; La lega</a>
+    </div>
+  </div>
+</div>
+
+{% if not giornata %}
+<div class="card mb-3" style="border-color:var(--warning)">
+  <div class="card-body text-sm">
+    <strong>&#9888; Le probabili formazioni non sono state importate.</strong>
+    Senza di quelle il consiglio non sa chi gioca, e la titolarità è la prima delle
+    due domande. Aggiorna dalla pagina del Fantacalcio e torna qui.
+  </div>
+</div>
+{% endif %}
+
+{# ── La dichiarazione. Sta in cima di proposito. ─────────────────────────── #}
+<div class="card mb-3">
+  <div class="card-header"><div class="card-title">Su cosa si basa &mdash; tutto</div></div>
+  <div class="card-body spiega">
+    <p><strong>Una formula non la pubblica nessuno</strong>, e si è andati a
+    controllare prima di scrivere il codice: il <em>Comparatore</em> di
+    fantacalcio.it («ti diremo quale dei due potrebbe rendere al meglio») confronta
+    partite a voto, media voto, fantamedia, gol, assist e gol subiti ma non dice
+    come li combina, ed è premium; la pagina dell'<em>algoritmo delle quotazioni</em>
+    dichiara per esteso di non rivelare i coefficienti; il <em>FantaIndex</em> è «un
+    numero da 0 a 100» ricavato da «sette macroaree». Quindi qui non c'è nessun peso
+    copiato da una fonte, perché non c'era da copiare.</p>
+
+    <p>Quello che le fonti <strong>dichiarano davvero</strong> è una gerarchia con
+    delle soglie, e questa pagina esegue quella:</p>
+    <ol>
+      <li><strong>Prima: gioca?</strong> È la percentuale di titolarità
+        (l'<em>Indice di Titolarità</em>, che fantacalcio.it chiama «lo strumento
+        imprescindibile per poter schierare al meglio»). Le fasce, coi nomi che
+        hanno sulla fonte:
+        {# ⚠️ L'estremo alto di ogni fascia è quello della fascia di sopra meno uno,
+           e si ricava da `loop.previtem`: scriverlo a mano qui vorrebbe dire avere
+           due copie delle soglie, e la copia sbagliata sarebbe quella a schermo. #}
+        {% for minimo, chiave, testo in fasce %}
+          <span class="fascia fascia-{{ chiave }}">{%
+            if loop.first %}&ge;{{ minimo }}{%
+            elif minimo == 0 %}&lt;{{ loop.previtem[0] }}{%
+            else %}{{ minimo }}&ndash;{{ loop.previtem[0] - 1 }}{% endif %}
+            {{ testo }}</span>{% if not loop.last %} {% endif %}
+        {% endfor %}
+      </li>
+      <li><strong>Poi: conviene?</strong> La <strong>fantamedia rifatta con le
+        regole di questa lega</strong> &mdash; non quella del sito, che usa i bonus
+        standard. Dentro la stessa fascia vince la fantamedia più alta.</li>
+      <li>Sotto il <strong>{{ soglia }}%</strong> («parte dalla panchina») un
+        giocatore non entra nell'undici, a meno che il suo reparto non si riempia
+        altrimenti &mdash; e in quel caso la pagina lo dice.</li>
+      <li>Sui <strong>ballottaggi</strong> schierati, il primo posto in panchina va
+        a un altro del suo ruolo: è la regola operativa della fonte («collocare
+        l'altro in cima alla panchina»), e qui si può eseguire perché la panchina è
+        una lista ordinata.</li>
+    </ol>
+
+    <p class="text-muted">
+      ⚠️ <strong>La scelta di lettura è una, e la dichiaro</strong>: la fascia conta
+      <em>prima</em> della fantamedia. Vuol dire che un titolare sicuro con la
+      fantamedia mediocre viene schierato prima di un ballottaggio che ne ha una
+      alta. È il verso prudente &mdash; mai una moneta al posto di un titolare
+      &mdash; ma non è l'unica risposta possibile: dove le due letture litigano, più
+      sotto c'è scritto <em>quali</em> giocatori sono in disaccordo.
+    </p>
+    <p class="text-muted">
+      ⚠️ <strong>I punti attesi</strong> (<code>percentuale × fantamedia</code>) sono
+      la colonna a destra, e servono a confrontare due <em>moduli</em> interi con un
+      numero solo. Non ordinano i giocatori.
+    </p>
+    <p class="text-muted">
+      ⚠️ <strong>Cosa la fantamedia rifatta non contiene</strong>: porta inviolata e
+      autogol, perché la fonte non pubblica né i clean sheet né gli autogol, e
+      stimarli sarebbe inventare. Contiene gol (rigori compresi), assist,
+      ammonizioni, espulsioni, gol subiti, rigori parati e rigori sbagliati. Il
+      conto è stato verificato coi valori standard contro la colonna del sito:
+      <strong>407 giocatori su 414 tornano esatti</strong>; i pochi che non tornano
+      sono chi ha preso ammonizione ed espulsione nella stessa partita, dove il
+      regolamento si ferma a −1 e dai totali di stagione non si sa in quale partita
+      sia capitato (scarto misurato ≤ 0,5 su 6 giocatori).
+    </p>
+    <p class="text-muted">
+      ⚠️ <strong>E quanto vale la fantamedia oggi</strong>: fantacalcio.it la
+      considera, nel proprio algoritmo, <strong>dal {{ minimo_partite }}º match in
+      poi</strong>. Chi ne ha meno porta un avviso e chi non ha nessuna partita a
+      voto non ha fantamedia del tutto: non vale zero, è assente. A inizio stagione
+      questo è quasi tutto il listone, ed è il motivo per cui in questo periodo il
+      consiglio si regge più sulla titolarità che sul merito.
+    </p>
+  </div>
+</div>
+
+{% if not consigli %}
+<div class="card">
+  <div class="card-body text-sm text-muted">
+    Questa lega non ha nessun modulo valido nelle sue regole, quindi non c'è niente
+    da consigliare. I moduli si scrivono nella scheda della lega.
+  </div>
+</div>
+{% else %}
+
+{# ── I moduli a confronto ────────────────────────────────────────────────── #}
+<div class="card mb-3">
+  <div class="card-header">
+    <div class="card-title">I moduli ammessi, a confronto</div>
+    <span class="text-xs text-muted">punti attesi dell'undici</span>
+  </div>
+  <div class="card-body">
+    <div class="mod">
+      {% for c in consigli %}
+      <div class="mod-card {% if c.migliore %}mod-best{% endif %}">
+        <div class="flex items-center justify-between gap-2">
+          <strong>{{ c.modulo }}</strong>
+          {% if c.migliore %}<span class="badge badge-primary">migliore</span>{% endif %}
+        </div>
+        <div class="text-xs text-muted mt-1">
+          attesi <strong>{{ c.atteso if c.atteso is not none else '—' }}</strong>
+          {% if c.senza_fm %}<br>⚠️ {{ c.senza_fm }} senza fantamedia{% endif %}
+          {% if c.forzati %}<br>⚠️ {{ c.forzati|length }} forzati{% endif %}
+        </div>
+        <div class="flex gap-1 mt-2">
+          <a class="btn btn-sm btn-secondary"
+             href="{{ url_for('fantacalcio.consiglio', lid=lega.id, modulo=c.modulo) }}">Vedi</a>
+          <form method="post"
+                action="{{ url_for('fantacalcio.consiglio_applica', lid=lega.id) }}">
+            <input type="hidden" name="modulo" value="{{ c.modulo }}">
+            <button class="btn btn-sm btn-primary" type="submit">Applica</button>
+          </form>
+        </div>
+      </div>
+      {% endfor %}
+    </div>
+    <div class="text-xs text-muted mt-2">
+      ⚠️ La graduatoria vale quanto vale la fantamedia che ci sta dentro: dove
+      «senza fantamedia» è alto, il confronto fra moduli non va creduto.
+      «Applica» scrive la formazione nel campo passando dalla stessa validazione di
+      un salvataggio a mano, e da lì la aggiusti.
+    </div>
+  </div>
+</div>
+
+{% if dettaglio %}
+{# ── L'undici consigliato ────────────────────────────────────────────────── #}
+{% macro riga(v, posto) %}
+<tr class="{% if not v.fidata %}thin{% endif %}">
+  <td class="num text-muted">{{ posto }}</td>
+  <td><span class="ruolo ruolo-{{ v.g.ruolo_classic }}">{{ v.g.ruolo_classic|upper }}</span></td>
+  <td>
+    <strong>{{ v.g.nome }}</strong>
+    <span class="text-xs text-muted">{{ v.g.squadra or '—' }}</span>
+    {% if not v.g.attivo %}<span class="badge badge-warning">fuori listone</span>{% endif %}
+  </td>
+  <td>
+    <span class="fascia fascia-{{ v.fascia or 'none' }}">
+      {% if v.percentuale %}{{ v.percentuale }}% {% endif %}{{ etichetta_fascia(v.fascia) }}
+    </span>
+    {% if v.stato == 'fuori' %}<span class="fascia fascia-panchina">non convocato</span>
+    {% elif v.stato == 'non_gioca' %}<span class="fascia fascia-none">non gioca</span>{% endif %}
+  </td>
+  <td class="num">
+    {% if v.fm is not none %}{{ '%.2f'|format(v.fm) }}{% else %}
+      <span class="text-muted">dato insufficiente</span>{% endif %}
+  </td>
+  <td class="num">
+    {{ v.partite }}
+    {% if not v.fidata %}<span title="sotto il {{ minimo_partite }}º match la
+      fantamedia non è un dato su cui appoggiarsi">⚠️</span>{% endif %}
+  </td>
+  <td class="num">{{ v.atteso if v.atteso is not none else '—' }}</td>
+</tr>
+{% endmacro %}
+
+<div class="card mb-3">
+  <div class="card-header">
+    <div class="card-title">L'undici consigliato &mdash; {{ dettaglio.modulo }}</div>
+    <span class="text-xs text-muted">
+      attesi {{ dettaglio.atteso if dettaglio.atteso is not none else '—' }}</span>
+  </div>
+  <div style="overflow-x:auto">
+    <table class="table">
+      <thead><tr>
+        <th></th><th></th><th>Giocatore</th><th>Gioca?</th>
+        <th class="num">FM lega</th><th class="num">Pg</th><th class="num">Attesi</th>
+      </tr></thead>
+      <tbody>
+        {% for v in dettaglio.titolari %}{{ riga(v, loop.index) }}{% endfor %}
+      </tbody>
+    </table>
+  </div>
+  <div class="card-body" style="border-top:1px solid var(--border)">
+    <div class="card-title mb-1">La panchina, in ordine di subentro</div>
+    <table class="table">
+      <tbody>
+        {% for v in dettaglio.panchina %}{{ riga(v, loop.index) }}{% endfor %}
+        {% if not dettaglio.panchina %}
+        <tr><td class="text-xs text-muted">Nessuno: la rosa finisce nell'undici.</td></tr>
+        {% endif %}
+      </tbody>
+    </table>
+  </div>
+</div>
+
+{% if dettaglio.forzati %}
+<div class="card mb-3" style="border-color:var(--warning)">
+  <div class="card-body text-sm">
+    <strong>&#9888; {{ dettaglio.forzati|length }} posti riempiti per forza.</strong>
+    Questi giocatori la prima domanda non la passano &mdash; non sono convocati, o
+    sono sotto il {{ soglia }}% &mdash; ma il loro reparto non si riempiva
+    altrimenti: schierarli è l'unica cosa possibile, non un consiglio.
+    <div class="text-xs text-muted mt-1">
+      {% for v in dettaglio.forzati %}{{ v.g.nome }}{% if not loop.last %}, {% endif %}{% endfor %}
+    </div>
+  </div>
+</div>
+{% endif %}
+
+{% if dettaglio.contesi %}
+<div class="card mb-3" style="border-color:var(--primary)">
+  <div class="card-body text-sm">
+    <strong>Dove le due letture litigano.</strong>
+    Qui sotto, chi resta fuori pur avendo <em>punti attesi</em> più alti di un
+    titolare del suo ruolo: succede quando la fascia (che qui comanda) e il prodotto
+    <code>percentuale × fantamedia</code> dicono cose diverse. Non è un errore da
+    correggere, è la scelta dichiarata in cima &mdash; ma è esattamente il posto in
+    cui potresti volere l'altra risposta, e il campo si aggiusta a mano.
+    <ul class="text-xs text-muted mt-1" style="margin-left:1rem">
+      {% for x in dettaglio.contesi %}
+      <li><strong>{{ x.fuori.g.nome }}</strong> ({{ x.fuori.percentuale }}%,
+        {{ etichetta_fascia(x.fuori.fascia) }}, attesi {{ x.fuori.atteso }}) resta fuori
+        per <strong>{{ x.dentro.g.nome }}</strong> ({{ x.dentro.percentuale }}%,
+        {{ etichetta_fascia(x.dentro.fascia) }}, attesi {{ x.dentro.atteso }})</li>
+      {% endfor %}
+    </ul>
+  </div>
+</div>
+{% endif %}
+{% endif %}
+
+{# ── La rosa intera, nell'ordine in cui il consiglio sceglie ─────────────── #}
+<div class="griglia-ruoli">
+  {% for r in ordine %}
+  <div class="card mb-0">
+    <div class="card-header">
+      <div class="card-title">
+        <span class="ruolo ruolo-{{ r }}">{{ r|upper }}</span> {{ ruoli[r] }}
+      </div>
+      <span class="badge badge-neutral">{{ per_ruolo[r]|length }}</span>
+    </div>
+    <table class="table">
+      <tbody>
+        {% for v in per_ruolo[r] %}
+        <tr class="{% if not v.fidata %}thin{% endif %}">
+          <td class="num text-muted">{{ loop.index }}</td>
+          <td>{{ v.g.nome }}
+            <span class="text-xs text-muted">{{ v.g.squadra or '—' }}</span></td>
+          <td><span class="fascia fascia-{{ v.fascia or 'none' }}">{%
+            if v.percentuale %}{{ v.percentuale }}%{% else %}—{% endif %}</span></td>
+          <td class="num">{% if v.fm is not none %}{{ '%.2f'|format(v.fm) }}{% else %}—{% endif %}</td>
+          <td class="num text-muted">{{ v.atteso if v.atteso is not none else '—' }}</td>
+        </tr>
+        {% else %}
+        <tr><td class="text-xs text-muted">Nessuno in rosa.</td></tr>
+        {% endfor %}
+      </tbody>
+    </table>
+  </div>
+  {% endfor %}
+</div>
+<div class="text-xs text-muted mt-2">
+  Questa è la graduatoria che ha deciso l'undici: stesso ordine, nessuna eccezione
+  nascosta. Le righe pallide sono quelle sotto il {{ minimo_partite }}º match.
+</div>
+{% endif %}
+{% endblock %}

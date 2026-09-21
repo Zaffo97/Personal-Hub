@@ -289,6 +289,84 @@ moduli e consiglio girano tutti su una rosa che non c'era.
 
 ---
 
+**Fantacalcio: il consiglio, e la ricerca che l'ha deciso (§4.2 chiusa)**
+
+L'ultima delle quattro cose che Davide aveva chiesto il 21/09/2026. La parte lunga
+non è stata scrivere: è stata **leggere**, perché alla domanda «quanto pesa la
+percentuale di titolarità contro la fantamedia» lui aveva risposto «quello che
+consigliano di più sulla piattaforma o altre fonti affidabili».
+
+- ⚠️ **Il risultato della ricerca è che quel peso non esiste.** Il *Comparatore*
+  di fantacalcio.it («ti diremo quale dei due potrebbe rendere al meglio nel prossimo
+  turno») confronta partite a voto, media voto, fantamedia, gol, assist e gol subiti
+  ma **non dichiara come li combina**, ed è premium; la pagina dell'*algoritmo delle
+  quotazioni* dichiara per esteso di non rivelare i coefficienti; il *FantaIndex* è
+  «un numero da 0 a 100» da «sette macroaree». Non c'era da copiare niente, e
+  inventare un α era la cosa da non fare.
+- ✅ **Quello che le fonti dichiarano è una gerarchia con delle soglie**, e quella
+  si esegue. L'*Indice di Titolarità* è «lo strumento imprescindibile per poter
+  schierare al meglio» (scala 0–100); le fasce le scrive `fantacalcio-online.com`:
+  **≥90** «titolare, nessun dubbio», **60–89** «favorito in un ballottaggio»,
+  **40–59** «ballottaggio effettivo: è qui che si decide una giornata», **<40**
+  «parte dalla panchina». E dice che titolarità e merito sono **due domande
+  diverse** — «*se* gioca» e «*se conviene* schierarlo» — in quest'ordine. Più una
+  regola operativa: sui ballottaggi «schierare chi ha la percentuale più alta e
+  collocare l'altro **in cima alla panchina**», che qui si può eseguire perché la
+  panchina è una lista ordinata.
+- ✅ **Le fasce tornano sui dati nostri**: sulla giornata 6, dei 482 convocati 134
+  stanno a quota 90 (**tutti e 134 titolari** nel campo disegnato), 145 fra 60 e 89
+  (86 titolari), 87 fra 40 e 59 e 116 sotto il 40 — e in quelle due fasce basse i
+  titolari sono **zero**. La soglia del 40 non è scelta: è dove la fonte stessa
+  smette di mettere gente in campo.
+- ✅ **La fantamedia rifatta con le regole della lega, verificata contro la fonte.**
+  Eseguita coi valori standard e confrontata con la colonna del sito: **407 giocatori
+  su 414 tornano esatti** entro 0.01, tutti e 26 i portieri e tutti e 75 gli
+  attaccanti. È la prova che le voci sono contate giuste (se `gol` non comprendesse i
+  rigori, gli attaccanti sarebbero sfasati in blocco) e che **la porta inviolata non
+  è dentro la fantamedia del sito**. I 7 che non tornano: sei sono il **tetto dei
+  cartellini** (amm + esp nella stessa partita si fermano a −1, e dai totali di
+  stagione non si sa in quale partita: scarto ≤ 0,5), il settimo resta senza
+  spiegazione e sta scritto nel codice.
+- ✅ **E un numero che serviva, dichiarato dalla piattaforma**: la fantamedia entra
+  nel suo algoritmo **dal quinto match in poi**. Da lì la soglia dell'avviso «poche
+  partite», che il giro precedente aveva messo a 3 **a occhio**. Alla giornata 6
+  questo vuol dire che su 597 attivi solo **151** hanno una fantamedia di cui la
+  fonte si fiderebbe, e **183 non hanno nemmeno una partita a voto**: è il motivo per
+  cui a settembre il consiglio si regge più sulla titolarità che sul merito, e la
+  pagina lo dice.
+- ⚠️✅ **Il baco che ha trovato la prova, ed era il cuore della cosa**: il primo
+  ordinamento metteva il **merito prima della fascia**, e su una rosa vera
+  **Calhanoglu al 50% veniva schierato davanti a Zaccagni al 90%** perché aveva 8.5
+  di fantamedia. È esattamente quello che la gerarchia esiste per impedire: un 50%
+  non è un giocatore di cui si sa che gioca. Ora la fascia viene prima — ed è una
+  **scelta di lettura**, dichiarata in pagina, non un dato: per questo il consiglio
+  elenca i **«contesi»**, chi resta fuori pur avendo punti attesi più alti di un
+  titolare del suo ruolo.
+- ⚠️✅ **Due altri difetti presi lavorandoci**: in panchina finivano **due
+  portieri di riserva davanti al miglior attaccante** (con un portiere in campo di
+  sostituti portiere ne serve **uno**: è aritmetica, non gusto), e i «contesi» si
+  cercavano solo fra i panchinari — cioè il disaccordo più interessante, quello di
+  chi non entra nemmeno in panchina, era l'unico che non veniva mai dichiarato.
+- ✅ **«Applica al campo»** passa dalla **stessa** validazione di un salvataggio a
+  mano (`controlla_formazione()`), e la scrittura è in `_scrivi_formazione()`, una
+  volta sola per il campo e per il consiglio: duplicarla era la strada facile, ed è
+  lo stesso errore che tenne in vita per un mese il difetto di `main` nel moveset.
+- ✅ **Verifiche**: `prova_fantacalcio.py` da 123 a **156 su 156** (fra cui: le fasce
+  sui bordi 90/89/60/59/40/39, la fantamedia a mano 6.0 + 6/5 = 7.2 e la stessa
+  stagione che a +5 il gol vale 8.0, il ballottaggio che non scavalca il titolare
+  sicuro, il rivale in cima alla panchina, il tetto dei portieri, i «forzati»
+  dichiarati, la pagina che **dichiara le fonti**, «applica» che scrive lo stesso
+  undici mostrato, e un secondo utente che non vede né applica il consiglio
+  altrui); **131 query 0 scoperte**, **sweep 0 errori** su 28 pagine per lingua,
+  pagina resa passata a un **parser HTML** (tag tutti chiusi, 7 form «applica» —
+  uno per modulo ammesso — 45 righe di tabella, il blocco dei «contesi» presente).
+- ⬜ **Resta aperto**: il consiglio non guarda l'avversario, non tiene conto del
+  modificatore di difesa (che vale su un reparto, non su un giocatore) e — per la
+  scelta «una formazione per lega, che si sovrascrive» — **non sarà verificabile a
+  posteriori** se consigliava bene.
+
+---
+
 **Le due Mega Meowstic: un dato sbagliato teneva fuori una voce vera**
 
 - ⚠️ **Il difetto**: erano le ultime due voci del catalogo senza `slug`, e il backlog le

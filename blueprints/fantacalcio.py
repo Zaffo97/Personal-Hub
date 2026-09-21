@@ -24,7 +24,9 @@ from extensions import (get_db, login_required, _i, ambito_utente, solo_mie,
 from data import (RUOLI_FANTA, ORDINE_RUOLI_FANTA, scomponi_modulo,
                   MOD_DIFESA_SOGLIE, soglie_mod_difesa, scrivi_soglie,
                   modificatore_difesa, controlla_formazione,
-                  leggi_rosa_incollata)
+                  leggi_rosa_incollata, valuta_rosa, consiglia_moduli,
+                  rosa_per_merito, etichetta_fascia, FASCE_TITOLARITA,
+                  SOGLIA_SCHIERABILE, MINIMO_PARTITE_FIDATO)
 import fanta_import as I
 
 bp = Blueprint("fantacalcio", __name__, url_prefix="/fantacalcio")
@@ -528,6 +530,46 @@ def formazione(lid):
         reparti={m: scomponi_modulo(m) for m in moduli})
 
 
+def _scrivi_formazione(db, lid, modulo, titolari, panchinari, rosa):
+    """Scrive la formazione e il modulo. `True` se ha scritto, `False` se la lega
+    non è di chi sta scrivendo. **Chiude il db in ogni caso.**
+
+    ⚠️ Sta qui, e non dentro la route, perché la scrivono in **due** — il campo e
+    il pulsante «applica» del consiglio. Riscriverla due volte era la strada facile,
+    ed è lo stesso errore che ha tenuto in vita per un mese il difetto di `main` nel
+    moveset e che `fanta_import.py` esiste per non ripetere.
+
+    Si riscrive per intero: una formazione è una cosa sola, e aggiornarla riga per
+    riga vorrebbe dire poter lasciare in campo qualcuno che è stato tolto.
+    ⚠️ Due forme della stessa condizione, e non sono intercambiabili: `UPDATE` non
+    ha un alias, quindi vuole la colonna nuda. Scritta con l'alias dà «no such
+    column: l.user_id» — l'ha presa la prova al primo giro.
+    """
+    cond, par = solo_mie()
+    db.execute("DELETE FROM fanta_formazione WHERE league_id=? AND league_id IN "
+               f"(SELECT id FROM fanta_leagues WHERE id=? AND {cond})",
+               (lid, lid) + tuple(par))
+    db.executemany(
+        "INSERT INTO fanta_formazione(league_id, player_id, titolare, ordine, ruolo)"
+        " VALUES(?,?,?,?,?)",
+        [(lid, p, 1, i, rosa.get(p)) for i, p in enumerate(titolari)] +
+        [(lid, p, 0, i, rosa.get(p)) for i, p in enumerate(panchinari)])
+    cur = db.execute(f"UPDATE fanta_leagues SET modulo_scelto=? WHERE id=? AND {cond}",
+                     (modulo, lid) + tuple(par))
+    if cur.rowcount == 0:
+        # La lega non è di chi salva: la formazione appena scritta non deve
+        # restare. ⚠️ `_lega_mia()` l'aveva già detto in cima a chi chiama, ma qui
+        # si guarda il `rowcount` perché una scrittura che non tocca niente **non
+        # dà errore**.
+        db.execute("DELETE FROM fanta_formazione WHERE league_id=?", (lid,))
+        db.commit()
+        db.close()
+        return False
+    db.commit()
+    db.close()
+    return True
+
+
 @bp.route("/lega/<int:lid>/formazione/salva", methods=["POST"])
 @login_required
 def formazione_salva(lid):
@@ -563,35 +605,129 @@ def formazione_salva(lid):
             flash(g, "error")
         return redirect(url_for("fantacalcio.formazione", lid=lid))
 
-    # Si riscrive per intero: una formazione è una cosa sola, e aggiornarla riga
-    # per riga vorrebbe dire poter lasciare in campo qualcuno che è stato tolto.
-    # ⚠️ Due forme della stessa condizione, e non sono intercambiabili: `UPDATE`
-    # non ha un alias, quindi vuole la colonna nuda. Scritta con l'alias dà
-    # «no such column: l.user_id» — l'ha presa la prova al primo giro.
-    cond, par = solo_mie()
-    db.execute("DELETE FROM fanta_formazione WHERE league_id=? AND league_id IN "
-               f"(SELECT id FROM fanta_leagues WHERE id=? AND {cond})",
-               (lid, lid) + tuple(par))
-    db.executemany(
-        "INSERT INTO fanta_formazione(league_id, player_id, titolare, ordine, ruolo)"
-        " VALUES(?,?,?,?,?)",
-        [(lid, p, 1, i, rosa.get(p)) for i, p in enumerate(titolari)] +
-        [(lid, p, 0, i, rosa.get(p)) for i, p in enumerate(panchinari)])
-    cur = db.execute(f"UPDATE fanta_leagues SET modulo_scelto=? WHERE id=? AND {cond}",
-                     (modulo, lid) + tuple(par))
-    if cur.rowcount == 0:
-        # La lega non è di chi salva: la formazione appena scritta non deve
-        # restare. ⚠️ `_lega_mia()` l'aveva già detto in cima, ma qui si guarda il
-        # `rowcount` perché una scrittura che non tocca niente **non dà errore**.
-        db.execute("DELETE FROM fanta_formazione WHERE league_id=?", (lid,))
-        db.commit()
+    if not _scrivi_formazione(db, lid, modulo, titolari, panchinari, rosa):
+        flash("Lega non trovata", "error")
+        return redirect(url_for("fantacalcio.fantacalcio"))
+    flash(f"Formazione salvata: {modulo}, {len(titolari)} titolari e "
+          f"{len(panchinari)} in panchina", "success")
+    return redirect(url_for("fantacalcio.formazione", lid=lid))
+
+
+def _consiglio(db, lid):
+    """Tutto quello che serve al consiglio di una lega: `(lega, contesto)`.
+
+    Sta fuori dalle route perché la usano in due — la pagina che lo mostra e il
+    pulsante che lo applica al campo. ⚠️ E devono usare **la stessa**: un «applica»
+    che ricalcolasse il consiglio per conto suo potrebbe scrivere una formazione
+    diversa da quella che è stata guardata, e nessuno se ne accorgerebbe.
+    """
+    lega = _lega_mia(db, lid)
+    if lega is None:
+        return None, None
+    rosa = _rosa_della_lega(db, lid)
+    giornata = _giornata_probabili(db)
+    probabili = _probabili_della_rosa(db, giornata, rosa)
+    aggiornate = db.execute("SELECT MAX(aggiornato_il) AS q FROM fanta_probabili "
+                            "WHERE giornata=?", (giornata,)).fetchone() if giornata else None
+    valutazioni = valuta_rosa(rosa, probabili, lega)
+    moduli = [m.strip() for m in (lega.get("moduli") or "").split(",")
+              if m.strip() and scomponi_modulo(m.strip())]
+    consigli = consiglia_moduli(valutazioni, moduli, lega.get("n_panchinari"))
+    return lega, {
+        "rosa": rosa, "giornata": giornata, "valutazioni": valutazioni,
+        "per_ruolo": rosa_per_merito(valutazioni), "consigli": consigli,
+        "probabili_aggiornate": (aggiornate["q"] if aggiornate else None),
+    }
+
+
+@bp.route("/lega/<int:lid>/consiglio")
+@login_required
+def consiglio(lid):
+    """Il consiglio: chi schierare, e **su cosa si basa**, scritto nella pagina.
+
+    ⚠️ La parte che conta di questa route non è il codice, è la dichiarazione. Il
+    criterio non è stato scelto qui: Davide ha chiesto «quello che consigliano di
+    più sulla piattaforma o altre fonti affidabili», si è andati a leggere, e si è
+    trovato che **una formula non la pubblica nessuno** — il Comparatore di
+    fantacalcio.it è premium e non dice come confronta, la pagina dell'algoritmo
+    delle quotazioni dichiara di non rivelare i coefficienti, il FantaIndex è «un
+    numero da 0 a 100» e basta. Quello che le fonti dichiarano è una **gerarchia con
+    delle soglie**, e quella è implementata in `data.py` con i numeri e le citazioni
+    attaccate. Un consiglio che non dice su cosa si basa sarebbe l'oracolo non
+    verificabile che questo progetto evita per regola.
+    """
+    db = get_db()
+    guaio = _aggiorna_se_vecchio(db, "probabili")
+    if guaio:
+        flash(guaio, "error")
+    lega, ctx = _consiglio(db, lid)
+    if lega is None:
         db.close()
         flash("Lega non trovata", "error")
         return redirect(url_for("fantacalcio.fantacalcio"))
-    db.commit()
     db.close()
-    flash(f"Formazione salvata: {modulo}, {len(titolari)} titolari e "
-          f"{len(panchinari)} in panchina", "success")
+    # Quale modulo si guarda in dettaglio: quello chiesto, se è consigliabile,
+    # altrimenti il migliore per punti attesi, altrimenti il primo. ⚠️ Non si
+    # inventa: con nessun modulo consigliabile resta `None` e la pagina lo dice.
+    consigli = ctx["consigli"]
+    chiesto = (request.args.get("modulo") or "").strip()
+    dettaglio = next((c for c in consigli if c["modulo"] == chiesto), None)
+    if dettaglio is None:
+        dettaglio = next((c for c in consigli if c["migliore"]), None)
+    if dettaglio is None and consigli:
+        dettaglio = consigli[0]
+    return render_template("fanta_consiglio.html", lega=lega, ruoli=RUOLI_FANTA,
+                           dettaglio=dettaglio,
+                           ordine=ORDINE_RUOLI_FANTA,
+                           fasce=FASCE_TITOLARITA,
+                           soglia=SOGLIA_SCHIERABILE,
+                           minimo_partite=MINIMO_PARTITE_FIDATO,
+                           etichetta_fascia=etichetta_fascia, **ctx)
+
+
+@bp.route("/lega/<int:lid>/consiglio/applica", methods=["POST"])
+@login_required
+def consiglio_applica(lid):
+    """Porta il consiglio di un modulo nel campo, passando dalla **stessa**
+    validazione del campo.
+
+    ⚠️ Non scrive «perché lo dice il consiglio»: ricalcola il consiglio, prende
+    l'undici e la panchina di **quel** modulo e li passa a `controlla_formazione()`
+    come farebbe un salvataggio a mano. Se il consiglio producesse una formazione
+    che non torna — un reparto che la rosa non copre, una panchina più lunga di
+    quella ammessa — deve fallire come fallirebbe un form, non entrare da una porta
+    di servizio. È anche l'unico modo di accorgersene.
+    """
+    db = get_db()
+    lega, ctx = _consiglio(db, lid)
+    if lega is None:
+        db.close()
+        flash("Lega non trovata", "error")
+        return redirect(url_for("fantacalcio.fantacalcio"))
+
+    modulo = (request.form.get("modulo") or "").strip()
+    scelto = next((c for c in ctx["consigli"] if c["modulo"] == modulo), None)
+    if scelto is None:
+        db.close()
+        flash(f"Il modulo {modulo or '—'} non è fra quelli consigliabili per questa "
+              "lega", "error")
+        return redirect(url_for("fantacalcio.consiglio", lid=lid))
+
+    titolari = [v["g"]["id"] for v in scelto["titolari"]]
+    panchinari = [v["g"]["id"] for v in scelto["panchina"]]
+    rosa = {g["id"]: g["ruolo_classic"] for g in ctx["rosa"]}
+    guai = controlla_formazione(modulo, titolari, panchinari, rosa,
+                                lega.get("n_panchinari"))
+    if guai:
+        db.close()
+        for g in guai:
+            flash(g, "error")
+        return redirect(url_for("fantacalcio.consiglio", lid=lid))
+    if not _scrivi_formazione(db, lid, modulo, titolari, panchinari, rosa):
+        flash("Lega non trovata", "error")
+        return redirect(url_for("fantacalcio.fantacalcio"))
+    flash(f"Consiglio applicato: {modulo}, {len(titolari)} titolari e "
+          f"{len(panchinari)} in panchina. Ora aggiustalo come vuoi.", "success")
     return redirect(url_for("fantacalcio.formazione", lid=lid))
 
 

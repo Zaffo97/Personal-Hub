@@ -247,6 +247,363 @@ def modificatore_difesa(media, soglie=None):
     return 0.0
 
 
+# ── Il consiglio ─────────────────────────────────────────────────────────────
+# ⚠️ **Il criterio non l'ho scelto io.** Davide, il 21/09/2026, alla domanda «quanto
+# pesa la percentuale di titolarità contro la fantamedia» ha risposto: *quello che
+# consigliano di più sulla piattaforma o altre fonti affidabili*. Quindi prima si è
+# letto. Cosa si è trovato, quel giorno:
+#
+#   * **nessuna fonte pubblica una formula.** Il «Comparatore» di fantacalcio.it
+#     («Scegli due calciatori da confrontare, ti diremo quale dei due potrebbe
+#     rendere al meglio nel prossimo turno») confronta partite a voto, media voto,
+#     fantamedia, gol, assist e gol subiti, **senza dichiarare come li combina**, ed
+#     è premium; la pagina dell'algoritmo delle quotazioni dice per esteso di non
+#     rivelare coefficienti; il FantaIndex è «un numero da 0 a 100» da «sette
+#     macroaree» e basta. Un peso α «preso dalla fonte» non esiste: non c'era da
+#     copiare, e inventarlo era la cosa da non fare;
+#   * quello che le fonti **dichiarano davvero** è una **gerarchia con delle
+#     soglie**. L'*Indice di Titolarità* di fantacalcio.it è «lo strumento
+#     imprescindibile per poter schierare al meglio la propria fanta-squadra», su
+#     scala 0–100; e le fasce, con il loro significato, le scrive
+#     `fantacalcio-online.com`: **≥90** «titolare, nessun dubbio», **60–89**
+#     «favorito in un ballottaggio», **40–59** «ballottaggio effettivo: è qui che si
+#     decide una giornata», **<40** «parte dalla panchina». La stessa pagina dice
+#     che titolarità e merito sono **due domande diverse** — «*se* gioca» e «*se
+#     conviene* schierarlo» — e che si rispondono **in quest'ordine**;
+#   * e dà una regola operativa, che qui si può eseguire perché la panchina è una
+#     lista ordinata: sui ballottaggi, «schierare chi ha la percentuale più alta e
+#     collocare l'altro **in cima alla panchina**», così la sostituzione automatica
+#     lo fa subentrare.
+#
+# Da qui la struttura, che è una **porta e un ordinamento**, non una media pesata:
+# la percentuale decide **chi può giocare** (soglia dichiarata), la fantamedia
+# ricalcolata con le regole della lega decide **chi conviene** fra quelli che
+# giocano. I «punti attesi» (`percentuale × fantamedia`) restano una **colonna**
+# — sono la forma scritta di quello che le fonti dicono a parole, «a parità di
+# fantamedia chi gioca il 90% vale più di chi gioca il 50%» — e servono a sommare
+# un modulo intero, non a ordinare i giocatori.
+
+# Le fasce, così come le dichiara la fonte. ⚠️ Sulla scala vera i 90 sono il
+# **massimo osservato**, non un minimo raggiungibile da pochi: misurato sulla
+# giornata 6 del 2026-27, i 482 convocati stanno in 134 a quota 90 (tutti e 134
+# titolari nel campo disegnato), 145 fra 60 e 89 (di cui 86 titolari), 87 fra 40 e
+# 59 e 116 sotto il 40 — e in quelle due fasce basse i titolari sono **zero**. La
+# soglia del 40 quindi non è un numero scelto: è dove la fonte stessa smette di
+# mettere gente in campo.
+FASCE_TITOLARITA = [
+    (90, "sicuro", "titolare, nessun dubbio"),
+    (60, "favorito", "favorito in un ballottaggio"),
+    (40, "ballottaggio", "ballottaggio effettivo"),
+    (0, "panchina", "parte dalla panchina"),
+]
+# Sotto questa percentuale un giocatore **non entra** nell'undici consigliato, a
+# meno che il suo reparto non si riesca a riempire altrimenti. È la fascia che la
+# fonte chiama «parte dalla panchina».
+SOGLIA_SCHIERABILE = 40
+
+# ⚠️ Quante partite a voto servono perché la fantamedia voglia dire qualcosa. **5**
+# non è scelto a occhio: è la soglia che fantacalcio.it dichiara per il **proprio**
+# algoritmo delle quotazioni, dove la fantamedia «viene considerata dal quinto match
+# in poi». Il 21/09/2026, alla giornata 6, questo vuol dire che su 597 giocatori
+# attivi solo **151** hanno una fantamedia che la fonte stessa si fiderebbe di
+# usare, e **183 non hanno nemmeno una partita a voto**. Non è un dettaglio da
+# nascondere nel codice: è il motivo per cui a settembre il consiglio si regge più
+# sulla titolarità che sul merito, e la pagina lo dice.
+MINIMO_PARTITE_FIDATO = 5
+
+# Le voci con cui si ricostruisce la fantamedia: (colonna delle statistiche,
+# colonna della regola nella lega). ⚠️ **Porta inviolata e autogol non ci sono**, e
+# non per dimenticanza: la fonte non pubblica né i clean sheet né gli autogol, e
+# stimarli sarebbe il valore plausibile e falso della regola #3. Le due colonne
+# della lega esistono, e restano inutilizzate **dichiaratamente**.
+VOCI_FANTAMEDIA = [
+    ("gol", "bonus_gol", "gol"),
+    ("assist", "bonus_assist", "assist"),
+    ("ammonizioni", "malus_amm", "ammonizioni"),
+    ("espulsioni", "malus_esp", "espulsioni"),
+    ("gol_subiti", "malus_gol_subito", "gol subiti"),
+    ("rigori_parati", "bonus_rigore_parato", "rigori parati"),
+    ("rigori_sbagliati", "malus_rigore_sbagliato", "rigori sbagliati"),
+]
+
+
+def rigori_segnati_tirati(testo):
+    """`"1 / 2"` → `(1, 2)`. La fonte scrive i rigori come frazione, non come numero.
+
+    ⚠️ Si tiene **com'è** invece di sceglierne una metà: i segnati sono già dentro
+    `gol` (il regolamento dà +3 «rigori compresi», e la misura del 21/09/2026 lo
+    conferma — contarli due volte avrebbe sfasato tutti i rigoristi), quello che
+    serve è la **differenza**, cioè i rigori sbagliati.
+    """
+    pezzi = re.findall(r"\d+", str(testo or ""))
+    if len(pezzi) < 2:
+        return (int(pezzi[0]) if pezzi else 0), (int(pezzi[0]) if pezzi else 0)
+    return int(pezzi[0]), int(pezzi[1])
+
+
+def fascia_titolarita(percentuale):
+    """La chiave della fascia (`sicuro`, `favorito`, `ballottaggio`, `panchina`).
+
+    `None` quando la percentuale non c'è: un giocatore senza probabile **non ha
+    fascia**, e dargli la più bassa vorrebbe dire dire una cosa che non si sa.
+    """
+    if percentuale is None:
+        return None
+    for minimo, chiave, _ in FASCE_TITOLARITA:
+        if percentuale >= minimo:
+            return chiave
+    return "panchina"
+
+
+def etichetta_fascia(chiave):
+    """Come la fonte chiama quella fascia, parola per parola."""
+    for _, k, testo in FASCE_TITOLARITA:
+        if k == chiave:
+            return testo
+    return "—"
+
+
+def fantamedia_regole(giocatore, regole):
+    """La fantamedia **rifatta con le regole di questa lega**. `(valore, pezzi)`.
+
+    Decisione di Davide del 21/09/2026: non la colonna `fantamedia` del sito, che è
+    calcolata coi bonus standard di FantaGazzetta, ma il conto rifatto dai dati
+    grezzi con le colonne della lega — se una lega dà +1 all'assist e l'altra +3, il
+    consiglio deve cambiare, ed è tutto il motivo per cui le regole stanno in
+    colonne.
+
+    Torna `(None, [])` quando non c'è **nessuna partita a voto**: una media su zero
+    partite non è zero, è assente, e trattarla come zero metterebbe in fondo
+    all'elenco un acquisto appena arrivato come se avesse giocato male.
+
+    ⚠️ **Che il conto sia giusto è misurato, non dedotto.** Il 21/09/2026, eseguito
+    coi valori **standard** e confrontato con la colonna del sito: **407 giocatori
+    su 414** tornano esatti entro 0.01 — tutti e 26 i portieri e tutti e 75 gli
+    attaccanti. È la prova che le voci sono contate nel modo giusto (se `gol` non
+    comprendesse i rigori, gli attaccanti sarebbero sfasati in blocco) e che la
+    **porta inviolata non è dentro la fantamedia del sito**, altrimenti i 26
+    portieri sarebbero tutti fuori.
+
+    ⚠️ E i **7 che non tornano** hanno un nome: sei sono il **tetto dei cartellini**
+    — ammonizione più espulsione nella stessa partita si fermano a −1, mentre qui si
+    sommano a −1,5, perché dai totali di stagione non si sa *in quale* partita sono
+    capitati. Lo scarto misurato è ≤ 0.5 e riguarda 6 giocatori su 414: si dichiara,
+    non si stima. Il settimo (Halhal) resta senza spiegazione e sta scritto qui.
+    """
+    partite = giocatore.get("partite_a_voto") or 0
+    if not partite:
+        return None, []
+    segnati, tirati = rigori_segnati_tirati(giocatore.get("rigori"))
+    conteggi = dict(giocatore)
+    conteggi["rigori_sbagliati"] = max(0, tirati - segnati)
+    pezzi, totale = [], 0.0
+    for colonna, regola, etichetta in VOCI_FANTAMEDIA:
+        quanti = conteggi.get(colonna) or 0
+        valore = regole.get(regola)
+        if not quanti or valore in (None, 0):
+            continue
+        punti = quanti * float(valore)
+        totale += punti
+        pezzi.append({"voce": etichetta, "quanti": quanti,
+                      "valore": float(valore), "punti": punti})
+    return (giocatore.get("media_voto") or 0) + totale / partite, pezzi
+
+
+def valuta_rosa(rosa, probabili, regole):
+    """Una riga per giocatore, coi numeri su cui il consiglio decide.
+
+    `rosa` sono le righe della rosa (col listone dentro), `probabili` è
+    `{player_id: {stato, percentuale, …}}` come lo costruisce la pagina della lega,
+    `regole` è la riga della lega. Per ognuno:
+
+    - `stato` e `percentuale` dalle probabili, `fascia` dalla soglia della fonte;
+    - `fm` dalla fantamedia rifatta con le regole, `fidata` se le partite a voto
+      arrivano a `MINIMO_PARTITE_FIDATO`;
+    - `schierabile`, che è la **porta**: convocato e percentuale sopra la soglia;
+    - `atteso`, i punti attesi (`percentuale × fm`), che è una colonna e non
+      l'ordinamento.
+    """
+    fuori = []
+    for g in rosa:
+        p = probabili.get(g["id"]) or {}
+        stato = p.get("stato")
+        percentuale = p.get("percentuale")
+        fm, pezzi = fantamedia_regole(g, regole)
+        convocato = stato in ("titolare", "panchina")
+        fuori.append({
+            "g": g, "stato": stato, "percentuale": percentuale,
+            "fascia": fascia_titolarita(percentuale),
+            "fm": fm, "pezzi": pezzi,
+            "partite": g.get("partite_a_voto") or 0,
+            "fidata": (g.get("partite_a_voto") or 0) >= MINIMO_PARTITE_FIDATO,
+            "convocato": convocato,
+            "schierabile": bool(convocato and (percentuale or 0) >= SOGLIA_SCHIERABILE),
+            "atteso": (None if fm is None or not percentuale
+                       else round(percentuale / 100.0 * fm, 2)),
+        })
+    return fuori
+
+
+ORDINE_FASCE = {chiave: n for n, (_, chiave, _) in enumerate(FASCE_TITOLARITA)}
+
+
+def _chiave_merito(v):
+    """L'ordine **dentro** un reparto: prima *se* gioca, poi *se conviene*.
+
+    ⚠️ La chiave è **la fascia prima della fantamedia**, ed è la parte che si
+    sbaglia facilmente. Il primo giro ordinava per fantamedia fra tutti quelli sopra
+    la soglia del 40%, e il risultato su una rosa vera si è visto subito:
+    **Calhanoglu al 50% («ballottaggio effettivo») veniva schierato davanti a
+    Zaccagni al 90% («titolare, nessun dubbio»)** perché aveva 8.5 di fantamedia
+    contro meno. Cioè il merito scavalcava la titolarità, che è esattamente quello
+    che la gerarchia della fonte esiste per impedire: un 50% **non è** un giocatore
+    di cui si sa che gioca, è la moneta che «decide una giornata».
+    Quindi: fascia (sicuro → favorito → ballottaggio → panchina), e **dentro** la
+    fascia la fantamedia della lega. La percentuale esatta resta l'ultimo spareggio,
+    per non lasciare decidere all'ordine alfabetico fra due pari.
+
+    ⚠️ Questa è una **scelta di lettura**, non un dato: la fonte dichiara le quattro
+    fasce e l'ordine delle due domande, non quanto una fascia valga in fantamedia.
+    Si è preso il verso prudente — mai una moneta al posto di un titolare — e la
+    pagina dichiara **dove le due letture litigano** (`contesi` in
+    `consiglia_formazione()`), invece di nascondere che esiste un'altra risposta.
+    """
+    return (not v["convocato"],
+            ORDINE_FASCE.get(v["fascia"], 9),
+            -(v["fm"] if v["fm"] is not None else -99),
+            -(v["percentuale"] or 0),
+            v["g"].get("nome") or "")
+
+
+def rosa_per_merito(valutazioni):
+    """Le valutazioni per ruolo, ognuna **nell'ordine in cui il consiglio sceglie**.
+
+    La usano il motore e la pagina: la graduatoria che si legge a schermo deve
+    essere la stessa che ha deciso l'undici, altrimenti il consiglio sembrerebbe
+    saltare qualcuno senza motivo.
+    """
+    return {r: sorted([v for v in valutazioni if v["g"].get("ruolo_classic") == r],
+                      key=_chiave_merito) for r in ORDINE_RUOLI_FANTA}
+
+
+def consiglia_formazione(valutazioni, modulo, n_panchinari=7):
+    """L'undici e la panchina consigliati per **un** modulo.
+
+    Torna `{"modulo", "titolari", "panchina", "atteso", "senza_fm", "forzati",
+    "ballottaggi"}`, dove `titolari` e `panchina` sono liste di valutazioni **in
+    ordine**.
+
+    - i titolari sono i migliori del reparto secondo `_chiave_merito()`;
+    - ⚠️ `forzati` sono i posti riempiti con chi la porta escluderebbe, perché il
+      reparto non si riempiva altrimenti. Non è un caso di scuola: con tre portieri
+      di cui nessuno convocato, un portiere lo devi schierare comunque. La pagina lo
+      dichiara invece di far finta che sia un consiglio;
+    - la **panchina** segue la regola operativa della fonte: prima i **rivali dei
+      ballottaggi schierati** — chi è in campo con una percentuale da ballottaggio
+      lascia il primo posto in panchina a un altro del suo ruolo, così la
+      sostituzione automatica lo fa subentrare — poi il resto per merito.
+    """
+    serve = scomponi_modulo(modulo)
+    if not serve:
+        return None
+    per_ruolo = rosa_per_merito(valutazioni)
+    titolari, forzati, ballottaggi, avanzi = [], [], [], []
+    for ruolo in ORDINE_RUOLI_FANTA:
+        elenco = per_ruolo[ruolo]
+        presi = elenco[:serve[ruolo]]
+        titolari += presi
+        avanzi += elenco[serve[ruolo]:]
+        forzati += [v for v in presi if not v["schierabile"]]
+        ballottaggi += [v for v in presi if v["fascia"] == "ballottaggio"]
+
+    # I rivali: per ogni ballottaggio schierato, il primo del suo ruolo che è
+    # rimasto fuori. ⚠️ Uno per volta e senza ripetere — due ballottaggi nello
+    # stesso reparto non possono contare sullo stesso sostituto.
+    panchina, usati = [], set()
+    for v in ballottaggi:
+        for altro in avanzi:
+            if (altro["g"]["id"] not in usati
+                    and altro["g"].get("ruolo_classic") == v["g"].get("ruolo_classic")):
+                panchina.append(altro)
+                usati.add(altro["g"]["id"])
+                break
+    # ⚠️ **Il tetto per ruolo, che non è una preferenza: è aritmetica.** Con un
+    # portiere in campo si può avere bisogno di **un** sostituto portiere, mai di
+    # due — il secondo occuperebbe un posto di panchina che non potrà mai servire.
+    # Il primo giro non ce l'aveva, e su una rosa vera si è visto: **due portieri di
+    # riserva stavano al quarto e quinto posto**, davanti al miglior attaccante
+    # della rosa. Il tetto è quindi «quanti ne gioco», ruolo per ruolo, e quello che
+    # resta fuori rientra solo **dopo**, se la panchina non si è riempita: un posto
+    # vuoto sarebbe peggio di un posto occupato male.
+    quanti_ruolo = {}
+    for v in panchina:
+        r = v["g"].get("ruolo_classic")
+        quanti_ruolo[r] = quanti_ruolo.get(r, 0) + 1
+    scartati = []
+    for v in sorted(avanzi, key=_chiave_merito):
+        if v["g"]["id"] in usati:
+            continue
+        r = v["g"].get("ruolo_classic")
+        if quanti_ruolo.get(r, 0) >= serve.get(r, 0):
+            scartati.append(v)
+            continue
+        panchina.append(v)
+        usati.add(v["g"]["id"])
+        quanti_ruolo[r] = quanti_ruolo.get(r, 0) + 1
+    for v in scartati:
+        panchina.append(v)
+        usati.add(v["g"]["id"])
+    panchina = panchina[:n_panchinari or 0]
+
+    # ⚠️ Dove le due letture litigano: un giocatore **non** schierato che ha punti
+    # attesi più alti di un titolare del suo stesso ruolo. Succede quando la fascia
+    # (che qui comanda) e il prodotto `percentuale × fantamedia` dicono cose
+    # diverse, cioè nel caso di un ballottaggio con la fantamedia alta. Non è un
+    # baco da correggere: è la scelta di lettura, e la pagina la mette in chiaro
+    # invece di far credere che una risposta sola ci sia.
+    # ⚠️ Si guardano **tutti quelli rimasti fuori**, non i soli panchinari: il
+    # primo giro scorreva `panchina`, che è tagliata a `n_panchinari`, e quindi il
+    # disaccordo più interessante — un giocatore con punti attesi altissimi che non
+    # entra nemmeno in panchina — era l'unico che non veniva mai dichiarato. L'ha
+    # preso la prova, con un caso costruito apposta.
+    contesi = []
+    for v in avanzi:
+        if v["atteso"] is None:
+            continue
+        for t in titolari:
+            if (t["g"].get("ruolo_classic") == v["g"].get("ruolo_classic")
+                    and t["atteso"] is not None and v["atteso"] > t["atteso"]):
+                contesi.append({"fuori": v, "dentro": t})
+                break
+
+    attesi = [v["atteso"] for v in titolari if v["atteso"] is not None]
+    return {"modulo": modulo, "titolari": titolari, "panchina": panchina,
+            "atteso": round(sum(attesi), 2) if attesi else None,
+            "senza_fm": len([v for v in titolari if v["fm"] is None]),
+            "forzati": forzati, "ballottaggi": ballottaggi, "contesi": contesi}
+
+
+def consiglia_moduli(valutazioni, moduli, n_panchinari=7):
+    """Un consiglio per ogni modulo ammesso, col migliore segnato.
+
+    ⚠️ Il modulo si sceglie sui **punti attesi** dell'undici, che è l'unico modo di
+    confrontare due formazioni con un numero solo — ed è dichiarato in pagina. Ma la
+    graduatoria vale quanto vale la fantamedia che ci sta dentro: `senza_fm` dice
+    per quanti dei titolari quel numero non esiste, e quando sono tanti il
+    confronto fra moduli **non va creduto**. A settembre sono quasi tutti.
+    """
+    fuori = [c for c in (consiglia_formazione(valutazioni, m, n_panchinari)
+                         for m in moduli) if c]
+    migliore = None
+    for c in fuori:
+        if c["atteso"] is not None and (migliore is None
+                                        or c["atteso"] > migliore["atteso"]):
+            migliore = c
+    for c in fuori:
+        c["migliore"] = (migliore is not None and c["modulo"] == migliore["modulo"])
+    return fuori
+
+
 # ── La rosa incollata ────────────────────────────────────────────────────────
 # Una rosa di fantacalcio sono ~25 giocatori, e metterli in rosa uno per volta con
 # la ricerca vuol dire 25 ricerche: è il motivo per cui il 21/09/2026, con tutto il

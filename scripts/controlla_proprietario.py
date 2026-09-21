@@ -180,12 +180,17 @@ ECCEZIONI = {
      "ORDER BY titolare DESC, ordine"):
         "la lega è stata verificata con _lega_mia() poche righe sopra: se non è "
         "tua, la route è già uscita",
-    ("blueprints/fantacalcio.py", "formazione_salva",
+    # ⚠️ Dal 21/09/2026 queste due stanno in `_scrivi_formazione()`, non nella
+    # route: la scrivono in due (il campo e il pulsante «applica» del consiglio) e
+    # duplicarla era la strada facile. Chi chiama ha sempre fatto `_lega_mia()`
+    # prima, e il controllo vero resta il `rowcount` dell'UPDATE qui sotto.
+    ("blueprints/fantacalcio.py", "_scrivi_formazione",
      "INSERT INTO fanta_formazione(league_id, player_id, titolare, ordine, ruolo) "
      "VALUES(?,?,?,?,?)"):
-        "stessa lega già verificata; e subito dopo l'UPDATE sulla lega guarda il "
-        "rowcount, che è il controllo vero che quella lega sia di chi salva",
-    ("blueprints/fantacalcio.py", "formazione_salva",
+        "stessa lega già verificata da chi chiama; e subito dopo l'UPDATE sulla "
+        "lega guarda il rowcount, che è il controllo vero che quella lega sia di "
+        "chi salva",
+    ("blueprints/fantacalcio.py", "_scrivi_formazione",
      "DELETE FROM fanta_formazione WHERE league_id=?"):
         "è il passo indietro: se l'UPDATE sulla lega non ha toccato niente, la "
         "formazione appena scritta va tolta. Cancella righe scritte due righe "
@@ -222,6 +227,10 @@ ECCEZIONI = {
     ("blueprints/fantacalcio.py", "probabili",
      "SELECT MAX(aggiornato_il) AS q FROM fanta_probabili WHERE giornata=?"):
         "quando è stata importata la giornata, per dichiararlo a schermo",
+    ("blueprints/fantacalcio.py", "_consiglio",
+     "SELECT MAX(aggiornato_il) AS q FROM fanta_probabili WHERE giornata=?"):
+        "quando è stata importata la giornata: il consiglio la dichiara, perché un "
+        "consiglio dato su probabili vecchie di due giorni non vale niente",
     ("blueprints/fantacalcio.py", "probabili",
      "SELECT DISTINCT giornata FROM fanta_probabili_squadre ORDER BY giornata DESC"):
         "le giornate in archivio, per la tendina: dato condiviso",

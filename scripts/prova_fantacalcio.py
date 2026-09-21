@@ -1000,6 +1000,269 @@ def prove(dove):
               str(in_rosa()))
 
 
+    # ── 14. il consiglio ────────────────────────────────────────────────────
+    # ⚠️ Anche questo blocco si fa **lega e rosa sue**, con statistiche scelte a
+    # mano: il consiglio è tutto ordinamento, e su una rosa qualsiasi «sembra
+    # giusto» senza dimostrare niente. Qui ogni giocatore esiste per far fallire
+    # una regola precisa.
+    print("\n== 14. il consiglio ==")
+    from data import (fantamedia_regole, fascia_titolarita, rigori_segnati_tirati,
+                      valuta_rosa, consiglia_formazione, consiglia_moduli,
+                      MINIMO_PARTITE_FIDATO, SOGLIA_SCHIERABILE)
+
+    # --- i pezzi puri --------------------------------------------------------
+    esito("«2 / 3» sono due rigori segnati su tre tirati",
+          rigori_segnati_tirati("2 / 3") == (2, 3))
+    esito("una casella vuota non diventa un rigore sbagliato",
+          rigori_segnati_tirati(None) == (0, 0) and rigori_segnati_tirati("") == (0, 0))
+    # Le soglie sono quelle della fonte, e i bordi sono la parte che conta.
+    esito("le fasce cadono dove le mette la fonte",
+          [fascia_titolarita(x) for x in (90, 89, 60, 59, 40, 39, 1)]
+          == ["sicuro", "favorito", "favorito", "ballottaggio", "ballottaggio",
+              "panchina", "panchina"])
+    esito("⚠️ senza percentuale la fascia non si inventa",
+          fascia_titolarita(None) is None)
+
+    # La fantamedia rifatta: un caso fatto a mano, coi conti in chiaro.
+    # media 6.0 su 5 partite, 2 gol (+3), 1 assist (+1), 2 ammonizioni (−0,5)
+    # → bonus 6+1−1 = 6, quindi 6.0 + 6/5 = 7.2
+    tizio = {"partite_a_voto": 5, "media_voto": 6.0, "gol": 2, "assist": 1,
+             "ammonizioni": 2, "espulsioni": 0, "gol_subiti": 0,
+             "rigori_parati": 0, "rigori": "0 / 0"}
+    regole_base = {"bonus_gol": 3, "bonus_assist": 1, "malus_amm": -0.5,
+                   "malus_esp": -1, "malus_gol_subito": -1,
+                   "bonus_rigore_parato": 3, "malus_rigore_sbagliato": -3}
+    fm, pezzi = fantamedia_regole(tizio, regole_base)
+    esito("la fantamedia rifatta torna al conto fatto a mano (7.2)",
+          round(fm, 3) == 7.2, str(fm))
+    esito("e dice di quali voci è fatta", len(pezzi) == 3,
+          str([p["voce"] for p in pezzi]))
+    # ⚠️ Il punto di tutta la decisione: cambiando la regola della lega, cambia.
+    fm5, _ = fantamedia_regole(tizio, dict(regole_base, bonus_gol=5))
+    esito("⚠️ con il gol a +5 la stessa stagione vale 8.0, non 7.2",
+          round(fm5, 3) == 8.0, str(fm5))
+    # I rigori sbagliati si contano dalla differenza, e i segnati NON si
+    # ricontano: sono già dentro `gol`.
+    fm_rig, _ = fantamedia_regole(dict(tizio, rigori="1 / 3"), regole_base)
+    esito("due rigori sbagliati su tre tirati togliono 6 punti su 5 partite",
+          round(fm_rig, 3) == round(7.2 - 6.0 / 5, 3), str(fm_rig))
+    esito("⚠️ senza partite a voto la fantamedia è assente, non zero",
+          fantamedia_regole(dict(tizio, partite_a_voto=0), regole_base)[0] is None)
+
+    # --- la rosa di prova ---------------------------------------------------
+    db = extensions.get_db()
+    db.execute("INSERT INTO fanta_leagues(user_id,nome,moduli,n_panchinari,"
+               "bonus_gol,bonus_assist,malus_amm) "
+               "VALUES(?,'Terza Lega','3-4-3,4-4-2',4,3,1,-0.5)", (ids["davide"],))
+    db.commit()
+    lid3 = db.execute("SELECT id FROM fanta_leagues WHERE nome='Terza Lega'"
+                      ).fetchone()["id"]
+    # (id, nome, ruolo, squadra, partite, media, gol, percentuale|None)
+    # Le squadre: `casa` gioca la giornata 7, `ferma` no — serve a distinguere
+    # «non convocato» da «la sua squadra non gioca».
+    banco = [
+        (301, "Portiere1", "p", "casa", 5, 6.0, 0, 90),
+        (302, "Portiere2", "p", "casa", 5, 5.8, 0, 90),
+        (303, "Portiere3", "p", "casa", 5, 5.6, 0, 90),
+        (304, "Dif1", "d", "casa", 5, 6.4, 1, 90),
+        (305, "Dif2", "d", "casa", 5, 6.2, 0, 90),
+        (306, "Dif3", "d", "casa", 5, 6.0, 0, 90),
+        (307, "Dif4", "d", "casa", 5, 5.8, 0, 90),
+        (308, "Cen1", "c", "casa", 5, 6.6, 1, 90),
+        (309, "Cen2", "c", "casa", 5, 6.4, 0, 90),
+        (310, "Cen3", "c", "casa", 5, 6.2, 0, 90),
+        (311, "Cen4", "c", "casa", 5, 6.0, 0, 90),
+        (312, "Cen5", "c", "casa", 5, 5.5, 0, 70),
+        # ⚠️ Il caso che ha trovato il baco: fantamedia **altissima** ma
+        # percentuale da ballottaggio. Non deve entrare al posto di un titolare
+        # sicuro, e deve comparire fra i «contesi». I nove gol sono volutamente
+        # assurdi, e il numero è **contato**: perché il disaccordo fra le due
+        # letture esista davvero servono punti attesi più alti del peggior
+        # titolare (0.9 × 6.0 = 5.4), cioè 0.5 × fm > 5.4, cioè fm > 10.8 — con
+        # 5 partite a media 6.0 vuol dire più di 8 gol. Col primo valore (5 gol,
+        # fm 9.0, attesi 4.5) i «contesi» erano legittimamente **vuoti** e la
+        # prova diceva NO a un codice giusto.
+        (313, "Fenomeno", "c", "casa", 5, 6.0, 9, 50),
+        (314, "Att1", "a", "casa", 5, 6.8, 2, 90),
+        (315, "Att2", "a", "casa", 5, 6.6, 1, 90),
+        (316, "Att3", "a", "casa", 5, 6.4, 1, 90),
+        (317, "Att4", "a", "casa", 5, 6.0, 0, 60),
+        # Nessuna partita a voto: fantamedia assente, non zero.
+        (318, "Nuovo", "c", "casa", 0, None, 0, 90),
+        # ⚠️ Sotto il 40%, quindi nella fascia «parte dalla panchina»: esiste
+        # perché la regola operativa della fonte — il rivale di un ballottaggio
+        # schierato va **in cima alla panchina** — si può provare solo se un
+        # centrocampista resta fuori. Senza di lui la prova chiedeva un rivale
+        # che non poteva esistere, e diceva NO a un codice giusto.
+        (319, "Riserva", "c", "casa", 5, 5.0, 0, 30),
+    ]
+    for pid, nome, ruolo, slug, pg, mv, gol, _pct in banco:
+        db.execute("INSERT INTO fanta_players(id,nome,squadra,squadra_slug,"
+                   "ruolo_classic,qa,fvm,attivo,visto_il,partite_a_voto,media_voto,"
+                   "gol,assist,ammonizioni,espulsioni,gol_subiti,rigori_parati,rigori)"
+                   " VALUES(?,?,'CAS',?,?,10,20,1,'2026-09-21',?,?,?,0,0,0,0,0,'0 / 0')",
+                   (pid, nome, slug, ruolo, pg, mv, gol))
+        db.execute("INSERT INTO fanta_roster(league_id,player_id,prezzo) VALUES(?,?,1)",
+                   (lid3, pid))
+    db.execute("INSERT INTO fanta_probabili_squadre(giornata,squadra_slug,squadra,"
+               "modulo,avversario,avversario_slug,in_casa,match_id) "
+               "VALUES(7,'casa','CAS','4-3-3','OSP','ospite',1,1)")
+    db.execute("INSERT INTO fanta_probabili_squadre(giornata,squadra_slug,squadra,"
+               "modulo,avversario,avversario_slug,in_casa,match_id) "
+               "VALUES(7,'ospite','OSP','4-3-3','CAS','casa',0,1)")
+    for pid, nome, ruolo, _slug, _pg, _mv, _gol, pct in banco:
+        if pct is not None:
+            db.execute("INSERT INTO fanta_probabili(giornata,player_id,nome,"
+                       "squadra_slug,ruolo,titolare,percentuale) "
+                       "VALUES(7,?,?,'casa',?,?,?)",
+                       (pid, nome, ruolo, 1 if pct >= 60 else 0, pct))
+    db.commit()
+    lega3 = dict(db.execute("SELECT * FROM fanta_leagues WHERE id=?", (lid3,)).fetchone())
+    rosa3 = [dict(r) for r in db.execute(
+        "SELECT p.* FROM fanta_roster r JOIN fanta_players p ON p.id=r.player_id "
+        "WHERE r.league_id=?", (lid3,))]
+    db.close()
+
+    prob3 = {pid: {"stato": "titolare" if (pct or 0) >= 60 else "panchina",
+                   "percentuale": pct}
+             for pid, _n, _r, _s, _pg, _mv, _g, pct in banco if pct is not None}
+    val = valuta_rosa(rosa3, prob3, lega3)
+    quali = {v["g"]["nome"]: v for v in val}
+    esito("il «Fenomeno» ha la fantamedia più alta del centrocampo",
+          quali["Fenomeno"]["fm"] > max(quali[n]["fm"] for n in
+                                        ("Cen1", "Cen2", "Cen3", "Cen4")),
+          f"{quali['Fenomeno']['fm']} contro {quali['Cen1']['fm']}")
+    esito("e sta nella fascia del ballottaggio",
+          quali["Fenomeno"]["fascia"] == "ballottaggio"
+          and not quali["Fenomeno"]["schierabile"] is False,
+          f"{quali['Fenomeno']['percentuale']}% {quali['Fenomeno']['fascia']}")
+    esito("chi non ha partite a voto non ha fantamedia e non vale zero",
+          quali["Nuovo"]["fm"] is None and quali["Nuovo"]["atteso"] is None)
+    esito(f"e chi ne ha meno di {MINIMO_PARTITE_FIDATO} non è «fidato»",
+          quali["Nuovo"]["fidata"] is False and quali["Cen1"]["fidata"] is True)
+
+    c = consiglia_formazione(val, "3-4-3", lega3["n_panchinari"])
+    dentro = [v["g"]["nome"] for v in c["titolari"]]
+    panca = [v["g"]["nome"] for v in c["panchina"]]
+    esito("l'undici del 3-4-3 ha 11 nomi e i reparti giusti", len(dentro) == 11
+          and len([v for v in c["titolari"] if v["g"]["ruolo_classic"] == "d"]) == 3
+          and len([v for v in c["titolari"] if v["g"]["ruolo_classic"] == "c"]) == 4,
+          str(dentro))
+    # ⚠️ **La prova che ha trovato il baco.** Il primo ordinamento metteva il
+    # merito prima della fascia, e il Fenomeno (50%) entrava al posto di un
+    # titolare sicuro al 90%. La gerarchia della fonte dice l'opposto: prima
+    # *se* gioca, poi *se conviene*.
+    esito("⚠️ un ballottaggio al 50% NON scavalca un titolare sicuro al 90%",
+          "Fenomeno" not in dentro and "Cen4" in dentro, str(dentro))
+    esito("e il consiglio dichiara che lì le due letture litigano",
+          any(x["fuori"]["g"]["nome"] == "Fenomeno" for x in c["contesi"]),
+          str([(x["fuori"]["g"]["nome"], x["dentro"]["g"]["nome"])
+               for x in c["contesi"]]))
+    # ⚠️ Il tetto per ruolo in panchina: con un portiere in campo, di sostituti
+    # portiere può servirne **uno**. Due occuperebbero un posto che non servirà.
+    esito("⚠️ in panchina non finiscono due portieri di riserva",
+          len([v for v in c["panchina"] if v["g"]["ruolo_classic"] == "p"]) <= 1,
+          str(panca))
+    esito("la panchina è lunga quanto la lega ammette", len(panca) == 4, str(panca))
+
+    # La regola operativa della fonte: se schieri un ballottaggio, il primo posto
+    # in panchina va a un altro del suo ruolo.
+    val_b = valuta_rosa([g for g in rosa3 if g["nome"] not in
+                         ("Cen1", "Cen2", "Cen3")], prob3, lega3)
+    cb = consiglia_formazione(val_b, "3-4-3", 4)
+    schierati_b = [v["g"]["nome"] for v in cb["titolari"]]
+    esito("togliendo tre centrocampisti il ballottaggio entra per forza",
+          "Fenomeno" in schierati_b, str(schierati_b))
+    esito("⚠️ e il primo posto in panchina va a un altro centrocampista, come dice "
+          "la fonte",
+          cb["panchina"] and cb["panchina"][0]["g"]["ruolo_classic"] == "c",
+          str([(v["g"]["nome"], v["g"]["ruolo_classic"]) for v in cb["panchina"]]))
+
+    # I «forzati»: un reparto che i convocati non riempiono.
+    soli = [g for g in rosa3 if g["ruolo_classic"] != "a"] + \
+           [g for g in rosa3 if g["nome"] in ("Att1", "Att2", "Att3")]
+    prob_senza_att = {k: v for k, v in prob3.items() if k not in (314, 315, 316)}
+    cf = consiglia_formazione(valuta_rosa(soli, prob_senza_att, lega3), "3-4-3", 4)
+    esito("⚠️ i posti riempiti per forza sono dichiarati, non spacciati per consiglio",
+          len(cf["forzati"]) == 3,
+          str([v["g"]["nome"] for v in cf["forzati"]]))
+
+    moduli = consiglia_moduli(val, ["3-4-3", "4-4-2"], 4)
+    esito("ogni modulo ammesso ha il suo consiglio, con un migliore solo",
+          len(moduli) == 2 and len([m for m in moduli if m["migliore"]]) == 1,
+          str([(m["modulo"], m["atteso"], m["migliore"]) for m in moduli]))
+    esito("un modulo che non esiste non produce un consiglio",
+          consiglia_formazione(val, "4-4-4", 4) is None)
+
+    # --- la pagina ----------------------------------------------------------
+    def formazione_scritta():
+        db = extensions.get_db()
+        fuori = [dict(x) for x in db.execute(
+            "SELECT * FROM fanta_formazione WHERE league_id=? "
+            "ORDER BY titolare DESC, ordine", (lid3,))]
+        db.close()
+        return fuori
+
+    with app.test_client() as c2:
+        with c2.session_transaction() as s:
+            s["username"] = "davide"
+            s["role"] = "user"
+            s["user_id"] = ids["davide"]
+        r = c2.get(f"/fantacalcio/lega/{lid3}/consiglio")
+        pagina = r.data.decode("utf-8", "replace")
+        esito("la pagina del consiglio si apre", r.status_code == 200
+              and "L'undici consigliato" in pagina)
+        # ⚠️ Davide ha chiesto che il criterio sia **scritto nella pagina**: è una
+        # richiesta, non una decorazione, e quindi è una prova.
+        esito("⚠️ la pagina dichiara su cosa si basa, fonti comprese",
+              "Una formula non la pubblica nessuno" in pagina
+              and "Indice di Titolarità" in pagina
+              and "fantamedia rifatta" in pagina
+              and "Comparatore" in pagina
+              and str(MINIMO_PARTITE_FIDATO) in pagina
+              and str(SOGLIA_SCHIERABILE) in pagina)
+        esito("e dice dove le due letture litigano",
+              "Fenomeno" in pagina and "litigano" in pagina)
+        esito("il consiglio non ha scritto niente da sé",
+              formazione_scritta() == [], f"{len(formazione_scritta())} righe")
+
+        r = c2.post(f"/fantacalcio/lega/{lid3}/consiglio/applica",
+                    data={"modulo": "3-4-3"}, follow_redirects=True)
+        scritta = formazione_scritta()
+        esito("«applica» porta il consiglio nel campo",
+              sum(1 for x in scritta if x["titolare"]) == 11
+              and sum(1 for x in scritta if not x["titolare"]) == 4,
+              f"{len(scritta)} righe")
+        esito("con lo stesso undici che la pagina mostrava",
+              [x["player_id"] for x in scritta if x["titolare"]]
+              == [v["g"]["id"] for v in c["titolari"]])
+        db = extensions.get_db()
+        esito("e il modulo finisce sulla lega",
+              db.execute("SELECT modulo_scelto FROM fanta_leagues WHERE id=?",
+                         (lid3,)).fetchone()["modulo_scelto"] == "3-4-3")
+        db.close()
+        prima = formazione_scritta()
+        r = c2.post(f"/fantacalcio/lega/{lid3}/consiglio/applica",
+                    data={"modulo": "4-5-1"}, follow_redirects=True)
+        esito("⚠️ un modulo che la lega non ammette non si applica",
+              formazione_scritta() == prima
+              and "non è fra quelli consigliabili" in r.data.decode("utf-8", "replace"))
+
+    with app.test_client() as c2:
+        with c2.session_transaction() as s:
+            s["username"] = "altro"
+            s["role"] = "user"
+            s["user_id"] = ids["altro"]
+        r = c2.get(f"/fantacalcio/lega/{lid3}/consiglio", follow_redirects=True)
+        esito("un altro utente non vede il consiglio di una lega non sua",
+              b"Lega non trovata" in r.data)
+        prima = formazione_scritta()
+        c2.post(f"/fantacalcio/lega/{lid3}/consiglio/applica",
+                data={"modulo": "4-4-2"}, follow_redirects=True)
+        esito("⚠️ e non può applicarlo al campo di un altro",
+              formazione_scritta() == prima)
+
+
 def main():
     ap = argparse.ArgumentParser(description=__doc__.splitlines()[0])
     ap.add_argument("--tieni", action="store_true",
