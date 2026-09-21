@@ -6754,7 +6754,9 @@
           "Prankster"
         ],
         "nome_it": "Mega Meowstic (Male)",
-        "nome_en": "Mega Meowstic (Male)"
+        "nome_en": "Mega Meowstic (Male)",
+        "slug": "meowstic-male-mega",
+        "puo_evolversi": false
       },
       "Mega Meowstic (Female)": {
         "types": [
@@ -6764,15 +6766,17 @@
           "hp": 74,
           "atk": 48,
           "def": 76,
-          "spa": 83,
-          "spd": 81,
-          "spe": 104
+          "spa": 143,
+          "spd": 101,
+          "spe": 124
         },
         "abilities": [
           "Competitive"
         ],
         "nome_it": "Mega Meowstic (Female)",
-        "nome_en": "Mega Meowstic (Female)"
+        "nome_en": "Mega Meowstic (Female)",
+        "slug": "meowstic-female-mega",
+        "puo_evolversi": false
       }
     },
     "slug": "meowstic-male",

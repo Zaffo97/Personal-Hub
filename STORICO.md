@@ -20,6 +20,40 @@ pagina ed esegue `new Function()` su ogni blocco `<script>` **e** su ogni handle
 
 ## 21/09/2026
 
+**Le due Mega Meowstic: un dato sbagliato teneva fuori una voce vera**
+
+- ⚠️ **Il difetto**: erano le ultime due voci del catalogo senza `slug`, e il backlog le
+  dava per forme che PokéAPI non conosce. Il dump invece le ha — `meowstic-male-mega` e
+  `meowstic-female-mega` — **con 59 e 56 righe di mosse**. Lo slug mancava perché
+  `aggiungi_slug_forme.py` si **rifiutava** di scriverlo: le sei base stat della femmina
+  non combaciavano. E non combaciavano perché la voce era rimasta a **466**, cioè al
+  totale di Meowstic femmina **normale**: la conversione a Mega non le era mai stata
+  applicata. Il rifiuto era il verso giusto — uno slug plausibile ma sbagliato darebbe
+  l'elenco mosse di un altro Pokémon senza un errore — ma nessuno era andato a vedere
+  **perché** rifiutava.
+- ✅ **Tre fonti concordi**, cercate su richiesta di Davide: il **dump**
+  (`meowstic-female-mega` = 74/48/76/143/101/124), **Pokémon Database** (maschio e
+  femmina hanno le stesse base stat, 466, e le due Mega condividono i 566) e
+  **RotomLabs**, che ha una pagina apposta per la Mega femmina e dà gli stessi valori.
+- ✅ **Corretto da `scripts/correggi_mega_meowstic.py`**, rieseguibile e con `--dry-run`:
+  si rifiuta di scrivere se la voce non ha esattamente i valori vecchi attesi, se il dump
+  non conferma i nuovi, o se non combaciano con quelli della Mega maschio già nel
+  catalogo. Rieseguito, dice «ha già i valori di Champions» e non tocca niente.
+- ✅ **Poi la catena**: `aggiungi_slug_forme.py` ha scritto i due slug con le **sei base
+  stat combaciate 6 su 6**, `importa_mosse_specie.py` ha dato loro le liste e
+  `importa_evoluzioni.py` l'esito. Ogni Mega prende esattamente la lista del **suo**
+  genere: Mega Meowstic maschio 59 come Meowstic maschio, femmina 56 come la femmina.
+- ✅ **Numeri**: `champions` da 368 a **370 voci** e da 22 863 a **22 978 mosse**; le
+  voci del moveset da 1331 a **1333**; `puo_evolversi` da 1340 a **1342 su 1342**. E il
+  risultato che si vede: **MA e MB non hanno più nessuna voce senza elenco mosse** —
+  erano 1 e 2, ed erano queste. Gli elenchi delle regulation restano 492 e 494, perché
+  quelle mosse erano già nell'unione.
+- ✅ **Verifiche**: 40+19+16+30+32+9+11+21 su altrettanti, `controlla_abilita.py` pulito,
+  `controlla_proprietario.py` senza query scoperte, **sweep di tutte le pagine a 0
+  errori**, idempotenza del moveset in processi separati.
+
+---
+
 **Le 6 Mega di Regulation M-C hanno la loro lista, e la fonte c'era (§2.3)**
 
 - ✅ **Davide ha chiesto di cercare prima se una fonte esiste, e esisteva.** Bulbapedia

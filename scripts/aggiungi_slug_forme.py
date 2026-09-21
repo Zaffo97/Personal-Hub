@@ -12,8 +12,13 @@ fuori dal moveset insieme alle Mega fan-made, e il sintomo era quello silenzioso
 sempre: `mosse_legali()` torna `None`, e a schermo compare l'avviso giallo «nessun
 elenco mosse» invece delle 397 righe che il dump ha.
 
-Le altre 16 sono Mega inventate da Davide e restano fuori: è giusto così, per loro una
-fonte non esiste.
+⚠️ La frase che stava qui - «le altre 16 sono Mega inventate da Davide» - è **falsa**,
+misurato il 21/09/2026: gli slug di 14 di quelle 16 sono in `pokemon.csv`. PokeAPI le
+conosce; quello che non ha sono le **righe di mosse**, perche' i loro unici giochi
+(`legends-za`, `mega-dimension`) nel dump sono vuoti. Dare loro uno slug qui non
+servirebbe a niente - un elenco mosse non c'e' comunque - ed e' per questo che restano
+fuori da questo script, non perche' siano inventate. Le due Mega Meowstic invece le
+righe ce le hanno, ed e' per questo che ora sono nell'elenco.
 
 ⚠️ **Non scrive uno slug alla cieca.** Per ogni voce il legame va **dimostrato**, non
 supposto: le sei base stat del catalogo devono combaciare **esatte** con quelle che il
@@ -60,6 +65,14 @@ SLUG_ATTESI = {
     # con 1 su «non esiste nel catalogo». Ora punta alla voce che resta, che lo slug ce
     # l'ha gia' da `build_catalog.py`: l'esecuzione la conta fra le «gia' fatte».
     "Floette (Eternal Flower)": "floette-eternal",
+    # ⚠️ Aggiunte il 21/09/2026, ed erano le ultime due voci del catalogo senza slug.
+    # Il dump le conosce (`meowstic-male-mega`, `meowstic-female-mega`) e ha righe di
+    # mosse per tutte e due; erano rimaste fuori perche' la **femmina** aveva le base
+    # stat della forma non-Mega (466 invece di 566), quindi il controllo qui sotto la
+    # bloccava - giustamente. Corretta da `scripts/correggi_mega_meowstic.py`, su tre
+    # fonti. Sono in MA e in MB, quindi l'avviso giallo si vedeva davvero.
+    "Mega Meowstic (Male)": "meowstic-male-mega",
+    "Mega Meowstic (Female)": "meowstic-female-mega",
 }
 
 ORDINE_STAT = ("hp", "atk", "def", "spa", "spd", "spe")

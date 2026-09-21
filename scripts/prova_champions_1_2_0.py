@@ -189,8 +189,8 @@ def main():
     con = sum(1 for n in tutte if mosse_legali(n, pokedex)[0])
     # 333 fino al 21/09/2026, poi 362: +25 sono le voci di Regulation M-C integrate da
     # Bulbapedia, +4 le loro forme Gigantamax che ereditano la lista nuova.
-    esito("368 voci del Pokedex hanno un elenco, le altre no",
-          con == 368, f"{con} su {len(tutte)}")
+    esito("370 voci del Pokedex hanno un elenco, le altre no",
+          con == 370, f"{con} su {len(tutte)}")
     esito("Incineroar nel Pokedex mostra le sue 77 di Champions",
           len(mosse_legali("Incineroar", pokedex)[0] or []) == 77)
     esito("Abra non ha più l'elenco da una mossa sola",
