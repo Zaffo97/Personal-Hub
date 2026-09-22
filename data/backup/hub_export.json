@@ -1214,6 +1214,174 @@
       "player_id": 6966,
       "prezzo": 0.0,
       "note": null
+    },
+    {
+      "id": 2,
+      "league_id": 1,
+      "player_id": 6344,
+      "prezzo": 0.0,
+      "note": null
+    },
+    {
+      "id": 3,
+      "league_id": 1,
+      "player_id": 2809,
+      "prezzo": 0.0,
+      "note": null
+    },
+    {
+      "id": 4,
+      "league_id": 1,
+      "player_id": 6217,
+      "prezzo": 0.0,
+      "note": null
+    },
+    {
+      "id": 5,
+      "league_id": 1,
+      "player_id": 2788,
+      "prezzo": 0.0,
+      "note": null
+    },
+    {
+      "id": 6,
+      "league_id": 1,
+      "player_id": 5877,
+      "prezzo": 0.0,
+      "note": null
+    },
+    {
+      "id": 7,
+      "league_id": 1,
+      "player_id": 5851,
+      "prezzo": 0.0,
+      "note": null
+    },
+    {
+      "id": 8,
+      "league_id": 1,
+      "player_id": 6632,
+      "prezzo": 0.0,
+      "note": null
+    },
+    {
+      "id": 9,
+      "league_id": 1,
+      "player_id": 4807,
+      "prezzo": 0.0,
+      "note": null
+    },
+    {
+      "id": 10,
+      "league_id": 1,
+      "player_id": 4177,
+      "prezzo": 0.0,
+      "note": null
+    },
+    {
+      "id": 11,
+      "league_id": 1,
+      "player_id": 7294,
+      "prezzo": 0.0,
+      "note": null
+    },
+    {
+      "id": 12,
+      "league_id": 1,
+      "player_id": 4856,
+      "prezzo": 0.0,
+      "note": null
+    },
+    {
+      "id": 13,
+      "league_id": 1,
+      "player_id": 1850,
+      "prezzo": 0.0,
+      "note": null
+    },
+    {
+      "id": 14,
+      "league_id": 1,
+      "player_id": 4777,
+      "prezzo": 0.0,
+      "note": null
+    },
+    {
+      "id": 15,
+      "league_id": 1,
+      "player_id": 6875,
+      "prezzo": 0.0,
+      "note": null
+    },
+    {
+      "id": 16,
+      "league_id": 1,
+      "player_id": 5680,
+      "prezzo": 0.0,
+      "note": null
+    },
+    {
+      "id": 17,
+      "league_id": 1,
+      "player_id": 5946,
+      "prezzo": 0.0,
+      "note": null
+    },
+    {
+      "id": 18,
+      "league_id": 1,
+      "player_id": 6783,
+      "prezzo": 0.0,
+      "note": null
+    },
+    {
+      "id": 19,
+      "league_id": 1,
+      "player_id": 4220,
+      "prezzo": 0.0,
+      "note": null
+    },
+    {
+      "id": 20,
+      "league_id": 1,
+      "player_id": 6646,
+      "prezzo": 0.0,
+      "note": null
+    },
+    {
+      "id": 21,
+      "league_id": 1,
+      "player_id": 7347,
+      "prezzo": 0.0,
+      "note": null
+    },
+    {
+      "id": 22,
+      "league_id": 1,
+      "player_id": 7023,
+      "prezzo": 0.0,
+      "note": null
+    },
+    {
+      "id": 23,
+      "league_id": 1,
+      "player_id": 2137,
+      "prezzo": 0.0,
+      "note": null
+    },
+    {
+      "id": 24,
+      "league_id": 1,
+      "player_id": 6752,
+      "prezzo": 0.0,
+      "note": null
+    },
+    {
+      "id": 25,
+      "league_id": 1,
+      "player_id": 6434,
+      "prezzo": 0.0,
+      "note": null
     }
   ],
   "fanta_formazione": []

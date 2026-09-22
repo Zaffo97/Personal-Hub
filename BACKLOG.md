@@ -796,7 +796,11 @@ il difetto di `main` nel moveset.
   stesso numero erano quattro occasioni di sbagliarne una. La migrazione travasa il
   valore e toglie le colonne vecchie, ma **solo se erano uguali fra loro** — dove non
   lo fossero resterebbero, invece di perdere in silenzio una differenza voluta
-- **il modificatore di difesa ha la sua tabella.** La **struttura** viene dalla guida
+- **il modificatore di difesa ha la sua tabella**, e dal 22/09/2026 le sue fasce si
+  **aggiungono e si tolgono** (da 1 a 8): il regolamento fissa *come* si fa la media,
+  non in quanti scalini si traduce. ⚠️ **L'ultima riga non si toglie** e nessuna riga
+  leggibile vuol dire «tieni la tabella di prima», non «tabella vuota» — per non
+  avere nessun bonus si spegne il modificatore. La **struttura** viene dalla guida
   ufficiale di Leghe Fantacalcio (letta il 21/09/2026): media aritmetica del
   **portiere e dei migliori 3 difensori** — o dei **migliori 4 difensori** se il
   portiere si esclude — **esclusi bonus e malus**, e serve che almeno **4 difensori**
@@ -853,6 +857,25 @@ stata definita. ⬜ **Resta fuori dal Fantacalcio**: `form-select` è ancora usa
 `pcbuilder.html` e `pokemon.html` — e lì non è definita da nessuna parte. Sono senza
 stile come lo erano queste; si fa quando si tocca la grafica di quelle sezioni, non
 prima.
+
+**⬜ Due cose chieste da Davide il 22/09/2026, da fare quando il resto della
+sezione è finito:**
+
+- ⬜ **I riquadri dei valori selezionabili vanno rivisti**, che oggi sono quelli
+  standard di `base.html`: «renderli più belli, magari **tondi** tanto per iniziare,
+  dare un tocco di personalizzazione in più». Riguarda le tendine delle regole, le
+  caselle delle fasce del modificatore e i campi della rosa — cioè tutto ciò che
+  nella sezione si sceglie o si scrive. ⚠️ Va **dopo** il resto del Fantacalcio, per
+  sua richiesta: è l'ultimo strato, e rifarlo mentre i form cambiano vuol dire farlo
+  due volte
+- ⬜ **La sintassi va resa più generica**, «senza far riferimento al mio progetto ma
+  solo a ciò che ci interessa del fantacalcio». ⚠️ Il perimetro va **chiesto a
+  Davide prima di iniziare**: oggi i riferimenti al progetto stanno nei **commenti**
+  dei template (`fanta_consiglio.html` e `fanta_rosa_incolla.html` aprono con
+  «§4.2, 21/09/2026… quello che Davide aveva chiesto») e nel tono di alcuni testi a
+  schermo, che raccontano **perché** una cosa è fatta così invece di dire cosa fa.
+  Le due letture portano a lavori diversi — riscrivere i testi visibili, o ripulire
+  i commenti del codice — e non conviene indovinare
 
 **⬜ Cosa resta, in ordine di quanto è stato chiesto:**
 

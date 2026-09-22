@@ -70,6 +70,28 @@ fare.
   `admin` e la lega era di un altro utente — in lettura l'admin vede tutto, in
   scrittura `solo_mie()` non gli lascia toccare la rosa di nessuno.
 
+**Fantacalcio: le fasce del modificatore di difesa si aggiungono e si tolgono**
+
+Chiesto da Davide lo stesso giorno. La tabella aveva **tre** righe fisse, stampate da
+Jinja: una lega con quattro fasce non era esprimibile, e una lega che ne avesse avute
+meno le vedeva riempite dallo standard. Il **server** però le leggeva già con
+`getlist()`, cioè accettava un numero qualsiasi di coppie: mancava solo l'interfaccia.
+
+- ✅ Ora il contenitore nasce **vuoto** e le righe le costruisce `rigaSoglia()`, in un
+  posto solo: averle in Jinja **e** nel JS voleva dire due definizioni destinate a
+  divergere. Da **1 a 8** fasce, «+ Aggiungi una fascia» in fondo e una × per riga.
+- ⚠️ **L'ultima riga non si toglie**, e una riga aggiunta e lasciata in bianco non
+  diventa una fascia. Nessuna riga leggibile **non** vuol dire «tabella vuota»: la
+  colonna non entra nella query e resta quella di prima — stessa regola dei campi
+  delle regole lasciati stare. Un modificatore che non dà mai niente si dice
+  spegnendo la casella, non svuotando la tabella.
+- ✅ **Verifiche**: `prova_fantacalcio.py` da 166 a **171 su 171** (cinque fasce
+  salvate e riordinate dalla più alta, una sola fascia, una riga a metà saltata,
+  nessuna riga che lascia la tabella di prima), **sweep 0 errori**, e in browser: il
+  «+» che si spegne a 8 righe, la × che sparisce quando ne resta una, e un
+  salvataggio vero che porta la lega da `7:6, 6.5:3, 6:1` a **`7.5:8, 7:6, 6.5:3,
+  6:1`**, con gli esempi della scheda che seguono (7.5 → +8).
+
 ---
 
 ## 21/09/2026

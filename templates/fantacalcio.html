@@ -183,23 +183,21 @@
             </label>
             <div class="text-xs text-muted mb-2" id="comeMedia"></div>
             <div class="text-xs mb-1" style="font-weight:600">La tabella</div>
-            <div id="soglie">
-              {% for media, punti in soglie_standard %}
-              <div class="flex gap-1 items-center mb-1">
-                <span class="text-xs text-muted" style="width:5.2rem">media da</span>
-                <input class="form-control soglia-media" name="soglia_media" type="number"
-                       step="0.1" min="0" max="10" value="{{ media }}" style="width:5.5rem">
-                <span class="text-xs text-muted">&rarr;</span>
-                <input class="form-control soglia-punti" name="soglia_punti" type="number"
-                       step="0.5" value="{{ punti }}" style="width:5rem">
-                <span class="text-xs text-muted">punti</span>
-              </div>
-              {% endfor %}
-            </div>
+            {# ⚠️ Le righe le costruisce `rigaSoglia()`, e questo contenitore nasce
+               **vuoto**: quante fasce abbia la tabella lo decide la lega, quindi il
+               markup di una riga sta in **un posto solo**. Averlo qui in Jinja e
+               anche nel JS vorrebbe dire due definizioni che divergono al primo
+               cambio, e la modale si apre comunque solo da JS. #}
+            <div id="soglie"></div>
+            <button type="button" class="btn btn-sm mt-1" id="piuSoglia"
+                    onclick="aggiungiSoglia()">+ Aggiungi una fascia</button>
             <div class="text-xs text-muted mt-1">
-              Sono i valori storici di FantaGazzetta, che è il punto di partenza: la
-              piattaforma lascia cambiare i numeri, non la struttura. Sotto la soglia
-              più bassa non c'è bonus.
+              Si parte dai valori storici di FantaGazzetta: la piattaforma lascia
+              cambiare i numeri e <strong>quante fasce</strong> ci sono, non la
+              struttura. Sotto la soglia più bassa non c'è bonus. Le fasce si
+              riordinano dalla più alta quando salvi, una riga lasciata vuota non
+              viene salvata, e <strong>l'ultima non si toglie</strong>: per non avere
+              nessun bonus si spegne la casella qui sopra.
             </div>
           </div>
         </div>
@@ -310,14 +308,77 @@ function comeSiFaLaMedia(){
     : 'Media dei migliori 4 difensori, senza il portiere.';
 }
 
-function scriviSoglie(soglie){
-  const righe = document.querySelectorAll('#soglie .flex');
-  righe.forEach((riga, i) => {
-    const v = soglie[i] || SOGLIE_STANDARD[i];
-    if (!v) return;
-    riga.querySelector('.soglia-media').value = v[0];
-    riga.querySelector('.soglia-punti').value = v[1];
+{# Quante fasce abbia la tabella lo decide la lega: il regolamento fissa **come**
+   si fa la media (portiere + migliori 3, o migliori 4), non in quanti scalini si
+   traduce. Il tetto e' solo per non lasciar crescere la modale all'infinito: con i
+   voti da 0 a 10 e mezzi punti, otto fasce sono gia' piu' di qualunque lega vera. #}
+const MAX_SOGLIE = 8;
+
+{# Una riga: media, punti e il pulsante per toglierla. E' l'unico posto dove il suo
+   markup e' scritto, e i `name` sono quelli che il server legge con `getlist()` —
+   due liste parallele, quindi **media e punti devono restare nello stesso ordine**. #}
+function rigaSoglia(media, punti){
+  const riga = document.createElement('div');
+  riga.className = 'flex gap-1 items-center mb-1';
+  const eti = document.createElement('span');
+  eti.className = 'text-xs text-muted';
+  eti.style.width = '5.2rem';
+  eti.textContent = 'media da';
+  const m = document.createElement('input');
+  m.className = 'form-control soglia-media';
+  m.name = 'soglia_media'; m.type = 'number';
+  m.step = '0.1'; m.min = '0'; m.max = '10';
+  m.style.width = '5.5rem';
+  m.value = (media === null || media === undefined) ? '' : media;
+  const freccia = document.createElement('span');
+  freccia.className = 'text-xs text-muted';
+  freccia.textContent = '\u2192';
+  const p = document.createElement('input');
+  p.className = 'form-control soglia-punti';
+  p.name = 'soglia_punti'; p.type = 'number'; p.step = '0.5';
+  p.style.width = '5rem';
+  p.value = (punti === null || punti === undefined) ? '' : punti;
+  const pt = document.createElement('span');
+  pt.className = 'text-xs text-muted';
+  pt.textContent = 'punti';
+  const via = document.createElement('button');
+  via.type = 'button';
+  via.className = 'btn btn-sm btn-danger soglia-via';
+  via.textContent = '\u00d7';
+  via.title = 'Togli questa fascia';
+  via.onclick = function(){ riga.remove(); aggiornaSoglie(); };
+  [eti, m, freccia, p, pt, via].forEach(function(x){ riga.appendChild(x); });
+  return riga;
+}
+
+{# Senza argomenti aggiunge una riga **vuota**: precompilarla con una media
+   plausibile vorrebbe dire scrivere un numero che nessuno ha deciso. #}
+function aggiungiSoglia(media, punti){
+  const box = document.getElementById('soglie');
+  if (box.children.length >= MAX_SOGLIE) return;
+  box.appendChild(rigaSoglia(media, punti));
+  aggiornaSoglie();
+}
+
+{# L'ultima riga non si toglie: una tabella vuota vorrebbe dire «modificatore acceso
+   che non da' mai niente», e quello si dice spegnendo la casella, non svuotando la
+   tabella. Il server infatti, senza nessuna riga leggibile, tiene quella di prima. #}
+function aggiornaSoglie(){
+  const righe = Array.from(document.querySelectorAll('#soglie .flex'));
+  righe.forEach(function(r){
+    const b = r.querySelector('.soglia-via');
+    if (b) b.style.visibility = righe.length > 1 ? '' : 'hidden';
   });
+  const piu = document.getElementById('piuSoglia');
+  if (piu) piu.disabled = righe.length >= MAX_SOGLIE;
+}
+
+function scriviSoglie(soglie){
+  const box = document.getElementById('soglie');
+  box.innerHTML = '';
+  const quali = (soglie && soglie.length) ? soglie : SOGLIE_STANDARD;
+  quali.forEach(function(v){ box.appendChild(rigaSoglia(v[0], v[1])); });
+  aggiornaSoglie();
 }
 
 function apriLega(){

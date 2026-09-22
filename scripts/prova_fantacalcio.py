@@ -467,6 +467,53 @@ def prove(dove):
               str(riga["mod_difesa_soglie"]))
         esito("⚠️ e togliendo la spunta il portiere esce dalla media",
               riga["mod_difesa_portiere"] == 0, str(riga["mod_difesa_portiere"]))
+
+        # ⚠️ Le fasce non sono tre: il regolamento fissa **come** si fa la media,
+        # non in quanti scalini si traduce. Dal 22/09/2026 le righe si aggiungono
+        # e si tolgono dalla modale, quindi ne può arrivare un numero qualsiasi.
+        def soglie_salvate():
+            db = extensions.get_db()
+            fuori = db.execute("SELECT mod_difesa_soglie FROM fanta_leagues "
+                               "WHERE id=?", (lid,)).fetchone()[0]
+            db.close()
+            return fuori
+
+        c.post("/fantacalcio/lega/salva", data={
+            "lega_id": str(lid), "nome": "Lega Amici", "moduli": "3-4-3,4-4-2",
+            "mod_difesa": "1",
+            "soglia_media": ["6", "7.5", "7", "6.5", "8"],
+            "soglia_punti": ["1", "8", "6", "3", "10"]}, follow_redirects=True)
+        esito("cinque fasce si salvano tutte, ordinate dalla più alta",
+              soglie_salvate() == "8:10, 7.5:8, 7:6, 6.5:3, 6:1", soglie_salvate())
+        c.post("/fantacalcio/lega/salva", data={
+            "lega_id": str(lid), "nome": "Lega Amici", "moduli": "3-4-3,4-4-2",
+            "mod_difesa": "1", "soglia_media": ["6"], "soglia_punti": ["2"]},
+            follow_redirects=True)
+        esito("e una sola fascia è una tabella valida", soglie_salvate() == "6:2",
+              soglie_salvate())
+        # Una riga aggiunta e lasciata in bianco non deve diventare una fascia: il
+        # server la salta, ed è il motivo per cui la modale può aggiungerla vuota.
+        c.post("/fantacalcio/lega/salva", data={
+            "lega_id": str(lid), "nome": "Lega Amici", "moduli": "3-4-3,4-4-2",
+            "mod_difesa": "1", "soglia_media": ["7", "", "6"],
+            "soglia_punti": ["6", "", ""]}, follow_redirects=True)
+        esito("⚠️ una riga lasciata a metà non diventa una fascia",
+              soglie_salvate() == "7:6", soglie_salvate())
+        # ⚠️ Nessuna riga leggibile **non** vuol dire «tabella vuota»: la colonna
+        # non entra nella query e resta quella di prima. È la stessa regola dei
+        # campi delle regole lasciati stare, ed è il motivo per cui l'ultima riga
+        # non si può togliere dalla modale.
+        c.post("/fantacalcio/lega/salva", data={
+            "lega_id": str(lid), "nome": "Lega Amici", "moduli": "3-4-3,4-4-2",
+            "mod_difesa": "1"}, follow_redirects=True)
+        esito("⚠️ e senza nessuna fascia la tabella di prima resta",
+              soglie_salvate() == "7:6", soglie_salvate())
+        c.post("/fantacalcio/lega/salva", data={
+            "lega_id": str(lid), "nome": "Lega Amici", "moduli": "3-4-3,4-4-2",
+            "mod_difesa": "1", "soglia_media": ["7", "6.5", "6"],
+            "soglia_punti": ["8", "4", "2"]}, follow_redirects=True)
+        esito("la tabella torna com'era per le prove che seguono",
+              soglie_salvate() == "7:8, 6.5:4, 6:2", soglie_salvate())
         r = c.get(f"/fantacalcio/lega/{lid}")
         pagina = r.data.decode("utf-8", "replace")
         esito("la scheda della lega mostra la tabella e come si fa la media",
