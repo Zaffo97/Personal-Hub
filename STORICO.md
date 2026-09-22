@@ -20,6 +20,27 @@ pagina ed esegue `new Function()` su ogni blocco `<script>` **e** su ogni handle
 
 ## 22/09/2026
 
+**Uno sprite di ripiego adesso lo dice (§4.3)**
+
+Le **114 URL su 57 voci** che mostrano l'immagine di un'altra voce erano già una
+scelta scritta nel codice — i Totem di Alola, le andature di Koraidon e Miraidon, le
+Mega inventate: su pokemondb uno sprite proprio non ce l'hanno e non l'avranno. Ma
+chi guardava la pagina non lo sapeva, e una scelta giusta taciuta diventa un errore
+silenzioso: credi di vedere la forma che hai chiesto.
+
+Ora `/api/pokemon` risponde **`sprite_ripiego_di`** (`null` quando l'immagine è quella
+giusta), e i due pannelli dei calcolatori mettono «altra forma» accanto
+all'immagine, con la frase intera nel `title`. ⚠️ Corta **per forza**: il contenitore
+dello sprite ha `height:70px` fisso ed è in riga, quindi sotto non ci sta e di fianco
+una frase lunga si spezza in tre righe addosso al disegno — provato, e si vedeva.
+
+`controlla_traduzioni.py` ha fatto il suo mestiere due volte: ha trovato la stringa
+nuova appena scritta, e poi ha segnalato come **orfana** quella che avevo sostituito.
+Dizionario a 633 voci, 0 mancanti e 0 orfane.
+
+Verifica: sweep 28 pagine a 0 errori, sprite 0 rotti su 2570, e la nota guardata in un
+browser vero su Totem Araquanid (che ricade su Araquanid).
+
 **Regulation M-C è in piedi: 339 voci, e due script che mentivano**
 
 Il file c'era da stamattina e diceva il falso: `mc.json` era una **copia esatta di

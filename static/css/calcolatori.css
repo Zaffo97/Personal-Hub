@@ -3,6 +3,12 @@
 .calc-tab{padding:.38rem .9rem;border-radius:var(--radius-md) var(--radius-md) 0 0;font-size:.8rem;font-weight:600;cursor:pointer;border:none;background:none;color:var(--text-muted);transition:.15s}
 .calc-tab.active{background:var(--primary);color:#fff}
 .calc-panel{display:none}.calc-panel.active{display:block}
+/* La nota sotto uno sprite di ripiego: piccola e tenue perche' e' una
+   precisazione, non un avviso — l'immagine mostrata e' quella giusta da
+   mostrare, quello che serve e' non far credere che sia la forma chiesta. */
+.nota-ripiego{font-size:.6rem;line-height:1.2;color:var(--text-muted);
+  max-width:72px;margin-left:.35rem;cursor:help;
+  border-left:2px solid var(--border);padding-left:.35rem}
 .stat-bar-wrap{display:flex;align-items:center;gap:.5rem;margin-bottom:.38rem}
 .stat-label{width:32px;font-size:.65rem;font-weight:700;color:var(--text-muted);text-align:right;text-transform:uppercase}
 .stat-bar-bg{flex:1;height:10px;background:var(--surface-off);border-radius:20px;overflow:hidden;position:relative}

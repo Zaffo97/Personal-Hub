@@ -17,6 +17,22 @@ function calcSt(base, ev, iv, lvl, nm, isHP) {
 }
 
 function getNM(nat,stat){return NM[nat]?.[stat]||1.0;}
+
+// ⚠️ Quando l'immagine e' di **un'altra voce**, dirlo. Sono 57 forme: i Totem di
+// Alola, le andature di Koraidon e Miraidon, le Mega **inventate** — su pokemondb uno
+// sprite proprio non ce l'hanno e non l'avranno. Mostrare la specie e' la scelta
+// giusta; **non dirlo** la trasformerebbe in un errore silenzioso, perche' chi guarda
+// crede di vedere la forma che ha chiesto. Il dato arriva da `/api/pokemon` come
+// `sprite_ripiego_di` (null quando l'immagine e' quella giusta).
+function notaRipiego(d){
+  if(!d || !d.sprite_ripiego_di) return '';
+  // ⚠️ Scritta corta accanto all'immagine, frase intera nel `title`: il contenitore
+  // dello sprite ha `height:70px` fisso ed e' in riga, quindi sotto non ci starebbe e
+  // di fianco una frase lunga si spezza in tre righe addosso al disegno.
+  return '<div class="nota-ripiego" title="'
+       + t('Questa forma non ha un\'immagine sua: quella che vedi e\' di un\'altra voce.')
+       + '">' + t('altra forma') + '</div>';
+}
 // ── Motore abilità data-driven ────────────────────────────────────────────────
 // Legge il blocco `effect` da data/abilities.json (via ABILITIES_DATA) invece di
 // confrontare stringhe hardcoded. Aggiungere un'abilità = modificare il JSON.

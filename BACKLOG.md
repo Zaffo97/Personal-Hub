@@ -1132,14 +1132,18 @@ sa dal codice, non un piano.
 - ✅ **Gli sprite mancanti** — chiusi il 22/09/2026: da **333 URL rotti a 0**, numeri
   in `STORICO.md`. ⚠️ Il rimando «sta anche in §3» era **stale**: in §3 non c'era
   niente sugli sprite.
-  ⬜ **Resta la seconda metà della richiesta**, ed è una cosa diversa da come era
-  scritta: le forme che usano l'immagine della forma base ora sono **114 URL su 57
-  voci**, e non sono un buco — sono forme che pokemondb non copre (i Totem di Alola,
-  le andature di Koraidon e Miraidon) o Mega **inventate**, che uno sprite non ce
-  l'avranno mai. Sono dichiarate in `SENZA_SPRITE_PDB`, e `controlla_sprite.py` le
-  conta a parte. Quello che manca è **dirlo a chi guarda la pagina**: oggi vede
-  l'immagine della specie e non sa che è un ripiego. Basterebbe un dato nella
-  risposta dell'API e una scritta piccola sotto l'immagine.
+  ✅ **E la seconda metà è chiusa lo stesso giorno**: le **114 URL su 57 voci** che
+  mostrano l'immagine di un'altra voce non sono un buco — sono forme che pokemondb
+  non copre (i Totem di Alola, le andature di Koraidon e Miraidon) o Mega
+  **inventate**, che uno sprite non ce l'avranno mai — ma ora **lo dicono**:
+  `/api/pokemon` risponde `sprite_ripiego_di`, e i calcolatori mettono «altra forma»
+  accanto all'immagine, con la frase intera nel tooltip. ⚠️ La scritta è corta
+  **perché deve esserlo**: il contenitore dello sprite ha `height:70px` fisso ed è in
+  riga, quindi una frase lunga si spezzava in tre righe addosso al disegno.
+  ⬜ Resta fuori l'elenco team e il team builder, dove gli sprite sono da 58 px e una
+  scritta per ognuno sarebbe rumore: lì servirebbe un `title`, e il team builder ha
+  il problema in più che gli `sprite_url` dei membri salvati stanno nel DB, quindi al
+  momento di renderli la risposta dell'API non c'è.
 
 **Altro**
 

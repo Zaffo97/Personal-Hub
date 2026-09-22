@@ -29,7 +29,7 @@ async function loadStatPkmn(side){
       };
     }
     const sp=document.getElementById('stat_spr'+sfx);
-    if(sp){const url=d.sprite_hd||d.sprite;sp.innerHTML=url?'<img src="'+url+'" style="width:78px;height:78px;object-fit:contain" loading="lazy">':'<span style="font-size:2.5rem">?</span>';}
+    if(sp){const url=d.sprite_hd||d.sprite;sp.innerHTML=(url?'<img src="'+url+'" style="width:78px;height:78px;object-fit:contain" loading="lazy">':'<span style="font-size:2.5rem">?</span>')+notaRipiego(d);}
     // Tipi e abilità (usa quelli della mega se attiva)
     const types = d.types || [];
     const abils = d.abilities || [];

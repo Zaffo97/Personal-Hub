@@ -121,7 +121,7 @@ function loadSide(side){
     const sp=document.getElementById(side+'_spr');
     if(sp){
       const url=d.sprite_hd||d.sprite;
-      if(url) sp.innerHTML='<img src="'+url+'" style="height:66px;object-fit:contain" loading="lazy">';
+      if(url) sp.innerHTML='<img src="'+url+'" style="height:66px;object-fit:contain" loading="lazy">'+notaRipiego(d);
       else sp.innerHTML='<span style="font-size:2.5rem;opacity:.25">🧬</span>';
     }
     // La tendina abilità si stringe a quelle di questo Pokémon (con la via d'uscita

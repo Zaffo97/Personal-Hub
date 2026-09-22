@@ -687,6 +687,10 @@ def api_pokemon(name):
     rec = _INDICE.get(key)
     slug = rec["slug"] if rec else _slug_forma(_build_slug(key))
 
+    # ⚠️ Quando l'immagine e' quella di **un'altra voce**, chi guarda deve poterlo
+    # sapere: `SENZA_SPRITE_PDB` e' una decisione presa nel codice, non una cosa da
+    # far indovinare a schermo. Resta `None` per tutte le altre.
+    ripiego_di = None
     override = SPRITE_SLUG_OVERRIDES.get(key) or SPRITE_SLUG_OVERRIDES.get(slug)
     if override:
         s_slug, hd_slug = override
@@ -696,6 +700,7 @@ def api_pokemon(name):
         sprite    = SPRITE_FIXES[slug]
         sprite_hd = SPRITE_FIXES[slug]
     elif slug in SENZA_SPRITE_PDB:
+        ripiego_di = SENZA_SPRITE_PDB[slug]
         # ⚠️ Il valore e' **di solito** uno slug soltanto. Diventa `(slug, None)`
         # quando anche il bersaglio del ripiego non ha l'illustrazione grande: sono
         # due casi su 57, e la stessa convenzione `None` di `SPRITE_SLUG_OVERRIDES`
@@ -739,6 +744,11 @@ def api_pokemon(name):
         'puo_evolversi': data.get('puo_evolversi'),
         'sprite':   sprite,
         'sprite_hd': sprite_hd,
+        # ⚠️ `null` quando l'immagine e' quella giusta. Quando invece e' di un'altra
+        # voce — i Totem, le andature di Koraidon e Miraidon, le Mega **inventate** —
+        # qui c'e' lo slug di **cosa** si sta guardando, e la pagina lo dichiara
+        # invece di lasciar credere che sia la forma chiesta.
+        'sprite_ripiego_di': ripiego_di,
         'moves':        mosse,
         'moves_source': sorgente,
     })
