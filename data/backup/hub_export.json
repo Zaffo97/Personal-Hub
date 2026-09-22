@@ -12,7 +12,7 @@
       "username": "Tizzy",
       "display_name": "Tizzy",
       "role": "user",
-      "sections": "gaming,pokemon"
+      "sections": "gaming,pokemon,fantacalcio"
     }
   ],
   "games": [
@@ -677,115 +677,8 @@
       "user_id": 1
     }
   ],
-  "teams": [
-    {
-      "id": 1,
-      "name": "A",
-      "format": "VGC Reg MA",
-      "record": "",
-      "description": "",
-      "notes": "",
-      "created_at": "2026-08-12 13:09:02",
-      "regulation_id": "ma",
-      "user_id": 1
-    },
-    {
-      "id": 2,
-      "name": "Dio",
-      "format": "VGC Reg MA",
-      "record": "",
-      "description": "",
-      "notes": "",
-      "created_at": "2026-08-19 16:14:47",
-      "regulation_id": "ma",
-      "user_id": 1
-    },
-    {
-      "id": 3,
-      "name": "gesu",
-      "format": "VGC Reg MA",
-      "record": "",
-      "description": "",
-      "notes": "",
-      "created_at": "2026-08-19 16:15:19",
-      "regulation_id": "pokedex",
-      "user_id": 1
-    }
-  ],
-  "team_members": [
-    {
-      "id": 1,
-      "team_id": 1,
-      "slot": 0,
-      "pokemon": "Alolan Raichu",
-      "mega_stone": null,
-      "nature": "",
-      "ability": "",
-      "held_item": "",
-      "tera_type": null,
-      "move1": "",
-      "move2": "",
-      "move3": "",
-      "move4": "",
-      "sp_hp": 0,
-      "sp_atk": 0,
-      "sp_def": 0,
-      "sp_spatk": 0,
-      "sp_spdef": 0,
-      "sp_spe": 0,
-      "sprite_url": "https://img.pokemondb.net/sprites/home/normal/raichu-alolan.png",
-      "mechanic_type": "",
-      "mechanic_value": ""
-    },
-    {
-      "id": 2,
-      "team_id": 2,
-      "slot": 0,
-      "pokemon": "Froslass",
-      "mega_stone": null,
-      "nature": "",
-      "ability": "",
-      "held_item": "",
-      "tera_type": null,
-      "move1": "",
-      "move2": "",
-      "move3": "",
-      "move4": "",
-      "sp_hp": 0,
-      "sp_atk": 0,
-      "sp_def": 0,
-      "sp_spatk": 0,
-      "sp_spdef": 0,
-      "sp_spe": 0,
-      "sprite_url": "https://img.pokemondb.net/sprites/home/normal/froslass.png",
-      "mechanic_type": "",
-      "mechanic_value": ""
-    },
-    {
-      "id": 3,
-      "team_id": 3,
-      "slot": 0,
-      "pokemon": "Alcremie (Gigantamax Form)",
-      "mega_stone": null,
-      "nature": "",
-      "ability": "",
-      "held_item": "",
-      "tera_type": null,
-      "move1": "",
-      "move2": "",
-      "move3": "",
-      "move4": "",
-      "sp_hp": 0,
-      "sp_atk": 0,
-      "sp_def": 0,
-      "sp_spatk": 0,
-      "sp_spdef": 0,
-      "sp_spe": 0,
-      "sprite_url": "https://img.pokemondb.net/sprites/home/normal/alcremie-gigantamax-form.png",
-      "mechanic_type": "",
-      "mechanic_value": ""
-    }
-  ],
+  "teams": [],
+  "team_members": [],
   "arduino_projects": [],
   "python_topics": [
     {
@@ -1166,7 +1059,7 @@
       "nome": "La Liga Abajo",
       "sistema": "classic",
       "moduli": "3-4-3,3-5-2,4-3-3,4-4-2,4-5-1,5-3-2,5-4-1",
-      "n_panchinari": 7,
+      "n_panchinari": 14,
       "mod_difesa": 1,
       "bonus_assist": 1.0,
       "malus_amm": -0.5,
@@ -1181,15 +1074,15 @@
       "mod_difesa_portiere": 1,
       "mod_difesa_soglie": "7:6, 6.5:3, 6:1",
       "bonus_gol": 3.0,
-      "modulo_scelto": null
+      "modulo_scelto": "3-4-3"
     },
     {
       "id": 2,
       "user_id": 1,
-      "nome": "A",
+      "nome": "Triplete",
       "sistema": "classic",
       "moduli": "3-4-3,3-5-2,4-3-3,4-4-2,4-5-1,5-3-2,5-4-1",
-      "n_panchinari": 7,
+      "n_panchinari": 14,
       "mod_difesa": 0,
       "bonus_assist": 1.0,
       "malus_amm": -0.5,
@@ -1209,180 +1102,531 @@
   ],
   "fanta_roster": [
     {
-      "id": 1,
+      "id": 26,
+      "league_id": 2,
+      "player_id": 4431,
+      "prezzo": 27.0,
+      "note": null
+    },
+    {
+      "id": 27,
+      "league_id": 2,
+      "player_id": 4,
+      "prezzo": 1.0,
+      "note": null
+    },
+    {
+      "id": 28,
+      "league_id": 2,
+      "player_id": 7626,
+      "prezzo": 1.0,
+      "note": null
+    },
+    {
+      "id": 29,
+      "league_id": 2,
+      "player_id": 6727,
+      "prezzo": 7.0,
+      "note": null
+    },
+    {
+      "id": 30,
+      "league_id": 2,
+      "player_id": 6867,
+      "prezzo": 6.0,
+      "note": null
+    },
+    {
+      "id": 31,
+      "league_id": 2,
+      "player_id": 5620,
+      "prezzo": 14.0,
+      "note": null
+    },
+    {
+      "id": 32,
+      "league_id": 2,
+      "player_id": 554,
+      "prezzo": 5.0,
+      "note": null
+    },
+    {
+      "id": 33,
+      "league_id": 2,
+      "player_id": 7414,
+      "prezzo": 4.0,
+      "note": null
+    },
+    {
+      "id": 34,
+      "league_id": 2,
+      "player_id": 4409,
+      "prezzo": 7.0,
+      "note": null
+    },
+    {
+      "id": 35,
+      "league_id": 2,
+      "player_id": 4887,
+      "prezzo": 3.0,
+      "note": null
+    },
+    {
+      "id": 36,
+      "league_id": 2,
+      "player_id": 5675,
+      "prezzo": 1.0,
+      "note": null
+    },
+    {
+      "id": 37,
+      "league_id": 2,
+      "player_id": 2423,
+      "prezzo": 47.0,
+      "note": null
+    },
+    {
+      "id": 38,
+      "league_id": 2,
+      "player_id": 5687,
+      "prezzo": 25.0,
+      "note": null
+    },
+    {
+      "id": 39,
+      "league_id": 2,
+      "player_id": 5792,
+      "prezzo": 15.0,
+      "note": null
+    },
+    {
+      "id": 40,
+      "league_id": 2,
+      "player_id": 7625,
+      "prezzo": 9.0,
+      "note": null
+    },
+    {
+      "id": 41,
+      "league_id": 2,
+      "player_id": 152,
+      "prezzo": 30.0,
+      "note": null
+    },
+    {
+      "id": 42,
+      "league_id": 2,
+      "player_id": 7129,
+      "prezzo": 2.0,
+      "note": null
+    },
+    {
+      "id": 43,
+      "league_id": 2,
+      "player_id": 5946,
+      "prezzo": 1.0,
+      "note": null
+    },
+    {
+      "id": 44,
+      "league_id": 2,
+      "player_id": 7036,
+      "prezzo": 1.0,
+      "note": null
+    },
+    {
+      "id": 45,
+      "league_id": 2,
+      "player_id": 6397,
+      "prezzo": 239.0,
+      "note": null
+    },
+    {
+      "id": 46,
+      "league_id": 2,
+      "player_id": 6060,
+      "prezzo": 32.0,
+      "note": null
+    },
+    {
+      "id": 47,
+      "league_id": 2,
+      "player_id": 5734,
+      "prezzo": 17.0,
+      "note": null
+    },
+    {
+      "id": 48,
+      "league_id": 2,
+      "player_id": 6519,
+      "prezzo": 1.0,
+      "note": null
+    },
+    {
+      "id": 49,
+      "league_id": 2,
+      "player_id": 2832,
+      "prezzo": 1.0,
+      "note": null
+    },
+    {
+      "id": 50,
+      "league_id": 2,
+      "player_id": 7561,
+      "prezzo": 1.0,
+      "note": null
+    },
+    {
+      "id": 51,
       "league_id": 1,
       "player_id": 6966,
-      "prezzo": 0.0,
+      "prezzo": 37.0,
       "note": null
     },
     {
-      "id": 2,
+      "id": 52,
       "league_id": 1,
       "player_id": 6344,
-      "prezzo": 0.0,
+      "prezzo": 1.0,
       "note": null
     },
     {
-      "id": 3,
+      "id": 53,
       "league_id": 1,
       "player_id": 2809,
-      "prezzo": 0.0,
+      "prezzo": 1.0,
       "note": null
     },
     {
-      "id": 4,
-      "league_id": 1,
-      "player_id": 6217,
-      "prezzo": 0.0,
-      "note": null
-    },
-    {
-      "id": 5,
+      "id": 54,
       "league_id": 1,
       "player_id": 2788,
-      "prezzo": 0.0,
+      "prezzo": 36.0,
       "note": null
     },
     {
-      "id": 6,
-      "league_id": 1,
-      "player_id": 5877,
-      "prezzo": 0.0,
-      "note": null
-    },
-    {
-      "id": 7,
-      "league_id": 1,
-      "player_id": 5851,
-      "prezzo": 0.0,
-      "note": null
-    },
-    {
-      "id": 8,
-      "league_id": 1,
-      "player_id": 6632,
-      "prezzo": 0.0,
-      "note": null
-    },
-    {
-      "id": 9,
-      "league_id": 1,
-      "player_id": 4807,
-      "prezzo": 0.0,
-      "note": null
-    },
-    {
-      "id": 10,
-      "league_id": 1,
-      "player_id": 4177,
-      "prezzo": 0.0,
-      "note": null
-    },
-    {
-      "id": 11,
+      "id": 55,
       "league_id": 1,
       "player_id": 7294,
-      "prezzo": 0.0,
+      "prezzo": 6.0,
       "note": null
     },
     {
-      "id": 12,
+      "id": 56,
       "league_id": 1,
-      "player_id": 4856,
-      "prezzo": 0.0,
+      "player_id": 6217,
+      "prezzo": 28.0,
       "note": null
     },
     {
-      "id": 13,
+      "id": 57,
       "league_id": 1,
-      "player_id": 1850,
-      "prezzo": 0.0,
+      "player_id": 4807,
+      "prezzo": 13.0,
       "note": null
     },
     {
-      "id": 14,
+      "id": 58,
       "league_id": 1,
-      "player_id": 4777,
-      "prezzo": 0.0,
+      "player_id": 6632,
+      "prezzo": 1.0,
       "note": null
     },
     {
-      "id": 15,
+      "id": 59,
+      "league_id": 1,
+      "player_id": 5851,
+      "prezzo": 1.0,
+      "note": null
+    },
+    {
+      "id": 60,
+      "league_id": 1,
+      "player_id": 5877,
+      "prezzo": 6.0,
+      "note": null
+    },
+    {
+      "id": 61,
+      "league_id": 1,
+      "player_id": 4177,
+      "prezzo": 4.0,
+      "note": null
+    },
+    {
+      "id": 62,
       "league_id": 1,
       "player_id": 6875,
-      "prezzo": 0.0,
+      "prezzo": 82.0,
       "note": null
     },
     {
-      "id": 16,
-      "league_id": 1,
-      "player_id": 5680,
-      "prezzo": 0.0,
-      "note": null
-    },
-    {
-      "id": 17,
+      "id": 63,
       "league_id": 1,
       "player_id": 5946,
-      "prezzo": 0.0,
+      "prezzo": 1.0,
       "note": null
     },
     {
-      "id": 18,
+      "id": 64,
+      "league_id": 1,
+      "player_id": 4777,
+      "prezzo": 42.0,
+      "note": null
+    },
+    {
+      "id": 65,
+      "league_id": 1,
+      "player_id": 1850,
+      "prezzo": 18.0,
+      "note": null
+    },
+    {
+      "id": 66,
       "league_id": 1,
       "player_id": 6783,
-      "prezzo": 0.0,
+      "prezzo": 1.0,
       "note": null
     },
     {
-      "id": 19,
+      "id": 67,
       "league_id": 1,
       "player_id": 4220,
-      "prezzo": 0.0,
+      "prezzo": 4.0,
       "note": null
     },
     {
-      "id": 20,
+      "id": 68,
       "league_id": 1,
-      "player_id": 6646,
-      "prezzo": 0.0,
+      "player_id": 4856,
+      "prezzo": 3.0,
       "note": null
     },
     {
-      "id": 21,
+      "id": 69,
       "league_id": 1,
-      "player_id": 7347,
-      "prezzo": 0.0,
+      "player_id": 5680,
+      "prezzo": 1.0,
       "note": null
     },
     {
-      "id": 22,
-      "league_id": 1,
-      "player_id": 7023,
-      "prezzo": 0.0,
-      "note": null
-    },
-    {
-      "id": 23,
-      "league_id": 1,
-      "player_id": 2137,
-      "prezzo": 0.0,
-      "note": null
-    },
-    {
-      "id": 24,
-      "league_id": 1,
-      "player_id": 6752,
-      "prezzo": 0.0,
-      "note": null
-    },
-    {
-      "id": 25,
+      "id": 70,
       "league_id": 1,
       "player_id": 6434,
-      "prezzo": 0.0,
+      "prezzo": 28.0,
+      "note": null
+    },
+    {
+      "id": 71,
+      "league_id": 1,
+      "player_id": 2137,
+      "prezzo": 69.0,
+      "note": null
+    },
+    {
+      "id": 72,
+      "league_id": 1,
+      "player_id": 6752,
+      "prezzo": 50.0,
+      "note": null
+    },
+    {
+      "id": 73,
+      "league_id": 1,
+      "player_id": 7347,
+      "prezzo": 5.0,
+      "note": null
+    },
+    {
+      "id": 74,
+      "league_id": 1,
+      "player_id": 7023,
+      "prezzo": 25.0,
+      "note": null
+    },
+    {
+      "id": 75,
+      "league_id": 1,
+      "player_id": 6646,
+      "prezzo": 30.0,
       "note": null
     }
   ],
-  "fanta_formazione": []
+  "fanta_formazione": [
+    {
+      "league_id": 1,
+      "player_id": 1850,
+      "titolare": 1,
+      "ordine": 3,
+      "ruolo": "c"
+    },
+    {
+      "league_id": 1,
+      "player_id": 2137,
+      "titolare": 1,
+      "ordine": 0,
+      "ruolo": "a"
+    },
+    {
+      "league_id": 1,
+      "player_id": 2788,
+      "titolare": 0,
+      "ordine": 3,
+      "ruolo": "d"
+    },
+    {
+      "league_id": 1,
+      "player_id": 2809,
+      "titolare": 0,
+      "ordine": 1,
+      "ruolo": "p"
+    },
+    {
+      "league_id": 1,
+      "player_id": 4177,
+      "titolare": 1,
+      "ordine": 9,
+      "ruolo": "d"
+    },
+    {
+      "league_id": 1,
+      "player_id": 4220,
+      "titolare": 0,
+      "ordine": 10,
+      "ruolo": "c"
+    },
+    {
+      "league_id": 1,
+      "player_id": 4777,
+      "titolare": 0,
+      "ordine": 8,
+      "ruolo": "c"
+    },
+    {
+      "league_id": 1,
+      "player_id": 4807,
+      "titolare": 0,
+      "ordine": 6,
+      "ruolo": "d"
+    },
+    {
+      "league_id": 1,
+      "player_id": 4856,
+      "titolare": 0,
+      "ordine": 7,
+      "ruolo": "c"
+    },
+    {
+      "league_id": 1,
+      "player_id": 5680,
+      "titolare": 1,
+      "ordine": 4,
+      "ruolo": "c"
+    },
+    {
+      "league_id": 1,
+      "player_id": 5851,
+      "titolare": 0,
+      "ordine": 5,
+      "ruolo": "d"
+    },
+    {
+      "league_id": 1,
+      "player_id": 5877,
+      "titolare": 0,
+      "ordine": 4,
+      "ruolo": "d"
+    },
+    {
+      "league_id": 1,
+      "player_id": 5946,
+      "titolare": 0,
+      "ordine": 9,
+      "ruolo": "c"
+    },
+    {
+      "league_id": 1,
+      "player_id": 6217,
+      "titolare": 0,
+      "ordine": 2,
+      "ruolo": "d"
+    },
+    {
+      "league_id": 1,
+      "player_id": 6344,
+      "titolare": 0,
+      "ordine": 0,
+      "ruolo": "p"
+    },
+    {
+      "league_id": 1,
+      "player_id": 6434,
+      "titolare": 0,
+      "ordine": 13,
+      "ruolo": "a"
+    },
+    {
+      "league_id": 1,
+      "player_id": 6632,
+      "titolare": 1,
+      "ordine": 8,
+      "ruolo": "d"
+    },
+    {
+      "league_id": 1,
+      "player_id": 6646,
+      "titolare": 1,
+      "ordine": 1,
+      "ruolo": "a"
+    },
+    {
+      "league_id": 1,
+      "player_id": 6752,
+      "titolare": 0,
+      "ordine": 12,
+      "ruolo": "a"
+    },
+    {
+      "league_id": 1,
+      "player_id": 6783,
+      "titolare": 1,
+      "ordine": 6,
+      "ruolo": "c"
+    },
+    {
+      "league_id": 1,
+      "player_id": 6875,
+      "titolare": 1,
+      "ordine": 5,
+      "ruolo": "c"
+    },
+    {
+      "league_id": 1,
+      "player_id": 6966,
+      "titolare": 1,
+      "ordine": 10,
+      "ruolo": "p"
+    },
+    {
+      "league_id": 1,
+      "player_id": 7023,
+      "titolare": 0,
+      "ordine": 11,
+      "ruolo": "a"
+    },
+    {
+      "league_id": 1,
+      "player_id": 7294,
+      "titolare": 1,
+      "ordine": 7,
+      "ruolo": "d"
+    },
+    {
+      "league_id": 1,
+      "player_id": 7347,
+      "titolare": 1,
+      "ordine": 2,
+      "ruolo": "a"
+    }
+  ]
 }
