@@ -1545,6 +1545,151 @@ def prove(dove):
     esito("⚠️ e un altro utente non vede né la lega né il suo avviso",
           "Lega Allerta" not in elenco and "da guardare nella formazione" not in elenco)
 
+    # --- 16b. il modificatore di difesa entra nel consiglio ------------------
+    # Chiesto da Davide il 22/09/2026: il consiglio ordinava i moduli sui soli punti
+    # attesi dei giocatori, e il modificatore vale su un **reparto** — in una lega
+    # che lo usa, un 5-3-2 e un 3-4-3 non sono confrontabili senza.
+    print("\n== 16b. il modificatore di difesa nel consiglio ==")
+    from data import modificatore_atteso, MINIMO_DIFENSORI_MOD
+
+    def _v(ruolo, voto, pct, nome="X"):
+        """Una valutazione finta con dentro i soli campi che il modificatore legge."""
+        return {"g": {"id": id(nome) % 100000, "nome": nome,
+                      "ruolo_classic": ruolo, "media_voto": voto},
+                "percentuale": pct}
+
+    regole_on = {"mod_difesa": 1, "mod_difesa_portiere": 1,
+                 "mod_difesa_soglie": "7:6, 6.5:3, 6:1"}
+    # Portiere a 6.5 e quattro difensori a 7.0/6.8/6.6/5.0: la media del portiere e
+    # dei **migliori 3** è (6.5+7.0+6.8+6.6)/4 = 6.725, che con la tabella standard
+    # vale +3. Il quarto difensore, il peggiore, non entra nella media.
+    undici = [_v("p", 6.5, 100, "Por"), _v("d", 7.0, 100, "D1"),
+              _v("d", 6.8, 100, "D2"), _v("d", 6.6, 100, "D3"),
+              _v("d", 5.0, 100, "D4")]
+    m = modificatore_atteso(undici, regole_on)
+    esito("la media è del portiere e dei migliori 3 difensori",
+          m["media"] == 6.73 or m["media"] == 6.72, str(m["media"]))
+    esito("e la tabella della lega le dà +3", m["pieni"] == 3.0, str(m["pieni"]))
+    esito("con tutti al 100% il conto atteso è il valore pieno",
+          m["punti"] == 3.0, str(m["punti"]))
+    # ⚠️ Lo sconto per la probabilità: gli stessi voti con quattro all'80% valgono
+    # 3 × 0.8⁴ = 1.23, non 3. Senza, un reparto di ballottaggi varrebbe come uno di
+    # titolari sicuri e il modulo con più difensori vincerebbe sempre.
+    incerti = [_v("p", 6.5, 80, "Por"), _v("d", 7.0, 80, "D1"),
+               _v("d", 6.8, 80, "D2"), _v("d", 6.6, 80, "D3"),
+               _v("d", 5.0, 80, "D4")]
+    m2 = modificatore_atteso(incerti, regole_on)
+    esito("⚠️ e chi potrebbe non giocare vale meno: 3 × 0.8⁴ = 1.23",
+          m2["punti"] == 1.23 and m2["pieni"] == 3.0, str(m2))
+    # ⚠️ Il numero dei difensori è il motivo per cui il modulo conta: con tre non
+    # si arriva al minimo, e si dice **perché** invece di dare zero e basta.
+    tre = [_v("p", 6.5, 100, "Por"), _v("d", 7.0, 100, "D1"),
+           _v("d", 6.8, 100, "D2"), _v("d", 6.6, 100, "D3")]
+    m3 = modificatore_atteso(tre, regole_on)
+    esito(f"⚠️ con meno di {MINIMO_DIFENSORI_MOD} difensori non si applica, e lo dice",
+          m3["punti"] == 0.0 and "servono" in (m3["perche"] or ""), str(m3["perche"]))
+    esito("senza il portiere nella media entrano i migliori 4 difensori",
+          modificatore_atteso(
+              undici, dict(regole_on, mod_difesa_portiere=0))["media"] == 6.35,
+          str(modificatore_atteso(undici,
+                                  dict(regole_on, mod_difesa_portiere=0))["media"]))
+    esito("⚠️ e in una lega che non lo usa non si conta niente",
+          modificatore_atteso(undici, dict(regole_on, mod_difesa=0)) is None)
+    # Una tabella su misura deve cambiare il risultato, o le soglie della lega non
+    # servirebbero a niente.
+    esito("le soglie della lega sono quelle che decidono",
+          modificatore_atteso(undici, dict(regole_on,
+                                           mod_difesa_soglie="6.7:9"))["pieni"] == 9.0)
+
+    # E il consiglio deve **ordinare** i moduli con quel numero dentro.
+    from data import consiglia_moduli as _moduli
+
+    def _val(ruolo, voto, pct, fm, nome):
+        return {"g": {"id": abs(hash(nome)) % 100000, "nome": nome,
+                      "ruolo_classic": ruolo, "media_voto": voto},
+                "stato": "titolare", "percentuale": pct,
+                "fascia": "sicuro", "fm": fm, "pezzi": [], "partite": 10,
+                "fidata": True, "convocato": True, "schierabile": True,
+                "atteso": round(pct / 100.0 * fm, 2)}
+
+    # Una rosa dove i difensori sono bravi e gli attaccanti no: senza modificatore
+    # vince il 3-4-3 (tre attaccanti da 6.0 contro due difensori in più da 5.5),
+    # col modificatore acceso il 5-3-2 recupera il reparto.
+    banco = ([_val("p", 6.5, 100, 6.0, "Por")]
+             + [_val("d", 7.0, 100, 5.5, f"Dif{n}") for n in range(5)]
+             + [_val("c", 6.0, 100, 6.0, f"Cen{n}") for n in range(5)]
+             + [_val("a", 6.0, 100, 7.0, f"Att{n}") for n in range(3)])
+    senza = _moduli(banco, ["3-4-3", "5-3-2"], 0, regole={"mod_difesa": 0})
+    con = _moduli(banco, ["3-4-3", "5-3-2"], 0, regole=regole_on)
+    vince = lambda cons: next(c["modulo"] for c in cons if c["migliore"])
+    esito("senza modificatore vince il modulo con più attaccanti",
+          vince(senza) == "3-4-3",
+          str([(c["modulo"], c["atteso"], c["totale"]) for c in senza]))
+    esito("⚠️ con il modificatore acceso il reparto difensivo conta, e vince il 5-3-2",
+          vince(con) == "5-3-2",
+          str([(c["modulo"], c["atteso"], c["mod"]["punti"], c["totale"])
+               for c in con]))
+    esito("⚠️ e il 3-4-3 prende +0 perché tre difensori non bastano",
+          next(c for c in con if c["modulo"] == "3-4-3")["mod"]["punti"] == 0.0)
+    esito("dove il modificatore è spento il totale è i soli punti attesi",
+          all(c["totale"] == c["atteso"] for c in senza))
+
+    # --- 17. chi esce dalla rosa esce anche dal campo ------------------------
+    # Decisione di Davide del 22/09/2026, sul baco trovato costruendo l'avviso:
+    # `fanta_roster` e `fanta_formazione` sono due tabelle e il DELETE sulla prima
+    # non toccava la seconda, quindi i titolari diventavano dieci in silenzio.
+    print("\n== 17. chi esce dalla rosa esce anche dal campo ==")
+
+    def in_campo(lega):
+        db = extensions.get_db()
+        fuori = {r["player_id"] for r in db.execute(
+            "SELECT player_id FROM fanta_formazione WHERE league_id=?", (lega,))}
+        db.close()
+        return fuori
+
+    with app.test_client() as c5:
+        with c5.session_transaction() as s:
+            s["username"] = "davide"
+            s["role"] = "user"
+            s["user_id"] = ids["davide"]
+        db = extensions.get_db()
+        rid = db.execute("SELECT id FROM fanta_roster WHERE league_id=? AND "
+                         "player_id=1", (lid_al,)).fetchone()["id"]
+        db.close()
+        esito("si parte con quattro schierati", in_campo(lid_al) == {1, 2, 3, 4},
+              str(sorted(in_campo(lid_al))))
+        r = c5.post(f"/fantacalcio/lega/{lid_al}/rosa/{rid}/rimuovi",
+                    follow_redirects=True)
+        esito("la × di una riga lo toglie anche dal campo",
+              in_campo(lid_al) == {2, 3, 4}, str(sorted(in_campo(lid_al))))
+        esito("e il messaggio dice che era schierato",
+              "era schierato" in r.data.decode("utf-8", "replace"))
+        db = extensions.get_db()
+        rid2 = {r["player_id"]: r["id"] for r in db.execute(
+            "SELECT id, player_id FROM fanta_roster WHERE league_id=?", (lid_al,))}
+        db.close()
+        r = c5.post(f"/fantacalcio/lega/{lid_al}/rosa/modifica", data={
+            "togli": [str(rid2[2]), str(rid2[3])]}, follow_redirects=True)
+        esito("e il «togli in blocco» fa lo stesso per tutti quelli spuntati",
+              in_campo(lid_al) == {4}, str(sorted(in_campo(lid_al))))
+        esito("dicendo quanti di quelli tolti erano schierati",
+              "2 erano schierati" in r.data.decode("utf-8", "replace"),
+              r.data.decode("utf-8", "replace").count("erano schierati"))
+
+    # ⚠️ Chi esce dal **listone** è un'altra cosa: resta in rosa, spento, col suo
+    # cartellino. Se questa prova fallisse vorrebbe dire che l'aggiornamento del
+    # mercato smonta le formazioni di gennaio.
+    db = extensions.get_db()
+    db.execute("INSERT OR REPLACE INTO fanta_formazione(league_id,player_id,"
+               "titolare,ordine,ruolo) VALUES(?,5,1,9,'c')", (lid_al,))
+    db.execute("INSERT INTO fanta_roster(league_id,player_id,prezzo) "
+               "VALUES(?,5,10)", (lid_al,))
+    db.execute("UPDATE fanta_players SET attivo=0 WHERE id=5")
+    db.commit()
+    db.close()
+    esito("⚠️ ma chi esce dal listone resta in rosa e in campo: è un'altra cosa",
+          5 in in_campo(lid_al), str(sorted(in_campo(lid_al))))
+
 
 def main():
     ap = argparse.ArgumentParser(description=__doc__.splitlines()[0])

@@ -217,6 +217,30 @@ def _schierati(db, lid):
         (lid,)).fetchall()}
 
 
+def _scendi_dal_campo(db, lid, player_ids):
+    """Toglie dalla formazione chi esce dalla rosa. Torna quante righe ha tolto.
+
+    Decisione di Davide del 22/09/2026, presa sul baco trovato il giorno prima:
+    `fanta_roster` e `fanta_formazione` sono due tabelle, e il `DELETE` sulla prima
+    non toccava la seconda. A schermo non si vedeva niente — il campo smette di
+    disegnare chi non è in rosa — ma i titolari diventavano dieci in silenzio.
+
+    ⚠️ Vale **solo per chi esce dalla rosa**, non per chi esce dal listone: quello
+    resta in rosa, spento, col suo cartellino «fuori listone», ed è la scelta del
+    mercato di gennaio. Le due cose si somigliano e non sono la stessa.
+
+    ⚠️ Il chiamante ha già cancellato dalla rosa **con il filtro del proprietario**
+    e ha guardato il `rowcount`: qui si arriva solo se quella riga era davvero sua
+    (§1.1, stessa ragione dichiarata per `_schierati()`).
+    """
+    if not player_ids:
+        return 0
+    segni = ",".join("?" * len(player_ids))
+    return db.execute(
+        f"DELETE FROM fanta_formazione WHERE league_id=? AND player_id IN ({segni})",
+        (lid,) + tuple(player_ids)).rowcount
+
+
 def _allerta(db, lid, rosa, probabili):
     """L'avviso «la formazione salvata non torna più con le probabili», o `None`.
 
@@ -721,7 +745,8 @@ def _consiglio(db, lid):
     valutazioni = valuta_rosa(rosa, probabili, lega)
     moduli = [m.strip() for m in (lega.get("moduli") or "").split(",")
               if m.strip() and scomponi_modulo(m.strip())]
-    consigli = consiglia_moduli(valutazioni, moduli, lega.get("n_panchinari"))
+    consigli = consiglia_moduli(valutazioni, moduli, lega.get("n_panchinari"),
+                                regole=lega)
     return lega, {
         "rosa": rosa, "giornata": giornata, "valutazioni": valutazioni,
         "per_ruolo": rosa_per_merito(valutazioni), "consigli": consigli,
@@ -854,13 +879,19 @@ def rosa_aggiungi(lid):
 def rosa_rimuovi(lid, rid):
     db = get_db()
     cond, par = solo_mie("l.user_id")
+    mia = f"league_id IN (SELECT l.id FROM fanta_leagues l WHERE {cond})"
+    # Il `player_id` si legge **prima** del DELETE: dopo non c'è più, e senza non
+    # si saprebbe chi togliere anche dal campo.
+    riga = db.execute(f"SELECT player_id FROM fanta_roster WHERE id=? AND "
+                      f"league_id=? AND {mia}", (rid, lid) + tuple(par)).fetchone()
     cur = db.execute(
-        "DELETE FROM fanta_roster WHERE id=? AND league_id=? AND league_id IN "
-        f"(SELECT l.id FROM fanta_leagues l WHERE {cond})",
+        f"DELETE FROM fanta_roster WHERE id=? AND league_id=? AND {mia}",
         (rid, lid) + tuple(par))
+    scesi = _scendi_dal_campo(db, lid, [riga["player_id"]]) if cur.rowcount else 0
     db.commit()
     db.close()
-    flash("Tolto dalla rosa" if cur.rowcount else "Non trovato",
+    flash(("Tolto dalla rosa, ed era schierato" if scesi else "Tolto dalla rosa")
+          if cur.rowcount else "Non trovato",
           "success" if cur.rowcount else "error")
     return redirect(url_for("fantacalcio.lega", lid=lid))
 
@@ -891,25 +922,27 @@ def rosa_modifica(lid):
     # La rosa vera, prima di guardare il form: dice **quali** rid esistono qui e a
     # che prezzo stanno, che è anche l'unico modo per contare i prezzi davvero
     # cambiati invece di riscriverli tutti e dire «25 corretti».
-    righe = {r["id"]: r["prezzo"] for r in db.execute(
-        f"SELECT id, prezzo FROM fanta_roster WHERE league_id=? AND {mia}",
+    righe = {r["id"]: dict(r) for r in db.execute(
+        f"SELECT id, player_id, prezzo FROM fanta_roster WHERE league_id=? AND {mia}",
         (lid,) + tuple(par)).fetchall()}
 
     togli = [r for r in (_i(v, None) for v in request.form.getlist("togli"))
              if r in righe]
-    tolti = 0
+    tolti, scesi = 0, 0
     if togli:
         segna = ",".join("?" * len(togli))
         tolti = db.execute(
             f"DELETE FROM fanta_roster WHERE id IN ({segna}) AND league_id=? AND {mia}",
             tuple(togli) + (lid,) + tuple(par)).rowcount
+        if tolti:
+            scesi = _scendi_dal_campo(db, lid, [righe[r]["player_id"] for r in togli])
 
     corretti = 0
     for rid, prima in righe.items():
         if rid in togli or f"prezzo_{rid}" not in request.form:
             continue
         adesso = _prezzo(request.form.get(f"prezzo_{rid}"))
-        if adesso == (prima or 0):
+        if adesso == (prima["prezzo"] or 0):
             continue
         corretti += db.execute(
             f"UPDATE fanta_roster SET prezzo=? WHERE id=? AND league_id=? AND {mia}",
@@ -921,7 +954,9 @@ def rosa_modifica(lid):
     if corretti:
         pezzi.append(f"{corretti} prezz{'i corretti' if corretti > 1 else 'o corretto'}")
     if tolti:
-        pezzi.append(f"{tolti} tolt{'i' if tolti > 1 else 'o'} dalla rosa")
+        pezzi.append(f"{tolti} tolt{'i' if tolti > 1 else 'o'} dalla rosa" +
+                     (f" ({scesi} er{'ano' if scesi > 1 else 'a'} schierat"
+                      f"{'i' if scesi > 1 else 'o'})" if scesi else ""))
     flash(", ".join(pezzi).capitalize() if pezzi else "Niente da cambiare",
           "success" if pezzi else "error")
     return redirect(url_for("fantacalcio.lega", lid=lid))

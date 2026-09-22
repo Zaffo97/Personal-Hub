@@ -152,7 +152,9 @@
 <div class="card mb-3">
   <div class="card-header">
     <div class="card-title">I moduli ammessi, a confronto</div>
-    <span class="text-xs text-muted">punti attesi dell'undici</span>
+    <span class="text-xs text-muted">
+      punti attesi dell'undici{% if lega.mod_difesa %} + modificatore di difesa{% endif %}
+    </span>
   </div>
   <div class="card-body">
     <div class="mod">
@@ -164,6 +166,19 @@
         </div>
         <div class="text-xs text-muted mt-1">
           attesi <strong>{{ c.atteso if c.atteso is not none else '—' }}</strong>
+          {# Il modificatore vale su un **reparto**, non su un giocatore: sta
+             accanto ai punti attesi, non dentro, e il totale e' il numero su cui
+             i moduli si confrontano. Dove la lega non lo usa non compare niente. #}
+          {% if c.mod %}
+            {% if c.mod.punti %}
+              <br>difesa <strong>+{{ c.mod.punti }}</strong>
+              <span class="text-faint">(media {{ c.mod.media }} &rarr;
+                +{{ c.mod.pieni }} se giocano, {{ (c.mod.probabilita * 100)|round|int }}%)</span>
+              <br>totale <strong>{{ c.totale }}</strong>
+            {% else %}
+              <br><span class="text-faint">difesa +0 &mdash; {{ c.mod.perche }}</span>
+            {% endif %}
+          {% endif %}
           {% if c.senza_fm %}<br>⚠️ {{ c.senza_fm }} senza fantamedia{% endif %}
           {% if c.forzati %}<br>⚠️ {{ c.forzati|length }} forzati{% endif %}
         </div>
@@ -180,6 +195,20 @@
       {% endfor %}
     </div>
     <div class="text-xs text-muted mt-2">
+      {% if lega.mod_difesa %}
+      ⚠️ <strong>Il modificatore di difesa è una stima, ed è fatta così</strong>: il
+      voto atteso di ognuno è la sua <strong>media voto</strong> (il voto senza
+      bonus e malus, che è quello che il regolamento vuole nella media), la media è
+      {% if lega.mod_difesa_portiere %}del portiere e dei migliori 3 difensori{% else %}dei
+      migliori 4 difensori{% endif %} schierati, e servono <strong>4 difensori</strong>
+      a voto — quindi un modulo a tre difensori non ci arriva, a meno che un quarto
+      non subentri. I punti della tabella sono poi moltiplicati per la
+      <strong>probabilità che quei quattro giochino</strong> (il prodotto delle loro
+      percentuali): senza, un reparto di ballottaggi varrebbe come uno di titolari
+      sicuri e il modulo con più difensori vincerebbe sempre. I due numeri sono
+      scritti tutti e due, perché sono due cose diverse.
+      <br>
+      {% endif %}
       ⚠️ La graduatoria vale quanto vale la fantamedia che ci sta dentro: dove
       «senza fantamedia» è alto, il confronto fra moduli non va creduto.
       «Applica» scrive la formazione nel campo passando dalla stessa validazione di
@@ -223,7 +252,11 @@
   <div class="card-header">
     <div class="card-title">L'undici consigliato &mdash; {{ dettaglio.modulo }}</div>
     <span class="text-xs text-muted">
-      attesi {{ dettaglio.atteso if dettaglio.atteso is not none else '—' }}</span>
+      attesi {{ dettaglio.atteso if dettaglio.atteso is not none else '—' }}
+      {% if dettaglio.mod and dettaglio.mod.punti %}
+        &middot; difesa +{{ dettaglio.mod.punti }} &middot;
+        totale {{ dettaglio.totale }}
+      {% endif %}</span>
   </div>
   <div style="overflow-x:auto">
     <table class="table">

@@ -70,6 +70,48 @@ fare.
   `admin` e la lega era di un altro utente — in lettura l'admin vede tutto, in
   scrittura `solo_mie()` non gli lascia toccare la rosa di nessuno.
 
+**Fantacalcio: chi esce dalla rosa esce dal campo, e il modificatore entra nel
+consiglio**
+
+Due richieste di Davide nella stessa sessione, la seconda delle quali era una voce
+⬜ del consiglio dal 21/09/2026.
+
+- ✅ **Chi esce dalla rosa esce anche dalla formazione**, che era il baco dichiarato
+  poche ore prima: due tabelle, e il `DELETE` sulla rosa non toccava il campo. Ora
+  lo fa `_scendi_dal_campo()` per la × di una riga e per il «togli in blocco», e il
+  messaggio lo dice. ⚠️ **Chi esce dal listone no**: resta in rosa e in campo,
+  spento, col cartellino «fuori listone» — è la scelta del mercato di gennaio, e
+  ora c'è una prova apposta perché le due cose non si confondano. Nel DB di Davide
+  righe orfane non ce n'erano (0 su 0 formazioni salvate).
+- ✅ **Il modificatore di difesa nel consiglio.** Prima i moduli si confrontavano
+  sui soli punti attesi dei giocatori, e il modificatore vale su un **reparto**: in
+  una lega che lo usa, un 5-3-2 e un 3-4-3 non sono confrontabili senza. Ogni pezzo
+  del conto è dichiarato in pagina, perché nessuno di questi numeri è un dato:
+  - il voto atteso è la **`media_voto`** del listone, cioè il voto **senza bonus e
+    malus** — quello che il regolamento vuole nella media, non la fantamedia;
+  - la media è del **portiere e dei migliori 3 difensori**, o dei **migliori 4**
+    se la lega esclude il portiere;
+  - ⚠️ servono **4 difensori a voto**: un modulo a tre difensori prende **+0**, e
+    la pagina scrive perché invece di dare zero e basta. È il motivo per cui il
+    modificatore dipende dal modulo, ed è la ragione della richiesta;
+  - ⚠️ e i punti della tabella sono **moltiplicati per la probabilità che quei
+    quattro giochino** (il prodotto delle loro percentuali). Senza, un reparto di
+    ballottaggi al 45% varrebbe come uno di titolari al 95% e il modulo con più
+    difensori vincerebbe sempre. I due numeri sono scritti tutti e due, perché
+    sono due domande diverse: quanto vale se giocano, e quanto aspettarsi.
+- ✅ **Verifiche**: `prova_fantacalcio.py` da 184 a **202 su 202** — fra cui la
+  media contata a mano ((6.5+7.0+6.8+6.6)/4 = 6.72 → +3 con la tabella standard),
+  lo sconto 3 × 0.8⁴ = **1.23**, il modulo a tre difensori che prende 0 col suo
+  perché, una tabella su misura che cambia il risultato, e un banco costruito
+  apposta dove **senza** modificatore vince il 3-4-3 e **con** il modificatore
+  vince il 5-3-2. Più `sweep 0 errori` e **140 query 0 scoperte**.
+- ✅ E sui dati veri, in browser sulla lega di Davide (modificatore acceso, rosa da
+  25): i due moduli a tre difensori prendono «+0 — il modulo schiera 3 difensori e
+  ne servono 4 a voto», gli altri cinque «+0.39 (media 6.35 → +1.0 se giocano,
+  39%)», e il migliore resta il **4-3-3** con totale 59.04 contro 58.45 del 5-3-2.
+
+---
+
 **Fantacalcio: la formazione schierata contro le probabili di adesso**
 
 Chiesto da Davide: schieri giovedì, venerdì uno finisce in panchina, e fino a ieri

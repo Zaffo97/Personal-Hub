@@ -917,14 +917,16 @@ sezione è finito:**
   (due leghe, due formazioni: funziona, ma non c'è un modo per copiarne una
   nell'altra).
 
-  ⬜ ⚠️ **Trovato il 22/09/2026 e non corretto: togliere un giocatore dalla rosa
-  non toglie la sua riga dalla formazione.** `fanta_roster` e `fanta_formazione`
-  sono due tabelle, e il `DELETE` sulla prima non tocca la seconda: il campo
-  smette di disegnarlo — quindi a schermo sembra tutto normale — e i titolari
-  diventano dieci senza che nessuno lo dica. Misurato: 1 riga orfana dopo un
-  `rosa/rimuovi`. Per ora l'avviso lo **dichiara** («1 schierato ma non più in
-  rosa: Yildiz»), che è la rete, non la cura. La cura è una decisione: cancellare
-  la riga insieme a quella di rosa, o tenerla in caso il giocatore rientri.
+  ✅ **Chiuso il 22/09/2026, con la decisione di Davide: chi esce dalla rosa esce
+  anche dal campo.** `fanta_roster` e `fanta_formazione` sono due tabelle e il
+  `DELETE` sulla prima non toccava la seconda — il campo smetteva di disegnarlo,
+  quindi a schermo sembrava tutto normale, e i titolari diventavano dieci in
+  silenzio (misurata 1 riga orfana dopo un `rosa/rimuovi`). Ora lo fa
+  `_scendi_dal_campo()`, per la × di una riga e per il «togli in blocco», e il
+  messaggio lo dice («Tolto dalla rosa, ed era schierato»). ⚠️ **Chi esce dal
+  listone è un'altra cosa** e resta dov'è: spento, in rosa e in campo, col suo
+  cartellino — è la scelta del mercato di gennaio, e c'è una prova apposta perché
+  nessuno le confonda.
 
 - ✅ **le probabili formazioni** — fatte il 21/09/2026, vedi lo storico. Ci sono
   `fantacalcio_it.probabili()`, `scripts/importa_probabili.py`, due tabelle per
@@ -999,9 +1001,18 @@ sezione è finito:**
   - il consiglio **non guarda l'avversario**: niente casa/trasferta, niente forza
     della difesa che si affronta. I dati per farlo non sono nel DB (le probabili
     danno l'avversario, non il suo rendimento), e sarebbe un lavoro a sé
-  - **non tiene conto del modificatore di difesa**, che in una lega che lo usa
-    cambia il valore di un reparto intero e non di un giocatore: i punti attesi sono
-    per giocatore, il modificatore no
+  - ✅ **il modificatore di difesa, dal 22/09/2026**: i moduli si confrontano sul
+    `totale` = punti attesi **più** modificatore stimato, e in una lega che lo usa
+    cambia la graduatoria. Il voto atteso è la `media_voto` del listone (il voto
+    **senza** bonus e malus, che è quello che il regolamento vuole nella media), la
+    media è del portiere e dei migliori 3 difensori o dei migliori 4, e servono
+    **4 difensori a voto** — quindi un modulo a tre difensori prende +0, e la
+    pagina dice perché. ⚠️ I punti della tabella sono poi **moltiplicati per la
+    probabilità che quei quattro giochino** (prodotto delle percentuali): senza,
+    un reparto di ballottaggi varrebbe come uno di titolari sicuri e vincerebbe
+    sempre il modulo con più difensori. La pagina mostra tutti e due i numeri.
+    ⬜ Resta che è una **stima**: suppone che i migliori per media voto siano
+    quelli che giocano, e non sa niente dell'avversario
   - **non c'è storico**, quindi *non sarà verificabile a posteriori* se consigliava
     bene. È la conseguenza della scelta «una formazione per lega, che si sovrascrive»
     (21/09/2026) ed era già scritta nello schema: per misurare il consiglio servirebbe

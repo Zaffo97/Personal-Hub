@@ -184,6 +184,15 @@ ECCEZIONI = {
      "ORDER BY titolare DESC, ordine"):
         "la lega è stata verificata con _lega_mia() poche righe sopra: se non è "
         "tua, la route è già uscita",
+    # ⚠️ Dal 22/09/2026 chi esce dalla rosa esce anche dal campo, per decisione di
+    # Davide: prima la riga restava orfana e i titolari diventavano dieci in
+    # silenzio. La cancellazione arriva **dopo** quella sulla rosa, che e' filtrata
+    # per proprietario e il cui `rowcount` e' gia' stato guardato: se quella riga
+    # non era tua, qui non ci si arriva.
+    ("blueprints/fantacalcio.py", "_scendi_dal_campo",
+     "DELETE FROM fanta_formazione WHERE league_id=? AND player_id IN ({…})"):
+        "toglie dal campo chi il chiamante ha appena tolto dalla rosa con "
+        "solo_mie() e rowcount guardato: righe di questa richiesta, non di altri",
     # ⚠️ Dal 22/09/2026 c'è un secondo lettore, `_schierati()`: lo usa l'avviso
     # «la formazione non torna più con le probabili», che le tre pagine del
     # Fantacalcio mostrano. Anche lì la lega arriva già filtrata — da `_lega_mia()`

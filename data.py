@@ -189,10 +189,12 @@ def controlla_schierati(schierati, probabili, nomi=None, in_rosa=None):
       dubbio;
     - `occasioni`: il rovescio, e serve a decidere **chi** mettere al posto di chi
       è nei primi due: uno che hai in panchina e che le probabili danno titolare;
-    - `spariti`: schierato, ma **non più in rosa**. ⚠️ Non è teorico: togliere un
-      giocatore dalla rosa **non** cancella la sua riga in `fanta_formazione`, il
-      campo semplicemente smette di disegnarlo, e una formazione da 11 diventa da
-      10 senza che nessuno lo dica.
+    - `spariti`: schierato, ma **non più in rosa**. ⚠️ Dal 22/09/2026 togliere un
+      giocatore dalla rosa lo toglie anche dal campo (`_scendi_dal_campo()`),
+      quindi questo elenco dovrebbe restare vuoto: resta la **rete**, perché una
+      formazione scritta prima di quella correzione può avere righe orfane e il
+      campo smette di disegnarle senza dire niente — una formazione da 11 che
+      diventa da 10 in silenzio.
 
     ⚠️ **Chi non ha una riga nelle probabili non viene dichiarato.** «Non lo
     sappiamo» non è «non gioca»: con l'archivio vuoto, o prima che la giornata sia
@@ -558,7 +560,79 @@ def rosa_per_merito(valutazioni):
                       key=_chiave_merito) for r in ORDINE_RUOLI_FANTA}
 
 
-def consiglia_formazione(valutazioni, modulo, n_panchinari=7):
+# Quanti difensori devono portare voto perché il modificatore si applichi. Non è
+# una scelta: lo scrive la guida ufficiale di Leghe Fantacalcio, ed è la ragione per
+# cui il modificatore **dipende dal modulo** — un tre-difensori non ci arriva se non
+# entra un quarto difensore dalla panchina.
+MINIMO_DIFENSORI_MOD = 4
+
+
+def modificatore_atteso(titolari, regole):
+    """Quanto vale il modificatore di difesa per **questo** undici. `None` se la
+    lega non lo usa.
+
+    Il consiglio ordinava i moduli sui soli punti attesi dei giocatori, e il
+    modificatore vale su un **reparto**: in una lega che lo usa, un 5-3-2 e un
+    3-4-3 non sono confrontabili senza. Aggiunto il 22/09/2026 su richiesta di
+    Davide.
+
+    Come si conta, e ogni pezzo è dichiarato perché nessuno di questi numeri è
+    un dato:
+
+    - il **voto atteso** di un difensore è la sua `media_voto` del listone, che è
+      il voto **senza bonus e malus** — esattamente quello che il regolamento vuole
+      nella media. Non la fantamedia, che i bonus li contiene;
+    - la media è del **portiere e dei migliori 3 difensori**, o dei **migliori 4
+      difensori** se la lega esclude il portiere (`mod_difesa_portiere`), come dice
+      la guida ufficiale;
+    - ⚠️ servono `MINIMO_DIFENSORI_MOD` difensori **a voto**: con un modulo a tre
+      difensori il modificatore **non si applica**, a meno che un quarto non
+      subentri. Qui si risponde di no, e si dice perché: fingere che si applichi
+      renderebbe il 3-4-3 migliore di quello che è;
+    - ⚠️ e il numero che esce **non è i punti della tabella**: sono quelli
+      **moltiplicati per la probabilità che quei quattro giochino davvero**, cioè
+      il prodotto delle loro percentuali di titolarità. Senza, un reparto di
+      ballottaggi al 45% varrebbe come uno di titolari al 95%, e in una lega col
+      modificatore acceso il consiglio sceglierebbe sempre il modulo con più
+      difensori. La pagina mostra **tutti e due** i numeri, perché sono due cose
+      diverse: quanto vale se giocano, e quanto ci si può aspettare.
+    """
+    if not regole or not (regole.get("mod_difesa") if hasattr(regole, "get")
+                          else regole["mod_difesa"]):
+        return None
+    soglie = soglie_mod_difesa(regole.get("mod_difesa_soglie"))
+    col_portiere = (regole.get("mod_difesa_portiere") or 0) != 0
+    voto = lambda v: v["g"].get("media_voto")
+    dif = sorted([v for v in titolari
+                  if v["g"].get("ruolo_classic") == "d" and voto(v) is not None],
+                 key=voto, reverse=True)
+    por = [v for v in titolari
+           if v["g"].get("ruolo_classic") == "p" and voto(v) is not None]
+    vuoto = {"punti": 0.0, "pieni": 0.0, "media": None, "chi": [],
+             "probabilita": None, "col_portiere": col_portiere}
+    if len(dif) < MINIMO_DIFENSORI_MOD:
+        quanti = len([v for v in titolari if v["g"].get("ruolo_classic") == "d"])
+        return dict(vuoto, perche=(
+            f"il modulo schiera {quanti} difensori e ne servono "
+            f"{MINIMO_DIFENSORI_MOD} a voto" if quanti < MINIMO_DIFENSORI_MOD else
+            f"solo {len(dif)} dei {quanti} difensori hanno una media voto"))
+    if col_portiere and not por:
+        return dict(vuoto, perche="il portiere non ha una media voto")
+
+    chi = ([por[0]] + dif[:3]) if col_portiere else dif[:4]
+    media = round(sum(voto(v) for v in chi) / len(chi), 2)
+    pieni = modificatore_difesa(media, soglie)
+    # La probabilità che il reparto porti voto: le percentuali sono indipendenti
+    # quanto basta, e una che manca vale «non lo sappiamo» — cioè zero, non uno.
+    probabilita = 1.0
+    for v in chi:
+        probabilita *= (v.get("percentuale") or 0) / 100.0
+    return {"punti": round(pieni * probabilita, 2), "pieni": pieni, "media": media,
+            "chi": chi, "probabilita": round(probabilita, 3),
+            "col_portiere": col_portiere, "perche": None}
+
+
+def consiglia_formazione(valutazioni, modulo, n_panchinari=7, regole=None):
     """L'undici e la panchina consigliati per **un** modulo.
 
     Torna `{"modulo", "titolari", "panchina", "atteso", "senza_fm", "forzati",
@@ -649,13 +723,21 @@ def consiglia_formazione(valutazioni, modulo, n_panchinari=7):
                 break
 
     attesi = [v["atteso"] for v in titolari if v["atteso"] is not None]
+    atteso = round(sum(attesi), 2) if attesi else None
+    # ⚠️ Il modificatore sta **accanto** ai punti attesi, non dentro: `atteso` resta
+    # la somma dei giocatori — che è quello che la pagina mostra riga per riga — e
+    # `totale` è il numero su cui si confrontano due moduli. Sommarli in un campo
+    # solo avrebbe reso impossibile capire da dove viene la differenza.
+    mod = modificatore_atteso(titolari, regole)
     return {"modulo": modulo, "titolari": titolari, "panchina": panchina,
-            "atteso": round(sum(attesi), 2) if attesi else None,
+            "atteso": atteso, "mod": mod,
+            "totale": (None if atteso is None else
+                       round(atteso + (mod or {}).get("punti", 0.0), 2)),
             "senza_fm": len([v for v in titolari if v["fm"] is None]),
             "forzati": forzati, "ballottaggi": ballottaggi, "contesi": contesi}
 
 
-def consiglia_moduli(valutazioni, moduli, n_panchinari=7):
+def consiglia_moduli(valutazioni, moduli, n_panchinari=7, regole=None):
     """Un consiglio per ogni modulo ammesso, col migliore segnato.
 
     ⚠️ Il modulo si sceglie sui **punti attesi** dell'undici, che è l'unico modo di
@@ -664,12 +746,17 @@ def consiglia_moduli(valutazioni, moduli, n_panchinari=7):
     per quanti dei titolari quel numero non esiste, e quando sono tanti il
     confronto fra moduli **non va creduto**. A settembre sono quasi tutti.
     """
-    fuori = [c for c in (consiglia_formazione(valutazioni, m, n_panchinari)
+    fuori = [c for c in (consiglia_formazione(valutazioni, m, n_panchinari, regole)
                          for m in moduli) if c]
+    # ⚠️ Il confronto è sul `totale`, cioè punti attesi **più** modificatore di
+    # difesa: in una lega che lo usa è la metà della domanda, e fino al 22/09/2026
+    # il consiglio la ignorava — un 5-3-2 e un 3-4-3 venivano confrontati come se
+    # il reparto difensivo valesse uguale. Dove il modificatore è spento `totale`
+    # è `atteso`, quindi la graduatoria non cambia.
     migliore = None
     for c in fuori:
-        if c["atteso"] is not None and (migliore is None
-                                        or c["atteso"] > migliore["atteso"]):
+        if c["totale"] is not None and (migliore is None
+                                        or c["totale"] > migliore["totale"]):
             migliore = c
     for c in fuori:
         c["migliore"] = (migliore is not None and c["modulo"] == migliore["modulo"])
