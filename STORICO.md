@@ -46,7 +46,13 @@ Quattro richieste di Davide del 22/09/2026, tutte e quattro chiuse. Verifica:
   viene rifiutato invece di diventare una query che non cancella niente e un
   messaggio che dice «fatto».
 - ✅ **Il timer «schieri entro»**, in Dashboard, nell'elenco delle leghe, nella
-  scheda della lega e sul campo. ⚠️ **L'ora del fischio d'inizio non sta nelle
+  scheda della lega e sul campo. Scorre **ogni secondo** senza ricaricare, nel
+  formato `18g 00:32:54` — i giorni con la loro lettera, perché `18:00:32:54` si
+  legge come un orario sbagliato. ⚠️ Il tempo che resta si **ricalcola
+  dall'orologio** a ogni giro invece di togliere uno al numero di prima: un
+  contatore che si decrementa da sé perde i colpi che il browser non gli dà (a
+  scheda in secondo piano gli intervalli vengono rallentati) e dopo mezz'ora
+  direbbe mezz'ora di troppo, senza nessun errore. ⚠️ **L'ora del fischio d'inizio non sta nelle
   probabili**, e sembra di sì: quella pagina ha lo stesso riquadro `match-date`, ma
   i valori sono segnaposto — `1970-01-01` e `01:00` su tutte e dieci le partite,
   misurato. Leggerli avrebbe dato un orario invece di un errore. La fonte vera è la

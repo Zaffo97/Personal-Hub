@@ -35,8 +35,14 @@
 </div>
 <script>
 /* Un conto per ogni riquadro, sul suo elemento: due timer nella stessa pagina non
-   si dividono nessuno stato. Si aggiorna ogni 30 secondi — al minuto si vedrebbe
-   saltare, al secondo non serve a niente per una scadenza che dista giorni. */
+   si dividono nessuno stato.
+
+   ⚠️ Scorre **ogni secondo**, e il tempo che resta si **ricalcola dall'orologio**
+   a ogni giro invece di togliere uno al numero di prima. Non è pignoleria: un
+   contatore che si decrementa da sé perde i colpi che il browser non gli dà — a
+   scheda in secondo piano gli intervalli vengono rallentati, e dopo mezz'ora
+   direbbe mezz'ora di troppo senza dare nessun errore. Così, al massimo, salta
+   un secondo di schermo e il numero resta quello vero. */
 (function(){
   var box = document.getElementById({{ id|tojson }});
   if (!box) return;
@@ -45,6 +51,7 @@
      con la T e senza fuso alcuni la leggevano come UTC. */
   var inizio = new Date(box.dataset.inizio.replace(/-/g, '/'));
   if (isNaN(inizio.getTime())) { conto.textContent = 'data non leggibile'; return; }
+  function due(n){ return (n < 10 ? '0' : '') + n; }
   function scrivi(){
     var restano = Math.floor((inizio - new Date()) / 1000);
     box.classList.remove('scadenza-vicina', 'scadenza-urgente', 'scadenza-passata');
@@ -55,20 +62,16 @@
     }
     var g = Math.floor(restano / 86400),
         o = Math.floor(restano % 86400 / 3600),
-        m = Math.floor(restano % 3600 / 60);
-    var pezzi = [];
-    if (g) pezzi.push(g + (g === 1 ? ' giorno' : ' giorni'));
-    if (o) pezzi.push(o + (o === 1 ? ' ora' : ' ore'));
-    /* I minuti spariscono quando mancano giorni: «2 giorni, 5 ore e 13 minuti» è
-       una precisione che nessuno usa per decidere quando schierare. */
-    if (!g && m) pezzi.push(m + (m === 1 ? ' minuto' : ' minuti'));
-    if (!pezzi.length) pezzi.push('meno di un minuto');
-    conto.textContent = pezzi.join(' e ');
+        m = Math.floor(restano % 3600 / 60),
+        s = restano % 60;
+    /* I giorni portano la loro lettera: `18:04:22:07` si legge come un orario
+       sbagliato, `18g 04:22:07` no. Sotto il giorno restano le sole ore:minuti:secondi. */
+    conto.textContent = (g ? g + 'g ' : '') + due(o) + ':' + due(m) + ':' + due(s);
     if (restano < 7200) box.classList.add('scadenza-urgente');
     else if (restano < 86400) box.classList.add('scadenza-vicina');
   }
   scrivi();
-  setInterval(scrivi, 30000);
+  setInterval(scrivi, 1000);
 })();
 </script>
 {% else %}
