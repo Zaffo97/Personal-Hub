@@ -69,6 +69,17 @@ def aggiorna_catalogo(forza=False):
 SPRITE_FIXES = {
     'mimikyu':          'https://raw.githubusercontent.com/msikma/pokesprite/master/pokemon/regular/mimikyu.png',
     'mimikyu-busted':   'https://raw.githubusercontent.com/msikma/pokesprite/master/pokemon/regular/mimikyu-busted.jpg',
+    # ── I Pikachu in costume (22/09/2026) ────────────────────────────────────
+    # ⚠️ Caso all'incontrario rispetto a tutti gli altri: lo **sprite piccolo** non
+    # esiste, l'**illustrazione grande** sì. Quindi si usa quella per tutti e due —
+    # è l'immagine giusta, solo più grande del necessario in un elenco. L'alternativa
+    # era ricadere sul Pikachu normale, cioè mostrare un altro Pokémon: un ripiego
+    # muto al posto di un'immagine vera che c'è.
+    'pikachu-rock-star': 'https://img.pokemondb.net/artwork/large/pikachu-rock-star.jpg',
+    'pikachu-belle':     'https://img.pokemondb.net/artwork/large/pikachu-belle.jpg',
+    'pikachu-pop-star':  'https://img.pokemondb.net/artwork/large/pikachu-pop-star.jpg',
+    'pikachu-phd':       'https://img.pokemondb.net/artwork/large/pikachu-phd.jpg',
+    'pikachu-libre':     'https://img.pokemondb.net/artwork/large/pikachu-libre.jpg',
     # ── Mega custom fan-made (non esistono sprite online) → fallback sprite base ──
     'meganium-mega':    'https://img.pokemondb.net/sprites/home/normal/meganium.png',
     'feraligatr-mega':  'https://img.pokemondb.net/sprites/home/normal/feraligatr.png',
@@ -139,7 +150,167 @@ SPRITE_SLUG_OVERRIDES = {
     # Mega Meowstic e' fan-made: si ricade sulla forma base del genere giusto
     'meowstic-mega-male':      ('meowstic-male',     'meowstic-male'),
     'meowstic-mega-female':    ('meowstic-female',   'meowstic-female'),
+    # ── Dal 22/09/2026, chiavi sullo slug di PokéAPI ──────────────────────────
+    # Lo sprite **c'è**, e pokemondb lo chiama in un modo che nessuna regola
+    # generale indovina: qui si corregge il nome, non si ripiega su un'altra voce.
+    # Ognuno provato in rete, uno per uno.
+    'necrozma-dawn':            ('necrozma-dawn-wings',  'necrozma-dawn-wings'),
+    'necrozma-dusk':            ('necrozma-dusk-mane',   'necrozma-dusk-mane'),
+    'calyrex-ice':              ('calyrex-ice-rider',    'calyrex-ice-rider'),
+    'calyrex-shadow':           ('calyrex-shadow-rider', 'calyrex-shadow-rider'),
+    'zygarde-50-power-construct': ('zygarde-50',         'zygarde-50'),
+    # Ogerpon: pokemondb lascia cadere la parola «mask», e l'illustrazione grande
+    # non ce l'ha per nessuna delle tre — quindi `None`, cioè si usa lo sprite.
+    'ogerpon-wellspring-mask':  ('ogerpon-wellspring',   None),
+    'ogerpon-hearthflame-mask': ('ogerpon-hearthflame',  None),
+    'ogerpon-cornerstone-mask': ('ogerpon-cornerstone',  None),
+    # ⚠️ Darmanitan di Galar **non** è il Darmanitan normale: è un altro Pokémon, di
+    # tipo Ghiaccio. Una regola meccanica ci ricadeva sopra — l'immagine sarebbe
+    # stata di un'altra specie, che è peggio di un'immagine mancante.
+    'darmanitan-galar-standard': ('darmanitan-galarian-standard', 'darmanitan-galarian'),
+    # ⚠️ La chiave e' lo slug **del catalogo** (`-gmax`), non quello gia' passato
+    # per `_slug_pdb()`: le tabelle si consultano prima delle regole. Scritto
+    # `-gigantamax` non combaciava mai, e l'errore si vedeva solo in rete.
+    'toxtricity-amped-gmax': ('toxtricity-gigantamax', 'toxtricity-gigantamax'),
+    'zygarde-10-power-construct': ('zygarde-10',          'zygarde-10'),
+    # Minior: pokemondb scrive «core» per esteso, e il guscio (la meteora) è uno solo
+    # per tutti i colori — perché nel gioco è davvero uguale.
+    'minior-red':       ('minior-red-core',    None),
+    'minior-orange':    ('minior-orange-core', None),
+    'minior-yellow':    ('minior-yellow-core', None),
+    'minior-green':     ('minior-green-core',  None),
+    'minior-blue':      ('minior-blue-core',   None),
+    'minior-indigo':    ('minior-indigo-core', None),
+    'minior-violet':    ('minior-violet-core', None),
+    'minior-red-meteor':    ('minior-meteor',  'minior-meteor'),
+    'minior-orange-meteor': ('minior-meteor',  'minior-meteor'),
+    # Squawkabilly: pokemondb lascia cadere «plumage»
+    'squawkabilly-green-plumage':  ('squawkabilly-green',  'squawkabilly-green'),
+    'squawkabilly-blue-plumage':   ('squawkabilly-blue',   None),
+    'squawkabilly-white-plumage':  ('squawkabilly-white',  None),
+    'squawkabilly-yellow-plumage': ('squawkabilly-yellow', None),
+    # ── Lo sprite c'è, l'illustrazione grande no: `None` la fa ricadere sullo
+    # sprite. Sono 20, e ognuna è stata provata: `None` scritto a caso qui darebbe
+    # un'immagine sgranata dove ce n'era una buona.
+    'castform-rainy':        ('castform-rainy',        None),
+    'castform-snowy':        ('castform-snowy',        None),
+    'castform-sunny':        ('castform-sunny',        None),
+    'cramorant-gorging':     ('cramorant-gorging',     None),
+    'cramorant-gulping':     ('cramorant-gulping',     None),
+    'dudunsparce-three-segment': ('dudunsparce-three-segment', None),
+    'eternatus-eternamax':   ('eternatus-eternamax',   None),
+    'gouging-fire':          ('gouging-fire',          None),
+    'iron-boulder':          ('iron-boulder',          None),
+    'magearna-original':     ('magearna-original',     None),
+    'mimikyu-busted':        ('mimikyu-busted',        None),
+    'pikachu-partner-cap':   ('pikachu-partner-cap',   None),
+    'pikachu-world-cap':     ('pikachu-world-cap',     None),
+    'pumpkaboo-small':       ('pumpkaboo-small',       None),
+    'pumpkaboo-large':       ('pumpkaboo-large',       None),
+    'pumpkaboo-super':       ('pumpkaboo-super',       None),
+    'rockruff-own-tempo':    ('rockruff-own-tempo',    None),
+    'terapagos-stellar':     ('terapagos-stellar',     None),
+    'ursaluna-bloodmoon':    ('ursaluna-bloodmoon',    None),
+    'zarude-dada':           ('zarude-dada',           None),
 }
+
+# ── Forme che su pokemondb uno sprite proprio non ce l'hanno ──────────────────
+# ⚠️ **Non sono errori da correggere**, e tenerle insieme a quelli di sopra
+# cancellerebbe la differenza che conta: lì il nome era sbagliato, qui l'immagine
+# non esiste. Si ricade su un'altra voce, e sta scritto **su quale**.
+# Tre gruppi, misurati il 22/09/2026 provando ogni candidato in rete:
+#   * i **Totem** di Alola e le andature di Koraidon e Miraidon: pokemondb non le
+#     copre, e non è una svista sua — sono forme che nei giochi cambiano solo la
+#     taglia o la posa
+#   * le Mega **inventate** (`-mega-z`, `-original-mega`): uno sprite non ce
+#     l'hanno e non l'avranno, ed è la stessa scelta già fatta per le altre Mega
+#     fan-made più in alto
+#   * `pikachu-cosplay` e `pikachu-starter`, che non hanno nemmeno l'illustrazione
+#     — gli altri Pikachu in costume ce l'hanno, e stanno in `SPRITE_FIXES`
+#
+# ⚠️ Chi guarda la pagina **non sa** che sta vedendo un ripiego: la voce per dirlo
+# a schermo è aperta in §3 del backlog. Qui almeno è dichiarato nel codice, e
+# `scripts/controlla_sprite.py` li conta a parte — «va bene così» e «nessuno ha
+# ancora guardato» devono restare due risposte diverse.
+SENZA_SPRITE_PDB = {
+    # Totem di Alola (12)
+    'araquanid-totem': 'araquanid',        'gumshoos-totem': 'gumshoos',
+    'kommo-o-totem': 'kommo-o',            'lurantis-totem': 'lurantis',
+    'marowak-totem': 'marowak',            'mimikyu-totem-busted': ('mimikyu-busted', None),
+    'mimikyu-totem-disguised': 'mimikyu',  'ribombee-totem': 'ribombee',
+    'salazzle-totem': 'salazzle',          'togedemaru-totem': 'togedemaru',
+    'vikavolt-totem': 'vikavolt',
+    # ⚠️ Il Raticate Totem è **di Alola**: ricadere sul Raticate normale darebbe
+    # l'immagine di un altro Pokémon, non un ripiego.
+    'raticate-totem-alola': 'raticate-alolan',
+    # Le andature di Koraidon e Miraidon (8)
+    'koraidon-limited-build': 'koraidon',  'koraidon-sprinting-build': 'koraidon',
+    'koraidon-swimming-build': 'koraidon', 'koraidon-gliding-build': 'koraidon',
+    'miraidon-low-power-mode': 'miraidon', 'miraidon-drive-mode': 'miraidon',
+    'miraidon-aquatic-mode': 'miraidon',   'miraidon-glide-mode': 'miraidon',
+    # Mega inventate (27). ⚠️ Tre non ricadono sulla specie ma sulla **forma
+    # giusta**: una regola meccanica dava il Meowstic maschio alla Mega femmina e il
+    # Tatsugiri curly a tutti e tre — cioè l'immagine di un altro Pokémon al posto
+    # di una mancante, che è il verso peggiore in cui sbagliare.
+    'absol-mega-z': 'absol',               'garchomp-mega-z': 'garchomp',
+    'lucario-mega-z': 'lucario',           'magearna-original-mega': ('magearna-original', None),
+    'barbaracle-mega': 'barbaracle',       'baxcalibur-mega': 'baxcalibur',
+    'darkrai-mega': 'darkrai',             'dragalge-mega': 'dragalge',
+    'eelektross-mega': 'eelektross',       'falinks-mega': 'falinks',
+    'golisopod-mega': 'golisopod',         'heatran-mega': 'heatran',
+    'magearna-mega': 'magearna',           'malamar-mega': 'malamar',
+    'pyroar-mega': 'pyroar',               'raichu-mega-x': 'raichu',
+    'raichu-mega-y': 'raichu',             'scolipede-mega': 'scolipede',
+    'scrafty-mega': 'scrafty',             'staraptor-mega': 'staraptor',
+    'zeraora-mega': 'zeraora',             'zygarde-mega': 'zygarde-50',
+    'meowstic-male-mega': 'meowstic-male', 'meowstic-female-mega': 'meowstic-female',
+    'tatsugiri-curly-mega': 'tatsugiri-curly',
+    'tatsugiri-droopy-mega': 'tatsugiri-droopy',
+    'tatsugiri-stretchy-mega': 'tatsugiri-stretchy',
+    # Forme che pokemondb non distingue (8): il sito tiene una sola immagine dove il
+    # gioco ha due generi o due taglie di famiglia.
+    'greninja-battle-bond': 'greninja',
+    'floette-eternal': 'floette',
+    'pikachu-cosplay': 'pikachu',          'pikachu-starter': 'pikachu',
+    'eevee-starter': 'eevee',
+    'frillish-male': 'frillish',           'jellicent-male': 'jellicent',
+    'pyroar-male': 'pyroar',
+    'maushold-family-of-three': 'maushold',
+    'maushold-family-of-four': 'maushold',
+}
+
+# ── Dallo slug di PokéAPI a quello di pokemondb ───────────────────────────────
+# Il catalogo tiene lo slug **di PokéAPI**, perché è il nome con cui il dump
+# identifica una forma. pokemondb usa altre parole per le stesse cose, e non a caso:
+# scrive l'aggettivo per esteso. Queste non sono eccezioni una per una, sono
+# **regole**, e coprono da sole 96 forme — misurate il 22/09/2026 provando ogni
+# candidato in rete, non dedotte.
+#
+# ⚠️ Il confronto è sulla **fine** dello slug, non «contiene». Con un `in` la regola
+# `-alola` colpirebbe anche `pikachu-alola-cap`, che su pokemondb si chiama proprio
+# così e funziona: una regola giusta romperebbe una voce sana.
+# ⚠️ E l'ordine non conta **solo** perché nessuna di queste code è il finale di
+# un'altra: `-paldea-aqua-breed` non finisce per `-paldea`. Chi ne aggiunge una lo
+# verifichi, o `scripts/controlla_sprite.py` glielo dirà.
+SUFFISSI_PDB = (
+    ("-gmax", "-gigantamax"),                       # 32 forme
+    ("-alola", "-alolan"),                          # 18
+    ("-galar", "-galarian"),                        # 18
+    ("-hisui", "-hisuian"),                         # 16
+    ("-paldea", "-paldean"),
+    ("-paldea-aqua-breed", "-paldean-aqua"),
+    ("-paldea-blaze-breed", "-paldean-blaze"),
+    ("-paldea-combat-breed", "-paldean-combat"),
+)
+
+
+def _slug_pdb(slug):
+    """Lo slug come lo scrive pokemondb. Se nessuna regola tocca, torna com'è."""
+    for coda, nuova in SUFFISSI_PDB:
+        if slug.endswith(coda):
+            return slug[: -len(coda)] + nuova
+    return slug
+
 
 # ── Slug overrides per pokesprite ─────────────────────────────────────────────
 # Supporta sia il formato "Heat Rotom" che "Rotom-Heat" (da roster)
@@ -398,9 +569,18 @@ def _costruisci_indice():
                 # l'Evolcondensa le si attiverebbe. Assente = non lo sappiamo.
                 "puo_evolversi": forma.get("puo_evolversi"),
             }
+            # ⚠️ Lo slug si prende dal **catalogo**, non si ricava dal nome che si
+            # legge a schermo. Fino al 22/09/2026 qui c'era solo
+            # `_slug_forma(nome_forma)`, cioè «Venusaur (Gigantamax Form)» ridotto a
+            # `venusaur-gigantamax-form` — uno slug che non esiste da nessuna parte,
+            # mentre nella stessa voce il catalogo aveva già scritto `venusaur-gmax`.
+            # Risultato: l'URL dello sprite puntava nel vuoto e la pagina mostrava
+            # l'icona di immagine spezzata, senza un errore da nessuna parte (nei
+            # template non c'è nemmeno un `onerror`). Il nome visualizzato resta il
+            # fallback per le voci che uno slug non ce l'hanno.
             _INDICE.setdefault(
                 _normalize_key(nome_forma),
-                {"data": unita, "slug": _slug_forma(nome_forma)},
+                {"data": unita, "slug": forma.get("slug") or _slug_forma(nome_forma)},
             )
 
     # ── Alias ────────────────────────────────────────────────────────────────
@@ -515,9 +695,22 @@ def api_pokemon(name):
     elif slug in SPRITE_FIXES:
         sprite    = SPRITE_FIXES[slug]
         sprite_hd = SPRITE_FIXES[slug]
+    elif slug in SENZA_SPRITE_PDB:
+        # ⚠️ Il valore e' **di solito** uno slug soltanto. Diventa `(slug, None)`
+        # quando anche il bersaglio del ripiego non ha l'illustrazione grande: sono
+        # due casi su 57, e la stessa convenzione `None` di `SPRITE_SLUG_OVERRIDES`
+        # qui sopra — non una seconda idea, la stessa.
+        ripiego = SENZA_SPRITE_PDB[slug]
+        ripiego, hd = ripiego if isinstance(ripiego, tuple) else (ripiego, ripiego)
+        sprite    = f"{PDB_SPRITE}/{ripiego}.png"
+        sprite_hd = f"{PDB_ART}/{hd}.jpg" if hd else sprite
     else:
-        sprite    = f"{PDB_SPRITE}/{slug}.png"
-        sprite_hd = f"{PDB_ART}/{slug}.jpg"
+        # ⚠️ Le regole sistematiche si applicano **qui in fondo**, dopo le tabelle:
+        # un override scritto a mano è una decisione presa guardando quella voce, e
+        # deve poter vincere su una regola generale.
+        s_pdb = _slug_pdb(slug)
+        sprite    = f"{PDB_SPRITE}/{s_pdb}.png"
+        sprite_hd = f"{PDB_ART}/{s_pdb}.jpg"
 
     # Mosse che questa voce puo' imparare nella regulation richiesta. `moves: null`
     # non e' "nessuna mossa" ma "non lo sappiamo": succede sulle forme inventate, che

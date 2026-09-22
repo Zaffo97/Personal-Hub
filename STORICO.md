@@ -20,6 +20,41 @@ pagina ed esegue `new Function()` su ogni blocco `<script>` **e** su ogni handle
 
 ## 22/09/2026
 
+**Gli sprite rotti: da 333 a 0 (§4.3)**
+
+Prima misurati, poi corretti. `scripts/controlla_sprite.py` (nuovo) chiede l'URL alla
+**route vera** per tutte le 1342 voci del catalogo e prova ogni indirizzo con una
+`HEAD`: partenza **333 URL rotti su 2684**, cioè **178 voci** che mostravano
+un'immagine spezzata. ⚠️ E non l'aveva segnalato nessuno per mesi perché **in nessun
+template c'è un `onerror`**: un 404 è l'icona del browser e basta.
+
+⚠️ **La causa grossa non era una tabella incompleta.** `_costruisci_indice()` ricavava
+lo slug dal **nome che si legge a schermo** — «Venusaur (Gigantamax Form)» diventava
+`venusaur-gigantamax-form` — mentre nella stessa voce il catalogo aveva già scritto
+`venusaur-gmax`. Una riga. Poi un secondo passaggio, che va tenuto distinto dal
+primo: il catalogo parla **PokéAPI**, pokemondb usa altre parole. `SUFFISSI_PDB`
+traduce le quattro famiglie grosse — `-gmax`→`-gigantamax` (32 forme),
+`-alola`→`-alolan` (18), `-galar`→`-galarian` (18), `-hisui`→`-hisuian` (16) — e
+confronta la **fine** dello slug, perché con un «contiene» la regola `-alola`
+romperebbe `pikachu-alola-cap`, che funziona.
+
+Il resto è stato guardato voce per voce, ogni slug **provato in rete** e nessuno
+dedotto per analogia. Tre ripieghi che una regola meccanica proponeva erano
+**sbagliati**, e sarebbero passati inosservati: Darmanitan di Galar ricadeva sul
+Darmanitan normale (un altro Pokémon, di tipo Ghiaccio), la Mega Meowstic femmina sul
+maschio, e i tre Tatsugiri tutti sulla forma curly.
+
+Restano **114 URL su 57 voci** che mostrano di proposito l'immagine di un'altra voce:
+i Totem di Alola, le andature di Koraidon e Miraidon, le Mega **inventate**. Stanno
+in `SENZA_SPRITE_PDB` e lo script li conta **a parte** — «va bene così» e «nessuno ha
+ancora guardato» devono restare due risposte diverse. ⬜ Quello che ancora manca è
+dirlo a chi guarda la pagina: sta in §4.3.
+
+Verifica: **0 rotti su 2570 URL**, regola #8 invariata (Incineroar atk 115, Amoonguss
+def 70 / hp 114), **sweep 28 pagine a 0 errori**, e Venusaur Gigantamax guardato in un
+browser vero — dove prima c'era l'icona spezzata. Resto della suite: 245, 56, 33, 28,
+11.
+
 **Quattro temi invece di due, e un controllo che li tiene in riga (§4.3)**
 
 Restano **Scuro** e **Chiaro**, arrivano **Oceano** (scuro freddo, accento ciano) e
