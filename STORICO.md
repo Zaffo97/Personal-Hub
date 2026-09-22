@@ -295,6 +295,25 @@ meno le vedeva riempite dallo standard. Il **server** però le leggeva già con
   salvataggio vero che porta la lega da `7:6, 6.5:3, 6:1` a **`7.5:8, 7:6, 6.5:3,
   6:1`**, con gli esempi della scheda che seguono (7.5 → +8).
 
+**I template non si ricaricavano: un server acceso serviva l'HTML di tre commit prima**
+
+- ⚠️✅ Davide ha risegnalato **tre cose già fatte** — lo scroll della modale, le fasce
+  che si aggiungono, i riquadri tondi — perché nella sua pagina non c'erano. Non
+  erano un baco: `auto_reload` di Jinja segue `debug`, che qui si accende solo con
+  `HUB_DEBUG=1`, quindi **senza debug ogni template si compila una volta sola e resta
+  in memoria per tutta la vita del processo**. Il suo server era acceso da prima di
+  quei commit. Riconosciuto **dallo screenshot**: conteneva «valori storici di
+  FantaGazzetta», tolto da `4a1b121`, e non aveva «Aggiungi una fascia», messo da
+  `e5a7ade` — cioè il markup esatto di `170deed`. Cura: `TEMPLATES_AUTO_RELOAD = True`
+  in `create_app()`, una `stat()` per template a pagina resa. Provato **nello stesso
+  processo**: pagina resa, template cambiato, pagina resa di nuovo — prima la spia non
+  compariva, ora sì (`auto_reload: True` con `debug: False`).
+- ⚠️ Il sintomo è **una modifica che non si vede**, e somiglia in tutto a un baco:
+  prima di rimettere mano al codice che «non funziona», confronta quello che c'è a
+  schermo con il template sul disco. Qui è costato un giro di lavoro. Misure del
+  codice di adesso, a 1280×620: `.modal-box` 570 px, corpo **475 px scrollabili su
+  893**, bordo basso del footer a **594 px su 620** — Salva e Annulla in vista.
+
 ---
 
 ## 21/09/2026

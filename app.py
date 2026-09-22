@@ -16,6 +16,17 @@ def create_app():
     # e con quello ci si firma da soli un cookie da amministratore.
     app.secret_key = chiave_di_sessione()
 
+    # ⚠️ Senza questa riga Jinja compila ogni template **una volta sola** e se lo
+    # tiene in memoria per tutta la vita del processo: `auto_reload` segue `debug`,
+    # che qui si accende solo con `HUB_DEBUG=1` (vedi in fondo al file). Un server
+    # avviato prima di una modifica continua quindi a servire l'HTML di allora,
+    # senza nessun errore e senza scadenza. Il 22/09/2026 e' costato un giro di
+    # lavoro: la modale del Fantacalcio mostrava ancora i testi e la struttura di
+    # tre commit prima — mancavano lo scroll e i pulsanti delle fasce, che sul
+    # disco c'erano gia' — e sembrava un baco del codice. Il prezzo e' una
+    # `stat()` per template a ogni pagina resa, cioe' niente su un hub di casa.
+    app.config["TEMPLATES_AUTO_RELOAD"] = True
+
     with app.app_context():
         init_db()
 
