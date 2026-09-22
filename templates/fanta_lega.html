@@ -97,7 +97,7 @@
         {% elif s == 'non_gioca' %}{% set conta.non_gioca = conta.non_gioca + 1 %}{% endif %}
       {% endfor %}
       <div class="text-sm">
-        <span class="prob prob-titolare">{{ conta.titolare }} titolare{% if conta.titolare != 1 %}i{% endif %}</span>
+        <span class="prob prob-titolare">{{ conta.titolare }} titolar{{ 'e' if conta.titolare == 1 else 'i' }}</span>
         <span class="prob prob-panchina">{{ conta.panchina }} in panchina</span>
         {% if conta.fuori %}<span class="prob prob-fuori">{{ conta.fuori }} non convocati</span>{% endif %}
         {% if conta.non_gioca %}<span class="prob prob-non_gioca">{{ conta.non_gioca }} non giocano</span>{% endif %}
@@ -124,7 +124,7 @@
       </span>
       {% if c.mancano %}
         <span class="badge badge-warning">mancano
-          {% for r, n in c.mancano.items() %}{{ n }} {{ ruoli[r] }}{% if not loop.last %}, {% endif %}{% endfor %}
+          {% for r, n in c.mancano.items() %}{{ n }} {{ nome_ruolo(r, n) }}{% if not loop.last %}, {% endif %}{% endfor %}
         </span>
       {% else %}
         <span class="badge badge-success">copribile</span>
@@ -146,14 +146,14 @@
           class="flex gap-2 items-end flex-wrap">
       <div style="position:relative;flex:1;min-width:260px">
         <label class="text-xs text-muted">Giocatore</label>
-        <input class="form-input" id="cerca" autocomplete="off"
+        <input class="form-control" id="cerca" autocomplete="off"
                placeholder="Scrivi almeno due lettere">
         <input type="hidden" name="player_id" id="player_id">
         <div id="ris"></div>
       </div>
       <div style="width:110px">
         <label class="text-xs text-muted">Prezzo pagato</label>
-        <input class="form-input" name="prezzo" type="number" step="1" min="0" value="0">
+        <input class="form-control" name="prezzo" type="number" step="1" min="0" value="0">
       </div>
       <button class="btn btn-primary" type="submit">Aggiungi</button>
     </form>
@@ -227,7 +227,7 @@
         </div>
         <form method="post"
               action="{{ url_for('fantacalcio.rosa_rimuovi', lid=lega.id, rid=g.rid) }}"
-              onsubmit="return confirm('Togliere {{ g.nome|e }} dalla rosa?')">
+              onsubmit='return confirm({{ ("Togliere " ~ g.nome ~ " dalla rosa?")|tojson }})'>
           <button class="btn btn-sm btn-danger" type="submit">&times;</button>
         </form>
       </div>
@@ -238,6 +238,64 @@
   </div>
   {% endfor %}
 </div>
+
+{# Correggere senza disfare. Fino al 21/09/2026 il prezzo si poteva cambiare solo
+   nell'anteprima dell'incolla - una volta in rosa si toglieva e si rimetteva - e il
+   togli era una riga per volta, cioe' venticinque conferme per rifare una rosa.
+   Sta in un <details> e non nella griglia qui sopra perche' la griglia si legge:
+   le caselle di testo in mezzo ai numeri della probabile le renderebbero un modulo. #}
+{% if rosa %}
+<div class="card mt-3">
+  <div class="card-header"><div class="card-title">Correggi la rosa</div></div>
+  <div style="padding:.75rem 1rem">
+    <details>
+      <summary style="cursor:pointer" class="text-sm font-600">
+        &#9999;&#65039; Prezzi e rimozioni in blocco ({{ rosa|length }} in rosa)
+      </summary>
+      <form method="post"
+            action="{{ url_for('fantacalcio.rosa_modifica', lid=lega.id) }}"
+            onsubmit="return confermaModifica(this)" class="mt-2">
+        <table class="table">
+          <thead>
+            <tr>
+              <th>Giocatore</th>
+              <th style="width:120px">Prezzo pagato</th>
+              <th style="width:70px;text-align:center">Togli</th>
+            </tr>
+          </thead>
+          <tbody>
+            {% for g in rosa %}
+            <tr{% if not g.attivo %} class="spento"{% endif %}>
+              <td>
+                <span class="ruolo ruolo-{{ g.ruolo_classic }}">{{ g.ruolo_classic|upper }}</span>
+                {{ g.nome }}
+                <span class="text-xs text-muted">{{ g.squadra or '—' }}</span>
+                {% if not g.attivo %}<span class="badge badge-warning">fuori listone</span>{% endif %}
+              </td>
+              <td>
+                <input class="form-control" type="number" step="1" min="0"
+                       name="prezzo_{{ g.rid }}"
+                       value="{% if g.prezzo %}{{ g.prezzo|round(0)|int }}{% else %}0{% endif %}">
+              </td>
+              <td style="text-align:center">
+                <input type="checkbox" name="togli" value="{{ g.rid }}">
+              </td>
+            </tr>
+            {% endfor %}
+          </tbody>
+        </table>
+        <div class="flex gap-2 items-center mt-2 flex-wrap">
+          <button class="btn btn-primary" type="submit">Salva le modifiche</button>
+          <span class="text-xs text-muted">
+            I prezzi cambiati si scrivono, gli spuntati escono dalla rosa. Chi esce lo
+            chiede una volta sola, non riga per riga.
+          </span>
+        </div>
+      </form>
+    </details>
+  </div>
+</div>
+{% endif %}
 
 <div class="card mt-3">
   <div class="card-header"><div class="card-title">Le regole di questa lega</div></div>
@@ -304,6 +362,16 @@
 </div>
 
 <script>
+// Una conferma sola per tutta la rosa: l'elenco qui sopra non e' una riga per volta,
+// quindi nemmeno la domanda lo e'. Senza niente di spuntato non chiede niente - si
+// stanno solo correggendo dei prezzi. ⚠️ Deve stare **fuori** dall'IIFE: un
+// `onsubmit` cerca la funzione fra le globali.
+function confermaModifica(f){
+  const n = f.querySelectorAll('input[name="togli"]:checked').length;
+  if (!n) return true;
+  return confirm(n === 1 ? 'Togliere 1 giocatore dalla rosa?'
+                         : 'Togliere ' + n + ' giocatori dalla rosa?');
+}
 (function(){
   const cerca = document.getElementById('cerca');
   const ris = document.getElementById('ris');

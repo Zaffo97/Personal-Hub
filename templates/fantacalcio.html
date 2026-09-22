@@ -24,7 +24,7 @@
     <div class="flex gap-2 items-center">
       {% if e_admin and proprietari %}
       <label class="text-xs text-muted">Utente:</label>
-      <select class="form-select" style="max-width:200px;font-size:.75rem"
+      <select class="form-control" style="max-width:200px;font-size:.75rem"
               onchange="location.href = this.value ? '/fantacalcio/?utente=' + this.value : '/fantacalcio/'">
         <option value="">Tutti</option>
         {% for pr in proprietari %}
@@ -124,7 +124,7 @@
       <a class="btn btn-sm btn-primary" href="{{ url_for('fantacalcio.lega', lid=l.id) }}">Rosa e regole</a>
       <button class="btn btn-sm" onclick='modificaLega({{ l|tojson }})'>Modifica</button>
       <form method="post" action="{{ url_for('fantacalcio.lega_elimina', lid=l.id) }}"
-            onsubmit="return confirm('Eliminare la lega {{ l.nome|e }} e la sua rosa?')">
+            onsubmit='return confirm({{ ("Eliminare la lega " ~ l.nome ~ " e la sua rosa?")|tojson }})'>
         <button class="btn btn-sm btn-danger" type="submit">Elimina</button>
       </form>
     </div>
@@ -148,24 +148,24 @@
       <div class="modal-body">
         <input type="hidden" name="lega_id" id="lega_id" value="0">
         <div class="form-group">
-          <label class="form-label">Nome della lega</label>
-          <input class="form-input" name="nome" id="f_nome" required maxlength="80">
+          <label>Nome della lega</label>
+          <input class="form-control" name="nome" id="f_nome" required maxlength="80">
         </div>
         <div class="form-group">
-          <label class="form-label">Moduli ammessi</label>
-          <input class="form-input" name="moduli" id="f_moduli"
+          <label>Moduli ammessi</label>
+          <input class="form-control" name="moduli" id="f_moduli"
                  placeholder="3-4-3,3-5-2,4-3-3">
           <div class="text-xs text-muted mt-1">Separati da virgola. I dieci di
             movimento devono fare 10: un modulo che non torna viene rifiutato.</div>
         </div>
         <div class="form-group">
-          <label class="form-label">Panchinari</label>
-          <input class="form-input" name="n_panchinari" id="f_panchinari" type="number" min="0" max="25" value="7">
+          <label>Panchinari</label>
+          <input class="form-control" name="n_panchinari" id="f_panchinari" type="number" min="0" max="25" value="7">
         </div>
         {# Il modificatore di difesa, con la struttura del regolamento ufficiale e
            i valori che invece la piattaforma lascia cambiare. #}
         <div class="form-group">
-          <label class="form-label">
+          <label>
             <input type="checkbox" name="mod_difesa" id="f_mod_difesa" value="1"
                    onchange="mostraDifesa()">
             Modificatore di difesa
@@ -187,10 +187,10 @@
               {% for media, punti in soglie_standard %}
               <div class="flex gap-1 items-center mb-1">
                 <span class="text-xs text-muted" style="width:5.2rem">media da</span>
-                <input class="form-input soglia-media" name="soglia_media" type="number"
+                <input class="form-control soglia-media" name="soglia_media" type="number"
                        step="0.1" min="0" max="10" value="{{ media }}" style="width:5.5rem">
                 <span class="text-xs text-muted">&rarr;</span>
-                <input class="form-input soglia-punti" name="soglia_punti" type="number"
+                <input class="form-control soglia-punti" name="soglia_punti" type="number"
                        step="0.5" value="{{ punti }}" style="width:5rem">
                 <span class="text-xs text-muted">punti</span>
               </div>
@@ -204,21 +204,21 @@
           </div>
         </div>
         <div class="form-group">
-          <label class="form-label">Bonus e malus</label>
+          <label>Bonus e malus</label>
           <div class="regole-griglia">
             {% for colonna, etichetta, ufficiale, valori in regole %}
             <div>
               <label class="text-xs">{{ etichetta }}</label>
               {# La tendina coi valori usati davvero, più «Altro…» per il resto:
                  la casella libera resta, ma non è più la prima cosa che si vede. #}
-              <select class="form-select" name="{{ colonna }}" id="f_{{ colonna }}"
+              <select class="form-control" name="{{ colonna }}" id="f_{{ colonna }}"
                       onchange="altroSeServe(this)">
                 {% for v in valori %}
                 <option value="{{ v }}">{{ v }}{% if valore_ufficiale.get(colonna) == v %} (ufficiale){% endif %}</option>
                 {% endfor %}
                 <option value="altro">Altro&hellip;</option>
               </select>
-              <input class="form-input mt-1" name="{{ colonna }}_altro"
+              <input class="form-control mt-1" name="{{ colonna }}_altro"
                      id="f_{{ colonna }}_altro" type="number" step="0.25"
                      style="display:none" placeholder="valore tuo">
               <div class="regola-uff">{% if ufficiale %}dal regolamento ufficiale{% else %}varia da lega a lega{% endif %}</div>
@@ -234,8 +234,8 @@
           </div>
         </div>
         <div class="form-group">
-          <label class="form-label">Note</label>
-          <textarea class="form-input" name="note" id="f_note" rows="4"
+          <label>Note</label>
+          <textarea class="form-control" name="note" id="f_note" rows="4"
                     placeholder="Le regole della lega che non stanno in un numero"></textarea>
         </div>
       </div>

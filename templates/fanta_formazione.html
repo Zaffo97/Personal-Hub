@@ -97,7 +97,7 @@
   <div style="padding:.7rem 1rem" class="flex items-center justify-between flex-wrap gap-2">
     <div class="flex items-center gap-2">
       <label class="text-sm font-600">Modulo</label>
-      <select class="form-select" id="sel_modulo" onchange="cambiaModulo(this.value)"
+      <select class="form-control" id="sel_modulo" onchange="cambiaModulo(this.value)"
               style="width:auto">
         {% for m in moduli %}
         <option value="{{ m }}" {% if m == modulo %}selected{% endif %}>{{ m }}</option>

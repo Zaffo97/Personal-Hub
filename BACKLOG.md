@@ -2,7 +2,7 @@
 
 > **Qui c'è solo ciò che è aperto.** Le voci chiuse stanno in [`STORICO.md`](STORICO.md),
 > una riga per lavoro con la data e i numeri della verifica.
-> Aggiornato: **18/09/2026**. Fonte storica: `Nuove implementazioni.docx` (verde = fatto).
+> Aggiornato: **22/09/2026**. Fonte storica: `Nuove implementazioni.docx` (verde = fatto).
 
 Legenda: ⬜ da fare · 🟨 parziale · ⚠️ trappola nota, da rileggere prima di toccare la zona
 
@@ -42,6 +42,7 @@ Non sono storia: sono le cose che questo progetto ha già pagato e che tornano a
 | ⚠️ **In italiano la virgola è ANCHE il separatore decimale** | Dal 21/09/2026, preso dalla prova al primo giro sulle soglie del modificatore di difesa. `"7,5:8, 6:2"` spezzato sulle virgole dà `7` e `5:8`: una tabella diversa da quella scritta, **senza nessun errore**. Ora le coppie `media:punti` si **cercano** con una regex invece di spezzare la riga, e se dopo averle tolte resta qualcosa che non è un separatore si torna allo standard — meglio un default dichiarato che tre righe su quattro. Vale per qualunque elenco di numeri scritto a mano in questo progetto |
 | ⚠️ **Il valore di partenza di un form non è il DEFAULT della tabella** | Dal 21/09/2026, trovato provando il JS in browser (lo sweep non poteva: era sintatticamente perfetto). Le tendine nuove delle regole precompilavano dai **valori ufficiali**, e le due voci che il regolamento non fissa — porta inviolata e autogol — non essendoci, partivano dal **primo valore della tendina**, cioè `0`. Una lega nuova nasceva con l'autogol che non toglie niente, mentre la tabella ha `DEFAULT -2`. Nessun errore, solo una regola sparita. Ora `VALORE_PARTENZA` è un dizionario **diverso** da `VALORE_UFFICIALE` e i due non si confondono. ⚠️ Fin quando il campo era vuoto il difetto non poteva esistere — era il DB a decidere: **dare un valore iniziale a un campo sposta la decisione dal DB al form**, e da lì in poi i due devono concordare |
 | ⚠️ **La cache delle probabili invecchia in ORE, non in mesi** | Dal 21/09/2026. Le tre pagine di fantacalcio.it stanno nella stessa cache, ma non hanno la stessa scadenza: il listone cambia a ogni mercato, le **probabili cambiano fino al fischio d'inizio** — un titolare diventa panchinaro il sabato mattina. Rileggere la cache e scrivere nel DB **non dà nessun errore**, dà una formazione vecchia con l'aria di essere quella di oggi. Per questo `importa_probabili.py` stampa **sempre** l'età della copia in ore e dice `--scarica`: praticamente ogni giro delle probabili vuole `--scarica`, al contrario del listone |
+| ⚠️ **`{{ nome|e }}` dentro un handler inline è un `SyntaxError` che aspetta un apostrofo** | Dal 22/09/2026, sul `confirm` che chiede se togliere un giocatore dalla rosa. L'escape HTML rende `N'Dicka` come `N&#39;Dicka`, e il browser **decodifica l'attributo prima** di passare il codice al parser JS: l'handler non compila, il `confirm` sparisce e **il form parte lo stesso**, cioè la conferma di una cosa irreversibile non c'è più. Nessun errore a schermo. E lo **sweep non lo vede finché il dato non ha l'apostrofo**: i nomi con l'apostrofo nel listone sono 2 su 597, e con nessuno dei due in rosa la pagina resa era pulita. La cura è `|tojson` con l'attributo fra **apici singoli** (regge anche le virgolette doppie); lo sweep prende solo ciò che la pagina resa contiene davvero, quindi il caso difficile va **messo nei dati di prova**. ⬜ Lo stesso handler è ancora in `admin_utenti.html:88` con `{{ u.username }}`: uno username con l'apostrofo lo romperebbe uguale |
 | ⚠️ **Lo sweep controlla il JavaScript, non che l'HTML sia ben formato** | Dal 21/09/2026, trovata da Davide cliccando «Fantacalcio» in sidebar e finendo sul PC Builder. Il blocco `{% if 'fantacalcio' … %}` era finito **dentro l'attributo `class`** del link PC Builder, che non veniva mai chiuso: il parser fonde i due `<a>` in uno solo, e resta un `href="/pcbuilder"` con scritto «Fantacalcio». `sweep_pagine.py` era a **0 errori** anche così, perché rende la pagina ed esegue `new Function()` sugli script e sugli handler — un tag mai chiuso non è JavaScript, quindi non lo guarda nessuno. Un link aggiunto a `base.html` va verificato **sulla pagina resa con un parser HTML** (href per href, e `<a>` aperti = chiusi), non a occhio sul template: l'errore si legge male proprio perché il pezzo giusto è tutto lì, solo nel posto sbagliato |
 | ⚠️ **Lo sweep guardava solo le pagine che si aprono con una `GET`** | Dal 21/09/2026, con l'anteprima della rosa incollata. `sweep_pagine.py` scorreva un elenco di URL e faceva `c.get()` su ognuno: una pagina che **esiste solo mandando un form** non era in nessun elenco, quindi lo sweep avrebbe detto «0 errori» senza averla mai resa — ed è una pagina piena di form, tendine e `<script>`, cioè esattamente quello che quello script esiste per controllare. È la stessa forma della trappola sulle tabelle nuove: un elenco scritto a mano che non si accorge di quello che non contiene. Ora c'è `PAGINE_POST` (URL + dati), e i dati di prova contengono di proposito un nome ambiguo e uno inesistente, perché la pagina resa abbia davvero dentro una tendina e una riga «non trovata». La regola: **una pagina nuova si aggiunge all'elenco giusto dei due nello stesso commit in cui nasce** |
 | ⚠️ **Una prova costruita male dice NO a un codice giusto, e costa come un baco** | Dal 21/09/2026, tre volte in un pomeriggio scrivendo le prove del consiglio e della rosa incollata. (1) Due righe incollate identiche messe in un **dizionario per testo** diventavano una: la prova chiedeva due esiti e ne trovava uno. (2) Il «contesi» del consiglio pretendeva un disaccordo fra fascia e punti attesi che coi numeri scelti **non poteva esistere** — serviva fm > 10.8, il banco ne aveva 9.0. (3) La regola del rivale in panchina veniva provata su un banco dove **tutti** i centrocampisti erano in campo, cioè chiedendo un rivale che non c'era. Ogni volta il primo istinto è stato «allora il codice sbaglia», e ogni volta la cura era rifare il banco: il numero che una prova pretende va **contato**, non scelto perché sembra grosso. Il danno è doppio — si perde tempo e, se si «corregge» il codice per far passare la prova, si rompe quello che funzionava |
@@ -841,18 +842,17 @@ candidato**, e quando non combaciano si **dichiarano** invece di sparire. Una ri
 che chiede `Bastoni JUV` e trova il Bastoni dell'Inter non è una riga sicura: o la
 sigla è sbagliata, o il giocatore giusto è un altro.
 
-⬜ Quello che resta aperto qui: **non si toglie in blocco** (una riga per volta, con
-la conferma), e il prezzo si corregge solo nell'anteprima — una volta in rosa, per
-cambiarlo bisogna togliere e rimettere.
+✅ **Chiuso il 22/09/2026**: il prezzo si corregge e si toglie in blocco dal pannello
+«Correggi la rosa», con una conferma sola. Numeri in `STORICO.md`.
 
-⬜ **Trovato il 21/09/2026 e non corretto perché fuori scope: la classe `form-input`
-non esiste.** La usano **10 campi** in quattro template del Fantacalcio
-(`fantacalcio.html` 7, `fanta_lega.html` 2, `fanta_probabili.html` 1), ma in
-`base.html` la classe si chiama **`form-control`** e `form-input` non è definita da
-nessuna parte — quei campi sono senza stile da quando la sezione è nata. È solo
-cosmetica e nessuno sweep può vederla (il JavaScript è perfetto), ma è una `sed` su
-quattro file: si fa quando si tocca la grafica della sezione. La pagina nuova
-(`fanta_rosa_incolla.html`) usa già `form-control`.
+✅ **Chiuso il 22/09/2026: le classi che non esistevano.** Erano `form-input` (10
+campi), `form-select` (3 punti nel Fantacalcio) e `form-label` (6, tolta perché il
+selettore `label` di `base.html` fa già quel lavoro); `items-end` mancava davvero ed è
+stata definita. ⬜ **Resta fuori dal Fantacalcio**: `form-select` è ancora usata da
+**4 tendine** — il selettore di sezione in `arduino.html`, `gaming.html`,
+`pcbuilder.html` e `pokemon.html` — e lì non è definita da nessuna parte. Sono senza
+stile come lo erano queste; si fa quando si tocca la grafica di quelle sezioni, non
+prima.
 
 **⬜ Cosa resta, in ordine di quanto è stato chiesto:**
 

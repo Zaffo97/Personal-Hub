@@ -18,6 +18,60 @@ pagina ed esegue `new Function()` su ogni blocco `<script>` **e** su ogni handle
 
 ---
 
+## 22/09/2026
+
+**Fantacalcio: correggere la rosa senza disfarla, e un `onsubmit` che si rompeva
+sugli apostrofi (§4.2)**
+
+Le due voci ⬜ rimaste aperte il 21/09/2026, più tre difetti trovati **guardando le
+pagine in un browser vero**, che è la parte che il giro precedente non aveva potuto
+fare.
+
+- ⚠️✅ **Il baco che nessuno sweep poteva vedere.** L'handler era
+  `onsubmit="return confirm('Togliere {{ g.nome|e }} dalla rosa?')"`: `|e` rende
+  `N'Dicka` come `N&#39;Dicka`, il browser **decodifica l'attributo prima** di
+  passarlo al parser JS, e l'handler diventa un `SyntaxError`. Un handler che non
+  compila non dà nessun errore a schermo: il `confirm` sparisce e il form parte lo
+  stesso, cioè **il giocatore usciva dalla rosa al primo clic sulla ×**. Sul listone
+  i nomi con l'apostrofo sono **2 su 597** (`N'Dicka`, `N'Dri`), nessuno dei due era
+  in rosa, quindi la pagina resa non conteneva l'apostrofo e lo **sweep diceva 0
+  errori**. Stesso handler, stesso difetto, sul nome della **lega** — che lo scrive
+  Davide, e «L'Inter dei miei» basta. Cura: `|tojson` con l'attributo fra **apici
+  singoli**, che regge anche le virgolette doppie dentro un nome. Provato a rovescio:
+  il codice di prima è un `SyntaxError` per `esprima`, quello di adesso compila.
+- ✅ **I prezzi si correggono e si toglie in blocco.** Una route sola
+  (`/lega/<id>/rosa/modifica`) e un pannello sotto la rosa: un campo prezzo e una
+  spunta per riga, un pulsante, **una conferma sola** per tutti quelli spuntati
+  invece di venticinque. Scrive solo i prezzi **davvero cambiati** (il flash dice
+  «1 prezzo corretto, 2 tolti dalla rosa», non «7 corretti»), e i `rid` che arrivano
+  dal browser vengono **riletti dalla rosa** prima di essere usati, come i
+  `player_id` nella conferma dell'incolla. Prima il prezzo si poteva cambiare
+  **solo** nell'anteprima dell'incolla: una volta in rosa si toglieva e si rimetteva.
+- ✅ **Le classi che non esistevano.** `form-input` la usavano **10 campi** in tre
+  template e in `base.html` la classe si chiama `form-control`: erano senza stile da
+  quando la sezione è nata. Con loro `form-select` (3 punti nel Fantacalcio) e
+  `form-label` (6, tolta: il selettore `label` di `base.html` fa già quel lavoro).
+  `items-end` invece **mancava davvero** e ora è definita accanto a `items-center`.
+- ✅ **Due plurali contati male**: «4 titolarei» (era `titolare` + `i`) e «mancano 2
+  Difensore, 3 Centrocampista», che ora passano da `nome_ruolo()`, la funzione che il
+  plurale dei quattro ruoli lo sapeva già fare.
+- ✅ **Verifiche**: `prova_fantacalcio.py` da 156 a **166 su 166** (i prezzi che
+  cambiano solo dove il form li tocca, un `rid` estraneo che non toglie niente, due
+  spuntati che escono insieme, un altro utente che non corregge né svuota la rosa
+  altrui, e **gli handler della pagina resa passati a `esprima` con due nomi con
+  l'apostrofo in rosa**); **sweep 0 errori** su 28 pagine per lingua; **135 query, 0
+  scoperte** (75 filtrate, 60 dichiarate).
+- ✅ **E la prova in un browser vero**, su una **copia** di `hub.db` con 7 in rosa:
+  il pannello si apre, il `confirm` dice «Togliere 2 giocatori dalla rosa?», il
+  salvataggio risponde «1 prezzo corretto, 2 tolti dalla rosa» e il DB lo conferma
+  (7 → 5 righe, Butez 5 → 42, gli altri intatti). Tutte e sei le × chiedono conferma
+  col nome giusto, apostrofi compresi. ⚠️ E una conferma **non cercata** di §1.1: i
+  primi due tentativi non cambiavano niente perché la sessione del browser era
+  `admin` e la lega era di un altro utente — in lettura l'admin vede tutto, in
+  scrittura `solo_mie()` non gli lascia toccare la rosa di nessuno.
+
+---
+
 ## 21/09/2026
 
 **Fantacalcio: le fondamenta dei dati (§4.2)**

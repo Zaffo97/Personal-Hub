@@ -21,7 +21,7 @@ from flask import (Blueprint, render_template, request, redirect, url_for,
 
 from extensions import (get_db, login_required, _i, ambito_utente, solo_mie,
                         utente_id, e_admin)
-from data import (RUOLI_FANTA, ORDINE_RUOLI_FANTA, scomponi_modulo,
+from data import (RUOLI_FANTA, ORDINE_RUOLI_FANTA, nome_ruolo, scomponi_modulo,
                   MOD_DIFESA_SOGLIE, soglie_mod_difesa, scrivi_soglie,
                   modificatore_difesa, controlla_formazione,
                   leggi_rosa_incollata, valuta_rosa, consiglia_moduli,
@@ -200,6 +200,20 @@ def _probabili_della_rosa(db, giornata, rosa):
                           "percentuale": (voce or {}).get("percentuale"),
                           "squadra": squadra}
     return fuori
+
+
+def _prezzo(grezzo):
+    """Il prezzo pagato come lo scrive chi compila: `12`, `12,5`, o niente.
+
+    Un campo vuoto vale **0**, non `None`: è la convenzione con cui la colonna è
+    nata (`DEFAULT 0`) e con cui la pagina la legge — `{% if g.prezzo %}` non
+    mostra lo zero, quindi «non l'ho pagato» e «non me lo ricordo» si vedono uguali.
+    Cambiarla adesso vorrebbe dire rileggere tutte le rose già scritte.
+    """
+    try:
+        return float(str(grezzo or 0).replace(",", "."))
+    except ValueError:
+        return 0.0
 
 
 def _numeri(f):
@@ -456,6 +470,9 @@ def lega(lid):
     speso = sum(g["prezzo"] or 0 for g in rosa)
     return render_template("fanta_lega.html", lega=riga, rosa=rosa,
                            per_ruolo=per_ruolo, ruoli=RUOLI_FANTA,
+                           # «mancano 2 difensori», non «2 Difensore»: il plurale
+                           # dei quattro ruoli lo sa già `nome_ruolo()`.
+                           nome_ruolo=nome_ruolo,
                            ordine=ORDINE_RUOLI_FANTA, spenti=spenti,
                            copertura=copertura, speso=speso,
                            regole=REGOLE, ufficiali=UFFICIALI,
@@ -745,10 +762,7 @@ def rosa_aggiungi(lid):
         db.close()
         flash("Giocatore non trovato nel listone", "error")
         return redirect(url_for("fantacalcio.lega", lid=lid))
-    try:
-        prezzo = float(str(request.form.get("prezzo") or 0).replace(",", "."))
-    except ValueError:
-        prezzo = 0.0
+    prezzo = _prezzo(request.form.get("prezzo"))
     try:
         db.execute("INSERT INTO fanta_roster(league_id, player_id, prezzo, note) "
                    "VALUES(?,?,?,?)",
@@ -776,6 +790,68 @@ def rosa_rimuovi(lid, rid):
     db.close()
     flash("Tolto dalla rosa" if cur.rowcount else "Non trovato",
           "success" if cur.rowcount else "error")
+    return redirect(url_for("fantacalcio.lega", lid=lid))
+
+
+@bp.route("/lega/<int:lid>/rosa/modifica", methods=["POST"])
+@login_required
+def rosa_modifica(lid):
+    """I prezzi corretti e le righe tolte, in un colpo solo.
+
+    Chiude le due voci rimaste aperte il 21/09/2026: il prezzo si poteva correggere
+    **solo** nell'anteprima dell'incolla — una volta in rosa bisognava togliere e
+    rimettere — e il togli era una riga per volta, cioè venticinque conferme per
+    rifare una rosa. Sono lo stesso elenco e lo stesso form, quindi sono una route
+    sola.
+
+    ⚠️ Di quello che torna dal browser non si fida niente: i `rid` vengono
+    **riletti dalla rosa di questa lega** prima di essere usati, quindi un id di
+    un'altra lega non tocca niente. È la stessa scelta di `rosa_incolla_conferma()`
+    con i `player_id`.
+
+    ⚠️ Scrive come `rosa_rimuovi()`: `solo_mie()` sulla **lega**, perché
+    `fanta_roster` non ha un proprietario suo (§1.1), e il `rowcount` guardato —
+    una scrittura filtrata che non tocca niente non dà errore.
+    """
+    db = get_db()
+    cond, par = solo_mie("l.user_id")
+    mia = f"league_id IN (SELECT l.id FROM fanta_leagues l WHERE {cond})"
+    # La rosa vera, prima di guardare il form: dice **quali** rid esistono qui e a
+    # che prezzo stanno, che è anche l'unico modo per contare i prezzi davvero
+    # cambiati invece di riscriverli tutti e dire «25 corretti».
+    righe = {r["id"]: r["prezzo"] for r in db.execute(
+        f"SELECT id, prezzo FROM fanta_roster WHERE league_id=? AND {mia}",
+        (lid,) + tuple(par)).fetchall()}
+
+    togli = [r for r in (_i(v, None) for v in request.form.getlist("togli"))
+             if r in righe]
+    tolti = 0
+    if togli:
+        segna = ",".join("?" * len(togli))
+        tolti = db.execute(
+            f"DELETE FROM fanta_roster WHERE id IN ({segna}) AND league_id=? AND {mia}",
+            tuple(togli) + (lid,) + tuple(par)).rowcount
+
+    corretti = 0
+    for rid, prima in righe.items():
+        if rid in togli or f"prezzo_{rid}" not in request.form:
+            continue
+        adesso = _prezzo(request.form.get(f"prezzo_{rid}"))
+        if adesso == (prima or 0):
+            continue
+        corretti += db.execute(
+            f"UPDATE fanta_roster SET prezzo=? WHERE id=? AND league_id=? AND {mia}",
+            (adesso, rid, lid) + tuple(par)).rowcount
+    db.commit()
+    db.close()
+
+    pezzi = []
+    if corretti:
+        pezzi.append(f"{corretti} prezz{'i corretti' if corretti > 1 else 'o corretto'}")
+    if tolti:
+        pezzi.append(f"{tolti} tolt{'i' if tolti > 1 else 'o'} dalla rosa")
+    flash(", ".join(pezzi).capitalize() if pezzi else "Niente da cambiare",
+          "success" if pezzi else "error")
     return redirect(url_for("fantacalcio.lega", lid=lid))
 
 
@@ -862,10 +938,7 @@ def rosa_incolla_conferma(lid):
         if pid is None or pid not in validi:
             ignoti += 1
             continue
-        try:
-            prezzo = float(str(request.form.get(f"prezzo_{n}") or 0).replace(",", "."))
-        except ValueError:
-            prezzo = 0.0
+        prezzo = _prezzo(request.form.get(f"prezzo_{n}"))
         try:
             db.execute("INSERT INTO fanta_roster(league_id, player_id, prezzo) "
                        "VALUES(?,?,?)", (lid, pid, prezzo))

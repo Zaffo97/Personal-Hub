@@ -268,6 +268,56 @@ def prove(dove):
         esito("e dice quali moduli sono copribili e quali no",
               b"3-4-3" in r.data and (b"mancano" in r.data or b"copribile" in r.data))
 
+        # --- 4b. correggere senza disfare -----------------------------------
+        # Le due voci rimaste aperte il 21/09/2026: il prezzo si correggeva solo
+        # nell'anteprima dell'incolla, e il togli era una riga per volta.
+        print("\n== 4b. i prezzi si correggono, e si toglie in blocco ==")
+
+        def rosa_ora():
+            db = extensions.get_db()
+            fuori = {x["player_id"]: dict(x) for x in db.execute(
+                "SELECT id, player_id, prezzo FROM fanta_roster")}
+            db.close()
+            return fuori
+
+        righe = rosa_ora()
+        c.post(f"/fantacalcio/lega/{lid}/rosa/modifica", data={
+            f"prezzo_{righe[1]['id']}": "25",
+            f"prezzo_{righe[2]['id']}": "0",
+            f"prezzo_{righe[3]['id']}": "10"}, follow_redirects=True)
+        p = rosa_ora()
+        esito("il prezzo si corregge senza togliere e rimettere",
+              p[1]["prezzo"] == 25 and p[2]["prezzo"] == 0,
+              f"1={p[1]['prezzo']} 2={p[2]['prezzo']}")
+        esito("e chi non era nel form resta com'era",
+              p[4]["prezzo"] == 10 and p[5]["prezzo"] == 10,
+              f"4={p[4]['prezzo']} 5={p[5]['prezzo']}")
+        r = c.post(f"/fantacalcio/lega/{lid}/rosa/modifica", data={},
+                   follow_redirects=True)
+        esito("un salvataggio che non cambia niente lo dice",
+              "Niente da cambiare" in r.data.decode("utf-8", "replace"))
+        # ⚠️ I numeri del form si rileggono dalla rosa prima di usarli: un `rid`
+        # che non è di questa lega non deve togliere niente. È la stessa scelta
+        # dei `player_id` nella conferma dell'incolla.
+        c.post(f"/fantacalcio/lega/{lid}/rosa/modifica", data={"togli": "9999"},
+               follow_redirects=True)
+        esito("⚠️ un id che non è in questa rosa non toglie niente",
+              len(rosa_ora()) == 5, str(len(rosa_ora())))
+        c.post(f"/fantacalcio/lega/{lid}/rosa/modifica", data={
+            "togli": [str(righe[1]["id"]), str(righe[2]["id"])]},
+            follow_redirects=True)
+        rimasti = rosa_ora()
+        esito("due spuntati escono insieme, con una conferma sola",
+              len(rimasti) == 3 and 1 not in rimasti and 2 not in rimasti,
+              str(sorted(rimasti)))
+        # Le prove che vengono dopo contano cinque righe in rosa: questo blocco
+        # rimette quello che ha tolto, prezzo compreso.
+        for pid in (1, 2):
+            c.post(f"/fantacalcio/lega/{lid}/rosa/aggiungi",
+                   data={"player_id": str(pid), "prezzo": "10"})
+        esito("la rosa torna com'era per le prove che seguono",
+              len(rosa_ora()) == 5, str(len(rosa_ora())))
+
         # --- 5. l'autocomplete ----------------------------------------------
         r = c.get("/fantacalcio/api/giocatori?q=bar")
         voci = r.get_json()
@@ -310,6 +360,20 @@ def prove(dove):
         rosa2 = db.execute("SELECT COUNT(*) FROM fanta_roster").fetchone()[0]
         db.close()
         esito("e non può togliere un giocatore dalla rosa altrui", rosa2 == 5, str(rosa2))
+        db = extensions.get_db()
+        prezzi_prima = sorted(x["prezzo"] for x in db.execute(
+            "SELECT prezzo FROM fanta_roster"))
+        tutti = [x["id"] for x in db.execute("SELECT id FROM fanta_roster")]
+        db.close()
+        c.post(f"/fantacalcio/lega/{lid}/rosa/modifica",
+               data={"togli": [str(x) for x in tutti],
+                     f"prezzo_{tutti[0]}": "999"}, follow_redirects=True)
+        db = extensions.get_db()
+        prezzi_dopo = sorted(x["prezzo"] for x in db.execute(
+            "SELECT prezzo FROM fanta_roster"))
+        db.close()
+        esito("⚠️ né correggere i prezzi o svuotare la rosa di un altro in blocco",
+              prezzi_dopo == prezzi_prima, f"{prezzi_prima} -> {prezzi_dopo}")
 
     # --- 7. il mercato: si spegne, non si cancella ---------------------------
     print("\n== 6. il mercato: chi esce dal listone si spegne, non sparisce ==")
@@ -1261,6 +1325,70 @@ def prove(dove):
                 data={"modulo": "4-4-2"}, follow_redirects=True)
         esito("⚠️ e non può applicarlo al campo di un altro",
               formazione_scritta() == prima)
+
+
+    # --- 15. un apostrofo nel nome non rompe la conferma ---------------------
+    # ⚠️ `{{ nome|e }}` dentro un `onsubmit` è un baco silenzioso: l'escape HTML
+    # rende `N'Dicka` come `N&#39;Dicka`, il browser lo **decodifica prima** di
+    # passare il codice al parser JS, e l'handler diventa un `SyntaxError`. Un
+    # handler che non compila non è un errore a schermo: il `confirm` sparisce e
+    # il form parte lo stesso, cioè il giocatore esce dalla rosa al primo clic.
+    # Sul listone vero i nomi con l'apostrofo sono due (`N'Dicka`, `N'Dri`), e il
+    # nome di una lega lo scrive Davide — «L'Inter dei miei» basta e avanza.
+    print("\n== 15. un apostrofo nel nome non rompe la conferma ==")
+    import html as _html
+    import re
+    try:
+        import esprima
+    except ImportError:
+        esprima = None
+    HANDLER = re.compile(
+        r"""\bon(?:click|change|submit)\s*=\s*("([^"]*)"|'([^']*)')""", re.I)
+    SENZA_SCRIPT = re.compile(r"<script\b[^>]*>.*?</script>", re.S | re.I)
+
+    db = extensions.get_db()
+    db.execute("INSERT INTO fanta_players(id,nome,squadra,ruolo_classic,qa,fvm,"
+               "fantamedia,attivo,visto_il) VALUES(99,'N''Dri','XXX','a',10,20,"
+               "6.0,1,'2026-09-21')")
+    db.execute("INSERT INTO fanta_leagues(user_id,nome,sistema,moduli) "
+               "VALUES(?,?,'classic','3-4-3')",
+               (ids["davide"], 'L\'Inter dei "miei"'))
+    lid_ap = db.execute("SELECT id FROM fanta_leagues ORDER BY id DESC "
+                        "LIMIT 1").fetchone()["id"]
+    db.commit()
+    db.close()
+
+    def handler_rotti(pagina):
+        """Quanti handler inline non compilano, come li vedrebbe il browser."""
+        rotti = []
+        for m in HANDLER.finditer(SENZA_SCRIPT.sub("", pagina)):
+            codice = _html.unescape(m.group(2) if m.group(2) is not None else m.group(3))
+            try:
+                esprima.parseScript("function _(){%s}" % codice, {"tolerant": False})
+            except Exception as e:
+                rotti.append(f"{codice[:60]} -> {str(e)[:40]}")
+        return rotti
+
+    with app.test_client() as c3:
+        with c3.session_transaction() as s:
+            s["username"] = "davide"
+            s["role"] = "user"
+            s["user_id"] = ids["davide"]
+        c3.post(f"/fantacalcio/lega/{lid_ap}/rosa/aggiungi",
+                data={"player_id": "99", "prezzo": "10"})
+        pagina = c3.get(f"/fantacalcio/lega/{lid_ap}").data.decode("utf-8", "replace")
+        elenco = c3.get("/fantacalcio/").data.decode("utf-8", "replace")
+    esito("il giocatore con l'apostrofo è davvero in pagina", "N&#39;Dri" in pagina)
+    if esprima is None:
+        esito("⚠️ senza `esprima` la sintassi degli handler non è provata", False,
+              "pip install esprima")
+    else:
+        rotti = handler_rotti(pagina)
+        esito("⚠️ nessun handler rotto dall'apostrofo nel nome del giocatore",
+              not rotti, str(rotti))
+        rotti = handler_rotti(elenco)
+        esito("⚠️ né dall'apostrofo e dalle virgolette nel nome della lega",
+              not rotti, str(rotti))
 
 
 def main():

@@ -1182,6 +1182,29 @@
       "mod_difesa_soglie": "7:6, 6.5:3, 6:1",
       "bonus_gol": 3.0,
       "modulo_scelto": null
+    },
+    {
+      "id": 2,
+      "user_id": 1,
+      "nome": "A",
+      "sistema": "classic",
+      "moduli": "3-4-3,3-5-2,4-3-3,4-4-2,4-5-1,5-3-2,5-4-1",
+      "n_panchinari": 7,
+      "mod_difesa": 0,
+      "bonus_assist": 1.0,
+      "malus_amm": -0.5,
+      "malus_esp": -1.0,
+      "malus_gol_subito": -1.0,
+      "bonus_imbattibilita": 1.0,
+      "bonus_rigore_parato": 3.0,
+      "malus_rigore_sbagliato": -3.0,
+      "malus_autogol": -2.0,
+      "note": null,
+      "created_at": "2026-09-21 19:35:08",
+      "mod_difesa_portiere": 1,
+      "mod_difesa_soglie": "7:6, 6.5:3, 6:1",
+      "bonus_gol": 3.0,
+      "modulo_scelto": null
     }
   ],
   "fanta_roster": [
