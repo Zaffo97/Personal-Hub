@@ -9,7 +9,9 @@
 #}
 {% block title %}Consiglio &ndash; {{ lega.nome }}{% endblock %}
 {% block topbar_title %}&#9917; {{ lega.nome }}{% endblock %}
+{% block body_class %}sez-fanta{% endblock %}
 {% block extra_head %}
+<link rel="stylesheet" href="{{ url_for('static', filename='css/fantacalcio.css') }}">
 <style>
 .fascia{font-size:.64rem;font-weight:700;padding:.05rem .32rem;border-radius:20px;white-space:nowrap}
 .fascia-sicuro{background:var(--success-dim);color:var(--success)}

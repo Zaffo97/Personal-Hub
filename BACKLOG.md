@@ -872,13 +872,17 @@ prima.
 **⬜ Due cose chieste da Davide il 22/09/2026, da fare quando il resto della
 sezione è finito:**
 
-- ⬜ **I riquadri dei valori selezionabili vanno rivisti**, che oggi sono quelli
-  standard di `base.html`: «renderli più belli, magari **tondi** tanto per iniziare,
-  dare un tocco di personalizzazione in più». Riguarda le tendine delle regole, le
-  caselle delle fasce del modificatore e i campi della rosa — cioè tutto ciò che
-  nella sezione si sceglie o si scrive. ⚠️ Va **dopo** il resto del Fantacalcio, per
-  sua richiesta: è l'ultimo strato, e rifarlo mentre i form cambiano vuol dire farlo
-  due volte
+- ✅ **I riquadri, fatti il 22/09/2026.** Campi e pulsanti **tondi** (pillola),
+  spunte col verde della sezione, riquadri con angoli più morbidi, ogni regola in
+  una sua pastiglia, righe della rosa che si accendono al passaggio. ⚠️ Tutto sta
+  in `static/css/fantacalcio.css` sotto `body.sez-fanta`, e non è pignoleria:
+  `.form-control`, `.btn` e le card stanno in `base.html` e le usano **tutte** le
+  sezioni — ritoccarle lì avrebbe cambiato Pokémon, Gaming, Arduino e PC Builder
+  senza che nessuno l'avesse chiesto. Il gancio è il blocco `body_class`, che
+  nasce vuoto per tutte le altre pagine. ⚠️ E i colori vengono dalle variabili del
+  tema, con l'accento dichiarato per **tutti e due** i temi: un verde fisso starebbe
+  bene sullo scuro e male sul chiaro, e non se ne accorgerebbe nessuno finché
+  qualcuno non cambia tema
 - ⬜ **La sintassi va resa più generica**, «senza far riferimento al mio progetto ma
   solo a ciò che ci interessa del fantacalcio». ⚠️ Il perimetro va **chiesto a
   Davide prima di iniziare**: oggi i riferimenti al progetto stanno nei **commenti**

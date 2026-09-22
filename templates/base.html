@@ -197,7 +197,11 @@ function tipoVis(tipo){
    un <link> veniva ignorato perche' trattato come testo CSS. #}
 {% block extra_head %}{% endblock %}
 </head>
-<body>
+{# ⚠️ `body_class` nasce **vuoto** e resta vuoto per tutte le pagine tranne quelle
+   che lo chiedono: e' il gancio con cui una sezione puo' avere un foglio di stile
+   suo senza toccare `.form-control`, `.btn` e le card qui dentro, che sono di
+   tutti. La prima a usarlo e' il Fantacalcio (22/09/2026). #}
+<body class="{% block body_class %}{% endblock %}">
 <div id="sidebarOverlay" onclick="closeSidebar()"></div>
 <nav id="sidebar">
   <div class="sidebar-logo">

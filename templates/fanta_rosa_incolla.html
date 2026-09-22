@@ -11,7 +11,9 @@
 #}
 {% block title %}Rosa incollata &ndash; {{ lega.nome }}{% endblock %}
 {% block topbar_title %}&#9917; {{ lega.nome }}{% endblock %}
+{% block body_class %}sez-fanta{% endblock %}
 {% block extra_head %}
+<link rel="stylesheet" href="{{ url_for('static', filename='css/fantacalcio.css') }}">
 <style>
 .st{font-size:.66rem;font-weight:700;padding:.08rem .4rem;border-radius:20px;white-space:nowrap}
 .st-ok{background:var(--success-dim);color:var(--success)}

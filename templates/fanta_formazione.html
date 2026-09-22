@@ -2,7 +2,9 @@
 {% from "_fanta_allerta.html" import avviso as allerta_formazione %}
 {% block title %}Formazione &ndash; {{ lega.nome }}{% endblock %}
 {% block topbar_title %}&#9917; Formazione &mdash; {{ lega.nome }}{% endblock %}
+{% block body_class %}sez-fanta{% endblock %}
 {% block extra_head %}
+<link rel="stylesheet" href="{{ url_for('static', filename='css/fantacalcio.css') }}">
 <style>
 /* Il campo. Le file sono quattro — attacco in alto, portiere in basso — e la
    loro **altezza è uguale**: un reparto da 5 e uno da 2 devono stare sulla

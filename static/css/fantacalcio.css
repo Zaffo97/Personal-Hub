@@ -1,0 +1,101 @@
+/* Lo stile della sola sezione Fantacalcio.
+   ────────────────────────────────────────────────────────────────────────────
+   Chiesto da Davide il 22/09/2026: «rivedere i riquadri dei vari valori
+   selezionabili e renderli piu' belli, magari tondi tanto per iniziare, dare un
+   tocco di personalizzazione in piu'».
+
+   ⚠️ Tutto sta sotto `body.sez-fanta`, e non e' pignoleria: `.form-control`,
+   `.btn` e le card sono definite in `base.html` e le usano **tutte** le sezioni.
+   Ritoccarle la' dentro avrebbe cambiato Pokemon, Gaming, Arduino e PC Builder
+   senza che nessuno l'avesse chiesto. Qui invece il foglio si carica solo dove
+   serve: lo mettono in `extra_head` i template del Fantacalcio, e la classe sul
+   body la mette il loro `body_class`.
+
+   ⚠️ E i **colori non sono scritti a mano**: vengono dalle variabili del tema, che
+   cambiano da sole fra chiaro e scuro. Un verde fisso qui dentro starebbe bene sul
+   tema scuro e male sull'altro, ed e' esattamente il genere di cosa che non si
+   scopre finche' qualcuno non cambia tema. L'unico colore nuovo e' l'accento della
+   sezione, dichiarato per tutti e due i temi. */
+
+body.sez-fanta {
+  /* Il verde del campo, che e' gia' il colore di «titolare» nelle probabili: la
+     sezione non si inventa una tinta, riusa quella che significa gia' qualcosa. */
+  --fanta: #16a34a;
+  --fanta-soft: rgba(22, 163, 74, .14);
+}
+@media (prefers-color-scheme: light) {
+  body.sez-fanta { --fanta: #15803d; }
+}
+:root[data-theme="light"] body.sez-fanta,
+body.sez-fanta[data-theme="light"] { --fanta: #15803d; }
+
+/* ── I campi: tondi, e con il fuoco che si vede ───────────────────────────── */
+/* Una pillola vale per i campi a **una riga**. La `textarea` della rosa incollata
+   e' alta otto righe: arrotondarla come un pulsante la farebbe sembrare un errore,
+   quindi resta con il raggio di base, appena addolcito. */
+body.sez-fanta input.form-control,
+body.sez-fanta select.form-control {
+  border-radius: 999px;
+  padding-left: .85rem;
+  padding-right: .85rem;
+  transition: border-color .15s, box-shadow .15s, background .15s;
+}
+body.sez-fanta textarea.form-control { border-radius: 14px; }
+
+body.sez-fanta .form-control:hover { border-color: color-mix(in oklch, var(--fanta) 45%, var(--border)); }
+body.sez-fanta .form-control:focus {
+  border-color: var(--fanta);
+  box-shadow: 0 0 0 3px var(--fanta-soft);
+}
+
+/* Le caselle: la spunta prende il colore della sezione invece del blu di sistema,
+   ed e' grande abbastanza da centrarla senza mirare. */
+body.sez-fanta input[type="checkbox"] {
+  accent-color: var(--fanta);
+  width: 1rem;
+  height: 1rem;
+  cursor: pointer;
+}
+
+/* ── I pulsanti, tondi come i campi ───────────────────────────────────────── */
+body.sez-fanta .btn { border-radius: 999px; }
+body.sez-fanta .btn-primary { box-shadow: 0 1px 2px rgba(0, 0, 0, .12); }
+
+/* ⚠️ La × che toglie un giocatore resta **quadrata di forma ma tonda di angoli** e
+   piccola: e' l'unico pulsante distruttivo della pagina, e farla identica alle
+   altre pillole la nasconderebbe in mezzo a loro. */
+body.sez-fanta .giocatore .btn-danger,
+body.sez-fanta .soglia-via {
+  border-radius: 50%;
+  width: 1.6rem;
+  height: 1.6rem;
+  padding: 0;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  line-height: 1;
+}
+
+/* ── I riquadri ───────────────────────────────────────────────────────────── */
+body.sez-fanta .card { border-radius: 16px; }
+body.sez-fanta .card-header { border-radius: 16px 16px 0 0; }
+
+/* Le regole della lega e le fasce del modificatore: ogni valore in un riquadro
+   suo, cosi' si leggono come un elenco di cose e non come un muro di testo. */
+body.sez-fanta .regole-lista > div {
+  background: var(--surface-off);
+  border: 1px solid var(--border);
+  border-radius: 999px;
+  padding: .3rem .75rem;
+}
+
+/* La griglia della rosa: la riga del giocatore si accende passandoci sopra, che e'
+   il modo piu' economico per far vedere che le righe sono separate. */
+body.sez-fanta .giocatore { border-radius: 10px; transition: background .12s; }
+body.sez-fanta .giocatore:hover { background: var(--surface-off); }
+
+/* Il riquadro del modificatore dentro la modale, che era un rettangolo secco. */
+body.sez-fanta #boxDifesa { border-radius: 14px; }
+body.sez-fanta #ris { border-radius: 14px; }
+body.sez-fanta #ris div:first-child { border-radius: 14px 14px 0 0; }
+body.sez-fanta #ris div:last-child { border-radius: 0 0 14px 14px; }

@@ -70,6 +70,45 @@ fare.
   `admin` e la lega era di un altro utente — in lettura l'admin vede tutto, in
   scrittura `solo_mie()` non gli lascia toccare la rosa di nessuno.
 
+**Fantacalcio: lo stile della sezione, tondo e suo**
+
+«Rivedere i riquadri dei vari valori selezionabili e renderli più belli, magari
+tondi tanto per iniziare, dare un tocco di personalizzazione in più» — la voce che
+Davide aveva messo in coda a tutto il resto, e che ora tocca.
+
+- ✅ Campi e pulsanti a **pillola**, spunte col verde della sezione, card con angoli
+  più morbidi, ogni regola in una sua pastiglia, le righe della rosa che si
+  accendono al passaggio, e la **×** che resta tonda e piccola invece di diventare
+  una pillola come le altre: è l'unico pulsante distruttivo della pagina, e farla
+  uguale alle altre l'avrebbe nascosta.
+- ⚠️ **Perché non sta in `base.html`**: `.form-control`, `.btn` e `.card` sono di
+  **tutte** le sezioni. Il foglio nuovo (`static/css/fantacalcio.css`) vive sotto
+  `body.sez-fanta`, e il gancio è un blocco `body_class` che nasce **vuoto** per
+  ogni altra pagina. Verificato: su `/pokemon/` il body non ha classi, il foglio
+  non viene nemmeno caricato e i campi sono identici a prima.
+- ⚠️ **I colori vengono dal tema**, e l'accento è dichiarato per tutti e due: un
+  verde fisso starebbe bene sullo scuro e male sul chiaro, ed è il genere di cosa
+  che si scopre solo quando qualcuno cambia tema. Misurato: `--fanta` vale `#16a34a`
+  sullo scuro e `#15803d` sul chiaro, e l'anello del fuoco risolve a
+  `rgba(22,163,74,.14)`.
+- ⚠️ **Quello che questa verifica NON ha potuto dire**, e va scritto: lo stato
+  `:focus` **non si rende** nel browser incorporato, perché il documento non ha il
+  focus della finestra — non si applica nemmeno la regola `:focus` di `base.html`,
+  che c'è da sempre. Quindi del fuoco è provato che la regola esiste nel CSSOM, che
+  il selettore combacia sull'elemento giusto e che i suoi valori risolvono (sonda
+  con `var(--fanta)`: bordo `rgb(21,128,61)`, anello `rgba(22,163,74,.14)`), non che
+  si veda. L'hover invece si rende, e si vede.
+- ⚠️ E una trappola di **misura** presa qui: leggere `getComputedStyle()` nello
+  stesso `javascript_exec` in cui si è appena cambiato lo stile restituisce il
+  valore **vecchio**. Due letture di fila davano «la regola non si applica» su un
+  CSS che funzionava: la misura va fatta in una chiamata a parte.
+- ✅ **Verifiche**: `sweep_pagine.py` **0 errori**, `prova_fantacalcio.py` **210 su
+  210** (invariate: è solo stile), e in browser i valori calcolati — campi e
+  pulsanti `999px`, card `16px`, la × `50%` a 24×24, le regole `999px`, la spunta
+  con `accent-color: rgb(22,163,74)`.
+
+---
+
 **Fantacalcio: i quarti di voto nella tabella del modificatore**
 
 Chiesti da Davide — «voglio che vengano gestiti i casi 0.25, che è come li propone

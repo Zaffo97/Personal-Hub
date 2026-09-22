@@ -2,7 +2,9 @@
 {% from "_fanta_allerta.html" import avviso as allerta_formazione %}
 {% block title %}{{ lega.nome }} &ndash; Fantacalcio{% endblock %}
 {% block topbar_title %}&#9917; {{ lega.nome }}{% endblock %}
+{% block body_class %}sez-fanta{% endblock %}
 {% block extra_head %}
+<link rel="stylesheet" href="{{ url_for('static', filename='css/fantacalcio.css') }}">
 <style>
 .rosa-griglia{display:grid;grid-template-columns:repeat(auto-fill,minmax(280px,1fr));gap:.85rem}
 .giocatore{display:flex;align-items:center;justify-content:space-between;gap:.5rem;
