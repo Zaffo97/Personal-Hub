@@ -12,7 +12,16 @@
   width:100%;max-width:820px;max-height:92dvh;display:flex;flex-direction:column;overflow:hidden}
 .modal-header{display:flex;align-items:center;justify-content:space-between;
   padding:.75rem 1.1rem;border-bottom:1px solid var(--border)}
-.modal-body{flex:1;padding:1rem;overflow-y:auto}
+/* ⚠️ Qui il <form> avvolge header, corpo e footer, e per questo serve anche a lui
+   di essere una colonna flessibile: senza, il `flex:1` del corpo non agisce (il suo
+   genitore non e' un contenitore flex), il form cresce oltre il box e
+   `overflow:hidden` taglia quello che avanza — su uno schermo basso sparivano le
+   regole della lega **e il pulsante Salva**, senza nessuno scroll per arrivarci.
+   Misurato il 22/09/2026 a 1280x620: box 570px, form 733px.
+   ⚠️ In `arduino.html` e `pcbuilder.html` questa riga **non serve**, perche' li' il
+   form sta dentro `.modal-body` e il corpo e' gia' figlio diretto del box. */
+#legaModal > .modal-box > form{display:flex;flex-direction:column;flex:1;min-height:0}
+.modal-body{flex:1;min-height:0;padding:1rem;overflow-y:auto}
 .modal-footer{padding:.75rem 1.1rem;border-top:1px solid var(--border);display:flex;gap:.6rem;flex-wrap:wrap}
 .regole-griglia{display:grid;grid-template-columns:repeat(auto-fill,minmax(210px,1fr));gap:.6rem}
 .regola-uff{color:var(--text-faint);font-size:.68rem}
@@ -54,14 +63,15 @@
   <div style="padding:.75rem 1rem" class="text-sm">
     {% if listone.attivi %}
       <strong>{{ listone.attivi }}</strong> giocatori attivi
-      {% if listone.spenti %}&middot; {{ listone.spenti }} non più in Serie A (spenti, non cancellati){% endif %}
+      {% if listone.spenti %}&middot; {{ listone.spenti }} non più in Serie A{% endif %}
       {% if listone.visto %}&middot; aggiornato il <strong>{{ listone.visto }}</strong>{% endif %}
       <div class="text-xs text-muted mt-1">
         {% if eta_cache.listone is not none %}
           Letto da fantacalcio.it {{ eta_cache.listone|round(0)|int }} ore fa.
         {% endif %}
-        Si rilegge da sé quando la copia passa la settimana &mdash; a ogni mercato
-        conviene non aspettare e premere Aggiorna. Da riga di comando:
+        Si aggiorna da solo quando la copia supera la settimana. Dopo una
+        sessione di mercato conviene premere <strong>Aggiorna ora</strong> senza
+        aspettare. In alternativa, da riga di comando:
         <code>python scripts/importa_listone.py --scarica</code>
       </div>
     {% else %}
@@ -93,8 +103,8 @@
         {% if eta_cache.probabili is not none %}
           Lette da fantacalcio.it {{ eta_cache.probabili|round(1) }} ore fa.
         {% endif %}
-        Cambiano fino al fischio d'inizio: entrando qui si rileggono da sé se la
-        copia ha più di <strong>tre ore</strong>.
+        Cambiano fino al fischio d'inizio: aprendo la sezione si aggiornano da
+        sole se la copia ha più di <strong>tre ore</strong>.
       </div>
     {% else %}
       <span class="text-muted">Nessuna giornata importata.</span>
@@ -145,7 +155,8 @@
 </div>
 {% else %}
 <div class="card"><div style="padding:1.2rem" class="text-muted text-sm">
-  Non c'è ancora nessuna lega. Creane una: ne gestisci due, con regole diverse.
+  Non c'è ancora nessuna lega. Creane una per cominciare: ogni lega ha le sue
+  regole, la sua rosa e la sua formazione.
 </div></div>
 {% endif %}
 
@@ -166,8 +177,9 @@
           <label>Moduli ammessi</label>
           <input class="form-control" name="moduli" id="f_moduli"
                  placeholder="3-4-3,3-5-2,4-3-3">
-          <div class="text-xs text-muted mt-1">Separati da virgola. I dieci di
-            movimento devono fare 10: un modulo che non torna viene rifiutato.</div>
+          <div class="text-xs text-muted mt-1">Separati da virgola. Difensori,
+            centrocampisti e attaccanti devono sommare 10; un modulo che non torna
+            non viene salvato.</div>
         </div>
         <div class="form-group">
           <label>Panchinari</label>
@@ -184,8 +196,8 @@
           <div id="boxDifesa" style="display:none;padding:.6rem .8rem;margin-top:.4rem;
                border:1px solid var(--border);border-radius:var(--radius-sm)">
             <div class="text-xs text-muted mb-2">
-              Media aritmetica dei voti <strong>esclusi bonus e malus</strong>, e si
-              applica solo se almeno <strong>4 difensori</strong> portano voto.
+              Si calcola sulla media dei voti <strong>senza bonus e malus</strong>, e
+              vale solo se almeno <strong>4 difensori</strong> prendono voto.
             </div>
             <label class="text-xs">
               <input type="checkbox" name="mod_difesa_portiere" id="f_mod_difesa_portiere"
@@ -212,16 +224,13 @@
                       onclick="scriviSoglie(SOGLIE_QUARTI)">Sei fasce, a quarti</button>
             </div>
             <div class="text-xs text-muted mt-1">
-              Si parte dai valori storici di FantaGazzetta: la piattaforma lascia
-              cambiare i numeri e <strong>quante fasce</strong> ci sono, non la
-              struttura. Sotto la soglia più bassa non c'è bonus. Le fasce si
-              riordinano dalla più alta quando salvi, una riga lasciata vuota non
-              viene salvata, e <strong>l'ultima non si toglie</strong>: per non avere
-              nessun bonus si spegne la casella qui sopra. Le soglie si scrivono
-              <strong>«da questo valore in su»</strong>, due decimali: la fascia
-              «6,26-6,50 &rarr; +3» si scrive <code>6.26</code>, e una media di
-              <strong>6,25 finisce nella fascia sotto</strong>, come sulle
-              piattaforme.
+              Ogni fascia si scrive come <strong>valore minimo della media</strong>,
+              con due decimali, e vale fino alla fascia successiva: per ottenere
+              «da 6,26 a 6,50 &rarr; +3» si scrive <code>6.26</code>, e una media di
+              6,25 rientra nella fascia inferiore. Sotto la fascia più bassa non c'è
+              bonus. Le fasce vengono riordinate al salvataggio e le righe lasciate
+              vuote vengono ignorate; per non assegnare nessun bonus, togli la spunta
+              al modificatore.
             </div>
           </div>
         </div>
@@ -248,17 +257,16 @@
             {% endfor %}
           </div>
           <div class="text-xs text-muted mt-2">
-            ⚠️ Il <strong>gol vale +3 chiunque lo segni</strong>, portiere compreso: il
-            regolamento non lo cambia per ruolo, ed è per questo che qui c'è una casella
-            sola invece di quattro. Sette voci su nove hanno un valore ufficiale, ed è
-            quello segnato nella tendina; <strong>porta inviolata e autogol</strong> no:
-            quelli il regolamento non li fissa, li decide la lega.
+            Il gol vale lo stesso per ogni ruolo, portiere compreso. Nelle tendine il
+            valore del regolamento ufficiale è segnato «(ufficiale)»; per
+            <strong>porta inviolata</strong> e <strong>autogol</strong> non esiste un
+            valore ufficiale, li stabilisce la lega.
           </div>
         </div>
         <div class="form-group">
           <label>Note</label>
           <textarea class="form-control" name="note" id="f_note" rows="4"
-                    placeholder="Le regole della lega che non stanno in un numero"></textarea>
+                    placeholder="Le regole che non si esprimono con un numero"></textarea>
         </div>
       </div>
       <div class="modal-footer">

@@ -34,7 +34,7 @@ td.stretta{width:1%;white-space:nowrap}
       <p class="text-muted text-sm">
         {{ conto.ok }} sicure &middot; {{ conto.conferma }} da confermare &middot;
         {{ conto.scegli }} da scegliere &middot; {{ conto.niente }} non trovate
-        &mdash; niente è ancora in rosa
+        &mdash; nessuna è ancora stata aggiunta alla rosa
       </p>
     </div>
     <a class="btn btn-secondary" href="{{ url_for('fantacalcio.lega', lid=lega.id) }}">
@@ -44,13 +44,14 @@ td.stretta{width:1%;white-space:nowrap}
 
 <div class="card mb-3">
   <div class="card-body text-xs legenda">
-    <div><span class="st st-ok">sicura</span> nome esatto, un solo giocatore, nessun omonimo.</div>
-    <div><span class="st st-conferma">da confermare</span> un candidato, ma il nome ha
-      omonimi o non combaciava per intero: guardalo.</div>
-    <div><span class="st st-scegli">da scegliere</span> più candidati e nessuno esatto:
-      la spunta si accende quando scegli.</div>
-    <div><span class="st st-niente">non trovata</span> nessun candidato. Un nome
-      scritto male non viene indovinato.</div>
+    <div><span class="st st-ok">sicura</span> nome esatto e un solo giocatore
+      corrispondente.</div>
+    <div><span class="st st-conferma">da confermare</span> un solo candidato, ma il
+      nome ha omonimi o non corrisponde per intero: controllalo.</div>
+    <div><span class="st st-scegli">da scegliere</span> più candidati possibili:
+      scegli dall'elenco e la riga si attiva.</div>
+    <div><span class="st st-niente">non trovata</span> nessun candidato. I nomi
+      scritti in modo impreciso non vengono corretti automaticamente.</div>
   </div>
 </div>
 
@@ -138,8 +139,8 @@ td.stretta{width:1%;white-space:nowrap}
   <div class="card-body flex items-center justify-between flex-wrap gap-2"
        style="border-top:1px solid var(--border)">
     <div class="text-xs text-muted">
-      Il prezzo si può correggere qui: è quello che hai pagato all'asta, e nel
-      listone non c'è.
+      Il prezzo è quello pagato all'asta e non è presente nel listone: puoi
+      correggerlo qui o più tardi dalla scheda della lega.
     </div>
     <button class="btn btn-primary" type="submit">
       &#10003; Aggiungi le righe spuntate</button>
@@ -159,10 +160,10 @@ td.stretta{width:1%;white-space:nowrap}
         <button class="btn btn-primary" type="submit">Rileggi</button>
       </div>
       <div class="text-xs text-muted mt-2">
-        Una riga per giocatore. La squadra (<code>INT</code>, <code>Inter</code>) e il
-        ruolo (<code>P</code>, <code>D</code>, <code>C</code>, <code>A</code>) sulla
-        stessa riga servono a togliere l'ambiguità; una riga col solo ruolo
-        (<code>Difensori</code>) è un'intestazione e vale per le righe che seguono.
+        Una riga per giocatore. Indicare squadra (<code>INT</code>,
+        <code>Inter</code>) e ruolo (<code>P</code>, <code>D</code>, <code>C</code>,
+        <code>A</code>) aiuta a distinguere gli omonimi; una riga con il solo ruolo
+        (<code>Difensori</code>) vale come intestazione per le righe successive.
       </div>
     </form>
   </div>

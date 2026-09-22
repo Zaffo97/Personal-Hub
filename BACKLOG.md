@@ -883,7 +883,8 @@ sezione è finito:**
   tema, con l'accento dichiarato per **tutti e due** i temi: un verde fisso starebbe
   bene sullo scuro e male sul chiaro, e non se ne accorgerebbe nessuno finché
   qualcuno non cambia tema
-- ⬜ ⚠️ **Su uno schermo basso la modale della lega si taglia, e non si scrolla.**
+- ✅ ⚠️ **La modale della lega si tagliava su uno schermo basso — corretto il
+  22/09/2026.**
   Segnalato da Davide il 22/09/2026 («in fantacalcio in un monitor piccolo non posso
   scrollare le regole della lega») e **riprodotto**: a 1280×620 la `.modal-box` si
   ferma a `max-height:92dvh` = **570 px** e dentro c'è un `<form>` alto **733 px**,
@@ -891,15 +892,23 @@ sezione è finito:**
   tagliati da `overflow:hidden` e non si raggiungono in nessun modo. ⚠️ La causa non
   è `.modal-body`, che ha già `overflow-y:auto`: è che fra lui e `.modal-box` c'è il
   `<form>`, che **non è un contenitore flex**, quindi il `flex:1` del body non
-  agisce e non c'è nessuna altezza limitata su cui scrollare. Cura: dare al form lo
-  stesso ruolo di colonna (`display:flex;flex-direction:column;flex:1;min-height:0`).
+  agisce e non c'è nessuna altezza limitata su cui scrollare. Corretto dando al form
+  lo stesso ruolo di colonna (`display:flex;flex-direction:column;flex:1;min-height:0`):
+  ora a 1280×620 il corpo mostra **474 px su 652** e scrolla, coi pulsanti
+  Salva/Annulla sempre in vista.
   ⚠️ **Solo il Fantacalcio ha questo schema**: in `arduino.html` e `pcbuilder.html`
   il form sta **dentro** `.modal-body`, e lì lo scroll funziona — quindi la cura non
   va copiata a tappeto, va messa dove il form avvolge header e footer.
   ⬜ E la richiesta più larga che Davide ha allegato: **rivedere lo scorrimento di
   sezioni e sottosezioni** in generale, non solo di questa modale.
 
-- ⬜ **I testi a schermo vanno riscritti in forma generica.** Perimetro chiarito da
+- ✅ **I testi a schermo riscritti in forma generica, il 22/09/2026**: **29 testi**
+  nelle sei pagine e nell'avviso, che ora dicono **cosa fa** la pagina e **cosa
+  farci**. ⚠️ I **commenti** dei template e del codice restano come sono: lì il
+  ragionamento serve. ⚠️ E due prove della suite verificavano il *testo esatto* della
+  pagina del consiglio: riscritte sulle frasi nuove, e succederà di nuovo a ogni
+  ritocco — è il prezzo di provare ciò che l'utente legge davvero.
+  La richiesta, per memoria: Perimetro chiarito da
   Davide il 22/09/2026: **i testi visibili**, non i commenti del codice. «È brutto
   far leggere a qualcuno di esterno il nostro ragionamento, voglio qualcosa di
   generico, preciso e che faccia comprendere bene il tutto». Oggi più di un testo

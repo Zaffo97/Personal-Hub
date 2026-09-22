@@ -61,19 +61,18 @@
 {% if not giornata %}
 <div class="card">
   <div style="padding:1.2rem 1rem" class="text-sm text-muted">
-    Le probabili non sono ancora state importate. Si prendono dalla fonte con
-    <code>python scripts/importa_probabili.py --scarica</code>, che le riscrive per
-    intero a ogni giro: cambiano fino al fischio d'inizio.
+    Le probabili non sono ancora state importate. Usa <strong>Aggiorna ora</strong>
+    nella pagina del Fantacalcio, oppure
+    <code>python scripts/importa_probabili.py --scarica</code>.
   </div>
 </div>
 {% else %}
 
 <div class="card mb-3">
   <div style="padding:.7rem 1rem" class="text-xs text-muted">
-    ⚠️ Questa è la <strong>fotografia</strong> presa dall'ultimo import, non un dato
-    che si aggiorna da solo: una formazione cambia fino al fischio d'inizio, e la
-    percentuale è quella che dichiara la fonte, non una stima nostra. In
-    <span style="color:#2563eb;font-weight:700">blu</span> i giocatori che hai in rosa.
+    Dati dell'ultimo aggiornamento: le formazioni cambiano fino al fischio d'inizio.
+    Le percentuali sono quelle pubblicate dalla fonte. In
+    <span style="color:#2563eb;font-weight:700">blu</span> i giocatori delle tue rose.
   </div>
 </div>
 

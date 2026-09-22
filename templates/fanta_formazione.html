@@ -87,8 +87,8 @@
 
 {% if not moduli %}
 <div class="card"><div style="padding:1.2rem" class="text-sm text-muted">
-  Questa lega non ha moduli ammessi: si aggiungono da <strong>Modifica</strong>
-  nell'elenco delle leghe. Senza quelli non si sa che campo disegnare.
+  Questa lega non ha moduli ammessi. Aggiungili da <strong>Modifica</strong>
+  nell'elenco delle leghe: servono per disegnare il campo.
 </div></div>
 {% else %}
 
@@ -129,8 +129,8 @@
       <span class="pallino pal-panchina"></span>in panchina &middot;
       <span class="pallino pal-fuori"></span>non convocato &middot;
       <span class="pallino pal-non_gioca"></span>la sua squadra non gioca
-      {% if giornata %}<br>Sono le probabili della giornata {{ giornata }}: cambiano
-      fino al fischio d'inizio.{% endif %}
+      {% if giornata %}<br>Dati della giornata {{ giornata }}: le probabili
+      formazioni cambiano fino al fischio d'inizio.{% endif %}
     </div>
   </div>
 

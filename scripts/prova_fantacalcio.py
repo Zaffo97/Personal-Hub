@@ -1381,16 +1381,20 @@ def prove(dove):
         esito("la pagina del consiglio si apre", r.status_code == 200
               and "L'undici consigliato" in pagina)
         # ⚠️ Davide ha chiesto che il criterio sia **scritto nella pagina**: è una
-        # richiesta, non una decorazione, e quindi è una prova.
-        esito("⚠️ la pagina dichiara su cosa si basa, fonti comprese",
-              "Una formula non la pubblica nessuno" in pagina
-              and "Indice di Titolarità" in pagina
-              and "fantamedia rifatta" in pagina
-              and "Comparatore" in pagina
+        # richiesta, non una decorazione, e quindi è una prova. ⚠️ Cosa deve dire è
+        # il criterio, **non le parole con cui è scritto**: il 22/09/2026 i testi a
+        # schermo sono stati riscritti in forma generica e questa prova è cambiata
+        # con loro. Se cambiano ancora, va aggiornata di nuovo — e va bene così: è
+        # il prezzo per avere una prova su ciò che l'utente legge davvero.
+        esito("⚠️ la pagina dichiara su cosa si basa, numeri compresi",
+              "due domande" in pagina
+              and "titolarità" in pagina
+              and "fantamedia ricalcolata" in pagina
+              and "punti attesi" in pagina.lower()
               and str(MINIMO_PARTITE_FIDATO) in pagina
               and str(SOGLIA_SCHIERABILE) in pagina)
-        esito("e dice dove le due letture litigano",
-              "Fenomeno" in pagina and "litigano" in pagina)
+        esito("e dice dove i due criteri non concordano",
+              "Fenomeno" in pagina and "non concordano" in pagina)
         esito("il consiglio non ha scritto niente da sé",
               formazione_scritta() == [], f"{len(formazione_scritta())} righe")
 
@@ -1577,12 +1581,12 @@ def prove(dove):
         campo = c4.get(f"/fantacalcio/lega/{lid_al}/formazione").data.decode("utf-8", "replace")
         elenco = c4.get("/fantacalcio/").data.decode("utf-8", "replace")
     esito("la scheda della lega apre con l'avviso",
-          "non torna più con le probabili" in scheda and "Bastoni" in scheda,
+          "non corrisponde alle probabili" in scheda and "Bastoni" in scheda,
           "Bastoni è il titolare finito in panchina")
     esito("⚠️ e dice di quale giornata sta parlando",
           "giornata 9" in scheda)
     esito("l'avviso c'è anche sul campo, dove si rimedia",
-          "non torna più con le probabili" in campo)
+          "non corrisponde alle probabili" in campo)
     esito("e l'elenco delle leghe lo dice prima di entrare",
           "da guardare nella formazione" in elenco)
     # ⚠️ Le occasioni non entrano nel conto: un suggerimento non è un guaio, e un

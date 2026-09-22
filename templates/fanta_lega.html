@@ -60,8 +60,8 @@
    ancora in rosa. Non si toglie da soli - e' una tua decisione. #}
 <div class="card mb-3" style="border-color:#d97706">
   <div style="padding:.8rem 1rem" class="text-sm">
-    <strong>&#9888; {{ spenti|length }} in rosa non sono più nel listone.</strong>
-    Restano qui finché non li togli tu: il listone si aggiorna, la rosa no.
+    <strong>&#9888; {{ spenti|length }} giocatori in rosa non sono più nel listone.</strong>
+    Hanno lasciato la Serie A. Restano in rosa finché non li togli.
     <div class="text-xs text-muted mt-1">
       {{ spenti|map(attribute='nome')|join(', ') }}
     </div>
@@ -90,7 +90,7 @@
   <div style="padding:.75rem 1rem">
     {% if not giornata %}
       <div class="text-sm text-muted">
-        Nessuna giornata importata. Si prendono con
+        Nessuna giornata importata. Usa <strong>Aggiorna</strong> qui sopra, oppure
         <code>python scripts/importa_probabili.py --scarica</code>.
       </div>
     {% else %}
@@ -109,10 +109,11 @@
         {% if conta.non_gioca %}<span class="prob prob-non_gioca">{{ conta.non_gioca }} non giocano</span>{% endif %}
       </div>
       <div class="text-xs text-muted mt-2">
-        ⚠️ Le formazioni cambiano fino al fischio d'inizio: questa è la fotografia
-        importata{% if probabili_aggiornate %} il {{ probabili_aggiornate }}{% endif %}, non un dato
-        che si aggiorna da sé. «Non convocato» vuol dire che la sua squadra gioca e lui
-        non è nell'elenco; «non gioca» che la sua squadra non è in questa giornata.
+        Le probabili formazioni cambiano fino al fischio d'inizio: questi dati sono
+        quelli importati{% if probabili_aggiornate %} il {{ probabili_aggiornate }}{% endif %}.
+        <strong>Non convocato</strong>: la sua squadra gioca ma lui non è nell'elenco.
+        <strong>Non gioca</strong>: la sua squadra non scende in campo in questa
+        giornata.
       </div>
     {% endif %}
   </div>
@@ -138,8 +139,8 @@
     </div>
     {% endfor %}
     <div class="text-xs text-muted mt-2">
-      Il conto guarda solo i giocatori <em>attivi</em>: chi è uscito dal listone non
-      riempie un ruolo.
+      Il conto considera solo i giocatori ancora nel listone: chi ha lasciato la
+      Serie A non copre un ruolo.
     </div>
   </div>
 </div>
@@ -182,8 +183,8 @@
         <div class="flex gap-2 items-center mt-2 flex-wrap">
           <button class="btn btn-primary" type="submit">Leggi la lista</button>
           <span class="text-xs text-muted">
-            Una riga per giocatore, col prezzo pagato se ce l'hai. Nessuno entra in
-            rosa finché non guardi l'anteprima.
+            Una riga per giocatore, con il prezzo pagato se lo conosci. Prima di
+            scrivere in rosa viene mostrata un'anteprima da confermare.
           </span>
         </div>
       </form>
@@ -293,8 +294,8 @@
         <div class="flex gap-2 items-center mt-2 flex-wrap">
           <button class="btn btn-primary" type="submit">Salva le modifiche</button>
           <span class="text-xs text-muted">
-            I prezzi cambiati si scrivono, gli spuntati escono dalla rosa. Chi esce lo
-            chiede una volta sola, non riga per riga.
+            Vengono salvati solo i prezzi modificati; i giocatori spuntati escono
+            dalla rosa, con una sola conferma per tutti.
           </span>
         </div>
       </form>
@@ -334,9 +335,8 @@
         {% else %}
           del <strong>portiere e dei migliori 3 difensori</strong>
         {% endif %}
-        esclusi bonus e malus, e solo se almeno <strong>4 difensori</strong> portano
-        voto. È la struttura del regolamento ufficiale, che non si cambia; i numeri
-        qui sotto sì.
+        senza contare bonus e malus, e solo se almeno <strong>4 difensori</strong>
+        prendono voto. I valori della tabella si cambiano da <strong>Modifica</strong>.
       </div>
       {# ⚠️ La tabella si legge **a intervalli** — «da 6,26 a 6,50» — e non come
          una colonna di soglie: con sei fasce a quarti, «da 6,26» costringe a
@@ -360,8 +360,8 @@
           <span style="white-space:nowrap">{{ media }} &rarr; {{ '%+g'|format(punti) }}</span>{% if not loop.last %} &middot; {% endif %}
         {% endfor %}
         {% if soglie == soglie_standard %}
-          <br>Sono i valori storici di FantaGazzetta, il punto di partenza: se la tua
-          lega ne usa altri si cambiano da Modifica.
+          <br>Questi sono i valori più diffusi. Se la tua lega ne usa altri, si
+          cambiano da <strong>Modifica</strong>.
         {% endif %}
       </div>
       {% endif %}
@@ -370,8 +370,8 @@
     <div class="mt-2 text-sm" style="white-space:pre-wrap">{{ lega.note }}</div>
     {% endif %}
     <div class="text-xs text-muted mt-2">
-      ⚠️ I cartellini si fermano comunque a &minus;1 in tutto: doppia ammonizione,
-      rosso diretto o giallo più rosso valgono lo stesso, lo dice il regolamento ufficiale.
+      I cartellini valgono al massimo &minus;1 a partita: doppia ammonizione, rosso
+      diretto o giallo più rosso pesano allo stesso modo.
     </div>
   </div>
 </div>

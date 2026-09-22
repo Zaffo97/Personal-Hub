@@ -70,6 +70,43 @@ fare.
   `admin` e la lega era di un altro utente — in lettura l'admin vede tutto, in
   scrittura `solo_mie()` non gli lascia toccare la rosa di nessuno.
 
+**Fantacalcio: la modale che si tagliava, e i testi riscritti per chi non ha
+lavorato al progetto**
+
+- ⚠️✅ **La modale della lega non si scrollava su uno schermo basso**, segnalato da
+  Davide. Riprodotto a 1280×620: `.modal-box` si ferma a `max-height:92dvh` = 570 px
+  e dentro c'era un `<form>` alto **733 px**, quindi gli ultimi ~160 px — le regole
+  della lega **e il pulsante Salva** — erano tagliati da `overflow:hidden`, senza
+  nessuno scroll per arrivarci. ⚠️ La causa non era `.modal-body`, che aveva già
+  `overflow-y:auto`: fra lui e il box c'è il form, che **non è un contenitore flex**,
+  quindi il `flex:1` del corpo non agiva e non c'era nessuna altezza limitata su cui
+  scorrere. Ora il form è anche lui una colonna flessibile: a 1280×620 il corpo mostra
+  **474 px su 652** e scrolla, coi pulsanti sempre in vista. ⚠️ In `arduino.html` e
+  `pcbuilder.html` la stessa riga **non serve**, perché lì il form sta dentro
+  `.modal-body`.
+- ✅ **I testi a schermo, riscritti in forma generica**: «è brutto far leggere a
+  qualcuno di esterno il nostro ragionamento, voglio qualcosa di generico, preciso e
+  che faccia comprendere bene il tutto». **29 testi** nelle sei pagine e nell'avviso
+  della formazione. Il criterio: dire **cosa fa** la pagina e **cosa deve farci chi
+  la usa**, non come ci si è arrivati. Il caso più grosso è la dichiarazione in cima
+  al consiglio — da «Una formula non la pubblica nessuno, e si è andati a controllare
+  prima di scrivere il codice…» a «Il consiglio risponde a due domande, in
+  quest'ordine: prima chi gioca, poi chi conviene schierare». I **dati** restano
+  tutti: le fasce, le soglie, cosa comprende la fantamedia, il confronto coi valori
+  del sito (407 su 414), la soglia della quinta partita.
+- ⚠️ **I commenti dei template e del codice non sono stati toccati**, ed è la
+  distinzione che Davide ha fatto: a schermo serve l'istruzione, nel codice serve il
+  perché.
+- ⚠️ **Due prove verificavano il testo esatto** della pagina del consiglio e sono
+  fallite alla prima esecuzione: era il loro mestiere. Riscritte sulle frasi nuove,
+  con scritto dentro che succederà di nuovo — è il prezzo di provare ciò che l'utente
+  legge, invece di ciò che il codice calcola.
+- ✅ **Verifiche**: `prova_fantacalcio.py` **210 su 210**, **sweep 0 errori**, e le
+  cinque pagine rilette a schermo una per una, per controllare che non restasse un
+  «di proposito», una decisione datata o un numero di sessione.
+
+---
+
 **Fantacalcio: lo stile della sezione, tondo e suo**
 
 «Rivedere i riquadri dei vari valori selezionabili e renderli più belli, magari
