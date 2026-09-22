@@ -20,6 +20,80 @@ pagina ed esegue `new Function()` su ogni blocco `<script>` **e** su ogni handle
 
 ## 22/09/2026
 
+**Fantacalcio: il listone da sfogliare, svuota rosa, il timer della giornata e il
+consiglio sotto il campo (§4.2)**
+
+Quattro richieste di Davide del 22/09/2026, tutte e quattro chiuse. Verifica:
+**245 prove su 245** (erano 210), **sweep a 0 errori** su 28 pagine,
+`controlla_proprietario.py` a **0 query scoperte** su 157.
+
+- ✅ **Il listone si sfoglia**, `/fantacalcio/listone`: 597 giocatori filtrabili per
+  nome, ruolo e squadra, ordinabili per otto colonne, e cliccandone uno si apre la
+  sua **scheda** — quotazioni, medie, gol, assist, cartellini, la probabile della
+  giornata e in quali **tue** rose si trova, col prezzo pagato. Prima il listone si
+  poteva solo cercare per nome dentro una lega, cioè un giocatore per volta e solo
+  per comprarlo. ⚠️ La scheda si chiede al server (`/api/giocatore/<id>`) invece di
+  essere stampata per ognuna delle 597 righe. ⚠️ E ordinando per fantamedia i
+  `NULL` andavano **in cima** — in SQLite un `NULL` in un `ORDER BY … DESC` viene
+  prima: chi non ha mai giocato sarebbe stato il primo consigliato. Corretto con
+  `ORDER BY (colonna IS NULL), …` e c'è una prova apposta.
+- ✅ **Svuota il reparto, svuota la rosa**: un pulsante per ruolo e uno per tutta la
+  rosa, con una conferma che dice **quanti** ne sta togliendo. Rifare una rosa a
+  fine mercato voleva dire spuntare venticinque caselle. ⚠️ Chi esce dalla rosa esce
+  **anche dal campo** (`_scendi_dal_campo()`), come già per la × di una riga: è la
+  trappola del 22/09 di stamattina, due tabelle e un DELETE che ne tocca una sola.
+  ⚠️ E il `ruolo` che arriva dal browser è **controllato**: un valore inventato
+  viene rifiutato invece di diventare una query che non cancella niente e un
+  messaggio che dice «fatto».
+- ✅ **Il timer «schieri entro»**, in Dashboard, nell'elenco delle leghe, nella
+  scheda della lega e sul campo. ⚠️ **L'ora del fischio d'inizio non sta nelle
+  probabili**, e sembra di sì: quella pagina ha lo stesso riquadro `match-date`, ma
+  i valori sono segnaposto — `1970-01-01` e `01:00` su tutte e dieci le partite,
+  misurato. Leggerli avrebbe dato un orario invece di un errore. La fonte vera è la
+  **quarta pagina**, `/serie-a/calendario`: letta da `fantacalcio_it.calendario()`,
+  scritta in `fanta_calendario` da `fanta_import.aggiorna_calendario()`, con
+  `scripts/importa_calendario.py` come rivestimento a riga di comando. Misure:
+  **10 partite** per giornata, ognuna scritta **due volte** nella pagina (schermo
+  largo e telefono) e fusa per `match_id`; giornata 6 letta il 22/09/2026, prima
+  partita **10/10/2026 alle 15:00**, Genoa–Fiorentina.
+  ⚠️ Tre rifiuti dichiarati, tutti sullo stesso principio — **meglio nessun timer di
+  un timer in ritardo**: una data prima del 2000 non diventa un orario, una giornata
+  con meno di **10 partite** non si scrive (la scadenza è il *minimo* degli orari:
+  basta che manchi l'anticipo del venerdì per dire «hai ancora un giorno» a giornata
+  cominciata), e senza calendario il riquadro **dichiara di non sapere l'ora** invece
+  di sparire o di mostrare zero.
+  ⚠️ E il calendario si chiede **per giornata** (`/serie-a/calendario/7`, una cache
+  per giornata): la pagina generica mostra la giornata in corso, e le probabili sono
+  già sulla successiva — il timer sarebbe sparito proprio nella settimana in cui
+  serve.
+  ⚠️ L'orario è **ora italiana senza fuso** e il conto lo fa il browser: scriverlo
+  come UTC avrebbe spostato la scadenza di due ore senza dare errore.
+- ✅ **Il consiglio è sotto il campo**, nella stessa pagina: «non voglio cambiare
+  schermata, voglio tutto insieme per essere più rapido». `fanta_consiglio.html` non
+  esiste più — il suo corpo è `_fanta_consiglio.html`, incluso da
+  `fanta_formazione.html`; `/consiglio` **resta** e rimanda a `…/formazione#consiglio`
+  (i link e i segnalibri vecchi funzionano). Il contesto lo prepara `_consiglio()`,
+  la stessa funzione che usa «applica»: due calcoli separati della stessa giornata
+  potrebbero dire due cose diverse. ⚠️ Il parametro del modulo in dettaglio si chiama
+  ora `dettaglio`: in questa pagina «modulo» è già il modulo del campo. La
+  spiegazione «come viene scelto l'undici» è **chiusa ma presente** — fra il campo e
+  l'undici consigliato non ci può stare un muro di testo.
+- ✅ **La Dashboard ha il suo riquadro Fantacalcio**, come le altre sezioni: il timer
+  e, per ogni lega, la formazione schierata (modulo, titolari, panchinari) o
+  «nessuna formazione schierata», col pulsante Schiera. ⚠️ Non rilegge
+  fantacalcio.it: la pagina di casa non può voler dire aspettare tre pagine da un
+  mega.
+- Prove nuove (35): svuota reparto e rosa col campo che si svuota con lei e un altro
+  utente che non può, il listone coi suoi filtri e i `NULL` in fondo, la scheda che
+  **non** mostra le rose altrui, il calendario letto/rifiutato/riscritto e il timer
+  che arriva davvero nelle pagine. `controlla_proprietario.py` conosce ora anche
+  `fanta_calendario`: aggiunta **insieme** al codice che la legge, che è la regola
+  imparata due blocchi fa.
+
+---
+
+## 22/09/2026
+
 **Fantacalcio: correggere la rosa senza disfarla, e un `onsubmit` che si rompeva
 sugli apostrofi (§4.2)**
 

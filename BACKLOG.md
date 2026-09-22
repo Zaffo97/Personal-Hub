@@ -636,7 +636,7 @@ quattro cose richiedono **fonti diverse**:
 | 🤖 **Arduino** | ⬜ Richiamo a Tinkercad per disegnare il progetto e verificare i connettori |
 | 💻 **PC Builder** | ⬜ Wishlist Amazon o altri · ⬜ prezzo componente · ⬜ percentuale di compatibilità fra i pezzi (valutare UserBenchmark) · ⬜ gestire l'uscita di nuovi pezzi nel tempo |
 | 🐍 **Python** | ⬜ Spazio per inserire i propri progetti e testarli · ⬜ idee per rendere la sezione più utile |
-| ⚽ **Fantacalcio** | ✅ **Fatta, dal 21/09/2026**: listone, leghe con regole strutturate, rose (una per volta o **incollate in blocco**), **probabili formazioni**, **campo per schierare** e **consiglio** — le quattro cose chieste (vedi §4.2). Restano solo i ruoli Mantra, che sono nel DB e non li legge nessuno, e la potatura dell'archivio probabili |
+| ⚽ **Fantacalcio** | ✅ **Fatta, dal 21/09/2026**, e allargata il 22/09: listone **sfogliabile con la scheda di ogni giocatore**, leghe con regole strutturate, rose (una per volta, **incollate in blocco** o **svuotate per reparto**), **probabili formazioni**, **campo per schierare** col **consiglio sotto**, e il **timer** che dice entro quando (vedi §4.2). Restano i ruoli Mantra, che sono nel DB e non li legge nessuno, e quello che il timer dà per buono (§4.4) |
 
 ### 4.1 🟨 Gaming — il calendario delle uscite (chiesto il 13/08, costruito il 16/08/2026)
 
@@ -751,7 +751,8 @@ Pokémon.
 **✅ Cosa c'è, dal 21/09/2026** — `fantacalcio_it.py` (legge e basta),
 `scripts/importa_listone.py` e `scripts/importa_probabili.py` (gli unici che
 scrivono), `blueprints/fantacalcio.py`, cinque template, e
-`scripts/prova_fantacalcio.py` (**156 prove su 156** al 21/09/2026):
+`scripts/prova_fantacalcio.py` (**245 prove su 245** al 22/09/2026, erano 156 il
+21/09):
 
 - il **listone in `hub.db`**: 597 giocatori, 20 squadre, con ruolo, quotazioni e
   statistiche
@@ -859,6 +860,25 @@ sigla è sbagliata, o il giocatore giusto è un altro.
 
 ✅ **Chiuso il 22/09/2026**: il prezzo si corregge e si toglie in blocco dal pannello
 «Correggi la rosa», con una conferma sola. Numeri in `STORICO.md`.
+
+✅ **Chiuse il 22/09/2026, secondo giro — le quattro «da fare subito» di Davide**
+(numeri e trappole in `STORICO.md`):
+
+- il **listone si sfoglia** (`/fantacalcio/listone`), con filtri, ordinamenti e la
+  **scheda** di ogni giocatore: tutti i suoi numeri, la probabile della giornata e
+  in quali tue rose sta;
+- **svuota il reparto** e **svuota la rosa**, con una conferma che dice quanti ne
+  toglie — e chi esce dalla rosa esce anche dal campo;
+- il **timer «schieri entro»** in Dashboard, nell'elenco, nella lega e sul campo,
+  con la sua fonte nuova: `fanta_calendario` e la quarta pagina di fantacalcio.it.
+  ⚠️ L'ora **non** era nelle probabili, dove c'è un riquadro pieno di segnaposto;
+- il **consiglio sotto il campo**, nella stessa schermata. `fanta_consiglio.html`
+  non esiste più: il corpo è `_fanta_consiglio.html`, e `/consiglio` rimanda a
+  `…/formazione#consiglio`.
+
+⚠️ Quello che il timer **dà per buono**, e che può smettere di funzionare in
+silenzio, sta in **§4.4**. Le altre richieste di quel giorno («per il futuro») sono
+in **§4.3**.
 
 ✅ **Chiuso il 22/09/2026: le classi che non esistevano.** Erano `form-input` (10
 campi), `form-select` (3 punti nel Fantacalcio) e `form-label` (6, tolta perché il
@@ -1075,6 +1095,93 @@ sezione è finito:**
   c'è
 - ⬜ **la licenza**: si legge un sito pubblico per uso personale, come già si fa con
   Bulbapedia. Se la sezione uscisse di casa (§1.5) la domanda va riaperta
+
+### 4.3 ⬜ Le richieste di Davide del 22/09/2026 «per il futuro»
+
+Dettate il 22/09/2026 insieme alle quattro che sono state fatte subito (listone
+sfogliabile, svuota rosa, timer e consiglio sotto il campo: chiuse, vedi
+`STORICO.md`). Queste restano aperte, **nelle parole con cui sono state chieste**,
+perché nessuna è stata ancora misurata: sotto ogni voce c'è solo quello che già si
+sa dal codice, non un piano.
+
+**Sezione Pokémon**
+
+- ⬜ **Un pulsante che aggiorni da solo tutto il Pokédex** quando la fonte cambia:
+  Pokémon nuovi, statistiche, oggetti, mosse e abilità. C'è già il pezzo di sotto —
+  `pokeapi.py` legge e `scripts/build_catalog.py` scrive — e c'è già il precedente
+  giusto nel Fantacalcio: la logica in un modulo solo (`fanta_import.py`), gli
+  script e il web che la chiamano, e un rifiuto **dichiarato** davanti ai numeri che
+  sono il sintomo di una fonte letta male. ⚠️ Qui però il catalogo è **curato a
+  mano** in molti punti (nomi italiani, forme, toppe): un aggiornamento automatico
+  che sovrascrive tutto cancellerebbe quel lavoro senza dare errore. La domanda da
+  rispondere prima di scrivere una riga è **quali colonne la fonte comanda e quali
+  no**, e la regola d'oro dei dati vale sempre: si scrive con `salva_catalogo()` e
+  `_save_abilities()`, che fanno la copia di sicurezza.
+- ⬜ **Un pulsante per creare una regulation nuova senza inserire i dati a mano**,
+  con una **fonte affidabile da cui confrontare i dati**. Il guscio c'è dal
+  10/09/2026 (§1.3, la regulation nuova dall'interfaccia): quello che manca è la
+  fonte. ⚠️ È la stessa domanda di §2.3 e §5.2 — un roster e un moveset non si
+  inventano, e finché la fonte non è decisa questa voce non è pronta.
+- ⬜ **Gli sprite mancanti, e quelli delle forme che usano ancora la forma base.**
+  Sta anche in §3 come baco noto: qui è la richiesta di chiuderlo per bene.
+
+**Altro**
+
+- ⬜ **Proteggere l'accesso al GitHub** «per non farmi rubare il lavoro». Davide ha
+  chiesto di farlo subito **se è veloce**: la parte veloce è verificare che il repo
+  sia privato e che i segreti non siano dentro — `controlla_esposizione.py` dice già
+  che né `hub.db` né la chiave di sessione sono versionati, e l'export senza
+  password è di proposito. ⚠️ Quello che **non** è veloce è il resto: 2FA, chiavi di
+  firma, chi ha accesso. Da fare guardando insieme le impostazioni del repo, non da
+  qui.
+- ⬜ **Altri colori per il tema**, oltre al bianco e nero. ⚠️ Il tema oggi sono due
+  blocchi di variabili in `base.html` (`--primary`, `--surface`, …) più l'accento
+  del Fantacalcio in `static/css/fantacalcio.css`: un terzo tema è **una terza lista
+  di variabili**, non un foglio nuovo. ⚠️ E il tema scelto **non è nel DB** — è la
+  falla 2 di §1.4, quella che l'export non porta con sé: un tema in più la rende più
+  evidente, non la crea.
+- ⬜ **Ricordare utente e password**, con la spunta «ricorda credenziali» come sui
+  siti di oggi. ⚠️ Vuol dire un cookie firmato di lunga durata, **non** la password
+  salvata: la password non esce mai dal DB, e quello che si ricorda è una sessione.
+  Da fare sapendo che l'app può uscire di casa (§1.5), quindi con scadenza e con la
+  possibilità di revocarla.
+- ⬜ **Un pulsante in Utenti per copiare tutti i dati in un altro utente.** ⚠️ Il
+  travaso esiste già, in `admin.py`, e gira **sulle quattro radici in un ciclo**:
+  è l'unica query che `controlla_proprietario.py` non sa leggere, perché il nome
+  della tabella non è nel testo. Chi tocca quel codice deve rileggerla a mano — e
+  con il Fantacalcio le radici non sono più quattro: `fanta_leagues` ha una rosa e
+  una formazione appese, e un travaso che le dimentica copierebbe metà utente.
+
+### 4.4 ⚠️ Quello che il timer della giornata dà per buono
+
+Aperto il 22/09/2026 col timer stesso, e scritto qui perché **non è un baco oggi**:
+è una cosa che può smettere di funzionare senza dare errore.
+
+- La scadenza esce da `fanta_calendario`, che si riempie leggendo
+  `/serie-a/calendario/<giornata>`. La giornata la dicono **le probabili**: se le
+  probabili non sono importate, il timer ripiega sulla prima partita non ancora
+  giocata che il calendario conosce, e se il calendario non ha quella giornata
+  **dichiara di non sapere l'ora**. Sono tre casi diversi e la pagina li dice
+  diversi: quello da non perdere di vista è il terzo, perché è silenzioso di natura.
+- ⚠️ La cache del calendario è **una per giornata** (`calendario-7.html`). Se un
+  giorno la fonte cambiasse la forma dell'URL, il lettore troverebbe una pagina
+  senza `match-pill` e si rifiuterebbe — il rifiuto c'è ed è provato. Quello che
+  nessuno controlla è che la giornata che si chiede **esista**: `/calendario/99`
+  risponde comunque una pagina.
+- ⚠️ E resta vero che «tre ore» e «un giorno» sono soglie scelte, non misurate:
+  `VECCHIA_PROBABILI` e `VECCHIA_CALENDARIO` in `fanta_import.py`.
+
+### 4.5 ⬜ Un punto cieco di `controlla_proprietario.py`, trovato il 22/09/2026
+
+Non corretto, perché è fuori dallo scope di quel giorno ed è lo strumento, non il
+codice controllato: una query che contiene un `{…}` (cioè un pezzo costruito in
+Python) viene contata **filtrata** se nella stessa funzione compare
+`ambito_utente()`, anche quando quel `{…}` è un filtro che col proprietario non
+c'entra. Succede ora a `listone()`, dove la query è `SELECT * FROM fanta_players{…}`
+— lì va bene, perché il listone è dato condiviso, ma la regola con cui ci è arrivata
+è sbagliata. Chi tocca quello script guardi `main()`, ramo `q["ambito"] and "{…}"
+in q["sql"]`.
+
 
 ---
 

@@ -111,6 +111,75 @@ def pagina_finta(partite, giornata=6, stagione="2026-27"):
     return "<html><body>" + "".join(pezzi) + "</body></html>"
 
 
+
+# ── La pagina finta del calendario ───────────────────────────────────────────
+# Ha la forma che il lettore guarda: il `div.match-pill` con dentro il riquadro
+# della giornata, le due `label` delle squadre, il link al dettaglio (che è dove
+# stanno **insieme** giornata e id della partita) e il riquadro della data.
+#
+# ⚠️ Ogni partita è scritta **due volte**, come nella pagina vera: una versione
+# `size-large` per lo schermo e una `size-compact` per il telefono. È qui apposta:
+# se il lettore smettesse di fonderle, una giornata avrebbe venti partite e il
+# timer punterebbe lo stesso alla prima — cioè il baco non si vedrebbe.
+PARTITE_FINTE = [
+    {"mid": 18008, "casa": "genoa", "casa_nome": "Genoa", "fuori": "fiorentina",
+     "fuori_nome": "Fiorentina", "data": "2026-10-09", "ora": "20:45"},
+    {"mid": 18009, "casa": "inter", "casa_nome": "Inter", "fuori": "parma",
+     "fuori_nome": "Parma", "data": "2026-10-10", "ora": "15:00"},
+    {"mid": 18010, "casa": "lazio", "casa_nome": "Lazio", "fuori": "monza",
+     "fuori_nome": "Monza", "data": "2026-10-10", "ora": "18:00"},
+    {"mid": 18011, "casa": "lecce", "casa_nome": "Lecce", "fuori": "bologna",
+     "fuori_nome": "Bologna", "data": "2026-10-10", "ora": "20:45"},
+    {"mid": 18012, "casa": "napoli", "casa_nome": "Napoli", "fuori": "frosinone",
+     "fuori_nome": "Frosinone", "data": "2026-10-11", "ora": "12:30"},
+    {"mid": 18013, "casa": "sassuolo", "casa_nome": "Sassuolo", "fuori": "milan",
+     "fuori_nome": "Milan", "data": "2026-10-11", "ora": "15:00"},
+    {"mid": 18014, "casa": "torino", "casa_nome": "Torino", "fuori": "udinese",
+     "fuori_nome": "Udinese", "data": "2026-10-11", "ora": "15:00"},
+    {"mid": 18015, "casa": "como", "casa_nome": "Como", "fuori": "roma",
+     "fuori_nome": "Roma", "data": "2026-10-11", "ora": "18:00"},
+    {"mid": 18016, "casa": "cagliari", "casa_nome": "Cagliari", "fuori": "juventus",
+     "fuori_nome": "Juventus", "data": "2026-10-11", "ora": "20:45"},
+    {"mid": 18017, "casa": "atalanta", "casa_nome": "Atalanta", "fuori": "venezia",
+     "fuori_nome": "Venezia", "data": "2026-10-12", "ora": "20:45"},
+]
+
+
+def _pill(p, giornata, taglia):
+    base = "https://www.fantacalcio.it/serie-a"
+    return f'''
+<div itemscope itemtype="http://schema.org/SportsEvent"
+     class="match-pill theme-light size-{taglia} match-status-0" data-match-status="0">
+  <div class="matchweek">{giornata}</div>
+  <label itemprop="homeTeam" itemscope class="team-home ">
+    <a class="team-name team-link " href="{base}/squadre/{p['casa']}">
+      <meta itemprop="name" content="{p['casa_nome']}" />{p['casa_nome']}</a>
+  </label>
+  <label itemprop="awayTeam" itemscope class="team-away ">
+    <a class="team-name team-link " href="{base}/squadre/{p['fuori']}">
+      <meta itemprop="name" content="{p['fuori_nome']}" />{p['fuori_nome']}</a>
+  </label>
+  <a class="match-score unstyled"
+     href="{base}/calendario/{giornata}/2026-27/{p['casa']}-{p['fuori']}/{p['mid']}">
+    <span class="score-home">0</span><span class="score-away">0</span></a>
+  <div class="match-date">
+    <meta itemprop="startDate" content="{p['data']}"/>
+    <span class="day">{p['data'][8:]}/{p['data'][5:7]}</span>
+    <span class="hours">{p['ora']}</span>
+  </div>
+  <div class="match-location"><span class="stadium" itemprop="location">Stadio</span></div>
+  <meta itemprop="name" content="Serie A 2026-27 - {giornata}&#xB0; giornata" />
+</div>'''
+
+
+def pagina_calendario_finta(partite, giornata=6):
+    corpo = "".join(_pill(p, giornata, taglia)
+                    for p in partite for taglia in ("large", "compact"))
+    return ("<html><body><div class='content'><ul class='match-list'>" +
+            "".join(f"<li class='match'>{x}</li>" for x in [corpo]) +
+            "</ul></div></body></html>")
+
+
 def esito(nome, ok, dettaglio=""):
     esiti.append(bool(ok))
     print(f"  {'OK ' if ok else 'NO '} {nome}" + (f"   {dettaglio}" if dettaglio else ""))
@@ -1376,10 +1445,19 @@ def prove(dove):
             s["username"] = "davide"
             s["role"] = "user"
             s["user_id"] = ids["davide"]
+        # ⚠️ Dal 22/09/2026 `/consiglio` **non è più una pagina**: il consiglio sta
+        # sotto il campo, e questo indirizzo ci rimanda. La prova segue il rimando
+        # di proposito — quello che deve continuare a valere è che da qui si
+        # arriva al consiglio, non che ci sia una pagina in più.
         r = c2.get(f"/fantacalcio/lega/{lid3}/consiglio")
+        esito("⚠️ il vecchio indirizzo del consiglio porta al campo",
+              r.status_code == 302 and f"/lega/{lid3}/formazione" in r.headers["Location"]
+              and "#consiglio" in r.headers["Location"], r.headers.get("Location"))
+        r = c2.get(f"/fantacalcio/lega/{lid3}/consiglio", follow_redirects=True)
         pagina = r.data.decode("utf-8", "replace")
-        esito("la pagina del consiglio si apre", r.status_code == 200
-              and "L'undici consigliato" in pagina)
+        esito("e il consiglio si apre insieme al campo, nella stessa pagina",
+              r.status_code == 200 and "L'undici consigliato" in pagina
+              and 'id="campo"' in pagina)
         # ⚠️ Davide ha chiesto che il criterio sia **scritto nella pagina**: è una
         # richiesta, non una decorazione, e quindi è una prova. ⚠️ Cosa deve dire è
         # il criterio, **non le parole con cui è scritto**: il 22/09/2026 i testi a
@@ -1750,6 +1828,268 @@ def prove(dove):
     db.close()
     esito("⚠️ ma chi esce dal listone resta in rosa e in campo: è un'altra cosa",
           5 in in_campo(lid_al), str(sorted(in_campo(lid_al))))
+
+
+    # --- 18. svuotare un reparto, o tutta la rosa ----------------------------
+    # Chiesto da Davide il 22/09/2026. ⚠️ La cosa che può rompersi in silenzio è
+    # sempre la stessa: `fanta_roster` e `fanta_formazione` sono due tabelle, e uno
+    # svuota che tocca solo la prima lascia in campo dei titolari che non sono più
+    # in rosa — a schermo non si vede niente, i titolari diventano dieci.
+    print("\n== 18. svuota reparto e svuota rosa ==")
+    db = extensions.get_db()
+    for pid, nome, ruolo in ((901, "PortSv", "p"), (902, "DifSv1", "d"),
+                             (903, "DifSv2", "d"), (904, "AttSv", "a")):
+        db.execute("INSERT INTO fanta_players(id,nome,squadra,ruolo_classic,qa,fvm,"
+                   "fantamedia,attivo,visto_il) VALUES(?,?,'SVU',?,10,10,6.0,1,"
+                   "'2026-09-22')", (pid, nome, ruolo))
+    db.execute("INSERT INTO fanta_leagues(user_id,nome,sistema,moduli) "
+               "VALUES(?,'Lega Svuota','classic','3-4-3')", (ids["davide"],))
+    lid_sv = db.execute("SELECT id FROM fanta_leagues WHERE nome='Lega Svuota'"
+                        ).fetchone()["id"]
+    for pid in (901, 902, 903, 904):
+        db.execute("INSERT INTO fanta_roster(league_id,player_id,prezzo) "
+                   "VALUES(?,?,10)", (lid_sv, pid))
+        db.execute("INSERT INTO fanta_formazione(league_id,player_id,titolare,"
+                   "ordine,ruolo) VALUES(?,?,1,0,'x')", (lid_sv, pid))
+    db.commit()
+    db.close()
+
+    def in_rosa_sv():
+        db = extensions.get_db()
+        fuori = {r["player_id"] for r in db.execute(
+            "SELECT player_id FROM fanta_roster WHERE league_id=?", (lid_sv,))}
+        db.close()
+        return fuori
+
+    with app.test_client() as c6:
+        with c6.session_transaction() as s:
+            s["username"] = "davide"
+            s["role"] = "user"
+            s["user_id"] = ids["davide"]
+        esito("si parte con quattro in rosa e quattro in campo",
+              in_rosa_sv() == {901, 902, 903, 904}
+              and in_campo(lid_sv) == {901, 902, 903, 904})
+        r = c6.post(f"/fantacalcio/lega/{lid_sv}/rosa/svuota",
+                    data={"ruolo": "d"}, follow_redirects=True)
+        esito("«svuota il reparto» toglie solo quel ruolo",
+              in_rosa_sv() == {901, 904}, str(sorted(in_rosa_sv())))
+        esito("⚠️ e li fa scendere anche dal campo",
+              in_campo(lid_sv) == {901, 904}, str(sorted(in_campo(lid_sv))))
+        esito("il messaggio dice quanti ne ha tolti e quanti erano schierati",
+              "2 tolti dalla rosa" in r.data.decode("utf-8", "replace")
+              and "2 erano schierati" in r.data.decode("utf-8", "replace"))
+        # ⚠️ Un ruolo che non esiste **non** deve diventare una query che non
+        # cancella niente e un messaggio che dice «fatto».
+        r = c6.post(f"/fantacalcio/lega/{lid_sv}/rosa/svuota",
+                    data={"ruolo": "z"}, follow_redirects=True)
+        esito("⚠️ un ruolo inventato viene rifiutato, non eseguito a vuoto",
+              in_rosa_sv() == {901, 904}
+              and "Non so quale parte" in r.data.decode("utf-8", "replace"))
+        r = c6.post(f"/fantacalcio/lega/{lid_sv}/rosa/svuota",
+                    data={"ruolo": "d"}, follow_redirects=True)
+        esito("e svuotare un reparto già vuoto lo dice",
+              "niente da togliere" in r.data.decode("utf-8", "replace"))
+
+    with app.test_client() as c7:
+        with c7.session_transaction() as s:
+            s["username"] = "altro"
+            s["role"] = "user"
+            s["user_id"] = ids["altro"]
+        r = c7.post(f"/fantacalcio/lega/{lid_sv}/rosa/svuota",
+                    data={"ruolo": "tutti"}, follow_redirects=True)
+        esito("⚠️ un altro utente non può svuotare la rosa di una lega non sua",
+              in_rosa_sv() == {901, 904} and b"Lega non trovata" in r.data)
+
+    with app.test_client() as c6:
+        with c6.session_transaction() as s:
+            s["username"] = "davide"
+            s["role"] = "user"
+            s["user_id"] = ids["davide"]
+        r = c6.post(f"/fantacalcio/lega/{lid_sv}/rosa/svuota",
+                    data={"ruolo": "tutti"}, follow_redirects=True)
+        esito("«svuota tutta la rosa» la svuota davvero",
+              in_rosa_sv() == set(), str(sorted(in_rosa_sv())))
+        esito("⚠️ e il campo resta vuoto con lei",
+              in_campo(lid_sv) == set(), str(sorted(in_campo(lid_sv))))
+
+    # --- 19. il listone da sfogliare, e la scheda di un giocatore ------------
+    print("\n== 19. il listone e la scheda ==")
+    with app.test_client() as c8:
+        with c8.session_transaction() as s:
+            s["username"] = "davide"
+            s["role"] = "user"
+            s["user_id"] = ids["davide"]
+        pagina = c8.get("/fantacalcio/listone").data.decode("utf-8", "replace")
+        esito("la pagina del listone si apre con i giocatori dentro",
+              "Sommer" in pagina and "Bastoni" in pagina)
+        # ⚠️ Chi ha lasciato la Serie A resta cercabile ma **non** in mezzo agli
+        # altri: mostrarlo come se fosse schierabile è il baco che il cartellino
+        # «fuori listone» esiste per evitare.
+        esito("⚠️ chi è uscito dalla Serie A non compare finché non lo si chiede",
+              "Uscito" not in pagina)
+        chiesti = c8.get("/fantacalcio/listone?spenti=1").data.decode("utf-8", "replace")
+        esito("e chiedendolo compare, dichiarato",
+              "Uscito" in chiesti and "fuori listone" in chiesti)
+        soli_p = c8.get("/fantacalcio/listone?ruolo=p").data.decode("utf-8", "replace")
+        esito("il filtro per ruolo tiene solo quel ruolo",
+              "Sommer" in soli_p and "Barella" not in soli_p)
+        cerca = c8.get("/fantacalcio/listone?q=asto").data.decode("utf-8", "replace")
+        esito("la ricerca per pezzo di nome trova Bastoni",
+              "Bastoni" in cerca and "Sommer" not in cerca)
+        # ⚠️ In SQLite un NULL in un ORDER BY ... DESC finisce **in cima**:
+        # ordinando per fantamedia i primi sarebbero quelli che non hanno mai
+        # giocato. Non dà errore, dà la classifica al contrario.
+        db = extensions.get_db()
+        db.execute("UPDATE fanta_players SET fantamedia=NULL WHERE id=901")
+        db.execute("UPDATE fanta_players SET fantamedia=7.5 WHERE id=902")
+        db.commit()
+        db.close()
+        ordinata = c8.get("/fantacalcio/listone?ordine=fantamedia&q=Sv"
+                          ).data.decode("utf-8", "replace")
+        esito("⚠️ ordinando per fantamedia, chi non ce l'ha sta in fondo",
+              ordinata.index("DifSv1") < ordinata.index("PortSv"))
+
+        # Bastoni in una rosa di Davide, per poter provare la parte «tua» della
+        # scheda: le altre prove gli hanno fatto e disfatto le rose più volte.
+        db = extensions.get_db()
+        db.execute("INSERT OR IGNORE INTO fanta_roster(league_id,player_id,prezzo) "
+                   "VALUES(?,2,20)", (lid,))
+        db.commit()
+        db.close()
+        dati = c8.get("/fantacalcio/api/giocatore/2").get_json()
+        esito("la scheda di un giocatore ha i suoi numeri",
+              dati["giocatore"]["nome"] == "Bastoni"
+              and dati["giocatore"]["qa"] == 18 and dati["giocatore"]["fvm"] == 120,
+              str(dati["giocatore"])[:80])
+        esito("e dice in quali tue rose si trova",
+              any(r["lega"] == "Lega Amici" for r in dati["rose"]),
+              str(dati["rose"]))
+        esito("un id che non esiste risponde 404, non una scheda vuota",
+              c8.get("/fantacalcio/api/giocatore/99999").status_code == 404)
+
+    with app.test_client() as c9:
+        with c9.session_transaction() as s:
+            s["username"] = "altro"
+            s["role"] = "user"
+            s["user_id"] = ids["altro"]
+        dati = c9.get("/fantacalcio/api/giocatore/2").get_json()
+        # ⚠️ Il listone è condiviso (e lo vede), le rose no: `fanta_roster` non ha
+        # un proprietario suo e lo eredita dalla lega, quindi questa è la query che
+        # nascerebbe scoperta (§1.1).
+        esito("⚠️ ma le rose degli altri non compaiono nella sua scheda",
+              dati["giocatore"]["nome"] == "Bastoni" and dati["rose"] == [],
+              str(dati["rose"]))
+
+    # --- 20. il calendario e il timer della giornata -------------------------
+    # Chiesto da Davide il 22/09/2026: «quanto tempo ho ancora per schierare».
+    # ⚠️ L'ora **non** sta nelle probabili: quel riquadro c'è ma è pieno di
+    # segnaposto (`1970-01-01`, `01:00`), e leggerli darebbe un orario invece di un
+    # errore. È la prova più importante di questa sezione.
+    print("\n== 20. il calendario e la scadenza ==")
+    from blueprints.fantacalcio import scadenza_giornata
+    import fanta_import as I
+
+    db = extensions.get_db()
+    gt = db.execute("SELECT MAX(giornata) AS g FROM fanta_probabili_squadre"
+                    ).fetchone()["g"] or 6
+    db.close()
+    # ⚠️ La giornata del calendario finto è **quella delle probabili nel DB di
+    # prova**: le pagine chiedono la scadenza della giornata che stanno mostrando,
+    # e un calendario di un'altra giornata darebbe «data non disponibile» — cioè
+    # la prova misurerebbe un disallineamento invece della cosa da provare.
+    vera_scarica, vera_eta = F.scarica, F.eta_cache
+    try:
+        F.scarica = lambda nome, forza=False, url=None: pagina_calendario_finta(
+            PARTITE_FINTE, gt)
+        partite, problemi = F.calendario(forza=False)
+        esito("le dieci partite si leggono con giornata, squadre e orario",
+              len(partite) == 10 and not problemi, f"{len(partite)} {problemi[:2]}")
+        prima = min(partite.values(), key=lambda v: v["inizio"])
+        esito("la prima è l'anticipo del venerdì",
+              prima["inizio"] == "2026-10-09 20:45"
+              and prima["squadra_casa_slug"] == "genoa", str(prima))
+        # ⚠️ Ogni partita è scritta due volte nella pagina (schermo largo e
+        # telefono): se le copie raddoppiassero, la giornata avrebbe venti partite
+        # e nessuno se ne accorgerebbe guardando il timer.
+        esito("⚠️ le due copie di ogni partita non la raddoppiano",
+              len({v["match_id"] for v in partite.values()}) == 10)
+
+        segnaposto = pagina_calendario_finta(
+            [dict(p, data="1970-01-01", ora="01:00") for p in PARTITE_FINTE], gt)
+        F.scarica = lambda nome, forza=False, url=None: segnaposto
+        vuote, guai = F.calendario(forza=False)
+        esito("⚠️ le date segnaposto della pagina probabili NON diventano orari",
+              all(v["inizio"] is None for v in vuote.values()) and len(guai) == 10,
+              f"{len(guai)} problemi")
+
+        db = extensions.get_db()
+        F.scarica = lambda nome, forza=False, url=None: pagina_calendario_finta(
+            PARTITE_FINTE, gt)
+        r = I.aggiorna_calendario(db, scarica=False, scrivi=True)
+        esito("l'import scrive la giornata intera",
+              r["ok"] and r["scritte"] == 10, str(r["motivo"] or r["giornate"]))
+        esito("e rifarlo non raddoppia niente",
+              I.aggiorna_calendario(db, scarica=False, scrivi=True)["scritte"] == 10
+              and db.execute("SELECT COUNT(*) FROM fanta_calendario").fetchone()[0] == 10)
+
+        # ⚠️ Mezza giornata **non si scrive**: la scadenza è il minimo degli
+        # orari, quindi basta che manchi l'anticipo del venerdì perché il timer
+        # dica «hai ancora un giorno» a giornata già cominciata.
+        F.scarica = lambda nome, forza=False, url=None: pagina_calendario_finta(
+            PARTITE_FINTE[:5], gt)
+        mezza = I.aggiorna_calendario(db, scarica=False, scrivi=True)
+        esito("⚠️ una giornata a metà viene rifiutata, non scritta",
+              not mezza["ok"] and "5 partite su 10" in (mezza["motivo"] or ""),
+              mezza["motivo"])
+        esito("e il calendario di prima resta dov'era",
+              db.execute("SELECT COUNT(*) FROM fanta_calendario").fetchone()[0] == 10)
+
+        s = scadenza_giornata(db, gt)
+        esito("la scadenza della giornata è il fischio della PRIMA partita",
+              s and s["inizio"] == "2026-10-09 20:45" and s["quante"] == 10,
+              str(s))
+        esito("e viene scritta anche in chiaro, senza dipendere dalla lingua del sistema",
+              s["quando"] == "09/10/2026 alle 20:45", s["quando"])
+        esito("una giornata che non c'è non inventa una scadenza",
+              scadenza_giornata(db, 99) is None)
+        db.close()
+    finally:
+        F.scarica, F.eta_cache = vera_scarica, vera_eta
+
+    # --- e il timer arriva davvero nelle pagine ------------------------------
+    with app.test_client() as c10:
+        with c10.session_transaction() as s:
+            s["username"] = "davide"
+            s["role"] = "user"
+            s["user_id"] = ids["davide"]
+        elenco = c10.get("/fantacalcio/").data.decode("utf-8", "replace")
+        esito("l'elenco delle leghe mostra il conto alla rovescia",
+              'data-inizio="2026-10-09 20:45"' in elenco and "Schieri entro" in elenco)
+        campo = c10.get(f"/fantacalcio/lega/{lid}/formazione"
+                        ).data.decode("utf-8", "replace")
+        esito("e il campo pure, insieme al consiglio",
+              'data-inizio="2026-10-09 20:45"' in campo
+              and "Come viene scelto l'undici" in campo)
+        casa = c10.get("/").data.decode("utf-8", "replace")
+        esito("in Dashboard c'è l'anteprima del Fantacalcio con la stessa scadenza",
+              'data-inizio="2026-10-09 20:45"' in casa and "Lega Amici" in casa,
+              "riquadro in dashboard")
+
+    # ⚠️ Senza calendario il timer **dice che non lo sa**: un riquadro che sparisce
+    # farebbe pensare che non ci sia una scadenza, e uno fermo a zero che sia
+    # passata.
+    db = extensions.get_db()
+    db.execute("DELETE FROM fanta_calendario")
+    db.commit()
+    db.close()
+    with app.test_client() as c10:
+        with c10.session_transaction() as s:
+            s["username"] = "davide"
+            s["role"] = "user"
+            s["user_id"] = ids["davide"]
+        elenco = c10.get("/fantacalcio/").data.decode("utf-8", "replace")
+        esito("⚠️ senza calendario il timer dichiara di non sapere l'ora",
+              "data non disponibile" in elenco and "data-inizio" not in elenco)
 
 
 def main():

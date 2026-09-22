@@ -1,58 +1,23 @@
-{% extends "base.html" %}
-{#
-  Il consiglio (§4.2, 21/09/2026). L'ultima cosa che Davide aveva chiesto.
+{# ── Il consiglio della giornata ──────────────────────────────────────────────
+   Sta **sotto il campo**, nella stessa pagina: richiesta di Davide del
+   22/09/2026 («non voglio cambiare schermata, voglio tutto insieme per essere
+   più rapido»). Fino a quel giorno era una pagina a sé.
 
-  ⚠️ Metà di questa pagina è la **dichiarazione** di come decide, e non è un
-  ornamento: il criterio non l'ha scelto il codice, e una fonte che dica «schiera X»
-  senza dire perché sarebbe l'oracolo non verificabile che questo progetto evita per
-  regola. Se si cambia l'ordinamento in `data.py`, questa pagina cambia con lui.
-#}
-{% block title %}Consiglio &ndash; {{ lega.nome }}{% endblock %}
-{% block topbar_title %}&#9917; {{ lega.nome }}{% endblock %}
-{% block body_class %}sez-fanta{% endblock %}
-{% block extra_head %}
-<link rel="stylesheet" href="{{ url_for('static', filename='css/fantacalcio.css') }}">
-<style>
-.fascia{font-size:.64rem;font-weight:700;padding:.05rem .32rem;border-radius:20px;white-space:nowrap}
-.fascia-sicuro{background:var(--success-dim);color:var(--success)}
-.fascia-favorito{background:rgba(22,163,74,.12);color:#16a34a}
-.fascia-ballottaggio{background:var(--warning-dim);color:var(--warning)}
-.fascia-panchina{background:var(--error-dim);color:var(--error)}
-.fascia-none{background:var(--surface-off);color:var(--text-muted)}
-.ruolo{display:inline-flex;align-items:center;justify-content:center;width:1.2rem;height:1.2rem;
-  border-radius:50%;font-size:.6rem;font-weight:700;color:#fff}
-.ruolo-p{background:#d97706}.ruolo-d{background:#2563eb}
-.ruolo-c{background:#16a34a}.ruolo-a{background:#dc2626}
-.num{text-align:right;font-variant-numeric:tabular-nums;white-space:nowrap}
-.mod{display:grid;grid-template-columns:repeat(auto-fill,minmax(190px,1fr));gap:.5rem}
-.mod-card{border:1px solid var(--border);border-radius:var(--radius-md);padding:.5rem .6rem}
-.mod-best{border-color:var(--primary);background:var(--primary-dim)}
-.thin{opacity:.6}
-.spiega{font-size:.75rem;line-height:1.5}
-.spiega li{margin:.25rem 0 .25rem 1rem}
-.griglia-ruoli{display:grid;grid-template-columns:repeat(auto-fill,minmax(310px,1fr));gap:.85rem}
-</style>
-{% endblock %}
-{% block content %}
-<div class="page-header">
-  <div class="flex items-center justify-between flex-wrap gap-2">
-    <div>
-      <h1>&#129504; Consiglio &mdash; {{ lega.nome }}</h1>
-      <p class="text-muted text-sm">
-        {% if giornata %}Giornata {{ giornata }}{% else %}Nessuna giornata importata{% endif %}
-        &middot; {{ rosa|length }} in rosa
-        {% if probabili_aggiornate %}&middot; probabili del {{ probabili_aggiornate }}{% endif %}
-      </p>
-    </div>
-    <div class="flex gap-2">
-      <a class="btn" href="{{ url_for('fantacalcio.formazione', lid=lega.id) }}">
-        &#9917; Il campo</a>
-      <a class="btn btn-secondary" href="{{ url_for('fantacalcio.lega', lid=lega.id) }}">
-        &larr; La lega</a>
-    </div>
-  </div>
-</div>
+   È un `include` e non una macro di proposito: vuole una dozzina di variabili —
+   `consigli`, `dettaglio`, `per_ruolo`, `fasce`, `soglia`, `etichetta_fascia`… —
+   e un `include` eredita il contesto della pagina, mentre una macro importata
+   andrebbe chiamata passandogliele tutte a mano, cioè dodici occasioni di
+   passarne una sbagliata.
 
+   ⚠️ Metà di questo file è la **dichiarazione** di come il consiglio decide, e
+   non è un ornamento: il criterio non l'ha scelto il codice, e una fonte che dica
+   «schiera X» senza dire perché sarebbe l'oracolo non verificabile che questo
+   progetto evita per regola. Se si cambia l'ordinamento in `data.py`, questo
+   testo cambia con lui.
+
+   ⚠️ Lo stile di queste classi (`.fascia`, `.mod`, `.thin`, `.griglia-ruoli`)
+   sta nell'`extra_head` di `fanta_formazione.html`: qui dentro un `<style>`
+   finirebbe nel mezzo del `<body>`. #}
 {% if not giornata %}
 <div class="card mb-3" style="border-color:var(--warning)">
   <div class="card-body text-sm">
@@ -63,9 +28,18 @@
 </div>
 {% endif %}
 
-{# ── La dichiarazione. Sta in cima di proposito. ─────────────────────────── #}
+{# ── La dichiarazione ─────────────────────────────────────────────────────────
+   ⚠️ **Chiusa, ma presente.** Quando aveva una pagina sua stava aperta in cima:
+   qui sopra c'e' il campo, e un muro di testo fra il campo e l'undici consigliato
+   allontanerebbe proprio quello per cui si e' scesi fin qui. Resta a un clic, e
+   resta **nella pagina** - e' la dichiarazione di come il consiglio decide, e un
+   consiglio che non dice su cosa si basa vale zero. #}
 <div class="card mb-3">
-  <div class="card-header"><div class="card-title">Come viene scelto l'undici</div></div>
+  <details>
+    <summary class="card-header" style="cursor:pointer;list-style:none">
+      <div class="card-title">Come viene scelto l'undici</div>
+      <span class="text-xs text-muted">il criterio, per esteso</span>
+    </summary>
   <div class="card-body spiega">
     <p>Il consiglio risponde a <strong>due domande, in quest'ordine</strong>: prima
     <em>chi gioca</em>, poi <em>chi conviene schierare</em> fra quelli che giocano.
@@ -130,6 +104,7 @@
       titolarità.
     </p>
   </div>
+  </details>
 </div>
 
 {% if not consigli %}
@@ -177,7 +152,7 @@
         </div>
         <div class="flex gap-1 mt-2">
           <a class="btn btn-sm btn-secondary"
-             href="{{ url_for('fantacalcio.consiglio', lid=lega.id, modulo=c.modulo) }}">Vedi</a>
+             href="{{ url_for('fantacalcio.formazione', lid=lega.id, dettaglio=c.modulo, _anchor='consiglio') }}">Vedi</a>
           <form method="post"
                 action="{{ url_for('fantacalcio.consiglio_applica', lid=lega.id) }}">
             <input type="hidden" name="modulo" value="{{ c.modulo }}">
@@ -343,4 +318,3 @@
   più chiare indicano meno di {{ minimo_partite }} partite a voto.
 </div>
 {% endif %}
-{% endblock %}

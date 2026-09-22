@@ -1,0 +1,86 @@
+{# Quanto manca al fischio d'inizio della giornata, cioe' entro quando si schiera.
+
+   Chiesto da Davide il 22/09/2026, e sta in un file suo perche' lo mostrano in
+   **quattro** posti - la Dashboard, l'elenco delle leghe, la scheda della lega e
+   il campo. Si usa con `{% from "_fanta_timer.html" import timer %}`.
+
+   ⚠️ La scadenza e' la **prima partita della giornata**, non l'ultima: chi gioca
+   il venerdi' sera va schierato prima di quella, e una media o un «entro domenica»
+   sarebbero un numero comodo e falso.
+
+   ⚠️ `scadenza` puo' essere `None`, e allora il riquadro **dice che non lo sa**
+   invece di sparire o di mostrare zero. Un timer che manca si vede; un timer fermo
+   a zero sembra una giornata gia' iniziata.
+
+   ⚠️ L'orario e' ora italiana senza fuso (`2026-10-10 15:00`), e il conto lo fa il
+   browser con la **sua** ora locale: l'app gira in casa, nello stesso fuso della
+   Serie A. Scrivendolo con la `Z` diventerebbe UTC, cioe' due ore di anticipo. #}
+{% macro timer(scadenza, id, compatto=False) %}
+{% if scadenza %}
+<div class="scadenza{% if compatto %} scadenza-compatta{% endif %}"
+     id="{{ id }}" data-inizio="{{ scadenza.inizio }}">
+  <div class="scadenza-testa">
+    <span class="scadenza-etichetta">&#9200; Schieri entro</span>
+    <strong class="scadenza-conto">&mdash;</strong>
+  </div>
+  <div class="scadenza-quando">
+    Giornata {{ scadenza.giornata }} &middot; {{ scadenza.quando }}
+    {% if scadenza.casa %}&middot; {{ scadenza.casa }}&ndash;{{ scadenza.fuori }}{% endif %}
+    {% if scadenza.senza_ora %}
+    <br>{{ scadenza.senza_ora }} partit{{ 'a' if scadenza.senza_ora == 1 else 'e' }}
+    di questa giornata non {{ 'ha' if scadenza.senza_ora == 1 else 'hanno' }} ancora
+    un orario.
+    {% endif %}
+  </div>
+</div>
+<script>
+/* Un conto per ogni riquadro, sul suo elemento: due timer nella stessa pagina non
+   si dividono nessuno stato. Si aggiorna ogni 30 secondi — al minuto si vedrebbe
+   saltare, al secondo non serve a niente per una scadenza che dista giorni. */
+(function(){
+  var box = document.getElementById({{ id|tojson }});
+  if (!box) return;
+  var conto = box.querySelector('.scadenza-conto');
+  /* `new Date('2026-10-10 15:00')` è ora **locale** in tutti i browser correnti;
+     con la T e senza fuso alcuni la leggevano come UTC. */
+  var inizio = new Date(box.dataset.inizio.replace(/-/g, '/'));
+  if (isNaN(inizio.getTime())) { conto.textContent = 'data non leggibile'; return; }
+  function scrivi(){
+    var restano = Math.floor((inizio - new Date()) / 1000);
+    box.classList.remove('scadenza-vicina', 'scadenza-urgente', 'scadenza-passata');
+    if (restano <= 0) {
+      conto.textContent = 'la giornata è iniziata';
+      box.classList.add('scadenza-passata');
+      return;
+    }
+    var g = Math.floor(restano / 86400),
+        o = Math.floor(restano % 86400 / 3600),
+        m = Math.floor(restano % 3600 / 60);
+    var pezzi = [];
+    if (g) pezzi.push(g + (g === 1 ? ' giorno' : ' giorni'));
+    if (o) pezzi.push(o + (o === 1 ? ' ora' : ' ore'));
+    /* I minuti spariscono quando mancano giorni: «2 giorni, 5 ore e 13 minuti» è
+       una precisione che nessuno usa per decidere quando schierare. */
+    if (!g && m) pezzi.push(m + (m === 1 ? ' minuto' : ' minuti'));
+    if (!pezzi.length) pezzi.push('meno di un minuto');
+    conto.textContent = pezzi.join(' e ');
+    if (restano < 7200) box.classList.add('scadenza-urgente');
+    else if (restano < 86400) box.classList.add('scadenza-vicina');
+  }
+  scrivi();
+  setInterval(scrivi, 30000);
+})();
+</script>
+{% else %}
+<div class="scadenza scadenza-ignota{% if compatto %} scadenza-compatta{% endif %}">
+  <div class="scadenza-testa">
+    <span class="scadenza-etichetta">&#9200; Schieri entro</span>
+    <strong class="scadenza-conto">data non disponibile</strong>
+  </div>
+  <div class="scadenza-quando">
+    Il calendario di questa giornata non &egrave; stato importato, quindi l'ora
+    della prima partita non si conosce. Si aggiorna dalla pagina del Fantacalcio.
+  </div>
+</div>
+{% endif %}
+{% endmacro %}

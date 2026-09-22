@@ -99,3 +99,39 @@ body.sez-fanta #boxDifesa { border-radius: 14px; }
 body.sez-fanta #ris { border-radius: 14px; }
 body.sez-fanta #ris div:first-child { border-radius: 14px 14px 0 0; }
 body.sez-fanta #ris div:last-child { border-radius: 0 0 14px 14px; }
+
+/* ── Il timer della giornata ──────────────────────────────────────────────── */
+/* ⚠️ Queste regole **non** stanno sotto `body.sez-fanta`, e le altre sì. Il
+   motivo: il timer si vede anche in **Dashboard**, che è una pagina di un'altra
+   sezione e quindi non ha quella classe sul body. Il foglio lo carica lo stesso
+   (solo dove serve il riquadro del Fantacalcio), e tutto il resto di questo file
+   resta inerte perché la classe sul body non c'è. Il prefisso `.scadenza` è
+   abbastanza specifico da non incrociare niente d'altro. */
+.scadenza {
+  border: 1px solid var(--border);
+  border-radius: 14px;
+  padding: .55rem .8rem;
+  background: var(--surface-off);
+}
+.scadenza-testa {
+  display: flex;
+  align-items: baseline;
+  gap: .4rem;
+  flex-wrap: wrap;
+}
+.scadenza-etichetta { font-size: .7rem; color: var(--text-muted); }
+.scadenza-conto { font-size: 1.05rem; font-variant-numeric: tabular-nums; }
+.scadenza-quando { font-size: .7rem; color: var(--text-muted); margin-top: .15rem; }
+.scadenza-compatta { padding: .4rem .6rem; }
+.scadenza-compatta .scadenza-conto { font-size: .85rem; }
+
+/* I tre stati. Sono colori del tema, non tinte fisse: «manca poco» deve leggersi
+   anche sul tema chiaro. ⚠️ Il quarto caso — la scadenza che non si conosce — è
+   volutamente **grigio**: un riquadro rosso direbbe «sbrigati» su un dato che non
+   c'è, ed è peggio del non saperlo. */
+.scadenza-vicina { border-color: var(--warning); background: var(--warning-dim); }
+.scadenza-vicina .scadenza-conto { color: var(--warning); }
+.scadenza-urgente { border-color: var(--error); background: var(--error-dim); }
+.scadenza-urgente .scadenza-conto { color: var(--error); }
+.scadenza-passata .scadenza-conto,
+.scadenza-ignota .scadenza-conto { color: var(--text-muted); font-size: .85rem; }

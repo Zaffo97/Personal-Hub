@@ -440,6 +440,23 @@ SPRITE_SLUG_OVERRIDES  # 19 casi irregolari; HD None = artwork grande assente,
 > (`/pokemon/api/regulations` e `/pokemon/api/regulations/save`), ed è lì che i due
 > template puntano.
 
+### Fantacalcio — `blueprints/fantacalcio.py`
+| URL | Metodo | Descrizione |
+|-----|--------|-------------|
+| `/fantacalcio/` | GET | Le tue leghe, lo stato delle tre fonti (listone, probabili, **calendario**) e il timer «schieri entro» |
+| `/fantacalcio/listone` | GET | Il listone da sfogliare: filtri `q`/`ruolo`/`squadra`/`spenti`, otto ordinamenti (`ordine=`) |
+| `/fantacalcio/api/giocatore/<id>` | GET | La **scheda**: riga di listone (condivisa), probabile della giornata (condivisa), e in quali **tue** rose sta (filtrata) |
+| `/fantacalcio/api/giocatori?q=` | GET | La ricerca per aggiungere un giocatore alla rosa, max 25 |
+| `/fantacalcio/aggiorna/<listone\|probabili\|calendario>` | POST | «Aggiorna ora». ⚠️ POST perché scarica e riscrive: un GET si rifarebbe a ogni F5 |
+| `/fantacalcio/lega/salva` · `/lega/<id>/elimina` | POST | La lega e le sue regole |
+| `/fantacalcio/lega/<id>` | GET | Rosa, regole, probabili dei tuoi, avviso formazione, timer |
+| `/fantacalcio/lega/<id>/rosa/aggiungi` · `/rosa/<rid>/rimuovi` · `/rosa/modifica` · `/rosa/incolla`(+`/conferma`) · **`/rosa/svuota`** | POST | La rosa. ⚠️ Chi esce dalla rosa esce **anche dal campo** |
+| `/fantacalcio/lega/<id>/formazione` | GET | **Il campo e, sotto, il consiglio** (`#consiglio`, dettaglio con `?dettaglio=<modulo>`) |
+| `/fantacalcio/lega/<id>/formazione/salva` | POST | Validazione severa: quello che non torna non si salva |
+| `/fantacalcio/lega/<id>/consiglio` | GET | **Rimando** a `…/formazione#consiglio` (l'indirizzo resta per link e segnalibri) |
+| `/fantacalcio/lega/<id>/consiglio/applica` | POST | Porta un modulo consigliato nel campo, passando dalla stessa validazione |
+| `/fantacalcio/probabili` | GET | Le dieci partite della giornata, coi tuoi segnati |
+
 ---
 
 ## 🗄️ Database — Tabelle SQLite
@@ -462,6 +479,22 @@ Tutte create da `init_db()` in `extensions.py`.
 | `pc_builds` | id, name, notes |
 | `pc_components` | id, build_id (FK), category, name, price, notes |
 | `regulations` | id TEXT PK, label, roster_file, moves_file, items_file, created_at |
+| `fanta_players` | id (**quello di fantacalcio.it**), nome, squadra/_slug, ruolo_classic/_mantra, qi/qa/fvm, partite_a_voto, media_voto, fantamedia, gol, assist, cartellini, rigori, **attivo**, visto_il |
+| `fanta_leagues` | id, **user_id**, nome, moduli, n_panchinari, mod_difesa(+portiere, soglie), nove fra bonus e malus, modulo_scelto, note |
+| `fanta_roster` | id, league_id (FK CASCADE), player_id, prezzo, note — UNIQUE(league_id, player_id) |
+| `fanta_formazione` | league_id (FK CASCADE), player_id, titolare, **ordine**, ruolo — PK(league_id, player_id) |
+| `fanta_probabili_squadre` | giornata, squadra_slug, squadra, modulo, avversario(_slug), in_casa, match_id — PK(giornata, squadra_slug) |
+| `fanta_probabili` | giornata, player_id, nome, squadra_slug, ruolo, titolare, percentuale — PK(giornata, player_id) |
+| `fanta_calendario` | giornata, match_id, squadra_casa(_slug), squadra_fuori(_slug), **inizio**, stadio — PK(giornata, match_id) |
+
+> ⚠️ **Di chi sono**: `fanta_players`, le due delle probabili e `fanta_calendario` sono
+> **condivise** e rigenerabili dalla fonte, quindi non entrano nell'export.
+> `fanta_leagues` è **dell'utente**; `fanta_roster` e `fanta_formazione` il proprietario
+> lo **ereditano dalla lega** — una query che non passa di lì è scoperta (§1.1 del backlog).
+> ⚠️ `fanta_calendario.inizio` è `'YYYY-MM-DD HH:MM'` in **ora italiana senza fuso**: è la
+> scadenza del timer «schieri entro», e il conto alla rovescia lo fa il browser, che sta
+> nello stesso fuso della Serie A. Può essere `NULL` — la fonte a volte non ha l'orario —
+> e allora quella partita non conta per la scadenza.
 
 > ⚠️ `teams.regulation_id` corrisponde a un `id` in `data/regulations.json` **e** nella tabella `regulations`.  
 > `init_db()` fa `ALTER TABLE teams ADD COLUMN regulation_id` con `except: pass` per compatibilità.
@@ -655,6 +688,7 @@ Di conseguenza tutto ciò che questa tabella dava per "funzionante" non era mai 
 
 | Data | Contenuto |
 |------|-----------|
+| 2026-09-22 | **Fantacalcio, secondo giro: listone sfogliabile, svuota rosa, timer della giornata, consiglio sotto il campo.** Le quattro richieste «da fare subito» di Davide. (1) `/fantacalcio/listone`: 597 giocatori con filtri e otto ordinamenti, e la **scheda** di ognuno da `/fantacalcio/api/giocatore/<id>` — numeri del listone, probabile della giornata e in quali **tue** rose sta. ⚠️ Ordinando per fantamedia i `NULL` finivano **in cima** (in SQLite `ORDER BY … DESC` li mette primi): chi non ha mai giocato sarebbe stato il primo consigliato. (2) **Svuota reparto / svuota rosa**, col `ruolo` controllato e chi esce dalla rosa che esce **anche dal campo**. (3) **Il timer «schieri entro»** in Dashboard, elenco, lega e campo: fonte nuova `fanta_calendario` + `fantacalcio_it.calendario()` + `scripts/importa_calendario.py`. ⚠️ L'ora **non** sta nelle probabili — lì `startDate` è `1970-01-01` e `hours` è `01:00` su tutte e dieci le partite: leggerle avrebbe dato un orario invece di un errore. Tre rifiuti dichiarati (data prima del 2000, giornata con meno di 10 partite, calendario assente → «data non disponibile»), e la pagina del calendario si chiede **per giornata** perché quella generica è la giornata in corso mentre le probabili sono già sulla successiva. (4) **Il consiglio è sotto il campo**: `fanta_consiglio.html` tolto, corpo in `_fanta_consiglio.html`, `/consiglio` rimanda a `…/formazione#consiglio`. Prove **245 su 245** (erano 210), sweep 0 errori, `controlla_proprietario.py` 0 scoperte su 157 (con `fanta_calendario` aggiunta al suo raggio) |
 | 2026-09-22 | **Fantacalcio: la modale che si tagliava, e i testi a schermo riscritti.** (1) A 1280x620 la modale della lega perdeva gli ultimi ~160 px — regole **e pulsante Salva** — perche' fra `.modal-box` e `.modal-body` c'era un `<form>` non flex: ora il form e' una colonna flessibile e il corpo scrolla (474 px su 652). In arduino e pcbuilder la riga non serve, il form sta dentro il corpo. (2) **29 testi** riscritti in forma generica nelle sei pagine e nell'avviso: dicono cosa fa la pagina e cosa farci, non come ci siamo arrivati; i **commenti** del codice restano come sono. ⚠️ Due prove verificavano il testo esatto della pagina del consiglio e sono fallite: riscritte sulle frasi nuove. Prove 210 su 210, sweep 0 errori |
 | 2026-09-22 | **A backlog: la modale della lega si taglia su schermi bassi, e i testi a schermo da riscrivere.** (1) Segnalato da Davide e riprodotto: a 1280x620 la `.modal-box` si ferma a 92dvh = **570 px** e dentro ha un `<form>` da **733 px**, quindi regole della lega **e pulsante Salva** sono tagliati da `overflow:hidden` e irraggiungibili. ⚠️ La causa non è `.modal-body` (che ha gia' `overflow-y:auto`): fra lui e il box c'e' il form, che non e' un contenitore flex. Cura in una riga, e **solo qui** — in arduino e pcbuilder il form sta dentro `.modal-body` e lo scroll funziona. (2) Perimetro della «sintassi generica» chiarito: **i testi visibili**, non i commenti del codice — «e' brutto far leggere a qualcuno di esterno il nostro ragionamento» |
 | 2026-09-22 | **Fantacalcio: lo stile della sezione.** La voce che Davide aveva messo in coda a tutto: campi e pulsanti tondi, spunte col verde della sezione, card più morbide, ogni regola in una pastiglia, la × che resta tonda e piccola perché è l'unico pulsante distruttivo. ⚠️ Sta in `static/css/fantacalcio.css` sotto `body.sez-fanta`, non in `base.html`: `.form-control`, `.btn` e `.card` sono di tutte le sezioni. Il gancio è il blocco `body_class`, vuoto per ogni altra pagina — verificato su `/pokemon/`, dove il foglio non viene nemmeno caricato. ⚠️ Due cose imparate misurando: `:focus` **non si rende** nel browser incorporato (nemmeno la regola di `base.html`), e `getComputedStyle()` letto nello stesso tick in cui si cambia lo stile restituisce il valore vecchio — due falsi «non funziona» di fila. Sweep 0 errori, prove 210 su 210 |

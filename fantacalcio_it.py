@@ -51,6 +51,10 @@ PAGINE = {
     "quotazioni": BASE + "/quotazioni-fantacalcio",
     "statistiche": BASE + "/statistiche-serie-a",
     "probabili": BASE + "/probabili-formazioni-serie-a",
+    # ⚠️ La quarta pagina serve a una cosa sola: **l'ora del fischio d'inizio**.
+    # Non sta nelle probabili, dove il riquadro c'è ma è pieno di segnaposto
+    # (`1970-01-01`, `01:00` su tutte le partite, misurato il 22/09/2026).
+    "calendario": BASE + "/serie-a/calendario",
 }
 UA = {"User-Agent": "Mozilla/5.0 (compatible; personal-hub/1.0; uso personale)"}
 
@@ -76,19 +80,25 @@ def eta_cache(nome):
     return (time.time() - os.path.getmtime(p)) / 3600.0
 
 
-def scarica(nome, forza=False):
-    """L'HTML di una delle tre pagine, dalla cache o dalla rete.
+def scarica(nome, forza=False, url=None):
+    """L'HTML di una delle pagine, dalla cache o dalla rete.
 
     ⚠️ `forza=True` è la strada del **mercato**: a gennaio le squadre cambiano e la
     copia in cache direbbe il falso senza dare errore.
+
+    ⚠️ `url` serve alla sola pagina che ha **più di un indirizzo**: il calendario
+    di una giornata precisa (`/serie-a/calendario/7`). Il `nome` resta la chiave
+    della cache, quindi due giornate sono due file e non si sovrascrivono a
+    vicenda — una copia buona di una giornata sbagliata è il modo in cui questo
+    dato direbbe il falso senza dare errore.
     """
-    if nome not in PAGINE:
+    if url is None and nome not in PAGINE:
         raise ValueError(f"pagina sconosciuta: {nome}")
     p = percorso_cache(nome)
     if not forza and os.path.exists(p) and os.path.getsize(p) > 0:
         return io.open(p, encoding="utf-8").read()
     import requests
-    r = requests.get(PAGINE[nome], headers=UA, timeout=90)
+    r = requests.get(url or PAGINE[nome], headers=UA, timeout=90)
     r.raise_for_status()
     os.makedirs(CACHE, exist_ok=True)
     io.open(p, "w", encoding="utf-8").write(r.text)
@@ -513,3 +523,185 @@ def probabili(forza=False):
     return {"giornata": giornata,
             "stagione": (sorted(p.stagioni)[0] if p.stagioni else None),
             "squadre": squadre, "voci": voci}, problemi
+
+
+# ── Calendario ───────────────────────────────────────────────────────────────
+# La quarta pagina, letta il 22/09/2026 per una richiesta sola: **quando inizia la
+# giornata**, cioè entro quando va schierata la formazione.
+#
+# ⚠️ L'ora non sta nelle probabili, e sembra di sì. La pagina delle probabili ha
+# lo stesso riquadro `match-date` con `startDate`, `day` e `hours`, ma i valori
+# sono dei **segnaposto**: `1970-01-01` e `01:00` su tutte e dieci le partite
+# (misurato il 22/09/2026). Chi leggesse quella pagina otterrebbe un orario, non
+# un errore — ed è il motivo per cui qui una data prima del 2000 viene buttata via
+# invece che salvata: un timer che dice «mancano 2 giorni» quando la giornata è
+# già cominciata è peggio di un timer che manca.
+#
+# ⚠️ Ogni partita è scritta **due volte** nella pagina: due `div.match-pill`, uno
+# `size-large` e uno `size-compact`, che sono la versione per schermo largo e
+# quella per il telefono. Si tengono per `match_id`, quindi la seconda copia
+# riscrive la prima invece di raddoppiare le partite.
+
+_ID_PARTITA = re.compile(r"/serie-a/calendario/(\d+)/[^/]+/[^/]+/(\d+)")
+
+
+class _Calendario(HTMLParser):
+    """Le partite del calendario: giornata, squadre, e **data e ora del fischio**."""
+
+    def __init__(self):
+        super().__init__()
+        self.partite = {}          # match_id -> voce
+        self._p = None             # la partita che si sta leggendo
+        self._liv = 0              # annidamento dei div dentro il pill
+        self._lato = None          # 'casa' / 'trasferta', dentro la label
+        self._dove = None          # 'matchweek' / 'hours' / 'stadio', per il testo
+        self._testo = []
+
+    def handle_starttag(self, tag, attrs):
+        a = dict(attrs)
+        classi = (a.get("class") or "").split()
+
+        if tag == "div" and "match-pill" in classi:
+            self._p = {"giornata": None, "match_id": None, "data": None,
+                       "ora": None, "stadio": None, "casa": {}, "trasferta": {}}
+            self._liv = 1
+            return
+        if self._p is None:
+            return
+        if tag == "div":
+            # Si contano gli annidamenti come in `_Probabili`: un pill contiene
+            # una decina di div, e chiudere al primo `</div>` lo taglierebbe prima
+            # della data — che è l'unica cosa per cui questa pagina si legge.
+            self._liv += 1
+            if "matchweek" in classi:
+                self._dove, self._testo = "matchweek", []
+            return
+        if tag == "label":
+            if "team-home" in classi:
+                self._lato = "casa"
+            elif "team-away" in classi:
+                self._lato = "trasferta"
+            return
+        if tag == "a" and self._lato and "team-link" in classi:
+            href = (a.get("href") or "").rstrip("/")
+            self._p[self._lato]["slug"] = href.rsplit("/", 1)[-1] or None
+            return
+        if tag == "meta" and self._lato and a.get("itemprop") == "name":
+            self._p[self._lato].setdefault("nome", a.get("content"))
+            return
+        if tag == "a" and "match-score" in classi:
+            # L'URL del punteggio è l'unico posto dove stanno **insieme** la
+            # giornata e l'id della partita: `/calendario/6/2026-27/genoa-fiorentina/18008`.
+            m = _ID_PARTITA.search(a.get("href") or "")
+            if m:
+                self._p["giornata"] = int(m.group(1))
+                self._p["match_id"] = int(m.group(2))
+            return
+        if tag == "meta" and a.get("itemprop") == "startDate":
+            self._p["data"] = (a.get("content") or "").strip() or None
+            return
+        if tag == "span" and "hours" in classi:
+            self._dove, self._testo = "hours", []
+            return
+        if tag == "span" and a.get("itemprop") == "location":
+            self._dove, self._testo = "stadio", []
+            return
+
+    def handle_data(self, dato):
+        if self._dove:
+            self._testo.append(dato)
+
+    def handle_endtag(self, tag):
+        if self._p is None:
+            return
+        if self._dove and tag in ("div", "span"):
+            testo = " ".join("".join(self._testo).split())
+            if self._dove == "matchweek":
+                self._p["giornata"] = self._p["giornata"] or _intero(testo)
+            elif self._dove == "hours":
+                self._p["ora"] = testo or None
+            elif self._dove == "stadio":
+                self._p["stadio"] = (testo if testo not in ("", "-", "—") else None)
+            self._dove = None
+        if tag == "label" and self._lato:
+            self._lato = None
+            return
+        if tag == "div":
+            self._liv -= 1
+            if self._liv <= 0:
+                if self._p.get("match_id"):
+                    self.partite[self._p["match_id"]] = self._p
+                self._p = None
+
+
+_ORA = re.compile(r"^([0-2]?\d):([0-5]\d)$")
+
+
+def _quando(data, ora):
+    """`'YYYY-MM-DD HH:MM'` dal riquadro della partita, oppure `None`.
+
+    ⚠️ È **ora italiana**, quella che il sito scrive: non si converte e non si
+    aggiunge un fuso, perché questa app gira sul computer di casa e il browser che
+    la legge sta nello stesso fuso della Serie A. Scriverlo con una Z lo farebbe
+    diventare UTC, cioè due ore di anticipo sul fischio d'inizio.
+
+    ⚠️ `1970-01-01` non è una data, è il segnaposto della pagina delle probabili:
+    qui vale `None`, e chi chiama lo dice invece di mostrare un timer scaduto nel
+    1970.
+    """
+    data = (data or "").strip()
+    ora = (ora or "").strip()
+    if not re.match(r"^\d{4}-\d{2}-\d{2}$", data) or int(data[:4]) < 2000:
+        return None
+    m = _ORA.match(ora)
+    if not m:
+        return None
+    return f"{data} {int(m.group(1)):02d}:{m.group(2)}"
+
+
+def nome_calendario(giornata=None):
+    """Il nome in cache del calendario: uno per giornata, o quello generico."""
+    return "calendario" if not giornata else f"calendario-{giornata}"
+
+
+def calendario(forza=False, giornata=None):
+    """Le partite in calendario, con data e ora. Torna `(partite, problemi)`.
+
+    `partite` è `{match_id: {...}}` e ogni voce ha la sua **giornata**: la pagina
+    ne mostra più d'una (quella chiesta e quella in corso), quindi chi scrive
+    raggruppa per giornata invece di dare per scontato che ce ne sia una sola.
+
+    ⚠️ Senza `giornata` si legge la pagina generica, che mostra **la giornata in
+    corso**. Non basta, ed è il motivo per cui il parametro esiste: le probabili
+    formazioni passano alla giornata dopo prima che il calendario generico la
+    mostri, e in quei giorni il timer resterebbe senza ora — cioè sparirebbe
+    esattamente nella settimana in cui serve. Chiedendo `/serie-a/calendario/7` si
+    ha la giornata che si sta per giocare.
+    """
+    p = _Calendario()
+    url = None if not giornata else BASE + f"/serie-a/calendario/{giornata}"
+    p.feed(scarica(nome_calendario(giornata), forza, url=url))
+    problemi = []
+    fuori = {}
+    for mid, v in p.partite.items():
+        inizio = _quando(v["data"], v["ora"])
+        if not inizio:
+            problemi.append(f"partita {mid}: data e ora non leggibili "
+                            f"({v['data']} {v['ora']})")
+        if not v.get("giornata"):
+            problemi.append(f"partita {mid}: nessuna giornata")
+            continue
+        casa, trasferta = v["casa"], v["trasferta"]
+        if not casa.get("slug") or not trasferta.get("slug"):
+            problemi.append(f"partita {mid}: manca una delle due squadre")
+            continue
+        fuori[mid] = {
+            "match_id": mid, "giornata": v["giornata"], "inizio": inizio,
+            "squadra_casa": casa.get("nome"), "squadra_casa_slug": casa["slug"],
+            "squadra_fuori": trasferta.get("nome"),
+            "squadra_fuori_slug": trasferta["slug"],
+            "stadio": v.get("stadio"),
+        }
+    if not fuori:
+        problemi.append("nessuna partita letta: la pagina non ha la forma attesa")
+    return fuori, problemi

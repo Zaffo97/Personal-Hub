@@ -3,6 +3,11 @@ from datetime import datetime
 from flask import Blueprint, render_template, Response, session
 from extensions import (get_db, login_required, sezioni_utente,
                         ambito_utente, utente_id, e_admin, password_di_default)
+# ⚠️ La scadenza per schierare si chiede **alla sezione Fantacalcio**, non si
+# ricalcola qui: due query che rispondono alla stessa domanda possono rispondere
+# diverso, e quella sbagliata sarebbe questa — la Dashboard è la pagina che si
+# guarda di sfuggita.
+from blueprints.fantacalcio import scadenza_giornata
 
 bp = Blueprint("dashboard", __name__)
 
@@ -52,6 +57,28 @@ def dashboard():
         "python_done":  done, "python_total": total,
         "python_pct":   round(done / total * 100) if total else 0,
     }
+    # ── Il riquadro del Fantacalcio ────────────────────────────────────────
+    # Chiesto da Davide il 22/09/2026: un'anteprima come le altre sezioni, con
+    # **l'ultima formazione schierata** e **quanto tempo resta** per cambiarla.
+    # ⚠️ Le leghe passano da `ambito_utente()`; la formazione e la rosa non hanno
+    # un proprietario loro e lo ereditano dalla lega, quindi si contano con una
+    # sottoquery **sulla lega già filtrata** (§1.1).
+    fanta_leghe, fanta_scadenza = [], None
+    if "fantacalcio" in permesse:
+        fanta_leghe = [dict(r) for r in db.execute(f"""
+            SELECT l.id, l.nome, l.modulo_scelto,
+              (SELECT COUNT(*) FROM fanta_formazione f
+                 WHERE f.league_id=l.id AND f.titolare=1) AS titolari,
+              (SELECT COUNT(*) FROM fanta_formazione f
+                 WHERE f.league_id=l.id AND f.titolare=0) AS panchinari,
+              (SELECT COUNT(*) FROM fanta_roster r WHERE r.league_id=l.id) AS in_rosa
+            FROM fanta_leagues l WHERE {cond_l} ORDER BY l.nome LIMIT 4""",
+            par_l).fetchall()]
+        # ⚠️ La Dashboard **non** rilegge fantacalcio.it: mostra quello che c'è.
+        # Aprire la pagina di casa non può voler dire aspettare tre pagine da un
+        # mega, e il riquadro dice da quando è fermo il dato.
+        fanta_scadenza = scadenza_giornata(db)
+
     recent_games = db.execute(
         f"SELECT * FROM games WHERE {cond} ORDER BY created_at DESC LIMIT 6",
         par).fetchall() if "gaming" in permesse else []
@@ -81,6 +108,7 @@ def dashboard():
         recent_games=recent_games,
         arduino_recent=arduino_recent,
         pc_builds=pc_builds,
+        fanta_leghe=fanta_leghe, fanta_scadenza=fanta_scadenza,
         now=datetime.now().strftime("%A %d %B %Y"),
         display_name=session.get("display_name", ""),
     )

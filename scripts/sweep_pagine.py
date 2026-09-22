@@ -59,7 +59,11 @@ PAGINE = [
     # `/pokemon/team/1/edit`: se la lega 1 non c'e' la pagina redirige, e lo sweep
     # lo dice invece di fingere un ok.
     "/fantacalcio/", "/fantacalcio/lega/1", "/fantacalcio/probabili",
-    "/fantacalcio/lega/1/formazione", "/fantacalcio/lega/1/consiglio",
+    # ⚠️ Dal 22/09/2026 il campo contiene **anche** il consiglio, che prima era
+    # una pagina a se': e' la pagina con piu' script del Fantacalcio, ed e' qui
+    # che questo sweep serve davvero. `/consiglio` non c'e' piu' nell'elenco
+    # perche' ora e' un rimando - lo sweep direbbe «302» e avrebbe ragione.
+    "/fantacalcio/lega/1/formazione", "/fantacalcio/listone",
 ]
 
 # Le pagine che **si aprono con una POST**, aggiunte il 21/09/2026 con l'anteprima

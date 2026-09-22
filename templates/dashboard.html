@@ -1,6 +1,15 @@
 {% extends "base.html" %}
+{% from "_fanta_timer.html" import timer %}
 {% block title %}Dashboard – Hub{% endblock %}
 {% block topbar_title %}&#128202; Dashboard{% endblock %}
+{% block extra_head %}
+{% if 'fantacalcio' in sezioni_permesse %}
+{# Serve **solo** per il riquadro qui sotto, che ha il timer della giornata. Il
+   resto del foglio sta sotto `body.sez-fanta` e qui quella classe non c'e', quindi
+   resta inerte: il tema di questa pagina non cambia. #}
+<link rel="stylesheet" href="{{ url_for('static', filename='css/fantacalcio.css') }}">
+{% endif %}
+{% endblock %}
 {% block content %}
 <div class="page-header">
   <h1>Ciao, {{ display_name }} &#128075;</h1>
@@ -130,6 +139,43 @@
       {% endfor %}{% else %}
       <div style="padding:1rem;text-align:center;color:var(--text-muted);font-size:.8rem">Nessun progetto</div>
       {% endif %}
+    </div>
+    {% endif %}
+    {% if 'fantacalcio' in sezioni_permesse %}
+    {# L'anteprima del Fantacalcio: **entro quando** si schiera e **cosa c'e'
+       schierato adesso**, che sono le due cose per cui si aprirebbe la sezione.
+       ⚠️ Questa pagina non rilegge fantacalcio.it: mostra il dato che c'e'. #}
+    <div class="card">
+      <div class="card-header">
+        <span class="card-title">&#9917; Fantacalcio</span>
+        <a href="/fantacalcio" class="btn btn-secondary btn-sm">Apri</a>
+      </div>
+      <div style="padding:.6rem .9rem">
+        {{ timer(fanta_scadenza, 'scadenza_dashboard', compatto=True) }}
+      </div>
+      {% for l in fanta_leghe %}
+      <div style="display:flex;align-items:center;justify-content:space-between;gap:.5rem;
+           padding:.45rem .9rem;border-bottom:1px solid color-mix(in oklch,var(--border) 30%,transparent)">
+        <div style="min-width:0">
+          <div class="text-sm font-600">{{ l.nome }}</div>
+          <div class="text-xs text-muted">
+            {% if l.titolari %}
+              {{ l.modulo_scelto or '—' }} &middot; {{ l.titolari }} titolari,
+              {{ l.panchinari }} in panchina
+            {% else %}
+              nessuna formazione schierata &middot; {{ l.in_rosa }} in rosa
+            {% endif %}
+          </div>
+        </div>
+        <a class="btn btn-sm {% if l.titolari %}btn-secondary{% else %}btn-primary{% endif %}"
+           href="/fantacalcio/lega/{{ l.id }}/formazione">
+          {% if l.titolari %}Cambia{% else %}Schiera{% endif %}</a>
+      </div>
+      {% else %}
+      <div style="padding:.9rem" class="text-xs text-muted">
+        Nessuna lega. Si creano dalla <a href="/fantacalcio">sezione Fantacalcio</a>.
+      </div>
+      {% endfor %}
     </div>
     {% endif %}
     {% if pc_builds and 'pcbuilder' in sezioni_permesse %}

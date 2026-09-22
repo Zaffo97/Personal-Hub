@@ -16,6 +16,8 @@ scoperta, ed è la trappola scritta in §1.1.
 tocca niente **non dà errore**, e senza quel controllo il codice sotto andrebbe
 avanti come se avesse funzionato.
 """
+from datetime import datetime
+
 from flask import (Blueprint, render_template, request, redirect, url_for,
                    flash, jsonify)
 
@@ -92,7 +94,7 @@ def _lega_mia(db, lid):
     return dict(r) if r else None
 
 
-def _aggiorna(db, quale, forza_scrittura=False):
+def _aggiorna(db, quale, forza_scrittura=False, giornata=None):
     """Rilegge dalla fonte e scrive. Torna `(messaggio, categoria)` per il flash.
 
     ⚠️ **Se la fonte non risponde, la sezione deve aprirsi lo stesso.** Questa
@@ -120,6 +122,22 @@ def _aggiorna(db, quale, forza_scrittura=False):
                              (f" ({quanti} in una tua rosa)" if quanti else ""))
             return "Listone aggiornato: " + ", ".join(pezzi), "success"
 
+        if quale == "calendario":
+            # ⚠️ `giornata` dice **quale pagina** leggere, ed è quella delle
+            # probabili: la pagina generica del calendario mostra la giornata in
+            # corso, che può essere già giocata quando le probabili sono passate
+            # alla successiva — e allora il timer resterebbe senza ora proprio
+            # nella settimana in cui serve.
+            r = I.aggiorna_calendario(db, scarica=True, scrivi=True,
+                                      forza=forza_scrittura, giornata=giornata)
+            if not r["ok"]:
+                return f"Calendario non aggiornato: {r['motivo']}", "error"
+            giornate = ", ".join(f"giornata {g} ({n} partite)"
+                                 for g, n in sorted(r["giornate"].items()))
+            return (f"Calendario aggiornato: {giornate}" +
+                    (f", {r['senza_ora']} senza orario" if r["senza_ora"] else ""),
+                    "success")
+
         r = I.aggiorna_probabili(db, scarica=True, scrivi=True,
                                  forza=forza_scrittura, ambito=ambito)
         if not r["ok"]:
@@ -134,7 +152,7 @@ def _aggiorna(db, quale, forza_scrittura=False):
                 "error")
 
 
-def _aggiorna_se_vecchio(db, quale):
+def _aggiorna_se_vecchio(db, quale, giornata=None):
     """L'aggiornamento automatico entrando nella sezione. Torna il messaggio o `None`.
 
     ⚠️ Non aggiorna **a ogni visita**, e la ragione è che aprire la pagina
@@ -144,10 +162,10 @@ def _aggiorna_se_vecchio(db, quale):
     probabili, che cambiano fino al fischio d'inizio. Il pulsante «Aggiorna ora»
     resta per quando non si vuole aspettare la soglia.
     """
-    serve, _ore = I.serve_aggiornare(db, quale)
+    serve, _ore = I.serve_aggiornare(db, quale, giornata)
     if not serve:
         return None
-    messaggio, categoria = _aggiorna(db, quale)
+    messaggio, categoria = _aggiorna(db, quale, giornata=giornata)
     # Un aggiornamento automatico riuscito non merita un avviso: la pagina mostra
     # già la data del dato. Si parla solo quando è andato storto.
     return None if categoria == "success" else messaggio
@@ -167,6 +185,62 @@ def _giornata_probabili(db, chiesta=None):
             return r["giornata"]
     r = db.execute("SELECT MAX(giornata) AS g FROM fanta_probabili_squadre").fetchone()
     return r["g"] if r and r["g"] else None
+
+
+def scadenza_giornata(db, giornata=None):
+    """Quando **inizia** la giornata: la prima partita in calendario, o `None`.
+
+    È la scadenza per schierare la formazione, e vale per tutte le leghe: il
+    fischio d'inizio della prima partita non dipende da quale lega si gioca.
+
+    ⚠️ Non ha l'underscore davanti perché la usa **anche la Dashboard**, che il
+    riquadro del Fantacalcio ce l'ha pure lei. Una seconda copia della query là
+    dentro sarebbe due scadenze che possono dire due cose diverse — è lo stesso
+    motivo per cui `fanta_import.py` esiste.
+
+    Senza `giornata` la prende dalle probabili importate, e se non ce ne sono
+    dalla **prima partita non ancora giocata** che il calendario conosce: sono due
+    modi di rispondere alla stessa domanda, e il secondo serve a chi ha il
+    calendario ma non ha ancora importato le probabili.
+
+    ⚠️ Torna `None` quando il calendario non c'è o quella giornata non ha ancora
+    orari, e chi chiama **lo dice** invece di mostrare un timer fermo. Un timer è
+    il caso perfetto del fallback silenzioso: un numero che scorre sembra vero
+    anche quando è calcolato su una data inventata.
+
+    ⚠️ `inizio` è ora italiana senza fuso (vedi lo schema): il conto alla rovescia
+    lo fa il browser, che sta nello stesso fuso.
+    """
+    if not giornata:
+        adesso = datetime.now().strftime("%Y-%m-%d %H:%M")
+        # Il confronto è fra stringhe, e funziona **perché** il formato è
+        # `YYYY-MM-DD HH:MM`: in quella forma l'ordine alfabetico è l'ordine
+        # cronologico. Con le date scritte all'italiana non lo sarebbe.
+        r = db.execute("SELECT giornata FROM fanta_calendario WHERE inizio >= ? "
+                       "ORDER BY inizio LIMIT 1", (adesso,)).fetchone()
+        giornata = r["giornata"] if r else None
+    if not giornata:
+        return None
+    riga = db.execute(
+        "SELECT * FROM fanta_calendario WHERE giornata=? AND inizio IS NOT NULL "
+        "ORDER BY inizio LIMIT 1", (giornata,)).fetchone()
+    if riga is None:
+        return None
+    conto = db.execute(
+        "SELECT COUNT(*) AS quante, SUM(inizio IS NULL) AS senza_ora "
+        "FROM fanta_calendario WHERE giornata=?", (giornata,)).fetchone()
+    # La stessa data scritta per chi legge, **senza `locale`**: i nomi dei giorni
+    # in italiano dipendono da come è configurato il sistema, e un server che non
+    # ha la locale italiana scriverebbe «Saturday». Il conto alla rovescia lo fa
+    # il browser; questa riga è quello che resta scritto comunque.
+    try:
+        quando = datetime.strptime(riga["inizio"], "%Y-%m-%d %H:%M").strftime(
+            "%d/%m/%Y alle %H:%M")
+    except ValueError:
+        quando = riga["inizio"]
+    return {"giornata": giornata, "inizio": riga["inizio"], "quando": quando,
+            "casa": riga["squadra_casa"], "fuori": riga["squadra_fuori"],
+            "quante": conto["quante"], "senza_ora": conto["senza_ora"] or 0}
 
 
 def _probabili_della_rosa(db, giornata, rosa):
@@ -338,6 +412,13 @@ def fantacalcio():
         guaio = _aggiorna_se_vecchio(db, quale)
         if guaio:
             flash(guaio, "error")
+    # ⚠️ Il calendario **dopo** le probabili, e sapendo quale giornata: la pagina
+    # generica del calendario è quella in corso, e le probabili sono già sulla
+    # prossima. Chiedendo la giornata giusta il timer non sparisce proprio nella
+    # settimana in cui serve.
+    guaio = _aggiorna_se_vecchio(db, "calendario", _giornata_probabili(db))
+    if guaio:
+        flash(guaio, "error")
     di = _i(request.args.get("utente")) or None
     cond, par = ambito_utente(di=di)
     leghe = [dict(r) for r in db.execute(
@@ -376,6 +457,10 @@ def fantacalcio():
         if quanti:
             guai_lega[l["id"]] = quanti
     eta = {q: I.serve_aggiornare(db, q)[1] for q in ("listone", "probabili")}
+    eta["calendario"] = I.serve_aggiornare(db, "calendario", giornata_ora)[1]
+    # Entro quando si schiera: e' il fischio d'inizio della prima partita della
+    # giornata, uguale per tutte le leghe. Puo' mancare, e allora la pagina lo dice.
+    scadenza = scadenza_giornata(db, giornata_ora)
     db.close()
     return render_template("fantacalcio.html", leghe=leghe,
                            listone=dict(listone) if listone else {},
@@ -387,7 +472,8 @@ def fantacalcio():
                            soglie_quarti=MOD_DIFESA_SOGLIE_QUARTI,
                            soglie_lega={l["id"]: soglie_mod_difesa(
                                l.get("mod_difesa_soglie")) for l in leghe},
-                           eta_cache=eta, guai_lega=guai_lega,
+                           eta_cache=eta, guai_lega=guai_lega, scadenza=scadenza,
+                           giornata=giornata_ora,
                            proprietari=proprietari, filtro_utente=di,
                            nomi_utenti=nomi_utenti)
 
@@ -401,11 +487,15 @@ def aggiorna(quale):
     delle righe: un `GET` così si rifarebbe da solo a ogni ricarica del browser,
     e basterebbe tenere premuto F5 per martellare la fonte.
     """
-    if quale not in ("listone", "probabili"):
+    if quale not in ("listone", "probabili", "calendario"):
         flash("Non so cosa aggiornare", "error")
         return redirect(url_for("fantacalcio.fantacalcio"))
     db = get_db()
-    messaggio, categoria = _aggiorna(db, quale)
+    # Il pulsante del calendario legge **la giornata delle probabili**, come fa
+    # l'aggiornamento automatico: premerlo e aspettare non devono dare due
+    # risultati diversi.
+    messaggio, categoria = _aggiorna(
+        db, quale, giornata=_giornata_probabili(db) if quale == "calendario" else None)
     db.close()
     flash(messaggio, categoria)
     dove = request.form.get("torna_a")
@@ -516,8 +606,12 @@ def lega_elimina(lid):
 def lega(lid):
     db = get_db()
     # Anche qui: la pagina mostra le probabili della rosa, quindi vale la stessa
-    # regola dell'elenco: se la copia ha più di tre ore si rilegge.
+    # regola dell'elenco: se la copia ha più di tre ore si rilegge. Il calendario
+    # viene dopo, perché vuole sapere di quale giornata (vedi l'elenco).
     guaio = _aggiorna_se_vecchio(db, "probabili")
+    if guaio:
+        flash(guaio, "error")
+    guaio = _aggiorna_se_vecchio(db, "calendario", _giornata_probabili(db))
     if guaio:
         flash(guaio, "error")
     riga = _lega_mia(db, lid)
@@ -548,6 +642,7 @@ def lega(lid):
     # sul campo perche' questa e' la pagina da cui si passa, e un avviso che si vede
     # solo dove si sta gia' guardando non avvisa nessuno.
     allerta = _allerta(db, lid, rosa, probabili)
+    scadenza = scadenza_giornata(db, giornata)
     db.close()
 
     per_ruolo = {r: [g for g in rosa if g["ruolo_classic"] == r]
@@ -582,6 +677,7 @@ def lega(lid):
                                m, soglie_mod_difesa(riga.get("mod_difesa_soglie"))))
                                for m in (5.5, 6.0, 6.5, 7.0, 7.5)],
                            giornata=giornata, probabili=probabili, allerta=allerta,
+                           scadenza=scadenza,
                            probabili_aggiornate=(aggiornate["q"] if aggiornate else None))
 
 
@@ -601,30 +697,42 @@ def _rosa_della_lega(db, lid):
 @bp.route("/lega/<int:lid>/formazione")
 @login_required
 def formazione(lid):
-    """Il campo da gioco: si schiera qui, ed è di questa lega.
+    """Il campo da gioco **e** il consiglio della giornata, nella stessa pagina.
 
     ⚠️ Una formazione sola per lega, senza giornata: è la scelta di Davide del
     21/09/2026. Le **probabili** invece la giornata ce l'hanno, e si vedono accanto
     a ogni giocatore mentre si schiera — è tutto il motivo per cui sono state fatte
     prima di questa pagina.
+
+    Dal 22/09/2026 il consiglio non ha più una pagina sua: sta **sotto il campo**,
+    perché si schiera guardandolo e cambiare schermata per leggerlo significava
+    tenere a mente undici nomi. Il contesto lo prepara `_consiglio()`, la stessa
+    funzione che usa «applica»: due calcoli diversi per la stessa giornata
+    potrebbero dire due cose diverse, e nessuno se ne accorgerebbe.
     """
     db = get_db()
+    # Le probabili invecchiano in tre ore, il calendario in un giorno: se la copia
+    # ha passato la sua soglia si rilegge, e se la fonte non risponde la pagina si
+    # apre lo stesso col dato di prima. Il calendario chiede **la giornata delle
+    # probabili**, non quella in corso (vedi l'elenco delle leghe).
     guaio = _aggiorna_se_vecchio(db, "probabili")
     if guaio:
         flash(guaio, "error")
-    lega = _lega_mia(db, lid)
+    guaio = _aggiorna_se_vecchio(db, "calendario", _giornata_probabili(db))
+    if guaio:
+        flash(guaio, "error")
+    lega, ctx = _consiglio(db, lid)
     if lega is None:
         db.close()
         flash("Lega non trovata", "error")
         return redirect(url_for("fantacalcio.fantacalcio"))
 
-    rosa = _rosa_della_lega(db, lid)
-    giornata = _giornata_probabili(db)
-    probabili = _probabili_della_rosa(db, giornata, rosa)
+    rosa, giornata = ctx["rosa"], ctx["giornata"]
     schierati = {r["player_id"]: dict(r) for r in db.execute(
         "SELECT * FROM fanta_formazione WHERE league_id=? ORDER BY titolare DESC, ordine",
         (lid,)).fetchall()}
-    allerta = _allerta(db, lid, rosa, probabili)
+    allerta = _allerta(db, lid, rosa, ctx["probabili"])
+    scadenza = scadenza_giornata(db, giornata)
     db.close()
 
     moduli = [m.strip() for m in (lega.get("moduli") or "").split(",")
@@ -637,14 +745,30 @@ def formazione(lid):
     if scelto not in moduli:
         scelto = moduli[0] if moduli else None
 
-    per_ruolo = {r: [g for g in rosa if g["ruolo_classic"] == r]
-                 for r in ORDINE_RUOLI_FANTA}
+    # Quale modulo il consiglio mostra in dettaglio. ⚠️ Il parametro si chiama
+    # `dettaglio` e **non** `modulo`: in questa pagina «modulo» è già il modulo del
+    # campo, e due cose diverse con lo stesso nome nell'URL finiscono per
+    # sovrascriversi a vicenda. Senza richiesta esplicita si mostra il consiglio
+    # per il modulo che è nel campo — è quello che serve mentre si schiera — e se
+    # quel modulo non è consigliabile si ripiega sul migliore.
+    consigli = ctx["consigli"]
+    chiesto = (request.args.get("dettaglio") or "").strip()
+    dettaglio = next((c for c in consigli if c["modulo"] == chiesto), None)
+    if dettaglio is None and scelto:
+        dettaglio = next((c for c in consigli if c["modulo"] == scelto), None)
+    if dettaglio is None:
+        dettaglio = next((c for c in consigli if c["migliore"]), None)
+    if dettaglio is None and consigli:
+        dettaglio = consigli[0]
+
     return render_template(
-        "fanta_formazione.html", lega=lega, rosa=rosa, per_ruolo=per_ruolo,
-        ruoli=RUOLI_FANTA, ordine=ORDINE_RUOLI_FANTA, moduli=moduli,
-        modulo=scelto, schierati=schierati, probabili=probabili,
-        giornata=giornata, allerta=allerta,
-        reparti={m: scomponi_modulo(m) for m in moduli})
+        "fanta_formazione.html", lega=lega, ruoli=RUOLI_FANTA,
+        ordine=ORDINE_RUOLI_FANTA, moduli=moduli,
+        modulo=scelto, schierati=schierati, allerta=allerta, scadenza=scadenza,
+        reparti={m: scomponi_modulo(m) for m in moduli},
+        dettaglio=dettaglio, fasce=FASCE_TITOLARITA, soglia=SOGLIA_SCHIERABILE,
+        minimo_partite=MINIMO_PARTITE_FIDATO,
+        etichetta_fascia=etichetta_fascia, **ctx)
 
 
 def _scrivi_formazione(db, lid, modulo, titolari, panchinari, rosa):
@@ -754,6 +878,7 @@ def _consiglio(db, lid):
     return lega, {
         "rosa": rosa, "giornata": giornata, "valutazioni": valutazioni,
         "per_ruolo": rosa_per_merito(valutazioni), "consigli": consigli,
+        "probabili": probabili,
         "probabili_aggiornate": (aggiornate["q"] if aggiornate else None),
     }
 
@@ -761,46 +886,24 @@ def _consiglio(db, lid):
 @bp.route("/lega/<int:lid>/consiglio")
 @login_required
 def consiglio(lid):
-    """Il consiglio: chi schierare, e **su cosa si basa**, scritto nella pagina.
+    """Il vecchio indirizzo del consiglio: adesso porta al campo, dove il
+    consiglio sta.
 
-    ⚠️ La parte che conta di questa route non è il codice, è la dichiarazione. Il
-    criterio non è stato scelto qui: Davide ha chiesto «quello che consigliano di
-    più sulla piattaforma o altre fonti affidabili», si è andati a leggere, e si è
-    trovato che **una formula non la pubblica nessuno** — il Comparatore di
-    fantacalcio.it è premium e non dice come confronta, la pagina dell'algoritmo
-    delle quotazioni dichiara di non rivelare i coefficienti, il FantaIndex è «un
-    numero da 0 a 100» e basta. Quello che le fonti dichiarano è una **gerarchia con
-    delle soglie**, e quella è implementata in `data.py` con i numeri e le citazioni
-    attaccate. Un consiglio che non dice su cosa si basa sarebbe l'oracolo non
-    verificabile che questo progetto evita per regola.
+    Richiesta di Davide del 22/09/2026: «la sezione consiglio deve stare sotto
+    alla scelta di formazione, non voglio cambiare schermata». Non è una pagina in
+    meno per risparmiare codice — si schiera **guardando** il consiglio, e tenere
+    le due cose su due schermate voleva dire ricordare a memoria undici nomi.
+
+    ⚠️ Questo indirizzo resta perché è scritto in link e segnalibri, e perché un
+    404 su una pagina che c'era non spiega niente. Il parametro `modulo` di prima
+    diventa `dettaglio`: nel campo «modulo» vuol già dire un'altra cosa.
+
+    ⚠️ Il controllo di proprietà **non si fa qui**: lo fa la pagina di arrivo, con
+    `_lega_mia()`. Farlo in due punti vuol dire poterlo cambiare in uno solo.
     """
-    db = get_db()
-    guaio = _aggiorna_se_vecchio(db, "probabili")
-    if guaio:
-        flash(guaio, "error")
-    lega, ctx = _consiglio(db, lid)
-    if lega is None:
-        db.close()
-        flash("Lega non trovata", "error")
-        return redirect(url_for("fantacalcio.fantacalcio"))
-    db.close()
-    # Quale modulo si guarda in dettaglio: quello chiesto, se è consigliabile,
-    # altrimenti il migliore per punti attesi, altrimenti il primo. ⚠️ Non si
-    # inventa: con nessun modulo consigliabile resta `None` e la pagina lo dice.
-    consigli = ctx["consigli"]
-    chiesto = (request.args.get("modulo") or "").strip()
-    dettaglio = next((c for c in consigli if c["modulo"] == chiesto), None)
-    if dettaglio is None:
-        dettaglio = next((c for c in consigli if c["migliore"]), None)
-    if dettaglio is None and consigli:
-        dettaglio = consigli[0]
-    return render_template("fanta_consiglio.html", lega=lega, ruoli=RUOLI_FANTA,
-                           dettaglio=dettaglio,
-                           ordine=ORDINE_RUOLI_FANTA,
-                           fasce=FASCE_TITOLARITA,
-                           soglia=SOGLIA_SCHIERABILE,
-                           minimo_partite=MINIMO_PARTITE_FIDATO,
-                           etichetta_fascia=etichetta_fascia, **ctx)
+    chiesto = (request.args.get("dettaglio") or request.args.get("modulo") or "").strip()
+    return redirect(url_for("fantacalcio.formazione", lid=lid,
+                            dettaglio=chiesto or None, _anchor="consiglio"))
 
 
 @bp.route("/lega/<int:lid>/consiglio/applica", methods=["POST"])
@@ -829,7 +932,8 @@ def consiglio_applica(lid):
         db.close()
         flash(f"Il modulo {modulo or '—'} non è fra quelli consigliabili per questa "
               "lega", "error")
-        return redirect(url_for("fantacalcio.consiglio", lid=lid))
+        return redirect(url_for("fantacalcio.formazione", lid=lid,
+                                _anchor="consiglio"))
 
     titolari = [v["g"]["id"] for v in scelto["titolari"]]
     panchinari = [v["g"]["id"] for v in scelto["panchina"]]
@@ -840,7 +944,8 @@ def consiglio_applica(lid):
         db.close()
         for g in guai:
             flash(g, "error")
-        return redirect(url_for("fantacalcio.consiglio", lid=lid))
+        return redirect(url_for("fantacalcio.formazione", lid=lid,
+                                _anchor="consiglio"))
     if not _scrivi_formazione(db, lid, modulo, titolari, panchinari, rosa):
         flash("Lega non trovata", "error")
         return redirect(url_for("fantacalcio.fantacalcio"))
@@ -1067,6 +1172,206 @@ def rosa_incolla_conferma(lid):
         pezzi.append(f"{ignoti} senza un giocatore valido")
     flash(", ".join(pezzi), "success" if aggiunti else "error")
     return redirect(url_for("fantacalcio.lega", lid=lid))
+
+
+@bp.route("/lega/<int:lid>/rosa/svuota", methods=["POST"])
+@login_required
+def rosa_svuota(lid):
+    """Svuota **un ruolo** o **tutta la rosa**, in un colpo solo.
+
+    Chiesto da Davide il 22/09/2026. Rifare una rosa a fine mercato voleva dire
+    spuntare venticinque caselle in «Correggi la rosa»: qui il reparto (o la rosa
+    intera) se ne va con un pulsante e una conferma.
+
+    ⚠️ Chi esce dalla rosa esce **anche dal campo**, come per la × di una riga:
+    `fanta_roster` e `fanta_formazione` sono due tabelle, e un DELETE sulla prima
+    lascerebbe una formazione con dei titolari che non sono più in rosa — senza
+    nessun errore, perché il campo smette semplicemente di disegnarli.
+
+    ⚠️ `ruolo` arriva dal browser e viene **controllato**: solo `tutti` o uno dei
+    quattro ruoli del Classic. Un valore qualsiasi finito nella query non
+    cancellerebbe niente, e il messaggio direbbe comunque «fatto».
+    """
+    ruolo = (request.form.get("ruolo") or "").strip().lower()
+    if ruolo not in ("tutti",) + tuple(ORDINE_RUOLI_FANTA):
+        flash("Non so quale parte della rosa svuotare", "error")
+        return redirect(url_for("fantacalcio.lega", lid=lid))
+
+    db = get_db()
+    if _lega_mia(db, lid) is None:
+        db.close()
+        flash("Lega non trovata", "error")
+        return redirect(url_for("fantacalcio.fantacalcio"))
+
+    # Si leggono **prima** le righe da togliere: dopo il DELETE non c'è più modo di
+    # sapere chi far scendere dal campo, ed è lo stesso motivo per cui
+    # `rosa_rimuovi()` legge il `player_id` prima di cancellarlo.
+    cond, par = solo_mie("l.user_id")
+    mia = f"league_id IN (SELECT l.id FROM fanta_leagues l WHERE {cond})"
+    filtro = "" if ruolo == "tutti" else " AND p.ruolo_classic=?"
+    coda = () if ruolo == "tutti" else (ruolo,)
+    righe = [dict(r) for r in db.execute(
+        f"SELECT r.id, r.player_id FROM fanta_roster r "
+        f"JOIN fanta_players p ON p.id = r.player_id "
+        f"WHERE r.league_id=? AND r.{mia}{filtro}",
+        (lid,) + tuple(par) + coda).fetchall()]
+    if not righe:
+        db.close()
+        flash("Non c'era niente da togliere", "error")
+        return redirect(url_for("fantacalcio.lega", lid=lid))
+
+    segni = ",".join("?" * len(righe))
+    tolti = db.execute(
+        f"DELETE FROM fanta_roster WHERE id IN ({segni}) AND league_id=? AND {mia}",
+        tuple(r["id"] for r in righe) + (lid,) + tuple(par)).rowcount
+    scesi = _scendi_dal_campo(db, lid, [r["player_id"] for r in righe]) if tolti else 0
+    db.commit()
+    db.close()
+    quali = "Rosa svuotata" if ruolo == "tutti" else f"Reparto {nome_ruolo(ruolo, 2)} svuotato"
+    flash(f"{quali}: {tolti} tolt{'i' if tolti > 1 else 'o'} dalla rosa" +
+          (f" ({scesi} er{'ano' if scesi > 1 else 'a'} schierat"
+           f"{'i' if scesi > 1 else 'o'})" if scesi else ""), "success")
+    return redirect(url_for("fantacalcio.lega", lid=lid))
+
+
+
+# Le colonne per cui il listone si può ordinare, e la direzione che ha senso per
+# ognuna. ⚠️ Non si prende il nome della colonna dal browser: finirebbe dentro una
+# query, che è il modo per farsi scrivere l'ordinamento da chi passa di lì. Qui
+# l'URL sceglie **una chiave di questo dizionario**, e quello che non c'è ricade
+# sul primo.
+ORDINI_LISTONE = {
+    "fvm": ("fvm DESC", "valore di mercato"),
+    "qa": ("qa DESC", "quotazione attuale"),
+    "fantamedia": ("fantamedia DESC", "fantamedia"),
+    "media_voto": ("media_voto DESC", "media voto"),
+    "partite": ("partite_a_voto DESC", "partite a voto"),
+    "gol": ("gol DESC", "gol"),
+    "assist": ("assist DESC", "assist"),
+    "nome": ("nome ASC", "nome"),
+}
+
+
+@bp.route("/listone")
+@login_required
+def listone():
+    """Il listone intero, da sfogliare e filtrare. Dato **condiviso**, non filtrato.
+
+    Chiesto da Davide il 22/09/2026: fino a ieri il listone si poteva solo cercare
+    per nome dentro la rosa di una lega, cioè si vedeva un giocatore per volta e
+    solo per aggiungerlo. Qui si guardano tutti, si ordinano per quello che
+    interessa, e cliccandone uno si apre la sua **scheda** con tutti i numeri che
+    il listone porta.
+
+    ⚠️ Gli spenti (chi ha lasciato la Serie A) si vedono solo chiedendolo, e
+    restano **dichiarati**: nasconderli del tutto farebbe sembrare che il
+    giocatore non sia mai esistito, mostrarli in mezzo agli altri farebbe sembrare
+    che sia ancora schierabile.
+    """
+    db = get_db()
+    q = (request.args.get("q") or "").strip()
+    ruolo = (request.args.get("ruolo") or "").strip().lower()
+    squadra = (request.args.get("squadra") or "").strip()
+    ordine = request.args.get("ordine") if request.args.get("ordine") in ORDINI_LISTONE else "fvm"
+    spenti = request.args.get("spenti") == "1"
+
+    dove, par = [], []
+    if not spenti:
+        dove.append("attivo=1")
+    if q:
+        dove.append("nome LIKE ?")
+        par.append(f"%{q}%")
+    if ruolo in ORDINE_RUOLI_FANTA:
+        dove.append("ruolo_classic=?")
+        par.append(ruolo)
+    else:
+        ruolo = ""
+    if squadra:
+        dove.append("squadra=?")
+        par.append(squadra)
+    filtro = (" WHERE " + " AND ".join(dove)) if dove else ""
+    # ⚠️ `NULLS LAST` a mano: in SQLite un `NULL` in `ORDER BY ... DESC` finisce in
+    # **cima**, quindi ordinando per fantamedia i primi sarebbero i giocatori che
+    # non hanno ancora giocato. Non darebbe errore, darebbe la classifica al
+    # contrario.
+    colonna = ORDINI_LISTONE[ordine][0]
+    chiave = colonna.split()[0]
+    righe = [dict(r) for r in db.execute(
+        f"SELECT * FROM fanta_players{filtro} "
+        f"ORDER BY ({chiave} IS NULL), {colonna}, nome", par).fetchall()]
+    squadre = [r["squadra"] for r in db.execute(
+        "SELECT DISTINCT squadra FROM fanta_players WHERE squadra IS NOT NULL "
+        "AND attivo=1 ORDER BY squadra").fetchall()]
+    totali = db.execute(
+        "SELECT COUNT(*) AS attivi, MAX(visto_il) AS visto, "
+        "(SELECT COUNT(*) FROM fanta_players WHERE attivo=0) AS spenti "
+        "FROM fanta_players WHERE attivo=1").fetchone()
+    # In quali **tue** leghe ognuno è già in rosa: passa dalle leghe, perché
+    # `fanta_roster` non ha un proprietario suo (§1.1).
+    cond, par_u = ambito_utente("l.user_id")
+    mie = {}
+    for r in db.execute(
+            "SELECT r.player_id, l.id AS lid, l.nome FROM fanta_roster r "
+            f"JOIN fanta_leagues l ON l.id=r.league_id WHERE {cond}", par_u):
+        mie.setdefault(r["player_id"], []).append({"lid": r["lid"], "nome": r["nome"]})
+    db.close()
+    return render_template("fanta_listone.html", righe=righe, squadre=squadre,
+                           ruoli=RUOLI_FANTA, ordine=ordine, ordini=ORDINI_LISTONE,
+                           q=q, ruolo=ruolo, squadra=squadra, spenti=spenti,
+                           totali=dict(totali) if totali else {}, mie=mie)
+
+
+@bp.route("/api/giocatore/<int:pid>")
+@login_required
+def api_giocatore(pid):
+    """La scheda di un giocatore: tutto quello che il listone sa di lui.
+
+    Tre pezzi, e sono di tre nature diverse: la **riga del listone** (condivisa),
+    la sua **probabile** dell'ultima giornata importata (condivisa) e **in quali
+    tue rose** si trova (tua, quindi filtrata da `ambito_utente()` passando dalle
+    leghe).
+
+    ⚠️ Un campo che il listone non ha resta `null` e la scheda scrive «—»: qui si
+    guardano i numeri per decidere chi comprare, e uno zero al posto di un dato
+    mancante è la differenza fra «non ha mai segnato» e «non ha mai giocato».
+    """
+    db = get_db()
+    riga = db.execute("SELECT * FROM fanta_players WHERE id=?", (pid,)).fetchone()
+    if riga is None:
+        db.close()
+        return jsonify({"errore": "Giocatore non trovato nel listone"}), 404
+    voce = dict(riga)
+
+    giornata = _giornata_probabili(db)
+    probabile = None
+    if giornata:
+        squadra = db.execute(
+            "SELECT * FROM fanta_probabili_squadre WHERE giornata=? AND squadra_slug=?",
+            (giornata, voce["squadra_slug"])).fetchone()
+        riga_p = db.execute(
+            "SELECT * FROM fanta_probabili WHERE giornata=? AND player_id=?",
+            (giornata, pid)).fetchone()
+        # Gli stessi quattro stati della scheda della lega, e per la stessa
+        # ragione: «non convocato» e «la sua squadra non gioca» non sono la stessa
+        # cosa, e scambiarle vuol dire schierare chi non scende in campo.
+        if riga_p:
+            stato = "titolare" if riga_p["titolare"] else "panchina"
+        elif squadra:
+            stato = "fuori"
+        else:
+            stato = "non_gioca"
+        probabile = {"giornata": giornata, "stato": stato,
+                     "percentuale": riga_p["percentuale"] if riga_p else None,
+                     "squadra": dict(squadra) if squadra else None}
+
+    cond, par = ambito_utente("l.user_id")
+    rose = [{"lid": r["lid"], "lega": r["lega"], "prezzo": r["prezzo"]}
+            for r in db.execute(
+                "SELECT l.id AS lid, l.nome AS lega, r.prezzo FROM fanta_roster r "
+                f"JOIN fanta_leagues l ON l.id=r.league_id WHERE r.player_id=? AND {cond} "
+                "ORDER BY l.nome", (pid,) + tuple(par)).fetchall()]
+    db.close()
+    return jsonify({"giocatore": voce, "probabile": probabile, "rose": rose})
 
 
 @bp.route("/probabili")

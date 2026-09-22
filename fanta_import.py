@@ -34,6 +34,11 @@ import fantacalcio_it as F
 # formazione probabile si muove il sabato mattina.
 VECCHIA_LISTONE = 24 * 7      # una settimana
 VECCHIA_PROBABILI = 3         # tre ore
+# Il calendario sta in mezzo: gli orari di una giornata si sanno con settimane di
+# anticipo, ma un rinvio li sposta. ⚠️ Non può essere lungo come il listone: da
+# questa colonna esce **la scadenza del timer**, e una copia di tre giorni fa che
+# non sa di un anticipo spostato direbbe un'ora sbagliata senza dare errore.
+VECCHIA_CALENDARIO = 24       # un giorno
 
 # Le colonne del listone che l'import riscrive. Restano qui perché sono la
 # definizione di «cosa vuol dire aggiornato» per una voce.
@@ -47,6 +52,8 @@ CAMPI_LISTONE = (
 SOGLIA_CALO = 0.70
 # Venti squadre giocano ogni giornata di Serie A: leggerne meno è un sintomo.
 SQUADRE_ATTESE = 20
+# Le stesse venti squadre, a coppie: dieci partite per giornata.
+PARTITE_ATTESE = SQUADRE_ATTESE // 2
 
 
 def _tabella_c_e(db, nome):
@@ -54,7 +61,7 @@ def _tabella_c_e(db, nome):
                            "AND name=?", (nome,)).fetchone())
 
 
-def serve_aggiornare(db, quale):
+def serve_aggiornare(db, quale, giornata=None):
     """Se la copia di `quale` è più vecchia della sua soglia. `(sì/no, ore)`.
 
     ⚠️ Guarda l'**età della cache**, non quella delle righe nel DB: sono due cose
@@ -63,8 +70,14 @@ def serve_aggiornare(db, quale):
     tre giorni — ed è precisamente il modo in cui questo dato dice il falso senza
     dare errore.
     """
-    limite = VECCHIA_LISTONE if quale == "listone" else VECCHIA_PROBABILI
-    nomi = ("quotazioni", "statistiche") if quale == "listone" else ("probabili",)
+    limite = {"listone": VECCHIA_LISTONE, "probabili": VECCHIA_PROBABILI,
+              "calendario": VECCHIA_CALENDARIO}[quale]
+    # ⚠️ Il calendario ha **un file per giornata**: chiedere «è vecchia la copia?»
+    # senza dire di quale giornata risponderebbe sulla pagina generica, cioè su
+    # una giornata che può non essere quella che si sta per giocare.
+    nomi = {"listone": ("quotazioni", "statistiche"),
+            "probabili": ("probabili",),
+            "calendario": (F.nome_calendario(giornata),)}[quale]
     eta = [F.eta_cache(n) for n in nomi]
     if any(e is None for e in eta):
         return True, None                     # non c'è: la prima volta si scarica
@@ -259,4 +272,84 @@ def aggiorna_probabili(db, scarica=True, scrivi=True, giornata=None,
     r["scritto"] = True
     r["giornate_in_archivio"] = db.execute(
         "SELECT COUNT(DISTINCT giornata) FROM fanta_probabili").fetchone()[0]
+    return r
+
+
+def aggiorna_calendario(db, scarica=True, scrivi=True, forza=False, giornata=None):
+    """Rilegge il calendario e lo porta in `hub.db`. Torna il rapporto.
+
+    Serve a una cosa sola: **l'ora della prima partita di una giornata**, cioè la
+    scadenza entro cui schierare. La pagina ne mostra di solito due (quella in
+    corso e la successiva), quindi si scrive **una giornata per volta**.
+
+    ⚠️ Una giornata con meno di `PARTITE_ATTESE` partite **non si scrive**, e non
+    è pignoleria: la scadenza è il *minimo* degli orari, quindi basta che manchi
+    l'anticipo del sabato perché il timer dica «hai ancora un giorno» quando la
+    giornata è già cominciata. Meglio nessun timer di un timer in ritardo — è la
+    stessa scelta di `aggiorna_probabili()` con la mezza giornata.
+
+    ⚠️ Le partite **senza orario** entrano lo stesso, con `inizio` a `None`: la
+    fonte a volte non l'ha ancora. Non contano per la scadenza, e la pagina dice
+    che quella giornata non ha ancora un orario.
+
+    ⚠️ `giornata` è **quale pagina leggere**, non un filtro su quello che si
+    scrive: `/serie-a/calendario/7` mostra anche la giornata in corso, e quelle
+    che arrivano intere si scrivono tutte. Senza, si legge la pagina generica,
+    che è la giornata in corso — e quella può essere già giocata quando le
+    probabili sono passate alla successiva.
+    """
+    r = {"ok": False, "motivo": None, "partite": 0, "giornate": {}, "problemi": [],
+         "senza_ora": 0, "scritte": 0, "saltate": {}, "scritto": False}
+    if not _tabella_c_e(db, "fanta_calendario"):
+        r["motivo"] = ("In hub.db non c'è la tabella `fanta_calendario`. Lo schema "
+                       "lo crea `init_db()`: avvia l'app una volta e riprova.")
+        return r
+
+    partite, problemi = F.calendario(forza=scarica, giornata=giornata)
+    r["problemi"] = problemi
+    r["partite"] = len(partite)
+    if not partite:
+        r["motivo"] = ("Nessuna partita letta dal calendario: la pagina non ha la "
+                       "forma che mi aspetto.")
+        return r
+
+    per_giornata = {}
+    for v in partite.values():
+        per_giornata.setdefault(v["giornata"], []).append(v)
+    r["giornate"] = {g: len(x) for g, x in sorted(per_giornata.items())}
+    r["senza_ora"] = sum(1 for v in partite.values() if not v["inizio"])
+
+    buone = {}
+    for g, voci in per_giornata.items():
+        if len(voci) < PARTITE_ATTESE and not forza:
+            r["saltate"][g] = len(voci)
+            continue
+        buone[g] = voci
+    if not buone:
+        r["motivo"] = (f"Nessuna giornata intera: ho letto " +
+                       ", ".join(f"giornata {g}: {n} partite su {PARTITE_ATTESE}"
+                                 for g, n in sorted(r["saltate"].items())) +
+                       ". Con una giornata a metà la scadenza sarebbe più tardi di "
+                       "quella vera.")
+        return r
+
+    r["ok"] = True
+    if not scrivi:
+        return r
+
+    for g, voci in buone.items():
+        # La giornata si riscrive per intero: un rinvio cambia l'ora di una
+        # partita e togliere-e-rimettere è l'unico modo perché una partita che la
+        # fonte non nomina più non resti a dire un orario che non esiste.
+        db.execute("DELETE FROM fanta_calendario WHERE giornata=?", (g,))
+        db.executemany(
+            "INSERT INTO fanta_calendario(giornata, match_id, squadra_casa,"
+            " squadra_casa_slug, squadra_fuori, squadra_fuori_slug, inizio, stadio,"
+            " aggiornato_il) VALUES(?,?,?,?,?,?,?,?,CURRENT_TIMESTAMP)",
+            [(g, v["match_id"], v["squadra_casa"], v["squadra_casa_slug"],
+              v["squadra_fuori"], v["squadra_fuori_slug"], v["inizio"], v["stadio"])
+             for v in voci])
+        r["scritte"] += len(voci)
+    db.commit()
+    r["scritto"] = True
     return r

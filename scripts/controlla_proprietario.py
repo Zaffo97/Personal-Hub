@@ -66,8 +66,12 @@ FIGLIE = ("team_members", "pc_components", "fanta_roster", "fanta_formazione")
 # formazioni della Serie A non sono di nessun utente. Entrano in elenco il
 # 21/09/2026 **insieme al codice che le scrive**, che è la regola imparata due
 # blocchi fa: una tabella fuori dal raggio fa dire «0 scoperte» a vuoto.
+# `fanta_calendario` entra il 22/09/2026, **insieme al codice che lo legge**, per
+# la stessa ragione delle due qui sopra: dice quando si gioca, cioè un fatto della
+# Serie A che non è di nessun utente. Aggiungerla dopo avrebbe voluto dire un altro
+# «0 scoperte» detto senza aver guardato.
 ALTRE = ("python_topics", "fanta_players", "fanta_probabili",
-         "fanta_probabili_squadre")
+         "fanta_probabili_squadre", "fanta_calendario")
 TABELLE = RADICI + FIGLIE + ALTRE
 
 CITA = re.compile(r"\b(?:FROM|INTO|UPDATE|JOIN)\s+(%s)\b" % "|".join(TABELLE), re.I)
@@ -86,6 +90,48 @@ CITA_CALCOLATA = re.compile(r"\b(?:FROM|INTO|UPDATE|JOIN)\s+\{…\}", re.I)
 #     stanno in file, non in `hub.db`, e chi le cancella deve sapere se qualcuno le
 #     sta usando, non solo se le usa lui.
 ECCEZIONI = {
+    # ── Fantacalcio: il listone da sfogliare e il calendario (22/09/2026) ───
+    # La pagina del listone e la scheda di un giocatore leggono **dato condiviso**:
+    # quotazioni, statistiche e probabili sono uguali per tutti. Quello che in
+    # quelle due pagine è **tuo** — in quali rose sta un giocatore — lo legge una
+    # query a parte, che passa da `ambito_utente()` sulle leghe (§1.1).
+    ("blueprints/fantacalcio.py", "listone",
+     "SELECT COUNT(*) AS attivi, MAX(visto_il) AS visto, "
+     "(SELECT COUNT(*) FROM fanta_players WHERE attivo=0) AS spenti "
+     "FROM fanta_players WHERE attivo=1"):
+        "quanti giocatori ha il listone e da quando: stessa risposta per tutti, "
+        "come nell'elenco delle leghe",
+    ("blueprints/fantacalcio.py", "listone",
+     "SELECT DISTINCT squadra FROM fanta_players WHERE squadra IS NOT NULL "
+     "AND attivo=1 ORDER BY squadra"):
+        "le venti squadre di Serie A, per la tendina del filtro: dato condiviso",
+    ("blueprints/fantacalcio.py", "api_giocatore",
+     "SELECT * FROM fanta_players WHERE id=?"):
+        "la riga di listone di un giocatore: dato condiviso, ed è il contenuto "
+        "della scheda. Le rose in cui sta le legge una query filtrata più sotto",
+    ("blueprints/fantacalcio.py", "api_giocatore",
+     "SELECT * FROM fanta_probabili_squadre WHERE giornata=? AND squadra_slug=?"):
+        "la partita della sua squadra in questa giornata: dato condiviso, serve a "
+        "distinguere «non convocato» da «la sua squadra non gioca»",
+    ("blueprints/fantacalcio.py", "api_giocatore",
+     "SELECT * FROM fanta_probabili WHERE giornata=? AND player_id=?"):
+        "la sua probabile: dato condiviso, come tutta la pagina delle probabili",
+    # Il calendario: **quando** si gioca. Non è di nessuno, come le probabili, e la
+    # scadenza che ne esce è la stessa per tutte le leghe di tutti.
+    ("blueprints/fantacalcio.py", "scadenza_giornata",
+     "SELECT giornata FROM fanta_calendario WHERE inizio >= ? ORDER BY inizio LIMIT 1"):
+        "la prima partita non ancora giocata, quando non si sa di che giornata "
+        "parlare: il calendario della Serie A è uguale per tutti",
+    ("blueprints/fantacalcio.py", "scadenza_giornata",
+     "SELECT * FROM fanta_calendario WHERE giornata=? AND inizio IS NOT NULL "
+     "ORDER BY inizio LIMIT 1"):
+        "il fischio d'inizio della prima partita della giornata: dato condiviso, "
+        "ed è la scadenza per schierare — uguale per tutte le leghe",
+    ("blueprints/fantacalcio.py", "scadenza_giornata",
+     "SELECT COUNT(*) AS quante, SUM(inizio IS NULL) AS senza_ora "
+     "FROM fanta_calendario WHERE giornata=?"):
+        "quante partite ha quella giornata e quante non hanno ancora un orario: "
+        "serve a dirlo a schermo invece di tacere una scadenza incerta",
     # ── Fantacalcio (21/09/2026) ────────────────────────────────────────────
     # `fanta_players` è il **listone**: condiviso come il catalogo Pokémon, senza
     # proprietario e senza doverne avere uno. Le tre query qui sotto lo leggono e
@@ -175,6 +221,19 @@ ECCEZIONI = {
     ("fanta_import.py", "aggiorna_probabili",
      "SELECT COUNT(DISTINCT giornata) FROM fanta_probabili"):
         "quante giornate ci sono in archivio, per dirlo nel rapporto",
+    # Il calendario si riscrive **una giornata per volta**, come le probabili: un
+    # rinvio sposta l'ora di una partita, e togliere-e-rimettere è l'unico modo
+    # perché una partita che la fonte non nomina più non resti a dire un orario.
+    ("fanta_import.py", "aggiorna_calendario",
+     "DELETE FROM fanta_calendario WHERE giornata=?"):
+        "la giornata si riscrive per intero: dato condiviso, è il calendario "
+        "della Serie A",
+    ("fanta_import.py", "aggiorna_calendario",
+     "INSERT INTO fanta_calendario(giornata, match_id, squadra_casa, "
+     "squadra_casa_slug, squadra_fuori, squadra_fuori_slug, inizio, stadio, "
+     "aggiornato_il) VALUES(?,?,?,?,?,?,?,?,CURRENT_TIMESTAMP)"):
+        "scrive le partite con la loro data e ora: quando si gioca non è di "
+        "nessun utente",
     # ── La formazione schierata (21/09/2026) ────────────────────────────────
     # `fanta_formazione` è una **figlia**: il proprietario le arriva dalla lega,
     # come `team_members` dal team. Le tre query qui sotto stanno tutte dopo un

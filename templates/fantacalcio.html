@@ -2,6 +2,7 @@
 {% block title %}Fantacalcio &ndash; Hub{% endblock %}
 {% block topbar_title %}&#9917; Fantacalcio{% endblock %}
 {% block body_class %}sez-fanta{% endblock %}
+{% from "_fanta_timer.html" import timer %}
 {% block extra_head %}
 <link rel="stylesheet" href="{{ url_for('static', filename='css/fantacalcio.css') }}">
 <style>
@@ -43,7 +44,8 @@
         {% endfor %}
       </select>
       {% endif %}
-      <a class="btn" href="{{ url_for('fantacalcio.probabili') }}">&#128203; Probabili</a>
+      <a class="btn" href="{{ url_for('fantacalcio.listone') }}">&#128203; Listone</a>
+      <a class="btn" href="{{ url_for('fantacalcio.probabili') }}">&#128197; Probabili</a>
       <button class="btn btn-primary" onclick="apriLega()">+ Nuova lega</button>
     </div>
   </div>
@@ -111,6 +113,30 @@
       <div class="text-xs text-muted mt-1">Premi <strong>Aggiorna ora</strong>, oppure
         <code>python scripts/importa_probabili.py --scarica</code></div>
     {% endif %}
+  </div>
+</div>
+
+{# Il calendario serve a una cosa sola: sapere **entro quando** si schiera. Il
+   riquadro sta accanto agli altri due perche' e' la terza fonte che invecchia, e
+   il timer sta dentro di lui perche' e' il dato che ne esce. #}
+<div class="card mb-3">
+  <div class="card-header">
+    <div class="card-title">Il calendario</div>
+    <form method="post" action="{{ url_for('fantacalcio.aggiorna', quale='calendario') }}">
+      <input type="hidden" name="torna_a" value="/fantacalcio/">
+      <button class="btn btn-secondary btn-sm" type="submit">&#8635; Aggiorna ora</button>
+    </form>
+  </div>
+  <div style="padding:.75rem 1rem">
+    {{ timer(scadenza, 'scadenza_elenco') }}
+    <div class="text-xs text-muted mt-2">
+      {% if eta_cache.calendario is not none %}
+        Letto da fantacalcio.it {{ eta_cache.calendario|round(1) }} ore fa.
+      {% endif %}
+      La scadenza &egrave; il fischio d'inizio della <strong>prima</strong> partita
+      della giornata, ed &egrave; uguale per tutte le leghe. Si aggiorna da solo
+      quando la copia supera il giorno: una partita rinviata sposta l'orario.
+    </div>
   </div>
 </div>
 

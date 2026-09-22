@@ -1,5 +1,6 @@
 {% extends "base.html" %}
 {% from "_fanta_allerta.html" import avviso as allerta_formazione %}
+{% from "_fanta_timer.html" import timer %}
 {% block title %}Formazione &ndash; {{ lega.nome }}{% endblock %}
 {% block topbar_title %}&#9917; Formazione &mdash; {{ lega.nome }}{% endblock %}
 {% block body_class %}sez-fanta{% endblock %}
@@ -67,6 +68,31 @@
 .scelta-voce:hover{background:var(--surface-off)}
 .scelta-voce.gia{opacity:.45}
 .avvisi li{margin-bottom:.15rem}
+
+/* ── Il consiglio, qui sotto ───────────────────────────────────────────────
+   ⚠️ Queste classi erano nell'`extra_head` di `fanta_consiglio.html`, la pagina
+   che dal 22/09/2026 non esiste più: il consiglio sta sotto il campo. `.ruolo`
+   **non** è stata ricopiata — questa pagina ce l'ha già, appena più piccola, e
+   due definizioni della stessa classe nello stesso file vogliono dire che vince
+   l'ultima, non che sono d'accordo. */
+.fascia{font-size:.64rem;font-weight:700;padding:.05rem .32rem;border-radius:20px;white-space:nowrap}
+.fascia-sicuro{background:var(--success-dim);color:var(--success)}
+.fascia-favorito{background:rgba(22,163,74,.12);color:#16a34a}
+.fascia-ballottaggio{background:var(--warning-dim);color:var(--warning)}
+.fascia-panchina{background:var(--error-dim);color:var(--error)}
+.fascia-none{background:var(--surface-off);color:var(--text-muted)}
+.num{text-align:right;font-variant-numeric:tabular-nums;white-space:nowrap}
+.mod{display:grid;grid-template-columns:repeat(auto-fill,minmax(190px,1fr));gap:.5rem}
+.mod-card{border:1px solid var(--border);border-radius:var(--radius-md);padding:.5rem .6rem}
+.mod-best{border-color:var(--primary);background:var(--primary-dim)}
+.thin{opacity:.6}
+.spiega{font-size:.75rem;line-height:1.5}
+.spiega li{margin:.25rem 0 .25rem 1rem}
+.griglia-ruoli{display:grid;grid-template-columns:repeat(auto-fill,minmax(310px,1fr));gap:.85rem}
+/* Il gancio del consiglio: `#consiglio` è dove arriva chi ci clicca sopra, e lo
+   stacco serve perché sotto il campo comincia un'altra cosa. */
+#consiglio{scroll-margin-top:calc(var(--topbar) + .8rem);
+  border-top:2px solid var(--border);margin-top:1.4rem;padding-top:1rem}
 </style>
 {% endblock %}
 {% block content %}
@@ -80,10 +106,16 @@
         {% if giornata %}&middot; probabili della giornata {{ giornata }}{% endif %}
       </p>
     </div>
-    <a class="btn" href="{{ url_for('fantacalcio.consiglio', lid=lega.id) }}">&#129504; Consiglio</a>
-    <a class="btn" href="{{ url_for('fantacalcio.lega', lid=lega.id) }}">&larr; Rosa e regole</a>
+    <div class="flex gap-2">
+      <a class="btn" href="#consiglio">&#129504; Il consiglio &darr;</a>
+      <a class="btn" href="{{ url_for('fantacalcio.lega', lid=lega.id) }}">&larr; Rosa e regole</a>
+    </div>
   </div>
 </div>
+
+{# Entro quando si schiera. In cima, perché è la domanda che si fa aprendo questa
+   pagina: il campo lo si guarda dopo aver deciso se c'è tempo. #}
+<div class="mb-3">{{ timer(scadenza, 'scadenza_campo') }}</div>
 
 {% if not moduli %}
 <div class="card"><div style="padding:1.2rem" class="text-sm text-muted">
@@ -410,4 +442,20 @@ document.getElementById('scelta').addEventListener('click', function(e){
 });
 </script>
 {% endif %}
+
+{# ── Il consiglio, nella stessa pagina ───────────────────────────────────────
+   ⚠️ Sta **fuori** dall'`{% endif %}` dei moduli: una lega senza moduli ammessi
+   non ha un campo da disegnare, ma la spiegazione del perché deve vederla lo
+   stesso — è lì che c'è scritto dove si aggiungono i moduli. #}
+<div id="consiglio">
+  <div class="flex items-center justify-between flex-wrap gap-2 mb-2">
+    <h2 style="font-size:1.05rem;margin:0">&#129504; Il consiglio per questa giornata</h2>
+    <span class="text-xs text-muted">
+      {% if giornata %}giornata {{ giornata }}{% else %}nessuna giornata importata{% endif %}
+      {% if probabili_aggiornate %}&middot; probabili del {{ probabili_aggiornate }}{% endif %}
+      &middot; {{ rosa|length }} in rosa
+    </span>
+  </div>
+  {% include "_fanta_consiglio.html" %}
+</div>
 {% endblock %}

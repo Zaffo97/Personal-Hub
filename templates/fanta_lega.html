@@ -1,5 +1,6 @@
 {% extends "base.html" %}
 {% from "_fanta_allerta.html" import avviso as allerta_formazione %}
+{% from "_fanta_timer.html" import timer %}
 {% block title %}{{ lega.nome }} &ndash; Fantacalcio{% endblock %}
 {% block topbar_title %}&#9917; {{ lega.nome }}{% endblock %}
 {% block body_class %}sez-fanta{% endblock %}
@@ -45,12 +46,15 @@
     <div class="flex gap-2">
       <a class="btn btn-primary" href="{{ url_for('fantacalcio.formazione', lid=lega.id) }}">
         &#9917; Schiera la formazione</a>
-      <a class="btn" href="{{ url_for('fantacalcio.consiglio', lid=lega.id) }}">
+      <a class="btn" href="{{ url_for('fantacalcio.formazione', lid=lega.id, _anchor='consiglio') }}">
         &#129504; Consiglio</a>
+      <a class="btn" href="{{ url_for('fantacalcio.listone') }}">&#128203; Listone</a>
       <a class="btn" href="{{ url_for('fantacalcio.fantacalcio') }}">&larr; Le leghe</a>
     </div>
   </div>
 </div>
+
+<div class="mb-3">{{ timer(scadenza, 'scadenza_lega') }}</div>
 
 {{ allerta_formazione(allerta, giornata,
                       url_for('fantacalcio.formazione', lid=lega.id)) }}
@@ -199,7 +203,23 @@
       <div class="card-title">
         <span class="ruolo ruolo-{{ r }}">{{ r|upper }}</span> {{ ruoli[r] }}
       </div>
-      <span class="badge badge-neutral">{{ per_ruolo[r]|length }}</span>
+      <div class="flex items-center gap-1">
+        <span class="badge badge-neutral">{{ per_ruolo[r]|length }}</span>
+        {# Svuotare il reparto: compare solo dove c'e' qualcosa da svuotare, e
+           chiede conferma dicendo **quanti** ne sta togliendo. #}
+        {% if per_ruolo[r] %}
+        <form method="post" action="{{ url_for('fantacalcio.rosa_svuota', lid=lega.id) }}"
+              {# «gli attaccanti», non «i attaccanti»: l'articolo cambia per un
+                 ruolo su quattro, e leggerlo sbagliato in una conferma toglie
+                 credibilita' proprio alla domanda che non si vuole sbagliare. #}
+              {% set art = 'gli' if r == 'a' else 'i' %}
+              onsubmit='return confirm({{ ("Togliere dalla rosa tutti " ~ art ~ " " ~ nome_ruolo(r, 2) ~ " (" ~ per_ruolo[r]|length ~ ")? Chi era schierato esce anche dal campo.")|tojson }})'>
+          <input type="hidden" name="ruolo" value="{{ r }}">
+          <button class="btn btn-sm btn-secondary" type="submit"
+                  title="Togli tutti {{ art }} {{ nome_ruolo(r, 2) }} dalla rosa">Svuota</button>
+        </form>
+        {% endif %}
+      </div>
     </div>
     <div>
       {% for g in per_ruolo[r] %}
@@ -300,6 +320,21 @@
         </div>
       </form>
     </details>
+    {# Rifare la rosa da zero: un pulsante invece di venticinque caselle spuntate.
+       Sta in fondo e staccato, perche' e' l'azione piu' distruttiva della pagina. #}
+    <div class="flex items-center gap-2 flex-wrap mt-3"
+         style="border-top:1px solid var(--border);padding-top:.7rem">
+      <form method="post" action="{{ url_for('fantacalcio.rosa_svuota', lid=lega.id) }}"
+            onsubmit='return confirm({{ ("Svuotare tutta la rosa? Escono " ~ rosa|length ~ " giocatori, e la formazione schierata resta senza di loro.")|tojson }})'>
+        <input type="hidden" name="ruolo" value="tutti">
+        <button class="btn btn-sm btn-danger" type="submit">Svuota tutta la rosa</button>
+      </form>
+      <span class="text-xs text-muted">
+        Toglie tutti i {{ rosa|length }} giocatori di questa lega. I reparti si
+        svuotano uno per volta dal pulsante <strong>Svuota</strong> del riquadro
+        del ruolo.
+      </span>
+    </div>
   </div>
 </div>
 {% endif %}

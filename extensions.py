@@ -335,6 +335,24 @@ def init_db():
     -- l'ordine che decide chi entra al posto di chi non gioca, quindi una panchina
     -- salvata come insieme invece che come lista non permetterebbe mai di calcolare
     -- le sostituzioni.
+    -- Il calendario: **quando** si gioca, cioe' entro quando va schierata la
+    -- formazione. Dato condiviso e rigenerabile come le probabili, quindi fuori
+    -- dall'export. Chiave (giornata, match_id): una partita rinviata cambia ora e
+    -- si riscrive, non si aggiunge.
+    -- ⚠️ `inizio` e' 'YYYY-MM-DD HH:MM' in **ora italiana**, come la scrive la
+    -- fonte: niente fuso, niente UTC. L'app gira in casa e il browser che la legge
+    -- sta nello stesso fuso della Serie A; scriverla come UTC sposterebbe il timer
+    -- di due ore senza dare nessun errore.
+    -- ⚠️ E puo' essere NULL: la fonte a volte non ha ancora l'orario. Un timer che
+    -- manca si dichiara, un timer sbagliato no.
+    CREATE TABLE IF NOT EXISTS fanta_calendario(
+        giornata INTEGER NOT NULL,
+        match_id INTEGER NOT NULL,
+        squadra_casa TEXT, squadra_casa_slug TEXT,
+        squadra_fuori TEXT, squadra_fuori_slug TEXT,
+        inizio TEXT, stadio TEXT,
+        aggiornato_il TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+        PRIMARY KEY(giornata, match_id));
     CREATE TABLE IF NOT EXISTS fanta_formazione(
         league_id INTEGER REFERENCES fanta_leagues(id) ON DELETE CASCADE,
         player_id INTEGER REFERENCES fanta_players(id),
