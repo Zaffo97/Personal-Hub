@@ -1,4 +1,5 @@
 {% extends "base.html" %}
+{% from "_fanta_allerta.html" import avviso as allerta_formazione %}
 {% block title %}Formazione &ndash; {{ lega.nome }}{% endblock %}
 {% block topbar_title %}&#9917; Formazione &mdash; {{ lega.nome }}{% endblock %}
 {% block extra_head %}
@@ -88,6 +89,11 @@
   nell'elenco delle leghe. Senza quelli non si sa che campo disegnare.
 </div></div>
 {% else %}
+
+{# L'avviso sta **sopra** il campo, non accanto ai giocatori: qui si viene per
+   cambiare la formazione, e la prima cosa da sapere e' se c'e' qualcosa da
+   cambiare. Niente pulsante al campo, ovviamente: ci siamo gia'. #}
+{{ allerta_formazione(allerta, giornata) }}
 
 <form method="post" action="{{ url_for('fantacalcio.formazione_salva', lid=lega.id) }}"
       id="modulo_form">

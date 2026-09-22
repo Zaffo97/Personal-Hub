@@ -118,6 +118,15 @@
     <span class="badge badge-neutral">Classic</span>
   </div>
   <div style="padding:.75rem 1rem">
+    {# Quello che la formazione gia' schierata non ha piu' d'accordo con le
+       probabili. Sta **qui**, sull'elenco, perche' e' la pagina che si apre per
+       prima: il dettaglio - chi e perche' - lo dice la scheda della lega. #}
+    {% if guai_lega.get(l.id) %}
+    <a class="badge badge-warning mb-2" style="text-decoration:none"
+       href="{{ url_for('fantacalcio.formazione', lid=l.id) }}">
+      &#9888; {{ guai_lega[l.id] }} da guardare nella formazione
+    </a>
+    {% endif %}
     {% if l.moduli %}<div class="text-xs text-muted mb-2">Moduli: {{ l.moduli }}</div>{% endif %}
     {% if l.note %}<p class="text-sm text-muted mb-2">{{ l.note[:140] }}{% if l.note|length > 140 %}...{% endif %}</p>{% endif %}
     <div class="flex gap-1 flex-wrap">

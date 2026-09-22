@@ -175,6 +175,78 @@ def controlla_formazione(modulo, titolari, panchinari, rosa, n_panchinari=None):
     return guai
 
 
+def controlla_schierati(schierati, probabili, nomi=None, in_rosa=None):
+    """Cosa **non torna più** fra la formazione salvata e le probabili di adesso.
+
+    Torna quattro elenchi, e nessuno dei quattro è un errore: sono cose da sapere
+    prima che la giornata cominci.
+
+    - `fuori`: schierato titolare, ma le probabili non lo danno più in campo —
+      panchina, non convocato, o la sua squadra non gioca affatto. È il caso per
+      cui questa funzione esiste;
+    - `incerti`: schierato titolare, dato titolare, ma con una percentuale sotto
+      `SOGLIA_SCHIERABILE` — cioè un titolare che la fonte stessa metterebbe in
+      dubbio;
+    - `occasioni`: il rovescio, e serve a decidere **chi** mettere al posto di chi
+      è nei primi due: uno che hai in panchina e che le probabili danno titolare;
+    - `spariti`: schierato, ma **non più in rosa**. ⚠️ Non è teorico: togliere un
+      giocatore dalla rosa **non** cancella la sua riga in `fanta_formazione`, il
+      campo semplicemente smette di disegnarlo, e una formazione da 11 diventa da
+      10 senza che nessuno lo dica.
+
+    ⚠️ **Chi non ha una riga nelle probabili non viene dichiarato.** «Non lo
+    sappiamo» non è «non gioca»: con l'archivio vuoto, o prima che la giornata sia
+    pubblicata, questa funzione deve tornare quattro elenchi vuoti invece di
+    accusare undici giocatori.
+
+    ⚠️ E il confronto è sempre con **l'ultima giornata importata**, perché la
+    formazione non ha una giornata sua: è la conseguenza della scelta «una
+    formazione per lega, che si sovrascrive» (Davide, 21/09/2026). Chi la legge
+    deve dire **quale** giornata sta guardando, o l'avviso non è verificabile.
+    """
+    nomi = nomi or {}
+    fuori, incerti, occasioni, spariti = [], [], [], []
+    for pid, riga in (schierati or {}).items():
+        titolare = bool(riga.get("titolare")) if hasattr(riga, "get") else bool(riga)
+        voce = {"id": pid, "nome": nomi.get(pid, "?"), "titolare": titolare,
+                "stato": None, "percentuale": None}
+        if in_rosa is not None and pid not in in_rosa:
+            spariti.append(voce)
+            continue
+        p = (probabili or {}).get(pid)
+        if not p:
+            continue
+        voce["stato"] = p.get("stato")
+        voce["percentuale"] = p.get("percentuale")
+        if titolare:
+            if p.get("stato") != "titolare":
+                fuori.append(voce)
+            elif (p.get("percentuale") or 0) < SOGLIA_SCHIERABILE:
+                incerti.append(voce)
+        elif p.get("stato") == "titolare":
+            occasioni.append(voce)
+    # I «fuori» in ordine di gravità: chi non scende in campo per niente prima di
+    # chi è solo in panchina. Un elenco alfabetico metterebbe in cima il caso meno
+    # urgente, e il primo nome è quello che viene letto.
+    peso = {"non_gioca": 0, "fuori": 1, "panchina": 2}
+    fuori.sort(key=lambda v: (peso.get(v["stato"], 3), -(v["percentuale"] or 0),
+                              v["nome"]))
+    incerti.sort(key=lambda v: (v["percentuale"] or 0, v["nome"]))
+    occasioni.sort(key=lambda v: (-(v["percentuale"] or 0), v["nome"]))
+    spariti.sort(key=lambda v: v["nome"])
+    return {"fuori": fuori, "incerti": incerti, "occasioni": occasioni,
+            "spariti": spariti}
+
+
+def quanti_guai(allerta):
+    """Quante cose da guardare ci sono, **senza** le occasioni: quelle non sono un
+    guaio, sono un suggerimento, e contarle farebbe dire «3 problemi» a una
+    formazione che non ne ha nessuno."""
+    if not allerta:
+        return 0
+    return sum(len(allerta.get(k, ())) for k in ("fuori", "incerti", "spariti"))
+
+
 # ── Il modificatore di difesa ────────────────────────────────────────────────
 # Due cose distinte, e le fonti le trattano diverse:
 #

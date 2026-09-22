@@ -1,4 +1,5 @@
 {% extends "base.html" %}
+{% from "_fanta_allerta.html" import avviso as allerta_formazione %}
 {% block title %}{{ lega.nome }} &ndash; Fantacalcio{% endblock %}
 {% block topbar_title %}&#9917; {{ lega.nome }}{% endblock %}
 {% block extra_head %}
@@ -48,6 +49,9 @@
     </div>
   </div>
 </div>
+
+{{ allerta_formazione(allerta, giornata,
+                      url_for('fantacalcio.formazione', lid=lega.id)) }}
 
 {% if spenti %}
 {# Il caso del mercato: un giocatore che la Serie A non ha piu' ma che tu hai

@@ -903,11 +903,28 @@ sezione è finito:**
   farebbe tornare i conti dei reparti dicendo che un attaccante è un difensore, e
   la prova lo verifica.
 
+  ✅ **Il controllo quando le probabili cambiano, dal 22/09/2026.** Aprendo la
+  sezione, la formazione salvata viene confrontata con le probabili di adesso e
+  l'avviso dice **chi** e **perché**: titolari che non scendono in campo, titolari
+  sotto la soglia del ballottaggio, chi è schierato ma non è più in rosa, e — come
+  contorno — chi in panchina è invece dato titolare. Sta sulla scheda della lega,
+  sul campo, e come numero sull'elenco delle leghe, che è la pagina che si apre per
+  prima. ⚠️ «Automatico» qui vuol dire **quando apri la pagina**: non c'è niente
+  che giri in sottofondo, quindi nessun avviso arriva il venerdì sera da solo —
+  per quello servirebbe un processo schedulato, ed è un lavoro a sé.
+
   ⬜ Quello che resta aperto qui: la formazione **non sa se una lega ne ha due**
   (due leghe, due formazioni: funziona, ma non c'è un modo per copiarne una
-  nell'altra), e **non si controlla da sola** quando le probabili cambiano — se
-  schieri un titolare che venerdì finisce in panchina, il campo te lo mostra solo
-  quando riapri la pagina.
+  nell'altra).
+
+  ⬜ ⚠️ **Trovato il 22/09/2026 e non corretto: togliere un giocatore dalla rosa
+  non toglie la sua riga dalla formazione.** `fanta_roster` e `fanta_formazione`
+  sono due tabelle, e il `DELETE` sulla prima non tocca la seconda: il campo
+  smette di disegnarlo — quindi a schermo sembra tutto normale — e i titolari
+  diventano dieci senza che nessuno lo dica. Misurato: 1 riga orfana dopo un
+  `rosa/rimuovi`. Per ora l'avviso lo **dichiara** («1 schierato ma non più in
+  rosa: Yildiz»), che è la rete, non la cura. La cura è una decisione: cancellare
+  la riga insieme a quella di rosa, o tenerla in caso il giocatore rientri.
 
 - ✅ **le probabili formazioni** — fatte il 21/09/2026, vedi lo storico. Ci sono
   `fantacalcio_it.probabili()`, `scripts/importa_probabili.py`, due tabelle per

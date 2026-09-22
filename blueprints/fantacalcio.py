@@ -22,6 +22,7 @@ from flask import (Blueprint, render_template, request, redirect, url_for,
 from extensions import (get_db, login_required, _i, ambito_utente, solo_mie,
                         utente_id, e_admin)
 from data import (RUOLI_FANTA, ORDINE_RUOLI_FANTA, nome_ruolo, scomponi_modulo,
+                  controlla_schierati, quanti_guai,
                   MOD_DIFESA_SOGLIE, soglie_mod_difesa, scrivi_soglie,
                   modificatore_difesa, controlla_formazione,
                   leggi_rosa_incollata, valuta_rosa, consiglia_moduli,
@@ -202,6 +203,58 @@ def _probabili_della_rosa(db, giornata, rosa):
     return fuori
 
 
+def _schierati(db, lid):
+    """Chi è schierato in questa lega: `{player_id: riga}`.
+
+    ⚠️ La query non filtra per proprietario e **non deve**: `fanta_formazione` non
+    ha un `user_id` e lo eredita dalla lega, esattamente come `fanta_roster`. Chi
+    chiama ha già in mano la lega — perché l'ha letta con `_lega_mia()` o perché
+    gliel'ha data `ambito_utente()` — e questa funzione non si usa con un `lid`
+    che non sia passato di lì (§1.1).
+    """
+    return {r["player_id"]: dict(r) for r in db.execute(
+        "SELECT player_id, titolare, ordine FROM fanta_formazione WHERE league_id=?",
+        (lid,)).fetchall()}
+
+
+def _allerta(db, lid, rosa, probabili):
+    """L'avviso «la formazione salvata non torna più con le probabili», o `None`.
+
+    Chiesto da Davide il 22/09/2026, ed è automatico nel solo senso che questa
+    app può permettersi: **si calcola quando apri la pagina**, non mentre non la
+    guardi. Le probabili si rileggono da sé quando la copia ha più di tre ore
+    (`_aggiorna_se_vecchio`), quindi entrare nella sezione basta; un avviso che
+    arrivi venerdì sera da solo vorrebbe dire un processo che gira sempre, ed è
+    un'altra cosa.
+
+    ⚠️ Torna `None` quando non c'è **niente da dire**, compreso il caso «non ho
+    ancora schierato»: un riquadro giallo vuoto insegna a ignorare i riquadri
+    gialli.
+    """
+    schierati = _schierati(db, lid)
+    if not schierati:
+        return None
+    in_rosa = {g["id"] for g in rosa}
+    nomi = {g["id"]: g["nome"] for g in rosa}
+    # ⚠️ Chi è schierato ma **non è più in rosa** un nome nella rosa non ce l'ha
+    # più, e l'avviso lo chiamava «?» — cioè diceva «c'è un problema» senza dire
+    # su chi. Il nome si prende dal listone, che è dato condiviso e li ha tutti.
+    mancanti = [p for p in schierati if p not in nomi]
+    if mancanti:
+        segni = ",".join("?" * len(mancanti))
+        nomi.update({r["id"]: r["nome"] for r in db.execute(
+            f"SELECT id, nome FROM fanta_players WHERE id IN ({segni})",
+            mancanti).fetchall()})
+    allerta = controlla_schierati(schierati, probabili, nomi, in_rosa=in_rosa)
+    # ⚠️ Senza **guai** non si torna niente, anche se ci fossero delle occasioni:
+    # «in panchina hai due titolari» su una formazione che torna è rumore, e un
+    # riquadro giallo che compare quando va tutto bene insegna a non leggerlo. Le
+    # occasioni sono il contorno di un avviso, non un avviso.
+    if not quanti_guai(allerta):
+        return None
+    return allerta
+
+
 def _prezzo(grezzo):
     """Il prezzo pagato come lo scrive chi compila: `12`, `12,5`, o niente.
 
@@ -283,6 +336,20 @@ def fantacalcio():
             "SELECT u.id, u.username, COUNT(l.id) AS quanti FROM users u "
             "JOIN fanta_leagues l ON l.user_id=u.id GROUP BY u.id, u.username "
             "ORDER BY u.username").fetchall()]
+    # Quante cose da guardare ha la formazione di ogni lega. ⚠️ Si conta qui, in
+    # cima alla sezione, perche' e' la pagina che si apre per prima: sapere che c'e'
+    # qualcosa da sistemare **prima** di entrare nella lega e' tutto il punto.
+    # Le occasioni non entrano nel conto (`quanti_guai`): un suggerimento non e' un
+    # guaio, e un numero rosso su una formazione a posto si impara a ignorarlo.
+    giornata_ora = _giornata_probabili(db)
+    guai_lega = {}
+    for l in leghe:
+        rosa_l = _rosa_della_lega(db, l["id"])
+        allerta = _allerta(db, l["id"], rosa_l,
+                           _probabili_della_rosa(db, giornata_ora, rosa_l))
+        quanti = quanti_guai(allerta)
+        if quanti:
+            guai_lega[l["id"]] = quanti
     eta = {q: I.serve_aggiornare(db, q)[1] for q in ("listone", "probabili")}
     db.close()
     return render_template("fantacalcio.html", leghe=leghe,
@@ -294,7 +361,7 @@ def fantacalcio():
                            soglie_standard=MOD_DIFESA_SOGLIE,
                            soglie_lega={l["id"]: soglie_mod_difesa(
                                l.get("mod_difesa_soglie")) for l in leghe},
-                           eta_cache=eta,
+                           eta_cache=eta, guai_lega=guai_lega,
                            proprietari=proprietari, filtro_utente=di,
                            nomi_utenti=nomi_utenti)
 
@@ -451,6 +518,10 @@ def lega(lid):
     probabili = _probabili_della_rosa(db, giornata, rosa)
     aggiornate = db.execute("SELECT MAX(aggiornato_il) AS q FROM fanta_probabili "
                             "WHERE giornata=?", (giornata,)).fetchone() if giornata else None
+    # La formazione gia' schierata contro le probabili di adesso: e' qui e non solo
+    # sul campo perche' questa e' la pagina da cui si passa, e un avviso che si vede
+    # solo dove si sta gia' guardando non avvisa nessuno.
+    allerta = _allerta(db, lid, rosa, probabili)
     db.close()
 
     per_ruolo = {r: [g for g in rosa if g["ruolo_classic"] == r]
@@ -482,7 +553,7 @@ def lega(lid):
                            esempi_difesa=[(m, modificatore_difesa(
                                m, soglie_mod_difesa(riga.get("mod_difesa_soglie"))))
                                for m in (5.5, 6.0, 6.5, 7.0, 7.5)],
-                           giornata=giornata, probabili=probabili,
+                           giornata=giornata, probabili=probabili, allerta=allerta,
                            probabili_aggiornate=(aggiornate["q"] if aggiornate else None))
 
 
@@ -525,6 +596,7 @@ def formazione(lid):
     schierati = {r["player_id"]: dict(r) for r in db.execute(
         "SELECT * FROM fanta_formazione WHERE league_id=? ORDER BY titolare DESC, ordine",
         (lid,)).fetchall()}
+    allerta = _allerta(db, lid, rosa, probabili)
     db.close()
 
     moduli = [m.strip() for m in (lega.get("moduli") or "").split(",")
@@ -543,7 +615,7 @@ def formazione(lid):
         "fanta_formazione.html", lega=lega, rosa=rosa, per_ruolo=per_ruolo,
         ruoli=RUOLI_FANTA, ordine=ORDINE_RUOLI_FANTA, moduli=moduli,
         modulo=scelto, schierati=schierati, probabili=probabili,
-        giornata=giornata,
+        giornata=giornata, allerta=allerta,
         reparti={m: scomponi_modulo(m) for m in moduli})
 
 

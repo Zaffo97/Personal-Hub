@@ -1438,6 +1438,114 @@ def prove(dove):
               not rotti, str(rotti))
 
 
+    # --- 16. la formazione contro le probabili di adesso ---------------------
+    # Chiesta da Davide il 22/09/2026: schieri giovedì, venerdì uno finisce in
+    # panchina, e fino a ieri te ne accorgevi solo riaprendo il campo e guardando
+    # riga per riga. ⚠️ «Automatico» qui vuol dire **quando apri la pagina**: non
+    # c'è niente che giri in sottofondo, e la prova non può dimostrare altro.
+    print("\n== 16. la formazione contro le probabili di adesso ==")
+    from data import controlla_schierati, quanti_guai
+
+    schierati_finti = {1: {"titolare": 1}, 2: {"titolare": 1}, 3: {"titolare": 1},
+                       4: {"titolare": 0}, 5: {"titolare": 1}}
+    prob_finte = {1: {"stato": "titolare", "percentuale": 90},
+                  2: {"stato": "panchina", "percentuale": 30},
+                  3: {"stato": "titolare", "percentuale": 35},
+                  4: {"stato": "titolare", "percentuale": 85},
+                  5: {"stato": "non_gioca", "percentuale": None}}
+    nomi_finti = {1: "Uno", 2: "Due", 3: "Tre", 4: "Quattro", 5: "Cinque"}
+    a = controlla_schierati(schierati_finti, prob_finte, nomi_finti,
+                            in_rosa={1, 2, 3, 4, 5})
+    esito("un titolare finito in panchina viene dichiarato",
+          [v["nome"] for v in a["fuori"]] == ["Cinque", "Due"],
+          str([(v["nome"], v["stato"]) for v in a["fuori"]]))
+    esito("⚠️ e chi non scende in campo per niente viene prima di chi è in panchina",
+          a["fuori"][0]["stato"] == "non_gioca")
+    esito("un titolare sotto la soglia del ballottaggio è «incerto», non «fuori»",
+          [v["nome"] for v in a["incerti"]] == ["Tre"], str(a["incerti"]))
+    # ⚠️ Il conto sono **3**: i due «fuori» più l'«incerto». L'occasione non ci
+    # entra, ed è tutto il punto di `quanti_guai()` — contarla direbbe 4 a una
+    # formazione che ha tre cose da sistemare e una da sfruttare.
+    esito("e un panchinaro dato titolare è un'occasione, non un guaio",
+          [v["nome"] for v in a["occasioni"]] == ["Quattro"]
+          and quanti_guai(a) == 3, f"{a['occasioni']} guai={quanti_guai(a)}")
+    # ⚠️ Togliere un giocatore dalla rosa **non** cancella la sua riga in
+    # `fanta_formazione`: il campo smette di disegnarlo e i titolari diventano
+    # dieci senza che nessuno lo dica. Finché è così, l'avviso deve dirlo.
+    b = controlla_schierati(schierati_finti, prob_finte, nomi_finti,
+                            in_rosa={1, 2, 3, 4})
+    esito("⚠️ chi è schierato ma non è più in rosa viene dichiarato",
+          [v["nome"] for v in b["spariti"]] == ["Cinque"], str(b["spariti"]))
+    esito("⚠️ senza probabili non si accusa nessuno",
+          quanti_guai(controlla_schierati(schierati_finti, {}, nomi_finti)) == 0)
+    esito("e una formazione che torna non produce nessun guaio",
+          quanti_guai(controlla_schierati(
+              {1: {"titolare": 1}}, {1: {"stato": "titolare", "percentuale": 90}},
+              nomi_finti, in_rosa={1})) == 0)
+
+    # --- e la stessa cosa dalle pagine ---------------------------------------
+    db = extensions.get_db()
+    db.execute("UPDATE fanta_players SET squadra_slug='inter' WHERE id IN (1,2,3,4)")
+    db.execute("INSERT INTO fanta_leagues(user_id,nome,sistema,moduli) "
+               "VALUES(?,'Lega Allerta','classic','3-4-3')", (ids["davide"],))
+    lid_al = db.execute("SELECT id FROM fanta_leagues ORDER BY id DESC "
+                        "LIMIT 1").fetchone()["id"]
+    for pid in (1, 2, 3, 4):
+        db.execute("INSERT INTO fanta_roster(league_id,player_id,prezzo) "
+                   "VALUES(?,?,10)", (lid_al, pid))
+    # Tre in campo e uno in panchina, e le probabili della giornata 9 che li
+    # smentiscono: il portiere resta titolare, il difensore è in panchina, il
+    # centrocampista è dato titolare ma al 30%, l'attaccante in panchina gioca.
+    for pid, titolare, ordine in ((1, 1, 0), (2, 1, 1), (3, 1, 2), (4, 0, 0)):
+        db.execute("INSERT INTO fanta_formazione(league_id,player_id,titolare,"
+                   "ordine,ruolo) VALUES(?,?,?,?,?)", (lid_al, pid, titolare,
+                                                       ordine, "d"))
+    db.execute("INSERT INTO fanta_probabili_squadre(giornata,squadra_slug,squadra,"
+               "avversario,in_casa,modulo,aggiornato_il) VALUES(9,'inter','Inter',"
+               "'Milan',1,'3-5-2',CURRENT_TIMESTAMP)")
+    for pid, titolare, pct in ((1, 1, 90), (2, 0, 25), (3, 1, 30), (4, 1, 85)):
+        db.execute("INSERT INTO fanta_probabili(giornata,player_id,nome,squadra_slug,"
+                   "ruolo,titolare,percentuale,aggiornato_il) "
+                   "VALUES(9,?,?,'inter','d',?,?,CURRENT_TIMESTAMP)",
+                   (pid, nomi_finti[pid], titolare, pct))
+    db.commit()
+    db.close()
+
+    with app.test_client() as c4:
+        with c4.session_transaction() as s:
+            s["username"] = "davide"
+            s["role"] = "user"
+            s["user_id"] = ids["davide"]
+        scheda = c4.get(f"/fantacalcio/lega/{lid_al}").data.decode("utf-8", "replace")
+        campo = c4.get(f"/fantacalcio/lega/{lid_al}/formazione").data.decode("utf-8", "replace")
+        elenco = c4.get("/fantacalcio/").data.decode("utf-8", "replace")
+    esito("la scheda della lega apre con l'avviso",
+          "non torna più con le probabili" in scheda and "Bastoni" in scheda,
+          "Bastoni è il titolare finito in panchina")
+    esito("⚠️ e dice di quale giornata sta parlando",
+          "giornata 9" in scheda)
+    esito("l'avviso c'è anche sul campo, dove si rimedia",
+          "non torna più con le probabili" in campo)
+    esito("e l'elenco delle leghe lo dice prima di entrare",
+          "da guardare nella formazione" in elenco)
+    # ⚠️ Le occasioni non entrano nel conto: un suggerimento non è un guaio, e un
+    # numero che conta anche quelli farebbe dire «3 da guardare» a una formazione
+    # che ne ha due.
+    esito("⚠️ il numero nell'elenco conta i guai, non i suggerimenti",
+          ">\n      &#9888; 2 da guardare nella formazione" in elenco
+          or "2 da guardare nella formazione" in elenco,
+          "2 = un titolare in panchina + un titolare al 30%")
+
+    with app.test_client() as c4:
+        with c4.session_transaction() as s:
+            s["username"] = "altro"
+            s["role"] = "user"
+            s["user_id"] = ids["altro"]
+        elenco = c4.get("/fantacalcio/").data.decode("utf-8", "replace")
+    esito("⚠️ e un altro utente non vede né la lega né il suo avviso",
+          "Lega Allerta" not in elenco and "da guardare nella formazione" not in elenco)
+
+
 def main():
     ap = argparse.ArgumentParser(description=__doc__.splitlines()[0])
     ap.add_argument("--tieni", action="store_true",

@@ -102,6 +102,10 @@ ECCEZIONI = {
      "SELECT nome FROM fanta_players WHERE id=?"):
         "legge il nome dal listone condiviso, per dire quale giocatore è stato "
         "aggiunto: non tocca nessuna riga di nessuno",
+    ("blueprints/fantacalcio.py", "_allerta",
+     "SELECT id, nome FROM fanta_players WHERE id IN ({…})"):
+        "il nome di chi e' schierato ma non e' piu' in rosa, preso dal listone "
+        "condiviso: senza, l'avviso direbbe «?» invece di dire su chi",
     ("blueprints/fantacalcio.py", "api_giocatori",
      "SELECT id, nome, squadra, ruolo_classic, qa, fvm, fantamedia, attivo "
      "FROM fanta_players WHERE nome LIKE ? "
@@ -180,6 +184,15 @@ ECCEZIONI = {
      "ORDER BY titolare DESC, ordine"):
         "la lega è stata verificata con _lega_mia() poche righe sopra: se non è "
         "tua, la route è già uscita",
+    # ⚠️ Dal 22/09/2026 c'è un secondo lettore, `_schierati()`: lo usa l'avviso
+    # «la formazione non torna più con le probabili», che le tre pagine del
+    # Fantacalcio mostrano. Anche lì la lega arriva già filtrata — da `_lega_mia()`
+    # nella scheda e nel campo, da `ambito_utente()` nell'elenco, che seleziona le
+    # leghe **prima** di chiederne la formazione.
+    ("blueprints/fantacalcio.py", "_schierati",
+     "SELECT player_id, titolare, ordine FROM fanta_formazione WHERE league_id=?"):
+        "la lega arriva sempre da una lettura già filtrata: _lega_mia() nella "
+        "scheda e nel campo, ambito_utente() nell'elenco delle leghe",
     # ⚠️ Dal 21/09/2026 queste due stanno in `_scrivi_formazione()`, non nella
     # route: la scrivono in due (il campo e il pulsante «applica» del consiglio) e
     # duplicarla era la strada facile. Chi chiama ha sempre fatto `_lega_mia()`

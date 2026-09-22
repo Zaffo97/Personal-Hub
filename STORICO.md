@@ -70,6 +70,50 @@ fare.
   `admin` e la lega era di un altro utente — in lettura l'admin vede tutto, in
   scrittura `solo_mie()` non gli lascia toccare la rosa di nessuno.
 
+**Fantacalcio: la formazione schierata contro le probabili di adesso**
+
+Chiesto da Davide: schieri giovedì, venerdì uno finisce in panchina, e fino a ieri
+te ne accorgevi solo riaprendo il campo e guardando riga per riga. La sua domanda —
+«avviene in automatico o devo premere un pulsante?» — ha una risposta precisa:
+**si calcola quando apri la pagina**. Le probabili si rileggono da sé quando la
+copia ha più di tre ore, quindi entrare nella sezione basta; ma niente gira in
+sottofondo, e un avviso che arrivi il venerdì sera da solo vorrebbe dire un
+processo schedulato. È scritto nell'avviso stesso, non solo qui.
+
+- ✅ **`controlla_schierati()` in `data.py`** torna quattro elenchi: `fuori`
+  (titolari che le probabili non danno più in campo), `incerti` (dati titolari ma
+  sotto `SOGLIA_SCHIERABILE`), `spariti` (schierati e non più in rosa) e
+  `occasioni` (in panchina, ma dati titolari — il rovescio, e serve a decidere chi
+  mettere al posto di chi). I «fuori» sono ordinati per **gravità**: chi non scende
+  in campo per niente prima di chi è solo in panchina, perché il primo nome è
+  quello che viene letto.
+- ⚠️ **Chi non ha una riga nelle probabili non viene accusato**: «non lo sappiamo»
+  non è «non gioca», e con l'archivio vuoto l'avviso deve tacere invece di
+  segnalare undici giocatori. E il confronto è sempre con **l'ultima giornata
+  importata** — la formazione non ha una giornata sua — quindi il numero della
+  giornata è **scritto nell'avviso**: senza, non sarebbe verificabile.
+- ⚠️ **Senza guai non si mostra niente**, nemmeno se ci sono occasioni: un riquadro
+  giallo che compare quando va tutto bene insegna a non leggere i riquadri gialli.
+  La regola sta in `_allerta()`, in un posto solo.
+- ⚠️✅ **Un baco trovato costruendolo, dichiarato e non corretto**: togliere un
+  giocatore dalla rosa **non** toglie la sua riga da `fanta_formazione` (misurato:
+  1 riga orfana dopo un `rosa/rimuovi`). Il campo smette di disegnarlo e i titolari
+  diventano dieci in silenzio. L'avviso ora lo dice col nome — preso dal **listone**,
+  perché dalla rosa quel nome è appena sparito e il primo giro scriveva «?», cioè
+  «c'è un problema» senza dire su chi. La cura vera è una decisione di Davide.
+- ✅ **Verifiche**: `prova_fantacalcio.py` da 171 a **184 su 184**, **sweep 0
+  errori**, **137 query 0 scoperte** (le due nuove dichiarate con la ragione).
+  In browser, su una copia di `hub.db` con la rosa vera da 25: applicato il
+  consiglio al campo e poi **allineate** le probabili → nessun avviso e nessun
+  numero sull'elenco (la prova negativa); poi simulato il venerdì — uno in panchina
+  al 35% e uno tolto dalla rosa → «⚠ 2 da guardare nella formazione» sull'elenco e
+  l'avviso completo sulla scheda e sul campo, che giustamente non ha il pulsante
+  «Apri il campo» perché ci sei già.
+- ⚠️ Un refuso preso guardando la pagina e non lo sweep: «3 titolari che non
+  **scendeno** in campo».
+
+---
+
 **Fantacalcio: le fasce del modificatore di difesa si aggiungono e si tolgono**
 
 Chiesto da Davide lo stesso giorno. La tabella aveva **tre** righe fisse, stampate da

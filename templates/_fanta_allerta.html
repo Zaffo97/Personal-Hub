@@ -1,0 +1,85 @@
+{# L'avviso sulla formazione gia' schierata, confrontata con le probabili di adesso.
+
+   Sta in un file suo perche' lo mostrano in **due** - la scheda della lega e il
+   campo - e scriverlo due volte vuol dire due testi che divergono al primo cambio.
+   Si usa con `{% from "_fanta_allerta.html" import avviso %}`.
+
+   ⚠️ Il confronto e' sempre con **l'ultima giornata importata**: la formazione non
+   ha una giornata sua (una per lega, che si sovrascrive - scelta del 21/09/2026),
+   quindi il numero della giornata va **scritto nell'avviso**. Senza, chi legge non
+   puo' sapere a cosa si riferisce, e un avviso non verificabile vale zero. #}
+{% macro avviso(allerta, giornata, url_campo=None) %}
+{% if allerta and (allerta.fuori or allerta.incerti or allerta.spariti) %}
+<div class="card mb-3" style="border-color:#d97706">
+  <div style="padding:.8rem 1rem" class="text-sm">
+    <strong>&#9888; La formazione che hai schierato non torna più con le probabili</strong>
+    <span class="text-xs text-muted">(giornata {{ giornata or '—' }})</span>
+
+    {% if allerta.spariti %}
+    <div class="mt-2">
+      <strong>{{ allerta.spariti|length }}</strong>
+      schierat{{ 'o' if allerta.spariti|length == 1 else 'i' }} ma
+      <strong>non più in rosa</strong>:
+      <span class="text-muted">{{ allerta.spariti|map(attribute='nome')|join(', ') }}</span>
+      <div class="text-xs text-muted">
+        Il campo smette di disegnarli e i titolari diventano dieci senza dirlo.
+      </div>
+    </div>
+    {% endif %}
+
+    {% if allerta.fuori %}
+    <div class="mt-2">
+      <strong>{{ allerta.fuori|length }}</strong>
+      titolar{{ 'e' if allerta.fuori|length == 1 else 'i' }} che
+      <strong>non {{ 'scende' if allerta.fuori|length == 1 else 'scendono' }} in campo</strong>:
+      <div class="text-xs mt-1">
+        {% for v in allerta.fuori %}
+        <span class="badge {{ 'badge-error' if v.stato in ('fuori', 'non_gioca') else 'badge-warning' }}">
+          {{ v.nome }} &middot;
+          {% if v.stato == 'panchina' %}panchina{% if v.percentuale %} {{ v.percentuale }}%{% endif %}
+          {% elif v.stato == 'fuori' %}non convocato
+          {% else %}la sua squadra non gioca{% endif %}
+        </span>
+        {% endfor %}
+      </div>
+    </div>
+    {% endif %}
+
+    {% if allerta.incerti %}
+    <div class="mt-2">
+      <strong>{{ allerta.incerti|length }}</strong>
+      dat{{ 'o' if allerta.incerti|length == 1 else 'i' }} titolar{{ 'e' if allerta.incerti|length == 1 else 'i' }},
+      ma sotto la soglia del ballottaggio:
+      <div class="text-xs mt-1">
+        {% for v in allerta.incerti %}
+        <span class="badge badge-warning">{{ v.nome }} &middot; {{ v.percentuale or 0 }}%</span>
+        {% endfor %}
+      </div>
+    </div>
+    {% endif %}
+
+    {% if allerta.occasioni %}
+    <div class="mt-2">
+      In panchina hai <strong>{{ allerta.occasioni|length }}</strong>
+      che le probabili danno titolar{{ 'e' if allerta.occasioni|length == 1 else 'i' }}:
+      <div class="text-xs mt-1">
+        {% for v in allerta.occasioni %}
+        <span class="badge badge-success">{{ v.nome }} &middot; {{ v.percentuale or 0 }}%</span>
+        {% endfor %}
+      </div>
+    </div>
+    {% endif %}
+
+    {% if url_campo %}
+    <div class="mt-2">
+      <a class="btn btn-sm btn-primary" href="{{ url_campo }}">&#9917; Apri il campo</a>
+    </div>
+    {% endif %}
+    <div class="text-xs text-muted mt-2">
+      Le probabili cambiano fino al fischio d'inizio: questo è il confronto con
+      l'ultima copia importata, non un controllo che gira da solo.
+    </div>
+  </div>
+</div>
+{% endif %}
+{% endmacro %}
