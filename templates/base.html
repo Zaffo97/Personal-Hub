@@ -8,24 +8,7 @@
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300..700&family=JetBrains+Mono:wght@400;600&display=swap" rel="stylesheet">
 <style>
-:root,[data-theme="dark"]{
-  --bg:#0f0f11;--surface:#17171a;--surface-off:#1e1e22;--border:#2a2a30;
-  --text:#e8e8ed;--text-muted:#8a8a96;--text-faint:#4a4a54;
-  --primary:#7c6cf0;--primary-h:#9488f7;--primary-dim:#2d2a4a;
-  --success:#4caf7d;--success-dim:#1a3326;
-  --warning:#f0a030;--warning-dim:#3a2a10;
-  --error:#e05555;--error-dim:#3a1a1a;
-  --radius-sm:6px;--radius-md:10px;--radius-lg:14px;--radius-xl:18px;
-  --sidebar:220px;--topbar:52px;
-}
-[data-theme="light"]{
-  --bg:#f4f4f8;--surface:#ffffff;--surface-off:#ededf2;--border:#dcdce4;
-  --text:#1a1a24;--text-muted:#5a5a6a;--text-faint:#aaaabc;
-  --primary:#5b4fcc;--primary-h:#4540b0;--primary-dim:#e8e6fb;
-  --success:#2e7d52;--success-dim:#e6f4ee;
-  --warning:#b07020;--warning-dim:#fdf3e0;
-  --error:#c0392b;--error-dim:#fdeaea;
-}
+{% include '_temi.html' %}
 *,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
 html{font-size:15px;-webkit-font-smoothing:antialiased}
 body{font-family:"Inter",sans-serif;background:var(--bg);color:var(--text);
@@ -75,6 +58,26 @@ body{font-family:"Inter",sans-serif;background:var(--bg);color:var(--text);
 .btn-icon{background:none;border:none;cursor:pointer;color:var(--text-muted);
   padding:.3rem;border-radius:var(--radius-sm);font-size:1rem;transition:.15s}
 .btn-icon:hover{background:var(--surface-off);color:var(--text)}
+/* Il menu dei temi. Colori dalle variabili, come tutto il resto: si ridisegna da
+   solo in ognuno dei quattro senza una riga in piu'. */
+.tema-scelta{position:relative}
+.tema-menu{position:absolute;right:0;top:calc(100% + .4rem);z-index:60;
+  min-width:150px;padding:.3rem;background:var(--surface);
+  border:1px solid var(--border);border-radius:var(--radius-md);
+  box-shadow:0 8px 24px rgba(0,0,0,.28)}
+.tema-menu[hidden]{display:none}
+.tema-voce{display:flex;align-items:center;gap:.5rem;width:100%;
+  padding:.4rem .5rem;background:none;border:none;cursor:pointer;
+  border-radius:var(--radius-sm);color:var(--text);font-size:.8rem;
+  font-family:inherit;text-align:left}
+.tema-voce:hover{background:var(--surface-off)}
+.tema-voce.attivo{color:var(--primary);font-weight:600}
+.tema-pallino{width:12px;height:12px;border-radius:50%;flex:0 0 auto;
+  border:1px solid var(--border)}
+/* La spunta occupa il suo posto anche quando non si vede: senza, la voce attiva
+   sarebbe piu' larga delle altre e il menu ballerebbe a ogni cambio. */
+.tema-spunta{margin-left:auto;visibility:hidden}
+.tema-voce.attivo .tema-spunta{visibility:visible}
 .badge{display:inline-flex;align-items:center;padding:.18rem .5rem;border-radius:20px;
   font-size:.68rem;font-weight:700;white-space:nowrap}
 .badge-neutral{background:var(--surface-off);color:var(--text-muted);border:1px solid var(--border)}
@@ -309,11 +312,30 @@ function tipoVis(tipo){
         {% endif %}
       </button>
       {% endif %}
-      <button class="btn-icon" onclick="toggleTheme()" id="themeBtn" title="Cambia tema">
-        <svg id="themeIcon" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-          <path d="M21 12.79A9 9 0 1 1 11.21 3 7 7 0 0 0 21 12.79z"/>
-        </svg>
-      </button>
+      {# ⚠️ La lista dei temi sta **qui accanto al menu** e i colori stanno in cima a
+         questo stesso file: sono due punti, ma vicini, e chi ne aggiunge uno li vede
+         tutti e due senza cercarli. Il pallino è il `--primary` di quel tema, scritto
+         a mano perché deve mostrarsi **mentre un altro tema è attivo** — `var(--primary)`
+         darebbe quattro pallini identici, cioè un menu che non aiuta a scegliere. #}
+      {% set temi = [('dark','Scuro','#7c6cf0'), ('light','Chiaro','#5b4fcc'),
+                     ('oceano','Oceano','#2fb6c9'), ('sabbia','Sabbia','#b4622a')] %}
+      <div class="tema-scelta">
+        <button class="btn-icon" onclick="apriTemi(event)" id="themeBtn" title="Cambia tema"
+                aria-haspopup="true" aria-expanded="false">
+          <svg id="themeIcon" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+            <path d="M21 12.79A9 9 0 1 1 11.21 3 7 7 0 0 0 21 12.79z"/>
+          </svg>
+        </button>
+        <div class="tema-menu" id="temaMenu" hidden>
+          {% for id, etichetta, pallino in temi %}
+          <button type="button" class="tema-voce" data-tema="{{ id }}" onclick="scegliTema('{{ id }}')">
+            <span class="tema-pallino" style="background:{{ pallino }}"></span>
+            <span>{{ etichetta }}</span>
+            <span class="tema-spunta">&#10003;</span>
+          </button>
+          {% endfor %}
+        </div>
+      </div>
     </div>
   </header>
   <main id="content">{% block content %}{% endblock %}</main>
@@ -328,19 +350,53 @@ function tipoVis(tipo){
 <script>
 {# `t` e `tf` sono definite nel <head>, non qui: vedi il commento la' sopra. #}
 const html=document.documentElement;
-const saved=localStorage.getItem('hub_theme')||'dark';
-html.setAttribute('data-theme',saved);updateThemeIcon(saved);
+// ⚠️ I temi **chiari** vanno elencati, e l'elenco e' di inclusi: un tema nuovo
+// nasce con l'icona della luna finche' non lo si scrive qui. E' il verso giusto in
+// cui sbagliare — l'icona sbagliata si vede, e un elenco di esclusi darebbe il sole
+// a un tema scuro nuovo, che invece si nota molto meno.
+const TEMI_CHIARI=['light','sabbia'];
+const TEMI=['dark','light','oceano','sabbia'];
+// ⚠️ Un valore rimasto in `localStorage` da una versione precedente, o scritto a
+// mano, non deve diventare un `data-theme` che non esiste: quello lascerebbe la
+// pagina **senza nessun tema**, cioe' col solo `:root`, che e' lo scuro — giusto per
+// caso, e sbagliato il giorno che `:root` cambia.
+const saved=TEMI.includes(localStorage.getItem('hub_theme'))
+  ?localStorage.getItem('hub_theme'):'dark';
+html.setAttribute('data-theme',saved);updateThemeIcon(saved);segnaTemaAttivo(saved);
 // ⚠️ `tema` e non `t`: la variabile ombrava la funzione t() delle traduzioni dentro
 // queste due funzioni. Oggi non fa danno perche' non ci si traduce niente, ma e' la
 // stessa trappola dei `{% raw %}{% for t in … %}{% endraw %}` negli editor, e qui t() e' globale.
-function toggleTheme(){
-  const tema=html.getAttribute('data-theme')==='dark'?'light':'dark';
-  html.setAttribute('data-theme',tema);localStorage.setItem('hub_theme',tema);updateThemeIcon(tema);
+function scegliTema(tema){
+  if(!TEMI.includes(tema))return;
+  html.setAttribute('data-theme',tema);localStorage.setItem('hub_theme',tema);
+  updateThemeIcon(tema);segnaTemaAttivo(tema);chiudiTemi();
 }
+function segnaTemaAttivo(tema){
+  document.querySelectorAll('.tema-voce').forEach(function(v){
+    v.classList.toggle('attivo',v.getAttribute('data-tema')===tema);
+  });
+}
+function apriTemi(ev){
+  ev.stopPropagation();
+  const menu=document.getElementById('temaMenu');
+  const apri=menu.hidden;
+  menu.hidden=!apri;
+  document.getElementById('themeBtn').setAttribute('aria-expanded',apri?'true':'false');
+}
+function chiudiTemi(){
+  const menu=document.getElementById('temaMenu');
+  if(menu){menu.hidden=true;
+    document.getElementById('themeBtn').setAttribute('aria-expanded','false');}
+}
+// Un clic fuori chiude, e anche Esc: un menu che si chiude solo ripremendo il suo
+// pulsante resta aperto addosso alla pagina appena si guarda altrove.
+document.addEventListener('click',chiudiTemi);
+document.addEventListener('keydown',function(e){if(e.key==='Escape')chiudiTemi();});
+document.getElementById('temaMenu').addEventListener('click',function(e){e.stopPropagation();});
 function updateThemeIcon(tema){
-  document.getElementById('themeIcon').innerHTML=tema==='dark'
-    ?'<path d="M21 12.79A9 9 0 1 1 11.21 3 7 7 0 0 0 21 12.79z"/>'
-    :'<circle cx="12" cy="12" r="5"/><path d="M12 1v2M12 21v2M4.22 4.22l1.42 1.42M18.36 18.36l1.42 1.42M1 12h2M21 12h2M4.22 19.78l1.42-1.42M18.36 5.64l1.42-1.42"/>';
+  document.getElementById('themeIcon').innerHTML=TEMI_CHIARI.includes(tema)
+    ?'<circle cx="12" cy="12" r="5"/><path d="M12 1v2M12 21v2M4.22 4.22l1.42 1.42M18.36 18.36l1.42 1.42M1 12h2M21 12h2M4.22 19.78l1.42-1.42M18.36 5.64l1.42-1.42"/>'
+    :'<path d="M21 12.79A9 9 0 1 1 11.21 3 7 7 0 0 0 21 12.79z"/>';
 }
 // La lingua sta in un cookie, non in localStorage, perche' la deve leggere anche
 // Flask: roster, mosse e oggetti nelle tendine sono renderizzati dal server.

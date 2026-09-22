@@ -5,12 +5,7 @@
 <title>Login – Personal Hub</title>
 <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700&display=swap" rel="stylesheet">
 <style>
-:root,[data-theme="dark"]{--bg:#0f0f11;--surface:#17171a;--surface-off:#1e1e22;
-  --border:#2a2a30;--text:#e8e8ed;--text-muted:#8a8a96;
-  --primary:#7c6cf0;--primary-h:#9488f7;--error:#e05555;--error-dim:#3a1a1a}
-[data-theme="light"]{--bg:#f4f4f8;--surface:#fff;--surface-off:#ededf2;
-  --border:#dcdce4;--text:#1a1a24;--text-muted:#5a5a6a;
-  --primary:#5b4fcc;--primary-h:#4540b0;--error:#c0392b;--error-dim:#fdeaea}
+{% include '_temi.html' %}
 *{box-sizing:border-box;margin:0;padding:0}
 body{font-family:"Inter",sans-serif;background:var(--bg);color:var(--text);
   min-height:100dvh;display:flex;align-items:center;justify-content:center;
@@ -35,6 +30,21 @@ input:focus{outline:none;border-color:var(--primary);
   padding:.5rem .75rem;font-size:.78rem;margin-top:.75rem;font-weight:600}
 .hint{font-size:.72rem;color:var(--text-muted);text-align:center;margin-top:1rem;opacity:.7}
 </style>
+<script>
+// ⚠️ Nel `<head>` e non in fondo, e qui il motivo si vede a occhio nudo: applicato
+// dopo, il tema scelto arriverebbe **a pagina gia' dipinta**, e chi usa Sabbia o
+// Chiaro vedrebbe un lampo scuro a ogni apertura del login. Sono quattro righe
+// senza dipendenze, quindi possono stare prima di tutto.
+// ⚠️ E l'elenco e' di inclusi: un valore rimasto in `localStorage` da prima, o
+// scritto a mano, non deve diventare un `data-theme` che non esiste — quello
+// lascerebbe la pagina col solo `:root`.
+(function(){
+  var temi=['dark','light','oceano','sabbia'];
+  var scelto=localStorage.getItem('hub_theme');
+  document.documentElement.setAttribute('data-theme',
+    temi.indexOf(scelto)>=0?scelto:'dark');
+})();
+</script>
 </head>
 <body>
 <div class="card">

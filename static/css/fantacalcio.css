@@ -12,22 +12,18 @@
    body la mette il loro `body_class`.
 
    ⚠️ E i **colori non sono scritti a mano**: vengono dalle variabili del tema, che
-   cambiano da sole fra chiaro e scuro. Un verde fisso qui dentro starebbe bene sul
-   tema scuro e male sull'altro, ed e' esattamente il genere di cosa che non si
-   scopre finche' qualcuno non cambia tema. L'unico colore nuovo e' l'accento della
-   sezione, dichiarato per tutti e due i temi. */
+   cambiano da sole. Un verde fisso qui dentro starebbe bene sul tema scuro e male
+   sugli altri, ed e' esattamente il genere di cosa che non si scopre finche'
+   qualcuno non cambia tema.
 
-body.sez-fanta {
-  /* Il verde del campo, che e' gia' il colore di «titolare» nelle probabili: la
-     sezione non si inventa una tinta, riusa quella che significa gia' qualcosa. */
-  --fanta: #16a34a;
-  --fanta-soft: rgba(22, 163, 74, .14);
-}
-@media (prefers-color-scheme: light) {
-  body.sez-fanta { --fanta: #15803d; }
-}
-:root[data-theme="light"] body.sez-fanta,
-body.sez-fanta[data-theme="light"] { --fanta: #15803d; }
+   ⚠️ **`--fanta` e `--fanta-soft` non sono piu' qui**: dal 22/09/2026 stanno in
+   `base.html`, dentro il blocco di **ogni** tema. Erano dichiarati qui per «chiaro»
+   e «scuro», e il giorno che i temi sono diventati quattro i due nuovi avrebbero
+   preso il verde dello scuro anche essendo chiari — un verde acceso su fondo
+   sabbia, senza nessun errore. Un colore che dipende dal tema si dichiara dove
+   stanno i temi; questo foglio lo **usa** e basta. Il verde e' quello di
+   «titolare» nelle probabili: la sezione non si inventa una tinta, riusa quella
+   che significa gia' qualcosa. */
 
 /* ── I campi: tondi, e con il fuoco che si vede ───────────────────────────── */
 /* Una pillola vale per i campi a **una riga**. La `textarea` della rosa incollata

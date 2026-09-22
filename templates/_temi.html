@@ -1,0 +1,78 @@
+{# I colori dei temi, in un file solo perche' li usano DUE pagine.
+
+   ⚠️ Fino al 22/09/2026 `login.html` ne aveva una **copia sua**, con dentro solo
+   `dark` e `light`: il login restava scuro qualunque tema avessi scelto, e i due
+   temi nuovi non sarebbero mai arrivati fin li'. Due copie di una lista di colori
+   divergono, e divergono in silenzio — e' la stessa ragione per cui `t()` e `tf()`
+   hanno una copia sola. Chi aggiunge un tema tocca questo file, piu' la lista
+   `temi` del menu e i due elenchi JavaScript in `base.html`; che restino
+   d'accordo lo controlla `scripts/prova_temi.py`.
+
+   ⚠️ Va incluso **dentro** un `<style>`, non fuori. #}
+/* ── I temi ────────────────────────────────────────────────────────────────
+   ⚠️ **Un tema è una lista di variabili, non un foglio a parte.** Ogni blocco qui
+   sotto deve dichiarare le **stesse** variabili degli altri: una che manca non dà
+   errore, eredita il valore di `:root` — cioè il tema scuro — e il risultato è un
+   colore giusto su tre temi e sbagliato sul quarto, che nessuno vede finché non
+   ci va. Le misure (`--radius-*`, `--sidebar`, `--topbar`) stanno solo in `:root`
+   di proposito: quelle non sono colore, e un tema non deve poterle spostare.
+
+   ⚠️ **`--fanta` sta qui e non più in `fantacalcio.css`** (22/09/2026, col terzo e
+   quarto tema). Era dichiarato là per «chiaro» e «scuro», e i temi nuovi
+   avrebbero preso il verde del tema scuro anche essendo chiari — un verde acceso
+   su fondo sabbia, senza nessun errore. I colori di un tema si dichiarano dove
+   sono dichiarati i temi; il foglio della sezione lo **usa** e basta.
+
+   Chi ne aggiunge uno tocca **due punti vicini**: il blocco qui sotto e la lista
+   `temi` del menu, più in basso in questo stesso file. */
+:root,[data-theme="dark"]{
+  --bg:#0f0f11;--surface:#17171a;--surface-off:#1e1e22;--border:#2a2a30;
+  --text:#e8e8ed;--text-muted:#8a8a96;--text-faint:#4a4a54;
+  --primary:#7c6cf0;--primary-h:#9488f7;--primary-dim:#2d2a4a;
+  --success:#4caf7d;--success-dim:#1a3326;
+  --warning:#f0a030;--warning-dim:#3a2a10;
+  --error:#e05555;--error-dim:#3a1a1a;
+  --fanta:#16a34a;--fanta-soft:rgba(22,163,74,.14);
+  --radius-sm:6px;--radius-md:10px;--radius-lg:14px;--radius-xl:18px;
+  --sidebar:220px;--topbar:52px;
+}
+[data-theme="light"]{
+  --bg:#f4f4f8;--surface:#ffffff;--surface-off:#ededf2;--border:#dcdce4;
+  --text:#1a1a24;--text-muted:#5a5a6a;--text-faint:#aaaabc;
+  --primary:#5b4fcc;--primary-h:#4540b0;--primary-dim:#e8e6fb;
+  --success:#2e7d52;--success-dim:#e6f4ee;
+  --warning:#b07020;--warning-dim:#fdf3e0;
+  --error:#c0392b;--error-dim:#fdeaea;
+  --fanta:#15803d;--fanta-soft:rgba(21,128,61,.12);
+}
+/* Oceano — scuro, ma freddo: i fondi tirano al blu e l'accento è un ciano.
+   Serve a chi il tema scuro lo tiene sempre e voleva **un altro** scuro. */
+[data-theme="oceano"]{
+  --bg:#0b1620;--surface:#12202c;--surface-off:#182a38;--border:#25394a;
+  --text:#e3eef6;--text-muted:#8ba5b7;--text-faint:#4c6577;
+  /* ⚠️ Il ciano è **più scuro** di quello che verrebbe da scegliere a occhio, e il
+     motivo è misurato: `.btn-primary` scrive in bianco su questo colore, e col
+     ciano acceso (#2fb6c9) il contrasto era **2.43** — sotto 3.0, cioè illeggibile
+     anche per un testo grande, quando gli altri tre temi stanno fra 3.99 e 6.11.
+     Così è 4.44. E il `--primary-dim` è sceso con lui: il primary ci va **sopra**
+     come testo (badge, voce di menu attiva), quindi scurire solo il primo dei due
+     avrebbe spostato il problema invece di risolverlo — da 3.03 a 3.64, in linea
+     col 3.41 del tema scuro. Misure in `scripts/prova_temi.py`. */
+  --primary:#1c8395;--primary-h:#2596ab;--primary-dim:#0a242b;
+  --success:#3fae86;--success-dim:#0f3329;
+  --warning:#e0a23c;--warning-dim:#382a12;
+  --error:#e06a6a;--error-dim:#3a1c1c;
+  --fanta:#19b26b;--fanta-soft:rgba(25,178,107,.15);
+}
+/* Sabbia — chiaro, ma caldo: carta invece di bianco, accento terracotta.
+   ⚠️ È **chiaro**, quindi i suoi `--*-dim` sono fondi pallidi e non scuri: un
+   `--primary-dim` scuro qui sopra ci scriverebbe testo scuro sopra fondo scuro. */
+[data-theme="sabbia"]{
+  --bg:#f6f1e7;--surface:#fffdf8;--surface-off:#efe7d8;--border:#ded3be;
+  --text:#2a2218;--text-muted:#6b5f4d;--text-faint:#b0a48d;
+  --primary:#b4622a;--primary-h:#8f4a1c;--primary-dim:#f7e4d4;
+  --success:#2e7d52;--success-dim:#e4f1e9;
+  --warning:#a8701a;--warning-dim:#f8ecd7;
+  --error:#b83a2b;--error-dim:#f9e5e1;
+  --fanta:#15803d;--fanta-soft:rgba(21,128,61,.12);
+}

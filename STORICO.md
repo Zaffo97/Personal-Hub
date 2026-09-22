@@ -20,6 +20,44 @@ pagina ed esegue `new Function()` su ogni blocco `<script>` **e** su ogni handle
 
 ## 22/09/2026
 
+**Quattro temi invece di due, e un controllo che li tiene in riga (§4.3)**
+
+Restano **Scuro** e **Chiaro**, arrivano **Oceano** (scuro freddo, accento ciano) e
+**Sabbia** (chiaro caldo, accento terracotta). L'interruttore è diventato un **menu**
+col pallino del colore e la spunta su quello attivo: con quattro temi un toggle non
+vuol dire più niente.
+
+**Tre cose sono venute fuori facendolo, e nessuna si vedeva prima.**
+
+⚠️ **`--fanta` stava nel posto sbagliato.** L'accento del Fantacalcio era dichiarato
+in `fantacalcio.css` per «chiaro» e «scuro»: i due temi nuovi avrebbero preso il
+verde dello **scuro** anche essendo chiari — un verde acceso su fondo sabbia, senza
+nessun errore. Ora sta dentro il blocco di ogni tema, e il foglio della sezione lo
+usa e basta.
+
+⚠️ **`login.html` aveva una copia sua dei colori**, con dentro due soli temi e
+`data-theme="dark"` fisso: chi sceglieva Sabbia trovava il login scuro. I colori sono
+ora in `templates/_temi.html`, **un file solo** incluso da tutte e due le pagine, e il
+login applica il tema nel `<head>` — dopo sarebbe arrivato a pagina già dipinta, cioè
+un lampo scuro a ogni apertura.
+
+⚠️ **Il ciano scelto a occhio era illeggibile, e a occhio sembrava a posto.** Bianco
+su `--primary`: **2.43**, sotto il pavimento di 3.0, mentre gli altri tre temi stavano
+fra 3.99 e 6.11. Corretto a 4.44, e il `--primary-dim` è sceso con lui (3.03 → 3.64)
+perché il primary ci va **sopra** come testo. Lo stesso controllo ha trovato che
+l'hover del tema **scuro** sta a 2.95 da sempre: non corretto — è il colore
+principale dell'hub — ma dichiarato, e sta in §3.
+
+`scripts/prova_temi.py` è nuovo e fa due cose: tiene d'accordo i **cinque elenchi** in
+cui un tema vive (i colori, la lista del menu, `TEMI`, `TEMI_CHIARI`, e l'elenco del
+login) e **misura** i contrasti delle 9 coppie che finiscono davvero una sopra
+l'altra. Le misure fuori soglia che restano si dichiarano in `DICHIARATE`, e vengono
+ristampate a ogni esecuzione: abbassare la soglia le avrebbe nascoste tutte.
+
+Verifica: **11 prove su 11**, 9 coppie × 4 temi tutte sopra 3.0, **sweep 28 pagine a 0
+errori**, e i quattro temi guardati in un browser vero su Pokémon, Fantacalcio,
+calcolatori e login. Il resto della suite invariato: 245, 56, 33, 28.
+
 **«Resta collegato su questo dispositivo per 30 giorni» (§4.3)**
 
 La spunta al login dice quello che fa, e quello che fa **non è ricordare la
