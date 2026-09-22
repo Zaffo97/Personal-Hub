@@ -118,6 +118,13 @@ def _semina(db, uid, etichetta):
     for topic, in db.execute("SELECT id FROM python_topics ORDER BY id LIMIT 5"):
         db.execute("INSERT INTO python_progress(user_id,topic_id,done) VALUES(?,?,1)",
                    (uid, topic))
+    # ⚠️ Due sessioni «resta collegato». Non sono contenuto, sono **permessi vivi**:
+    # se passassero all'amministratore o si copiassero su un altro utente, quel
+    # qualcuno si ritroverebbe in mano dei cookie che aprono un account non suo.
+    # Stanno qui per provare che non succede.
+    import extensions as _e
+    for _ in range(2):
+        _e.crea_sessione_ricordata(db, uid, f"prova {etichetta}")
     return {"lega": lid, "team": tid, "build": bid}
 
 
@@ -155,12 +162,20 @@ def prove(dove):
 
     print("\n== 0. l'elenco delle tabelle con un proprietario è quello dello schema ==")
     db = extensions.get_db()
+    # ⚠️ Non si conta «quante sono»: un numero scritto qui invecchia al primo
+    # `CREATE TABLE`, e invecchiando fa fallire la prova per il motivo sbagliato —
+    # è successo il 22/09/2026 con `sessioni_ricordate`. Quello che dev'essere vero
+    # è l'**accordo** fra lo schema e l'elenco, e quello non invecchia.
     trovate = extensions.tabelle_con_user_id(db)
-    esito("lo schema ha sei tabelle con un `user_id`", len(trovate) == 6,
+    esito("ogni tabella con un `user_id` ha la sua regola, e viceversa",
+          set(trovate) == set(extensions.TABELLE_UTENTE),
           ", ".join(trovate))
-    esito("e `TABELLE_UTENTE` le copre tutte",
+    esito("e `tabelle_senza_regola()` non ne nomina nessuna",
           extensions.tabelle_senza_regola(db) == [],
           f"senza regola: {extensions.tabelle_senza_regola(db)}")
+    esito("nessuna figlia non dichiarata",
+          extensions.figlie_senza_regola(db) == [],
+          f"{extensions.figlie_senza_regola(db)}")
     db.close()
 
     print("\n== 1. l'utente si elimina anche con le spunte di Python addosso ==")
@@ -193,6 +208,17 @@ def prove(dove):
                          (lid,)).fetchone()[0] == 3)
         esito("il messaggio a schermo dice quante righe sono passate",
               "5 righe di contenuto sono passate a te" in testo)
+
+        print("\n== 2b. e le sessioni «resta collegato» NON sono passate a nessuno ==")
+        # ⚠️ È una proprietà di sicurezza, non di ordine: una sessione ricordata è un
+        # cookie vivo su un browser. Se `TABELLE_UTENTE` la marcasse `passa`,
+        # eliminare un utente regalerebbe all'amministratore l'accesso dal PC di
+        # quello — e nessun errore lo direbbe.
+        esito("le due sessioni della cavia sono sparite",
+              _quante(db, "sessioni_ricordate", ids["cavia"]) == 0)
+        esito("e non sono finite all'amministratore",
+              _quante(db, "sessioni_ricordate", ids["capo"]) == 0,
+              f"capo={_quante(db, 'sessioni_ricordate', ids['capo'])}")
 
         print("\n== 3. le spunte di Python si cancellano, e lo dice ==")
         esito("le cinque spunte non ci sono più",
@@ -265,6 +291,14 @@ def prove(dove):
         print("\n== 6. le spunte di Python non si copiano, e lo dice ==")
         esito("il destinatario non ha spunte",
               _quante(db, "python_progress", ids["nuovo"]) == 0)
+        # ⚠️ E nemmeno le sessioni: copiarle vorrebbe dire dare a un secondo utente
+        # dei cookie che aprono l'account del primo. È lo stesso guasto della
+        # cancellazione, scritto con un altro pulsante.
+        esito("e nemmeno le sessioni «resta collegato»",
+              _quante(db, "sessioni_ricordate", ids["nuovo"]) == 0,
+              f"nuovo={_quante(db, 'sessioni_ricordate', ids['nuovo'])}")
+        esito("mentre il sorgente ha ancora le sue due",
+              _quante(db, "sessioni_ricordate", ids["terzo"]) == 2)
         esito("il sorgente le ha ancora tutte e cinque",
               _quante(db, "python_progress", ids["terzo"]) == 5)
         esito("e il messaggio dichiara di averle lasciate fuori",

@@ -360,6 +360,25 @@ def init_db():
         ordine INTEGER NOT NULL,
         ruolo TEXT,
         PRIMARY KEY(league_id, player_id));
+    -- ── «Ricorda credenziali» (22/09/2026) ────────────────────────────────
+    -- ⚠️ **Qui dentro non c'e' nessuna password, e non ci sara' mai.** Quello che
+    -- si ricorda e' una **sessione**: un numero casuale da 32 byte che vive nel
+    -- cookie del browser, e di cui qui resta solo l'**impronta** — cosi' chi
+    -- leggesse questa tabella non potrebbe farsi passare per nessuno, esattamente
+    -- come per `users.password`.
+    -- ⚠️ Un cookie soltanto **firmato** non sarebbe bastato: una firma si verifica
+    -- ma non si **revoca**, e la richiesta di Davide dice «con scadenza e con la
+    -- possibilita' di revocarla». Una riga in tabella si cancella; una firma no.
+    -- Per questo la riga c'e', e per questo `scade_il` e' scritta dentro e non
+    -- lasciata al solo `max_age` del cookie, che vive sul PC di chi naviga.
+    CREATE TABLE IF NOT EXISTS sessioni_ricordate(
+        id INTEGER PRIMARY KEY,
+        user_id INTEGER REFERENCES users(id),
+        impronta TEXT NOT NULL UNIQUE,
+        creata_il TEXT NOT NULL,
+        scade_il TEXT NOT NULL,
+        usata_il TEXT,
+        da TEXT);
     """)
     # L'admin di un DB nuovo nasce gia' con lo schema forte. Sui DB esistenti
     # questa INSERT non fa nulla (OR IGNORE) e l'hash vecchio viene riscritto al
@@ -784,6 +803,14 @@ TABELLE_UTENTE = {
     "pc_builds": "passa",
     "fanta_leagues": "passa",
     "python_progress": "cancella",
+    # ⚠️ `cancella` qui non è ordine, è **sicurezza**, e la rete si è fatta trovare
+    # subito: questa tabella è nata il 22/09/2026 e `tabelle_senza_regola()` l'ha
+    # messa davanti prima che servisse ricordarsene. Se fosse `passa`, eliminare un
+    # utente regalerebbe all'amministratore le sue sessioni ricordate — cioè dei
+    # cookie vivi su browser altrui — e il pulsante «copia» le duplicherebbe su un
+    # secondo utente, che è la stessa cosa scritta peggio. Le righe `cancella` non
+    # si copiano e non passano: spariscono, ed è l'unica risposta giusta.
+    "sessioni_ricordate": "cancella",
 }
 
 
@@ -926,6 +953,77 @@ def conteggi_utente(db):
                             f"WHERE user_id IS NOT NULL GROUP BY user_id"):
             fuori.setdefault(r["user_id"], {})[tabella] = r["quante"]
     return fuori
+
+
+# --- «Ricorda credenziali» --------------------------------------------------
+# ⚠️ Quello che si ricorda è **una sessione, non la password**: la password non esce
+# mai da `users`, e qui non entra mai. Il cookie porta un numero casuale da 32 byte;
+# nel DB ne resta solo l'impronta sha256, che basta a riconoscerlo e non basta a
+# rifarlo. Un token casuale da 256 bit non ha bisogno di scrypt — scrypt serve a
+# rendere cara la forza bruta su un segreto **indovinabile**, e questo non lo è.
+COOKIE_RICORDA = "hub_ricorda"
+GIORNI_RICORDA = 30
+
+
+def _ora():
+    import datetime
+    return datetime.datetime.now().replace(microsecond=0).isoformat(" ")
+
+
+def _impronta(token):
+    return hashlib.sha256(token.encode("utf-8")).hexdigest()
+
+
+def crea_sessione_ricordata(db, uid, da=""):
+    """Scrive la riga e torna il **token in chiaro**, che esiste solo qui e nel cookie."""
+    import datetime, secrets
+    token = secrets.token_urlsafe(32)
+    scade = (datetime.datetime.now() + datetime.timedelta(days=GIORNI_RICORDA))
+    db.execute("INSERT INTO sessioni_ricordate(user_id, impronta, creata_il, "
+               "scade_il, da) VALUES(?,?,?,?,?)",
+               (uid, _impronta(token), _ora(),
+                scade.replace(microsecond=0).isoformat(" "), (da or "")[:160]))
+    return token
+
+
+def utente_da_ricordare(db, token):
+    """L'utente a cui appartiene il token, o `None`. Le scadute le butta.
+
+    ⚠️ **Il token non si ruota a ogni uso**, ed è una scelta: ruotarlo è la difesa
+    da un cookie rubato, ma una pagina che parte con tre `fetch()` in parallelo ne
+    manderebbe tre copie insieme, la prima vincerebbe e le altre due si
+    troverebbero davanti un token appena cancellato — cioè si verrebbe buttati
+    fuori a caso, e quel baco non lo riprodurrebbe nessuno. Le difese qui sono la
+    **scadenza** (30 giorni, scritta nella riga e non solo nel cookie) e la
+    **revoca**, che è esplicita e non dipende dalla fortuna.
+    """
+    if not token:
+        return None
+    db.execute("DELETE FROM sessioni_ricordate WHERE scade_il < ?", (_ora(),))
+    r = db.execute("SELECT s.id, u.id AS uid, u.username, u.display_name, u.role "
+                   "FROM sessioni_ricordate s JOIN users u ON u.id = s.user_id "
+                   "WHERE s.impronta = ?", (_impronta(token),)).fetchone()
+    if not r:
+        return None
+    db.execute("UPDATE sessioni_ricordate SET usata_il=? WHERE id=?", (_ora(), r["id"]))
+    return r
+
+
+def dimentica_sessione(db, token):
+    """Revoca **questo** dispositivo: è quello che fa il logout."""
+    if token:
+        db.execute("DELETE FROM sessioni_ricordate WHERE impronta=?", (_impronta(token),))
+
+
+def dimentica_tutte(db, uid):
+    """Revoca **tutti** i dispositivi di un utente. Torna quante righe erano.
+
+    ⚠️ La chiama anche il cambio password, e non è un di più: se la password è stata
+    cambiata perché qualcuno la sapeva, lasciare vivi i cookie di quel qualcuno
+    vorrebbe dire non aver cambiato niente.
+    """
+    cur = db.execute("DELETE FROM sessioni_ricordate WHERE user_id=?", (uid,))
+    return cur.rowcount
 
 
 def _i(v, d=0):

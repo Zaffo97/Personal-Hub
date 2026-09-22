@@ -61,6 +61,38 @@ def create_app():
     # Pokémon ne ha oltre trenta fra pagine e API — e bastava dimenticarne una per
     # lasciare aperta una porta senza che nulla lo segnalasse. Così una route nuova è
     # protetta dal giorno in cui viene scritta, senza che nessuno se ne debba ricordare.
+    # ⚠️ Questo `before_request` va **prima** di quello che controlla le sezioni, e
+    # l'ordine non è estetico: Flask li esegue nell'ordine in cui sono registrati, e
+    # il controllo delle sezioni esce subito quando in sessione non c'è nessuno
+    # («ci pensa login_required»). Se la sessione la rimettessimo in piedi dopo,
+    # l'utente ricordato arriverebbe a quel controllo da sconosciuto per tutta la
+    # prima richiesta.
+    @app.before_request
+    def _rimetti_la_sessione_ricordata():
+        from flask import request, session
+        from extensions import get_db, COOKIE_RICORDA, utente_da_ricordare
+        if "username" in session:
+            return None
+        token = request.cookies.get(COOKIE_RICORDA)
+        if not token:
+            return None
+        db = get_db()
+        try:
+            r = utente_da_ricordare(db, token)
+            db.commit()
+        finally:
+            db.close()
+        if r:
+            # ⚠️ Il cookie **non si riscrive qui**. Riscriverlo vorrebbe dire
+            # toccare la risposta di ogni richiesta, comprese le `fetch()` delle
+            # API, e allungare la scadenza a ogni clic: «30 giorni» diventerebbe
+            # «per sempre, finché passi di qua». Trenta giorni dal login, e basta.
+            session["username"] = r["username"]
+            session["display_name"] = r["display_name"]
+            session["role"] = r["role"]
+            session["user_id"] = r["uid"]
+        return None
+
     @app.before_request
     def _controlla_sezione():
         from flask import request, session, redirect, url_for, flash

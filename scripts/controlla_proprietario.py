@@ -59,8 +59,13 @@ SORGENTI = [os.path.join(BASE, "blueprints"), BASE]
 # questo script diceva «0 scoperte» senza averle guardate. È la terza volta che
 # succede (le due del Fantacalcio il 21/09), ed è la ragione per cui una tabella
 # nuova si aggiunge qui **prima** di scrivere la query che la usa.
+# ⚠️ `sessioni_ricordate` entra il 22/09/2026 **insieme alla tabella**, prima ancora
+# che una sua query esistesse: è la regola scritta qui sopra applicata per la prima
+# volta al momento giusto invece che un mese dopo. E qui vale doppio — una query
+# scoperta su questa tabella non mostrerebbe una riga di troppo in un elenco, darebbe
+# a qualcuno la sessione di qualcun altro.
 RADICI = ("games", "teams", "arduino_projects", "pc_builds", "fanta_leagues",
-          "python_progress")
+          "python_progress", "sessioni_ricordate")
 FIGLIE = ("team_members", "pc_components", "fanta_roster", "fanta_formazione")
 # `python_topics` è l'elenco fisso dei 53 argomenti, condiviso di suo: quello che è
 # personale è la spunta, che dal blocco Python vivrà in `python_progress`.
@@ -445,6 +450,30 @@ ECCEZIONI = {
         "`TABELLE_UTENTE` tengono **stato personale**, non contenuto (oggi solo "
         "`python_progress`), e intestarlo a un altro vorrebbe dire scrivere che "
         "ha fatto cose che non ha fatto. Quante righe erano si dice a schermo",
+    # ── «Resta collegato» (22/09/2026, §4.3) ────────────────────────────────
+    # Tre query che non nominano `user_id`, e non è una svista: su questa tabella il
+    # permesso **non** è il proprietario, è il **token**. Chi presenta l'impronta
+    # giusta è per definizione il padrone di quella riga — è la stessa logica per cui
+    # `/login` cerca per username e non per «le mie righe».
+    # ⚠️ Nota per chi legge: la `SELECT … JOIN users` qui accanto risulta «filtrata»
+    # perché il testo contiene `s.user_id` nella JOIN, ma a filtrarla è
+    # **l'impronta**, non il proprietario. È corretta lo stesso; il conto la mette
+    # nella casella giusta per la ragione sbagliata, e questa riga serve a non far
+    # credere il contrario a chi ci torna.
+    ("extensions.py", "utente_da_ricordare",
+     "DELETE FROM sessioni_ricordate WHERE scade_il < ?"):
+        "butta le sessioni **scadute di tutti**, ed è giusto che le veda tutte: una "
+        "riga scaduta non è più di nessuno, e lasciarla lì vorrebbe dire tenere in "
+        "giro un permesso morto in attesa che qualcuno se ne ricordi",
+    ("extensions.py", "utente_da_ricordare",
+     "UPDATE sessioni_ricordate SET usata_il=? WHERE id=?"):
+        "l'id viene dalla riga appena trovata con l'impronta del token, due righe "
+        "sopra: è la riga di questa richiesta e di nessun'altra",
+    ("extensions.py", "dimentica_sessione",
+     "DELETE FROM sessioni_ricordate WHERE impronta=?"):
+        "revoca **il dispositivo che sta uscendo**, e lo individua col token che ha "
+        "in mano: l'impronta è il segreto, quindi solo chi ce l'ha può cancellarla. "
+        "Quella per utente è `dimentica_tutte()`, che il `user_id` lo nomina",
     # ── La copia fra utenti (22/09/2026, §4.3) ──────────────────────────────
     # Quattro query a tabella calcolata, tutte e quattro del motore che duplica i
     # dati di un utente su un altro. Girano sulle stesse `TABELLE_UTENTE` del

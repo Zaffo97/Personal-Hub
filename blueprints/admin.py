@@ -16,7 +16,7 @@ from flask import (Blueprint, render_template, request, redirect, url_for, flash
 from data import SEZIONI, SEZIONI_SLUG
 from extensions import (get_db, login_required, NESSUNA_SEZIONE, hash_password,
                         TABELLE_UTENTE, tabelle_senza_regola, figlie_senza_regola,
-                        copia_dati_utente, conteggi_utente)
+                        copia_dati_utente, conteggi_utente, dimentica_tutte)
 
 bp = Blueprint("admin", __name__, url_prefix="/admin")
 
@@ -87,6 +87,9 @@ def utenti():
     righe = db.execute("SELECT id, username, display_name, role, sections"
                        " FROM users ORDER BY username COLLATE NOCASE").fetchall()
     conteggi = conteggi_utente(db)
+    ricordati = {r["user_id"]: r["quanti"] for r in db.execute(
+        "SELECT user_id, COUNT(*) AS quanti FROM sessioni_ricordate "
+        "GROUP BY user_id")}
     db.close()
     utenti = []
     for r in righe:
@@ -111,7 +114,8 @@ def utenti():
         utenti.append({"id": r["id"], "username": r["username"],
                        "display_name": r["display_name"], "role": r["role"],
                        "permesse": permesse, "nota": nota,
-                       "roba": roba, "quante": sum(suoi.values())})
+                       "roba": roba, "quante": sum(suoi.values()),
+                       "ricordati": ricordati.get(r["id"], 0)})
     return render_template("admin_utenti.html", utenti=utenti, sezioni=SEZIONI,
                            io_sono=session.get("username"))
 
@@ -184,8 +188,37 @@ def utente_password(uid):
         db.close(); flash("Utente non trovato.", "error")
         return redirect(url_for("admin.utenti"))
     db.execute("UPDATE users SET password=? WHERE id=?", (_hash(password), uid))
+    # ⚠️ E le sessioni ricordate cadono con lei. Non è un di più: se la password è
+    # stata cambiata **perché** qualcuno la sapeva, lasciargli vivo il cookie di
+    # «resta collegato» vorrebbe dire non aver cambiato niente.
+    cadute = dimentica_tutte(db, uid)
     db.commit(); db.close()
-    flash(f"Password di «{r['username']}» cambiata.", "success")
+    messaggio = f"Password di «{r['username']}» cambiata."
+    if cadute:
+        messaggio += (f" {cadute} dispositiv{'o' if cadute == 1 else 'i'} "
+                      f"«resta collegato» " +
+                      ("è stato disconnesso" if cadute == 1 else "sono stati disconnessi")
+                      + ": la password nuova vale da subito ovunque.")
+    flash(messaggio, "success")
+    return redirect(url_for("admin.utenti"))
+
+
+@bp.route("/utenti/<int:uid>/dimentica", methods=["POST"])
+def utente_dimentica(uid):
+    """Revoca tutti i «resta collegato» di un utente, senza toccargli la password."""
+    db = get_db()
+    r = db.execute("SELECT username FROM users WHERE id=?", (uid,)).fetchone()
+    if not r:
+        db.close(); flash("Utente non trovato.", "error")
+        return redirect(url_for("admin.utenti"))
+    cadute = dimentica_tutte(db, uid)
+    db.commit(); db.close()
+    if cadute:
+        flash(f"«{r['username']}»: {cadute} dispositiv"
+              f"{'o disconnesso' if cadute == 1 else 'i disconnessi'}. "
+              "La password resta quella di prima.", "success")
+    else:
+        flash(f"«{r['username']}» non ha nessun dispositivo da dimenticare.", "success")
     return redirect(url_for("admin.utenti"))
 
 

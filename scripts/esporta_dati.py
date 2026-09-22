@@ -99,7 +99,20 @@ TABELLE = [
 TABELLE_SOLO_COMPLETO = ["regulations"]
 
 # Escluse **sempre**, anche dal completo, e ognuna con la sua ragione (vedi il docstring).
-FUORI_DAL_BACKUP = {"game_releases": "cache IGDB, si rifà col pulsante"}
+FUORI_DAL_BACKUP = {
+    "game_releases": "cache IGDB, si rifà col pulsante",
+    # ⚠️ Dal 22/09/2026, e per due ragioni che tirano nella stessa direzione.
+    # **Non è un dato da salvare**: sono i dispositivi dove sei rimasto collegato, e
+    # su un PC nuovo — che è il caso d'uso di tutto questo — non esiste nessun
+    # dispositivo da ricordare: si rientra con la password, ed è giusto così.
+    # **E non è un dato da scrivere in un file**: le impronte sono segreti, della
+    # stessa famiglia degli hash delle password. Un backup non deve portarsi in giro
+    # dei permessi vivi. Sta qui dentro, invece che essere semplicemente assente,
+    # perché il completo **dichiara** cosa lascia fuori: una tabella che non compare
+    # da nessuna parte è indistinguibile da una dimenticata.
+    "sessioni_ricordate": "sessioni «resta collegato»: permessi vivi, non dati — "
+                          "su un PC nuovo si rientra con la password",
+}
 
 
 def dentro_a_un_repo(percorso):

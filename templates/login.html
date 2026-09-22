@@ -51,6 +51,14 @@ input:focus{outline:none;border-color:var(--primary);
     <input name="username" type="text" autocomplete="username" autofocus required placeholder="admin">
     <label>Password</label>
     <input name="password" type="password" autocomplete="current-password" required placeholder="&#8226;&#8226;&#8226;&#8226;&#8226;&#8226;&#8226;&#8226;">
+    {# ⚠️ Il testo dice cosa succede davvero: non si ricorda la password, si resta
+       dentro. Scriverci «ricorda la password» sarebbe comodo e falso. #}
+    <label style="display:flex;align-items:center;gap:.45rem;margin:.9rem 0 .2rem;
+                  cursor:pointer;text-transform:none">
+      <input type="checkbox" name="ricorda" value="1"
+             style="width:auto;accent-color:var(--primary)">
+      Resta collegato su questo dispositivo per 30 giorni
+    </label>
     <button class="btn" type="submit">Entra</button>
   </form>
   {% if error %}<div class="err">&#9888;&#65039; {{ error }}</div>{% endif %}

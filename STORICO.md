@@ -20,6 +20,50 @@ pagina ed esegue `new Function()` su ogni blocco `<script>` **e** su ogni handle
 
 ## 22/09/2026
 
+**«Resta collegato su questo dispositivo per 30 giorni» (§4.3)**
+
+La spunta al login dice quello che fa, e quello che fa **non è ricordare la
+password**: la password non esce mai da `users`. Nasce una riga in
+`sessioni_ricordate` e nel browser va un numero casuale da 32 byte, di cui nel DB
+resta solo l'**impronta** sha256 — chi leggesse la tabella non potrebbe farsi passare
+per nessuno. Un token da 256 bit non ha bisogno di scrypt: scrypt rende cara la forza
+bruta su un segreto indovinabile, e questo non lo è.
+
+⚠️ Dove il backlog diceva «un cookie firmato» c'è invece una **riga in tabella**, ed è
+la stessa frase a chiederlo: «con scadenza e con la possibilità di revocarla». Una
+firma si verifica, non si revoca. Revoche: il **logout** toglie questo dispositivo
+(senza, un logout rimetterebbe dentro al primo F5), il **cambio password** li toglie
+tutti — se la password è stata cambiata perché qualcuno la sapeva, lasciargli il
+cookie vivo vuol dire non aver cambiato niente — e in Utenti c'è **«Dimentica i
+dispositivi»** per revocare senza toccare la password.
+
+⚠️ Il token **non si ruota** a ogni uso: ruotarlo difende da un cookie rubato, ma una
+pagina con tre `fetch()` in parallelo ne manderebbe tre copie, la prima vincerebbe e
+le altre due troverebbero un token appena cancellato — cioè si verrebbe buttati fuori
+a caso, da un baco che non riproduce nessuno. Le difese sono la scadenza (scritta
+nella **riga**, non solo nel `max_age` del cookie) e la revoca.
+
+⚠️ E `secure` segue `request.is_secure` invece di essere fisso: in casa l'hub è in
+http, e un cookie `secure` lì non verrebbe mandato mai — la spunta sembrerebbe rotta
+senza dare nessun errore. `httponly` e `samesite=Lax` valgono sempre.
+
+**La rete costruita stamattina si è fatta trovare da sola**, ed è la prova che
+serviva: la tabella nuova ha un `user_id`, quindi `tabelle_senza_regola()` l'ha messa
+davanti prima che servisse ricordarsene. È `cancella`, e qui non è ordine ma
+**sicurezza** — se fosse `passa`, eliminare un utente regalerebbe all'amministratore
+dei cookie vivi su browser altrui, e il pulsante «copia» li duplicherebbe su un
+secondo utente. Allo stesso modo `controlla_proprietario.py` ha trovato le sue tre
+query non filtrate per proprietario (giuste: lì il permesso è il **token**, non
+l'utente), ed è in `FUORI_DAL_BACKUP` dell'export, dichiarata e non semplicemente
+assente.
+
+Verifica: **33 prove su 33** (`scripts/prova_ricorda.py`, nuovo — fra cui quella che
+legge il cookie e controlla che dentro non ci siano né la password né lo username),
+**56 su 56** sul travaso e la copia (erano 51: le 5 nuove provano che le sessioni non
+passano a nessuno e non si copiano), `controlla_proprietario.py` **0 scoperte e 0 a
+tabella calcolata** su **174** query, **sweep 28 pagine a 0 errori**, import 28 su 28,
+export completo 21 su 21.
+
 **Il pulsante «copia i dati in un altro utente» (§4.3)**
 
 Chiesto da Davide «per il futuro» il 22/09, fatto lo stesso giorno perché le

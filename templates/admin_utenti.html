@@ -54,7 +54,8 @@
         {% if u.role == 'admin' %}<span class="badge badge-primary">amministratore</span>{% endif %}
         {% if u.username == io_sono %}<span class="badge badge-neutral">sei tu</span>{% endif %}
       </div>
-      <span class="text-muted text-xs">Sezioni: {{ u.nota }}</span>
+      <span class="text-muted text-xs">Sezioni: {{ u.nota }}{% if u.ricordati %} &middot;
+        {{ u.ricordati }} dispositiv{{ 'o' if u.ricordati == 1 else 'i' }} collegat{{ 'o' if u.ricordati == 1 else 'i' }}{% endif %}</span>
     </div>
 
     <form method="POST" action="/admin/utenti/{{ u.id }}/permessi" class="mb-2">
@@ -83,6 +84,15 @@
                required minlength="8" placeholder="nuova password">
         <button class="btn btn-secondary btn-sm" type="submit">Cambia password</button>
       </form>
+      {% if u.ricordati %}
+      {# Revoca senza toccare la password: serve quando il dispositivo è perso o
+         prestato, non quando la password è bruciata — in quel caso basta cambiarla,
+         che li fa cadere da sé. #}
+      <form method="POST" action="/admin/utenti/{{ u.id }}/dimentica"
+            onsubmit='return confirm({{ ("Disconnettere i " ~ u.ricordati ~ " dispositivi dove " ~ u.username ~ " è rimasto collegato? La password non cambia.")|tojson }})'>
+        <button class="btn btn-secondary btn-sm" type="submit">&#128274; Dimentica i dispositivi</button>
+      </form>
+      {% endif %}
       {% if u.quante and utenti|length > 1 %}
       {# ⚠️ La conferma si costruisce con `|tojson`, non con `|e` dentro apici
          singoli: è la trappola del 22/09/2026 su `N'Dicka` — `|e` rende l'apostrofo
