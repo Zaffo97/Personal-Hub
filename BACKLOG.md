@@ -924,9 +924,8 @@ sezione è finito:**
   che giri in sottofondo, quindi nessun avviso arriva il venerdì sera da solo —
   per quello servirebbe un processo schedulato, ed è un lavoro a sé.
 
-  ⬜ Quello che resta aperto qui: la formazione **non sa se una lega ne ha due**
-  (due leghe, due formazioni: funziona, ma non c'è un modo per copiarne una
-  nell'altra).
+  ❌ **Copiare una formazione nell'altra lega: non serve** — deciso da Davide il
+  22/09/2026. Le due leghe restano indipendenti, com'è adesso.
 
   ✅ **Chiuso il 22/09/2026, con la decisione di Davide: chi esce dalla rosa esce
   anche dal campo.** `fanta_roster` e `fanta_formazione` sono due tabelle e il
@@ -943,9 +942,16 @@ sezione è finito:**
   `fantacalcio_it.probabili()`, `scripts/importa_probabili.py`, due tabelle per
   giornata e la pagina `/fantacalcio/probabili`; la pagina della lega dice, per ogni
   giocatore in rosa, se è titolare, in panchina, **non convocato** o se la sua
-  squadra **non gioca**. ⬜ Quello che resta qui è una scelta di Davide: oggi
-  l'archivio tiene **tutte** le giornate importate e nessuno le cancella — finché
-  sono una manciata va bene, ma non c'è una potatura
+  squadra **non gioca**. ❌ **L'archivio non si pota** — misurato e
+  deciso il 22/09/2026. `fanta_probabili` ha chiave `(giornata, player_id)`, quindi
+  una giornata nuova **si aggiunge** e la stessa giornata riletta si sovrascrive:
+  nessuno cancella mai niente. Il conto: oggi c'è **una** giornata (la 6, 483
+  convocati e 20 squadre), a fine stagione saranno 38 giornate, cioè **~18 000
+  righe, meno di 2 MB** su un DB che ne pesa 2,7 in tutto — e ogni query filtra per
+  giornata, quindi non rallenta niente. ⚠️ E c'è un motivo per **non** potare: le
+  probabili archiviate sono metà di ciò che servirebbe per rispondere a «il
+  consiglio ci aveva preso?», che è l'altra voce ancora aperta. La fonte pubblica
+  solo la giornata corrente, quindi una riga cancellata non torna più
 - ✅ **il consiglio — fatto il 21/09/2026**, e la parte lunga è stata **leggere**,
   non scrivere. `/fantacalcio/lega/<id>/consiglio`, più «applica al campo».
 
@@ -1030,7 +1036,10 @@ sezione è finito:**
     tenere cosa aveva detto e cosa è poi successo
   - `bonus_imbattibilita` e `malus_autogol` restano **colonne che nessuno legge**,
     dichiaratamente: manca la statistica
-- ⬜ **il secondo sistema**: il listone porta anche i ruoli **Mantra** e sono già nel
+- ❌ **il secondo sistema: non serve** — deciso da Davide il 22/09/2026, le sue due
+  leghe sono Classic. La riga qui sotto resta perché il **dato** c'è comunque, e
+  chi un giorno volesse leggerlo deve sapere che non va importato, va solo usato.
+- ⬜ ~~**il secondo sistema**~~: il listone porta anche i ruoli **Mantra** e sono già nel
   DB, ma oggi non li legge nessuno. Il giorno che una lega passasse a Mantra il dato
   c'è
 - ⬜ **la licenza**: si legge un sito pubblico per uso personale, come già si fa con
