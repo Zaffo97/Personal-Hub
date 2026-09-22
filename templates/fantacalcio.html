@@ -198,15 +198,28 @@
                anche nel JS vorrebbe dire due definizioni che divergono al primo
                cambio, e la modale si apre comunque solo da JS. #}
             <div id="soglie"></div>
-            <button type="button" class="btn btn-sm mt-1" id="piuSoglia"
-                    onclick="aggiungiSoglia()">+ Aggiungi una fascia</button>
+            <div class="flex gap-1 mt-1 flex-wrap">
+              <button type="button" class="btn btn-sm" id="piuSoglia"
+                      onclick="aggiungiSoglia()">+ Aggiungi una fascia</button>
+              {# Le due tabelle che si usano davvero, per non doverle ribattere a
+                 mano. Riempiono le righe, non salvano: il salvataggio resta il
+                 pulsante del form, e da qui si possono ancora correggere. #}
+              <button type="button" class="btn btn-sm btn-secondary"
+                      onclick="scriviSoglie(SOGLIE_STANDARD)">Tre fasce</button>
+              <button type="button" class="btn btn-sm btn-secondary"
+                      onclick="scriviSoglie(SOGLIE_QUARTI)">Sei fasce, a quarti</button>
+            </div>
             <div class="text-xs text-muted mt-1">
               Si parte dai valori storici di FantaGazzetta: la piattaforma lascia
               cambiare i numeri e <strong>quante fasce</strong> ci sono, non la
               struttura. Sotto la soglia più bassa non c'è bonus. Le fasce si
               riordinano dalla più alta quando salvi, una riga lasciata vuota non
               viene salvata, e <strong>l'ultima non si toglie</strong>: per non avere
-              nessun bonus si spegne la casella qui sopra.
+              nessun bonus si spegne la casella qui sopra. Le soglie si scrivono
+              <strong>«da questo valore in su»</strong>, due decimali: la fascia
+              «6,26-6,50 &rarr; +3» si scrive <code>6.26</code>, e una media di
+              <strong>6,25 finisce nella fascia sotto</strong>, come sulle
+              piattaforme.
             </div>
           </div>
         </div>
@@ -268,6 +281,10 @@ const VALORI_UFFICIALI = {{ valore_ufficiale|tojson }};
    zero, cioe' con l'autogol che non toglie niente. #}
 const VALORI_PARTENZA = {{ valore_partenza|tojson }};
 const SOGLIE_STANDARD = {{ soglie_standard|tojson }};
+{# La tabella a quarti: sei fasce invece di tre. ⚠️ I suoi numeri (6.01, 6.26, …)
+   sono la scrittura «a soglie» degli intervalli che le piattaforme mostrano chiusi
+   (6,01-6,25): con due decimali le due letture danno la stessa fascia. #}
+const SOGLIE_QUARTI = {{ soglie_quarti|tojson }};
 {# Le soglie di ogni lega, gia' lette e messe in ordine dal server: rifare qui il
    parsing della riga «7:6, 6.5:3» sarebbe la seconda copia di una regola che sta
    in `data.py`, e le due copie divergono sempre. #}
@@ -336,7 +353,11 @@ function rigaSoglia(media, punti){
   const m = document.createElement('input');
   m.className = 'form-control soglia-media';
   m.name = 'soglia_media'; m.type = 'number';
-  m.step = '0.1'; m.min = '0'; m.max = '10';
+  // ⚠️ `step` a **0.01**, non 0.1: i voti si danno a mezzi punti e le medie che
+  // escono hanno due decimali, quindi una soglia a 6,25 o a 6,26 e' normale — ed
+  // e' proprio quella della tabella a quarti. Con lo step a 0.1 il browser
+  // rifiutava 6,25 **senza dire perche'**, e il server invece l'avrebbe salvata.
+  m.step = '0.01'; m.min = '0'; m.max = '10';
   m.style.width = '5.5rem';
   m.value = (media === null || media === undefined) ? '' : media;
   const freccia = document.createElement('span');

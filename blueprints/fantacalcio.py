@@ -23,7 +23,8 @@ from extensions import (get_db, login_required, _i, ambito_utente, solo_mie,
                         utente_id, e_admin)
 from data import (RUOLI_FANTA, ORDINE_RUOLI_FANTA, nome_ruolo, scomponi_modulo,
                   controlla_schierati, quanti_guai,
-                  MOD_DIFESA_SOGLIE, soglie_mod_difesa, scrivi_soglie,
+                  MOD_DIFESA_SOGLIE, MOD_DIFESA_SOGLIE_QUARTI,
+                  fasce_mod_difesa, soglie_mod_difesa, scrivi_soglie,
                   modificatore_difesa, controlla_formazione,
                   leggi_rosa_incollata, valuta_rosa, consiglia_moduli,
                   rosa_per_merito, etichetta_fascia, FASCE_TITOLARITA,
@@ -383,6 +384,7 @@ def fantacalcio():
                            valore_ufficiale=VALORE_UFFICIALE,
                            valore_partenza=VALORE_PARTENZA,
                            soglie_standard=MOD_DIFESA_SOGLIE,
+                           soglie_quarti=MOD_DIFESA_SOGLIE_QUARTI,
                            soglie_lega={l["id"]: soglie_mod_difesa(
                                l.get("mod_difesa_soglie")) for l in leghe},
                            eta_cache=eta, guai_lega=guai_lega,
@@ -573,6 +575,8 @@ def lega(lid):
                            regole=REGOLE, ufficiali=UFFICIALI,
                            valore_ufficiale=VALORE_UFFICIALE,
                            soglie=soglie_mod_difesa(riga.get("mod_difesa_soglie")),
+                           fasce=fasce_mod_difesa(
+                               soglie_mod_difesa(riga.get("mod_difesa_soglie"))),
                            soglie_standard=MOD_DIFESA_SOGLIE,
                            esempi_difesa=[(m, modificatore_difesa(
                                m, soglie_mod_difesa(riga.get("mod_difesa_soglie"))))

@@ -267,6 +267,49 @@ def quanti_guai(allerta):
 # non la legge. Una lega che usa altri numeri li scrive nel suo regolamento.
 MOD_DIFESA_SOGLIE = [(7.0, 6.0), (6.5, 3.0), (6.0, 1.0)]
 
+# La seconda tabella che si usa davvero, chiesta da Davide il 22/09/2026: quella a
+# **quarti di voto**, sei fasce invece di tre.
+#
+# ⚠️ **Da dove viene, e cosa non dice nessuno.** Il regolamento pubblico di
+# fantacalcio.it (`/regolamenti/leghe-private`, §10.1, riletto il 22/09/2026) **non
+# pubblica nessun valore**: dice che la piattaforma «vi propone la versione più
+# diffusa per ogni reparto di gioco con possibilità di personalizzare l'output di
+# bonus/malus, ma non la struttura logica», e la tabella vera sta dentro il pannello
+# della lega, che vuole un account. I numeri qui sotto vengono quindi da
+# **fantacalcio-online.com** (guida al modificatore di difesa), la stessa fonte
+# secondaria da cui il progetto ha preso le fasce di titolarità il 21/09: 6,00 → +1,
+# 6,01-6,25 → +2, 6,26-6,50 → +3, 6,51-6,75 → +4, 6,76-7,00 → +5, 7,01+ → +6.
+#
+# ⚠️ **La traduzione da «fasce chiuse» a «soglie» è esatta, non approssimata.** La
+# fonte scrive gli intervalli con l'estremo alto incluso (`6,26-6,50`), qui le
+# soglie sono «da X in su»: `6.26` come soglia produce la stessa identica fascia,
+# perché i voti hanno due decimali e fra 6,25 e 6,26 non c'è niente. Una media di
+# **6,25 prende +2** con tutte e due le letture — è il caso che Davide ha citato.
+MOD_DIFESA_SOGLIE_QUARTI = [(7.01, 6.0), (6.76, 5.0), (6.51, 4.0),
+                            (6.26, 3.0), (6.01, 2.0), (6.0, 1.0)]
+
+
+def fasce_mod_difesa(soglie=None):
+    """Le soglie lette **come intervalli**: `[{"da", "a", "punti"}, …]`.
+
+    `a` è `None` sulla fascia più alta, che non ha un tetto. Serve solo a
+    **mostrarle**: «da 6,26 a 6,50 → +3» è come le scrivono le piattaforme e come
+    le ha scritte Davide chiedendole, mentre «da 6,26 → +3» costringe a leggere la
+    riga dopo per sapere dove finisce. Il conto resta quello di
+    `modificatore_difesa()`, che confronta con «maggiore o uguale».
+
+    ⚠️ Il tetto è la soglia di sopra **meno un centesimo**, e i due decimali non
+    sono una scelta estetica: i voti si danno a mezzi punti e le medie che escono
+    hanno due decimali, quindi fra 6,25 e 6,26 non esiste nessuna media possibile.
+    """
+    ordinate = sorted(soglie or MOD_DIFESA_SOGLIE, key=lambda x: x[0], reverse=True)
+    fuori = []
+    for n, (media, punti) in enumerate(ordinate):
+        sopra = ordinate[n - 1][0] if n else None
+        fuori.append({"da": media, "punti": punti,
+                      "a": None if sopra is None else round(sopra - 0.01, 2)})
+    return fuori
+
 
 _COPPIA = re.compile(r"(\d+(?:[.,]\d+)?)\s*:\s*(-?\d+(?:[.,]\d+)?)")
 

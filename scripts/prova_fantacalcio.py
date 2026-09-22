@@ -448,6 +448,63 @@ def prove(dove):
           and modificatore_difesa(6.4, su_misura) == 2.0
           and modificatore_difesa(5.0, su_misura) == 0.0)
 
+    # --- 7quater. i quarti di voto ------------------------------------------
+    # Chiesti da Davide il 22/09/2026: «voglio che vengano gestiti i casi 0.25, che
+    # è come li propone di default FantaGazzetta». ⚠️ Il regolamento pubblico non
+    # pubblica nessun valore (§10.1: la piattaforma «propone la versione più
+    # diffusa», e la tabella sta dietro il login), quindi i numeri vengono da
+    # fantacalcio-online.com — la stessa fonte secondaria delle fasce di titolarità.
+    print("\n== 7d. la tabella a quarti di voto ==")
+    from data import MOD_DIFESA_SOGLIE_QUARTI, fasce_mod_difesa
+    esito("la tabella a quarti ha sei fasce",
+          len(MOD_DIFESA_SOGLIE_QUARTI) == 6, str(MOD_DIFESA_SOGLIE_QUARTI))
+    # I numeri della fonte, uno per uno: 6,00 → +1; 6,01-6,25 → +2; 6,26-6,50 → +3;
+    # 6,51-6,75 → +4; 6,76-7,00 → +5; 7,01+ → +6.
+    q = MOD_DIFESA_SOGLIE_QUARTI
+    esito("e ogni fascia della fonte torna al punto giusto",
+          [modificatore_difesa(m, q) for m in
+           (5.99, 6.0, 6.25, 6.26, 6.5, 6.51, 6.75, 6.76, 7.0, 7.01, 8.0)]
+          == [0, 1, 2, 3, 3, 4, 4, 5, 5, 6, 6],
+          str([modificatore_difesa(m, q) for m in
+               (5.99, 6.0, 6.25, 6.26, 6.5, 6.51, 6.75, 6.76, 7.0, 7.01, 8.0)]))
+    # ⚠️ Il caso che Davide ha citato: la fonte scrive la fascia «6,01-6,25», qui è
+    # scritta «da 6,01 in su» e finisce dove comincia la successiva (6,26). Le due
+    # letture danno lo stesso punto perché fra 6,25 e 6,26 non esiste nessuna media:
+    # i voti hanno due decimali. Se questa prova fallisse, le due scritture non
+    # sarebbero più equivalenti e la tabella andrebbe ripensata, non aggiustata.
+    esito("⚠️ una media di 6,25 sta nella fascia bassa, come sulle piattaforme",
+          modificatore_difesa(6.25, q) == 2.0 and modificatore_difesa(6.26, q) == 3.0)
+    esito("le fasce si leggono anche come intervalli, per mostrarle",
+          [(f["da"], f["a"]) for f in fasce_mod_difesa(q)]
+          == [(7.01, None), (6.76, 7.0), (6.51, 6.75), (6.26, 6.5),
+              (6.01, 6.25), (6.0, 6.0)],
+          str(fasce_mod_difesa(q)))
+    esito("e la fascia più alta non ha un tetto",
+          fasce_mod_difesa(q)[0]["a"] is None)
+    esito("⚠️ una tabella con una fascia sola è un intervallo aperto, non vuoto",
+          fasce_mod_difesa([(6.0, 1.0)]) == [{"da": 6.0, "a": None, "punti": 1.0}])
+    # E la tabella a quarti deve **passare dal form** come qualunque altra: è il
+    # pulsante «Sei fasce, a quarti» della modale.
+    with app.test_client() as cq:
+        with cq.session_transaction() as s:
+            s["username"] = "davide"
+            s["role"] = "user"
+            s["user_id"] = ids["davide"]
+        cq.post("/fantacalcio/lega/salva", data={
+            "lega_id": str(lid), "nome": "Lega Amici", "moduli": "3-4-3,4-4-2",
+            "mod_difesa": "1",
+            "soglia_media": [str(m) for m, _ in q],
+            "soglia_punti": [str(p) for _, p in q]}, follow_redirects=True)
+        db = extensions.get_db()
+        scritta = db.execute("SELECT mod_difesa_soglie FROM fanta_leagues "
+                             "WHERE id=?", (lid,)).fetchone()[0]
+        db.close()
+    esito("⚠️ i quarti si salvano senza perdere i centesimi",
+          scritta == "7.01:6, 6.76:5, 6.51:4, 6.26:3, 6.01:2, 6:1", scritta)
+    esito("e rilette danno la stessa tabella",
+          soglie_mod_difesa(scritta) == [(m, p) for m, p in q],
+          str(soglie_mod_difesa(scritta)))
+
     # --- 7ter. le soglie salvate dal form -----------------------------------
     print("\n== 7c. le soglie si salvano dalla lega ==")
     with app.test_client() as c:

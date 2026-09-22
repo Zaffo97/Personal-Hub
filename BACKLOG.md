@@ -797,8 +797,19 @@ il difetto di `main` nel moveset.
   valore e toglie le colonne vecchie, ma **solo se erano uguali fra loro** — dove non
   lo fossero resterebbero, invece di perdere in silenzio una differenza voluta
 - **il modificatore di difesa ha la sua tabella**, e dal 22/09/2026 le sue fasce si
-  **aggiungono e si tolgono** (da 1 a 8): il regolamento fissa *come* si fa la media,
-  non in quanti scalini si traduce. ⚠️ **L'ultima riga non si toglie** e nessuna riga
+  **aggiungono e si tolgono** (da 1 a 8) e arrivano ai **quarti di voto**: il
+  regolamento fissa *come* si fa la media, non in quanti scalini si traduce. ⚠️ Il
+  campo aveva `step="0.1"`, quindi `6.25` il **browser lo rifiutava senza dire
+  perché** mentre il server l'avrebbe salvato: ora è `0.01`, e ci sono due pulsanti
+  che riempiono la tabella — quella storica a tre fasce e quella a **sei fasce a
+  quarti** (6,00 → +1, 6,01-6,25 → +2, … 7,01+ → +6). ⚠️ Quei numeri **non** stanno
+  nel regolamento pubblico: §10.1 dice solo che la piattaforma «propone la versione
+  più diffusa» e la tabella vera sta dietro il login, quindi la fonte dichiarata è
+  `fantacalcio-online.com`, la stessa delle fasce di titolarità. ⚠️ E le soglie
+  restano «da X in su»: la fascia che la fonte scrive `6,01-6,25` qui si scrive
+  `6.01`, e le due letture danno **lo stesso punto** perché fra 6,25 e 6,26 non
+  esiste nessuna media — i voti hanno due decimali. La scheda della lega le mostra
+  comunque come intervalli («da 6,26 a 6,50 → +3»), che è come si leggono. ⚠️ **L'ultima riga non si toglie** e nessuna riga
   leggibile vuol dire «tieni la tabella di prima», non «tabella vuota» — per non
   avere nessun bonus si spegne il modificatore. La **struttura** viene dalla guida
   ufficiale di Leghe Fantacalcio (letta il 21/09/2026): media aritmetica del

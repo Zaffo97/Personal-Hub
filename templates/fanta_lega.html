@@ -336,11 +336,20 @@
         voto. È la struttura del regolamento ufficiale, che non si cambia; i numeri
         qui sotto sì.
       </div>
+      {# ⚠️ La tabella si legge **a intervalli** — «da 6,26 a 6,50» — e non come
+         una colonna di soglie: con sei fasce a quarti, «da 6,26» costringe a
+         guardare la riga sopra per sapere dove finisce, ed è il modo in cui le
+         fasce sono scritte ovunque. Il conto non cambia: `fasce_mod_difesa()`
+         riscrive le stesse soglie, non altre. #}
       <div class="regole-lista">
-        {% for media, punti in soglie %}
-        <div class="text-sm">media da <strong>{{ media }}</strong> &rarr;
-          <strong>{{ '%+g'|format(punti) }}</strong>
-          punt{% if punti == 1 or punti == -1 %}o{% else %}i{% endif %}</div>
+        {% for f in fasce %}
+        <div class="text-sm">
+          {% if f.a is none %}da <strong>{{ '%g'|format(f.da) }}</strong> in su
+          {% elif f.a == f.da %}esattamente <strong>{{ '%g'|format(f.da) }}</strong>
+          {% else %}da <strong>{{ '%g'|format(f.da) }}</strong> a
+            <strong>{{ '%g'|format(f.a) }}</strong>{% endif %}
+          &rarr; <strong>{{ '%+g'|format(f.punti) }}</strong>
+          punt{% if f.punti == 1 or f.punti == -1 %}o{% else %}i{% endif %}</div>
         {% endfor %}
       </div>
       <div class="text-xs text-muted mt-2">

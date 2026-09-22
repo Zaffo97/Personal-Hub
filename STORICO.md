@@ -70,6 +70,47 @@ fare.
   `admin` e la lega era di un altro utente — in lettura l'admin vede tutto, in
   scrittura `solo_mie()` non gli lascia toccare la rosa di nessuno.
 
+**Fantacalcio: i quarti di voto nella tabella del modificatore**
+
+Chiesti da Davide — «voglio che vengano gestiti i casi 0.25, che è come li propone
+di default FantaGazzetta» — su una tabella che da stamattina si può già allungare e
+accorciare. Il pezzo che mancava era un altro.
+
+- ⚠️✅ **Il blocco vero era lo `step`**: il campo della soglia aveva `step="0.1"`,
+  quindi il browser rifiutava `6.25` **senza dire perché**, mentre il server
+  l'avrebbe salvata benissimo (`float`, e la riga diventa `6.25:2`). Ora è `0.01`:
+  due decimali, che è la precisione con cui escono le medie.
+- ✅ **Due pulsanti che riempiono la tabella**, per non ribattere sei righe a mano:
+  «Tre fasce» (quella storica) e «Sei fasce, a quarti».
+- ⚠️ **Da dove vengono quei numeri, perché non è scontato.** Il regolamento pubblico
+  di fantacalcio.it (`/regolamenti/leghe-private`, §10.1, riletto il 22/09/2026)
+  **non pubblica nessun valore**: dice che la piattaforma «vi propone la versione
+  più diffusa … con possibilità di personalizzare l'output di bonus/malus, ma non
+  la struttura logica», e la tabella vera sta nel pannello della lega, dietro
+  login. Anche la guida di `leghe.fantacalcio.it` sui modificatori descrive solo il
+  prerequisito («portiere e almeno 4 difensori a punteggio»). La fonte dichiarata è
+  quindi **fantacalcio-online.com**, la stessa da cui il 21/09 erano venute le
+  fasce di titolarità: 6,00 → +1, 6,01-6,25 → +2, 6,26-6,50 → +3, 6,51-6,75 → +4,
+  6,76-7,00 → +5, 7,01+ → +6.
+- ⚠️ **La traduzione da «fasce chiuse» a «soglie» è esatta, non un'approssimazione.**
+  La fonte scrive `6,01-6,25`, qui si scrive `6.01` e la fascia finisce dove comincia
+  la successiva: le due letture danno lo stesso punto perché fra 6,25 e 6,26 non
+  esiste nessuna media possibile. Il caso che Davide ha citato — una media di
+  **6,25** — prende **+2** in tutte e due, ed è una prova.
+- ✅ **La scheda della lega ora le mostra a intervalli**: «da 6,26 a 6,50 → +3», «da
+  7,01 in su → +6», e «esattamente 6,25» quando una fascia è larga un centesimo.
+  Con sei fasce, una colonna di sole soglie costringeva a leggere la riga sopra per
+  sapere dove finisce quella che si sta guardando.
+- ✅ **Verifiche**: `prova_fantacalcio.py` da 202 a **210 su 210** (le undici medie
+  di confine della tabella a quarti, il 6,25 che sta nella fascia bassa, gli
+  intervalli, la fascia sola che resta aperta, e i quarti che passano dal form senza
+  perdere i centesimi), **sweep 0 errori**, **140 query 0 scoperte**. In browser:
+  il pulsante riempie le sei righe, il campo accetta `6.25` e `7.25` (prima no), e
+  dopo il salvataggio la scheda legge «da 7.25 in su → +6 · da 6.76 a 7.24 → +5 ·
+  … · esattamente 6.25 → +2 · da 6 a 6.24 → +1».
+
+---
+
 **Fantacalcio: chi esce dalla rosa esce dal campo, e il modificatore entra nel
 consiglio**
 
