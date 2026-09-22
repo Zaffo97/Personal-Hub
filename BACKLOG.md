@@ -883,14 +883,30 @@ sezione è finito:**
   tema, con l'accento dichiarato per **tutti e due** i temi: un verde fisso starebbe
   bene sullo scuro e male sul chiaro, e non se ne accorgerebbe nessuno finché
   qualcuno non cambia tema
-- ⬜ **La sintassi va resa più generica**, «senza far riferimento al mio progetto ma
-  solo a ciò che ci interessa del fantacalcio». ⚠️ Il perimetro va **chiesto a
-  Davide prima di iniziare**: oggi i riferimenti al progetto stanno nei **commenti**
-  dei template (`fanta_consiglio.html` e `fanta_rosa_incolla.html` aprono con
-  «§4.2, 21/09/2026… quello che Davide aveva chiesto») e nel tono di alcuni testi a
-  schermo, che raccontano **perché** una cosa è fatta così invece di dire cosa fa.
-  Le due letture portano a lavori diversi — riscrivere i testi visibili, o ripulire
-  i commenti del codice — e non conviene indovinare
+- ⬜ ⚠️ **Su uno schermo basso la modale della lega si taglia, e non si scrolla.**
+  Segnalato da Davide il 22/09/2026 («in fantacalcio in un monitor piccolo non posso
+  scrollare le regole della lega») e **riprodotto**: a 1280×620 la `.modal-box` si
+  ferma a `max-height:92dvh` = **570 px** e dentro c'è un `<form>` alto **733 px**,
+  quindi gli ultimi ~160 px — le regole della lega **e il pulsante Salva** — sono
+  tagliati da `overflow:hidden` e non si raggiungono in nessun modo. ⚠️ La causa non
+  è `.modal-body`, che ha già `overflow-y:auto`: è che fra lui e `.modal-box` c'è il
+  `<form>`, che **non è un contenitore flex**, quindi il `flex:1` del body non
+  agisce e non c'è nessuna altezza limitata su cui scrollare. Cura: dare al form lo
+  stesso ruolo di colonna (`display:flex;flex-direction:column;flex:1;min-height:0`).
+  ⚠️ **Solo il Fantacalcio ha questo schema**: in `arduino.html` e `pcbuilder.html`
+  il form sta **dentro** `.modal-body`, e lì lo scroll funziona — quindi la cura non
+  va copiata a tappeto, va messa dove il form avvolge header e footer.
+  ⬜ E la richiesta più larga che Davide ha allegato: **rivedere lo scorrimento di
+  sezioni e sottosezioni** in generale, non solo di questa modale.
+
+- ⬜ **I testi a schermo vanno riscritti in forma generica.** Perimetro chiarito da
+  Davide il 22/09/2026: **i testi visibili**, non i commenti del codice. «È brutto
+  far leggere a qualcuno di esterno il nostro ragionamento, voglio qualcosa di
+  generico, preciso e che faccia comprendere bene il tutto». Oggi più di un testo
+  racconta **perché** una cosa è fatta così — la decisione, la data, il baco che
+  c'era prima — invece di dire **cosa fa** e **cosa deve farci l'utente**. I
+  commenti nei template e nel codice **restano come sono**: lì il ragionamento
+  serve, ed è quello che tiene in piedi il progetto
 
 **⬜ Cosa resta, in ordine di quanto è stato chiesto:**
 
