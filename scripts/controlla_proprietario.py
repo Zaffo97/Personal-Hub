@@ -445,6 +445,35 @@ ECCEZIONI = {
         "`TABELLE_UTENTE` tengono **stato personale**, non contenuto (oggi solo "
         "`python_progress`), e intestarlo a un altro vorrebbe dire scrivere che "
         "ha fatto cose che non ha fatto. Quante righe erano si dice a schermo",
+    # ── La copia fra utenti (22/09/2026, §4.3) ──────────────────────────────
+    # Quattro query a tabella calcolata, tutte e quattro del motore che duplica i
+    # dati di un utente su un altro. Girano sulle stesse `TABELLE_UTENTE` del
+    # travaso, e vanno lette qui perché nessun controllo automatico può dirlo: il
+    # nome della tabella non è nel testo. ⚠️ Chi tocca `copia_dati_utente()` rilegga
+    # queste quattro righe — e sappia che la rete vera non è questo elenco, sono
+    # `tabelle_senza_regola()` e `figlie_senza_regola()`, che la route interroga
+    # **prima** di scrivere e che la fanno rifiutare su una tabella sconosciuta.
+    ("extensions.py", "_inserisci_copia",
+     "INSERT INTO {…}({…}) VALUES({…})"):
+        "riscrive una riga col proprietario (o l'id del padre) sostituito: il "
+        "proprietario lo **scrive**, non lo legge. La tabella e i valori arrivano "
+        "da `copia_dati_utente()`, mai dall'utente",
+    ("extensions.py", "copia_dati_utente",
+     "SELECT * FROM {…} WHERE user_id=?"):
+        "le righe da duplicare, tabella per tabella: filtra **per il proprietario "
+        "sorgente**, che è l'utente scelto nella pagina. Non è ambito_utente() "
+        "perché non è «le mie»: è «le sue», e la route è da amministratore",
+    ("extensions.py", "copia_dati_utente",
+     "SELECT * FROM {…} WHERE {…}=?"):
+        "le figlie di una riga appena letta: il filtro è l'id del **padre**, che "
+        "viene dalla query qui sopra — il proprietario le figlie lo ereditano da "
+        "lì, come ovunque in questo progetto",
+    ("extensions.py", "conteggi_utente",
+     "SELECT user_id, COUNT(*) AS quante FROM {…} WHERE user_id IS NOT NULL "
+     "GROUP BY user_id"):
+        "quante righe ha ogni utente, per scrivere nella conferma cosa sta per "
+        "raddoppiare. Vede tutti di proposito: è la pagina Utenti, da "
+        "amministratore, dove vedere tutti è il punto",
     ("extensions.py", "init_db",
      "UPDATE {…} SET user_id=? WHERE user_id IS NULL"):
         "la migrazione del 19/08/2026 che intesta ad admin le righe nate prima del "

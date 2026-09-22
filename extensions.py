@@ -796,6 +796,19 @@ def tabelle_con_user_id(db):
             if any(c["name"] == "user_id" for c in db.execute(f"PRAGMA table_info({n})"))]
 
 
+# Le **figlie**: righe che un `user_id` non ce l'hanno e il proprietario lo ereditano
+# dal padre. Nel travaso di `utente_elimina()` seguono il padre da sole, perché il
+# padre resta quello e cambia solo a chi è intestato. In una **copia** no: il padre
+# nuovo ha un id nuovo, e la figlia va riscritta con quello — per questo l'elenco
+# serve qui e non serviva prima.
+FIGLIE_DI = {
+    "teams": (("team_members", "team_id"),),
+    "pc_builds": (("pc_components", "build_id"),),
+    "fanta_leagues": (("fanta_roster", "league_id"),
+                      ("fanta_formazione", "league_id")),
+}
+
+
 def tabelle_senza_regola(db):
     """Le tabelle con un proprietario di cui `TABELLE_UTENTE` non dice niente.
 
@@ -807,6 +820,112 @@ def tabelle_senza_regola(db):
     fallback silenzioso che questo progetto paga ogni volta.
     """
     return [t for t in tabelle_con_user_id(db) if t not in TABELLE_UTENTE]
+
+
+def _tabelle(db):
+    return [r["name"] for r in db.execute(
+        "SELECT name FROM sqlite_master WHERE type='table' "
+        "AND name NOT LIKE 'sqlite_%' ORDER BY name")]
+
+
+def figlie_senza_regola(db):
+    """Le tabelle che puntano a una riga copiata e che `FIGLIE_DI` non nomina.
+
+    Stessa rete di `tabelle_senza_regola()`, dall'altro lato: là si guarda chi ha un
+    `user_id`, qui chi ha una **chiave esterna** verso una tabella che la copia
+    duplica. Una figlia dimenticata non darebbe errore — il padre nuovo nascerebbe
+    **vuoto**, e un team senza i suoi sei Pokémon somiglia a un team.
+    Torna `[(figlia, padre), …]`; le tabelle gia' dichiarate non compaiono.
+    """
+    copiate = {t for t, r in TABELLE_UTENTE.items() if r == "passa"}
+    dichiarate = {n for figlie in FIGLIE_DI.values() for n, _ in figlie}
+    note = copiate | dichiarate
+    fuori = set()
+    for t in _tabelle(db):
+        if t in note:
+            continue
+        try:
+            legami = list(db.execute(f"PRAGMA foreign_key_list({t})"))
+        except sqlite3.Error:
+            continue
+        for r in legami:
+            if r["table"] in note:
+                fuori.add((t, r["table"]))
+    return sorted(fuori)
+
+
+def _inserisci_copia(db, tabella, riga, cambi):
+    """Riscrive una riga con dei valori sostituiti. `None` vuol dire «togli la colonna».
+
+    L'`id` si toglie, non si copia: lo assegna SQLite, ed e' tutto il punto di una
+    copia. ⚠️ `fanta_formazione` un `id` non ce l'ha — la sua chiave e'
+    `(league_id, player_id)` — e qui va bene da sola perche' si guarda cosa la riga
+    **ha**, non cosa dovrebbe avere.
+    """
+    colonne, valori = [], []
+    for c in riga.keys():
+        if c in cambi and cambi[c] is None:
+            continue
+        colonne.append(c)
+        valori.append(cambi[c] if c in cambi else riga[c])
+    segni = ", ".join("?" for _ in colonne)
+    cur = db.execute(f"INSERT INTO {tabella}({', '.join(colonne)}) "
+                     f"VALUES({segni})", valori)
+    return cur.lastrowid
+
+
+def copia_dati_utente(db, da, a):
+    """Duplica i contenuti dell'utente `da` su `a`. Torna `{tabella: quante righe}`.
+
+    ⚠️ **Aggiunge, non sostituisce** — decisione di Davide del 22/09/2026. Le righe
+    entrano con un id nuovo **accanto** a quelle che il destinatario ha gia', e non
+    si perde niente di suo. Il prezzo e' che **non e' rieseguibile**: premuto due
+    volte lascia tutto in doppio. E non c'e' un modo onesto di renderlo tale — per
+    riconoscere «questa riga c'e' gia'» servirebbe confrontare i **contenuti**, cioe'
+    fondere per titolo o per nome, ed e' esattamente la scorciatoia che
+    `importa_dati.py` rifiuta per iscritto. Quindi si dichiara: chi chiama mette i
+    numeri nella conferma, prima.
+
+    ⚠️ Le tabelle marcate `cancella` in `TABELLE_UTENTE` **non si copiano**: sono
+    stato personale — oggi le spunte di Python — e copiarle scriverebbe che il
+    destinatario ha studiato quello che non ha studiato. Chi chiama lo dice a
+    schermo invece di tacerlo, che e' l'altra meta' della decisione.
+
+    Non apre ne' chiude transazioni: e' il chiamante che decide l'unita' di lavoro,
+    perche' una copia a meta' e' il caso peggiore di tutti.
+    """
+    fatte = {}
+    for tabella, regola in TABELLE_UTENTE.items():
+        if regola != "passa":
+            continue
+        righe = db.execute(f"SELECT * FROM {tabella} WHERE user_id=?",
+                           (da,)).fetchall()
+        for riga in righe:
+            nuovo = _inserisci_copia(db, tabella, riga, {"id": None, "user_id": a})
+            fatte[tabella] = fatte.get(tabella, 0) + 1
+            for figlia, colonna in FIGLIE_DI.get(tabella, ()):
+                for f in db.execute(f"SELECT * FROM {figlia} WHERE {colonna}=?",
+                                    (riga["id"],)).fetchall():
+                    _inserisci_copia(db, figlia, f, {"id": None, colonna: nuovo})
+                    fatte[figlia] = fatte.get(figlia, 0) + 1
+    return fatte
+
+
+def conteggi_utente(db):
+    """`{user_id: {tabella: quante}}` per le tabelle che la copia duplica.
+
+    Serve alla pagina Utenti: la conferma deve dire **cosa** sta per raddoppiare, e
+    un «sei sicuro?» senza numeri davanti a un pulsante non rieseguibile non e' una
+    conferma, e' un passaggio da premere in fretta.
+    """
+    fuori = {}
+    for tabella, regola in TABELLE_UTENTE.items():
+        if regola != "passa":
+            continue
+        for r in db.execute(f"SELECT user_id, COUNT(*) AS quante FROM {tabella} "
+                            f"WHERE user_id IS NOT NULL GROUP BY user_id"):
+            fuori.setdefault(r["user_id"], {})[tabella] = r["quante"]
+    return fuori
 
 
 def _i(v, d=0):

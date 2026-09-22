@@ -83,6 +83,25 @@
                required minlength="8" placeholder="nuova password">
         <button class="btn btn-secondary btn-sm" type="submit">Cambia password</button>
       </form>
+      {% if u.quante and utenti|length > 1 %}
+      {# ⚠️ La conferma si costruisce con `|tojson`, non con `|e` dentro apici
+         singoli: è la trappola del 22/09/2026 su `N'Dicka` — `|e` rende l'apostrofo
+         come `&#39;`, che dentro un attributo `onsubmit` chiude la stringa JS e
+         lascia l'handler con un SyntaxError, cioè un pulsante morto che non dice
+         niente. E dice **cosa** raddoppia, perché questo pulsante non si annulla e
+         premuto due volte lascia tutto in doppio. #}
+      <form method="POST" action="/admin/utenti/{{ u.id }}/copia"
+            class="flex gap-2 items-center"
+            onsubmit='return confirm({{ ("Copiare i dati di " ~ u.username ~ " (" ~ u.roba ~ ") nell’utente scelto? Entrano come righe nuove accanto alle sue: premuto due volte, lascia tutto in doppio. Le spunte di Python non si copiano.")|tojson }})'>
+        <select name="da" class="form-control" style="max-width:180px;font-size:.8rem" required>
+          <option value="">copia i suoi dati in…</option>
+          {% for altro in utenti if altro.id != u.id %}
+          <option value="{{ altro.id }}">{{ altro.display_name or altro.username }}</option>
+          {% endfor %}
+        </select>
+        <button class="btn btn-secondary btn-sm" type="submit">&#128203; Copia</button>
+      </form>
+      {% endif %}
       {% if u.username != io_sono %}
       <form method="POST" action="/admin/utenti/{{ u.id }}/elimina"
             onsubmit="return confirm('Eliminare l’utente {{ u.username }}? L’operazione non si annulla.')">

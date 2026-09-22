@@ -15,9 +15,27 @@ from flask import (Blueprint, render_template, request, redirect, url_for, flash
 
 from data import SEZIONI, SEZIONI_SLUG
 from extensions import (get_db, login_required, NESSUNA_SEZIONE, hash_password,
-                        TABELLE_UTENTE, tabelle_senza_regola)
+                        TABELLE_UTENTE, tabelle_senza_regola, figlie_senza_regola,
+                        copia_dati_utente, conteggi_utente)
 
 bp = Blueprint("admin", __name__, url_prefix="/admin")
+
+# Come si chiamano le tabelle a schermo. Un messaggio che dice «33 games, 1 pc_builds»
+# fa leggere il nome di una tabella a chi sta guardando una pagina, e la conferma di
+# un pulsante che non si annulla è l'ultimo posto dove farlo. Le figlie non ci sono:
+# nel conto del padre sono già dentro — «2 leghe» vuol dire con le loro rose.
+ETICHETTE = {
+    "games": "giochi",
+    "teams": "team",
+    "arduino_projects": "progetti Arduino",
+    "pc_builds": "build del PC",
+    "fanta_leagues": "leghe del Fantacalcio",
+    "team_members": "Pokémon nei team",
+    "pc_components": "pezzi del PC",
+    "fanta_roster": "giocatori in rosa",
+    "fanta_formazione": "giocatori schierati",
+    "python_progress": "spunte di Python",
+}
 
 # Dal 12/08/2026 le password nuove nascono già con lo schema forte (scrypt con sale
 # di `werkzeug.security`). Le vecchie restano leggibili e vengono riscritte al primo
@@ -68,6 +86,7 @@ def utenti():
     db = get_db()
     righe = db.execute("SELECT id, username, display_name, role, sections"
                        " FROM users ORDER BY username COLLATE NOCASE").fetchall()
+    conteggi = conteggi_utente(db)
     db.close()
     utenti = []
     for r in righe:
@@ -82,9 +101,17 @@ def utenti():
             permesse = [s for s in SEZIONI_SLUG if s in
                         {x.strip() for x in grezzo.split(",")}]
             nota = f"{len(permesse)} su {len(SEZIONI_SLUG)}"
+        # Cosa la copia duplicherebbe, in italiano e coi numeri: la conferma del
+        # pulsante «Copia» si costruisce da qui. ⚠️ Il pulsante **non è
+        # rieseguibile** (vedi `copia_dati_utente()`), quindi un «sei sicuro?» senza
+        # dire cosa raddoppia sarebbe solo un passaggio da premere in fretta.
+        suoi = conteggi.get(r["id"], {})
+        roba = ", ".join(f"{quante} {ETICHETTE.get(t, t)}"
+                         for t, quante in suoi.items() if quante)
         utenti.append({"id": r["id"], "username": r["username"],
                        "display_name": r["display_name"], "role": r["role"],
-                       "permesse": permesse, "nota": nota})
+                       "permesse": permesse, "nota": nota,
+                       "roba": roba, "quante": sum(suoi.values())})
     return render_template("admin_utenti.html", utenti=utenti, sezioni=SEZIONI,
                            io_sono=session.get("username"))
 
@@ -159,6 +186,78 @@ def utente_password(uid):
     db.execute("UPDATE users SET password=? WHERE id=?", (_hash(password), uid))
     db.commit(); db.close()
     flash(f"Password di «{r['username']}» cambiata.", "success")
+    return redirect(url_for("admin.utenti"))
+
+
+@bp.route("/utenti/<int:uid>/copia", methods=["POST"])
+def utente_copia(uid):
+    """Duplica i contenuti di `uid` su un altro utente. Aggiunge, non sostituisce.
+
+    ⚠️ Non è il travaso di `utente_elimina()` con un altro nome, ed è la differenza
+    che rende questa route un lavoro a sé: là le righe **cambiano mano** e le figlie
+    seguono il padre da sole, qui vanno **duplicate**, e il padre nuovo ha un id
+    nuovo che va riscritto su ognuna. La decisione «aggiunge» è di Davide
+    (22/09/2026): non si perde niente, in cambio premerlo due volte lascia tutto in
+    doppio — per questo la conferma nella pagina dice **cosa** sta per raddoppiare.
+    """
+    da = request.form.get("da") or ""
+    db = get_db()
+    sorgente = db.execute("SELECT id, username FROM users WHERE id=?", (uid,)).fetchone()
+    destinatario = db.execute("SELECT id, username FROM users WHERE id=?",
+                              (da,)).fetchone() if da.isdigit() else None
+    if not sorgente or not destinatario:
+        db.close()
+        flash("Utente non trovato: non ho copiato niente.", "error")
+        return redirect(url_for("admin.utenti"))
+    if sorgente["id"] == destinatario["id"]:
+        db.close()
+        flash("Sorgente e destinatario sono lo stesso utente.", "error")
+        return redirect(url_for("admin.utenti"))
+
+    # Le due reti, e sono la stessa idea da due lati: una tabella con un proprietario
+    # che non sappiamo se copiare, e una **figlia** che non sappiamo di dover
+    # duplicare. La seconda è la più insidiosa — non darebbe nessun errore, farebbe
+    # nascere il padre **vuoto**, e un team senza i suoi Pokémon somiglia a un team.
+    ignote = tabelle_senza_regola(db)
+    orfane = figlie_senza_regola(db)
+    if ignote or orfane:
+        db.close()
+        pezzi = []
+        if ignote:
+            pezzi.append("senza una regola in TABELLE_UTENTE: " + ", ".join(ignote))
+        if orfane:
+            pezzi.append("figlie non dichiarate in FIGLIE_DI: "
+                         + ", ".join(f"{f} (di {p})" for f, p in orfane))
+        flash("Non copio niente — " + "; ".join(pezzi) + ". Una copia che le salta "
+              "non darebbe errore, lascerebbe dei dati a metà.", "error")
+        return redirect(url_for("admin.utenti"))
+
+    try:
+        fatte = copia_dati_utente(db, sorgente["id"], destinatario["id"])
+        db.commit()
+    except Exception as e:
+        db.rollback()
+        db.close()
+        flash(f"Non ho copiato niente, il DB è com'era: {e}", "error")
+        return redirect(url_for("admin.utenti"))
+    saltate = db.execute("SELECT COUNT(*) FROM python_progress WHERE user_id=?",
+                         (sorgente["id"],)).fetchone()[0]
+    db.close()
+
+    if not fatte:
+        flash(f"«{sorgente['username']}» non ha niente da copiare.", "success")
+        return redirect(url_for("admin.utenti"))
+    quali = ", ".join(f"{quante} {ETICHETTE.get(t, t)}" for t, quante in fatte.items())
+    messaggio = (f"Copiati da «{sorgente['username']}» a "
+                 f"«{destinatario['username']}»: {quali}. "
+                 "Sono righe nuove, accanto a quelle che aveva già: premere di "
+                 "nuovo il pulsante le rifarebbe in doppio.")
+    if saltate:
+        # ⚠️ Dirlo, non tacerlo: il progresso di Python è di chi lo fa (decisione del
+        # 22/09/2026), e un dato lasciato fuori in silenzio somiglia a un dato perso.
+        messaggio += (f" Le {saltate} spunte di Python non sono state copiate: "
+                      "quelle sono di chi le mette.")
+    flash(messaggio, "success")
     return redirect(url_for("admin.utenti"))
 
 

@@ -77,7 +77,7 @@ Non sono storia: sono le cose che questo progetto ha già pagato e che tornano a
 | ⚠️ **Si legge con `ambito_utente()`, si scrive con `solo_mie()`** | Sono due domande diverse. Per **leggere**, l'amministratore vede tutto (`1=1`): giusto in elenco. Per **importare o arricchire**, quella deroga è un baco: l'import da Steam cerca gli appid già presenti per non duplicarli, e con l'elenco di tutti un admin che importa la propria libreria **riscriverebbe le ore giocate di un altro utente** invece di crearsi la riga sua. Misurato e provato il 19/08: la riga di admin resta a 104,1 ore e all'utente ne nasce una nuova |
 | ⚠️ **`rowcount` sulle scritture filtrate** | Un `UPDATE`/`DELETE` con la condizione del proprietario che non tocca niente **non dà errore**: il codice sotto continua. In `_team_upsert()` questo avrebbe svuotato i membri della squadra di un altro dopo un UPDATE andato a vuoto. Ogni scrittura filtrata deve guardare il `rowcount` e uscire |
 | ⚠️ **Una tabella senza colonna `id` è il caso che rompe gli script dei dati** | Oggi sono due: `python_progress` `(user_id, topic_id)` e `fanta_formazione` `(league_id, player_id)`. Hanno già rotto **due** script in due modi diversi — `esporta_dati.py` dichiarava **assente** una tabella che c'era (`ORDER BY id` che sollevava e finiva nel ramo «tabella non creata»), e `importa_dati.py` moriva con `KeyError: 'id'` tenendo **rotto il ripristino intero** dal 21/09 al 22/09/2026. Da entrambe le volte è uscita la stessa regola, e ora è scritta in tutti e due i file: **la chiave si chiede allo schema** (`PRAGMA table_info`, colonna `pk`), non si tiene in un elenco a mano. Chi scrive uno script nuovo che gira su più tabelle la usi, e **si fermi** se la chiave non c'è invece di ricadere su `id` |
-| ⚠️ **Una tabella nuova con un `user_id` va messa in `TABELLE_UTENTE`** | Dal 22/09/2026, in `extensions.py`, e dice **cosa farne** quando l'utente sparisce: `passa` (contenuto, cambia proprietario) o `cancella` (stato personale, e quante righe erano si dice a schermo). Non è un promemoria da ricordarsi: `tabelle_senza_regola()` legge le colonne vere e `utente_elimina()` **si rifiuta** nominando chi manca. Ma va messa anche in `RADICI` di `controlla_proprietario.py`, e **quello nessuno lo controlla**: una tabella fuori da quel raggio fa dire «0 scoperte» senza che nessuno l'abbia guardata — è successo tre volte (le due del Fantacalcio il 21/09, `python_progress` il 22/09) |
+| ⚠️ **Una tabella nuova con un `user_id` va messa in `TABELLE_UTENTE`; una sua figlia in `FIGLIE_DI`** | Dal 22/09/2026, in `extensions.py`. `TABELLE_UTENTE` dice **cosa farne** quando l'utente sparisce: `passa` (contenuto, cambia proprietario) o `cancella` (stato personale, e quante righe erano si dice a schermo). `FIGLIE_DI` dice **quali righe seguono un padre**, e serve solo alla **copia**: nel travaso le figlie seguono da sole perché il padre resta quello, in una copia il padre nuovo ha un id nuovo. Nessuno dei due è un promemoria da ricordarsi: `tabelle_senza_regola()` legge le colonne vere, `figlie_senza_regola()` legge le **chiavi esterne** vere, e le due route **si rifiutano** nominando chi manca. ⚠️ Una figlia dimenticata è la peggiore delle due: non dà nessun errore, fa nascere il padre **vuoto**. Ma la tabella nuova va messa anche in `RADICI` di `controlla_proprietario.py`, e **quello nessuno lo controlla**: una tabella fuori da quel raggio fa dire «0 scoperte» senza che nessuno l'abbia guardata — è successo tre volte (le due del Fantacalcio il 21/09, `python_progress` il 22/09) |
 | **`user_id` a `NULL`** | Il travaso ad `admin` gira **solo nel giro in cui la colonna nasce**, non a ogni avvio: è voluto, perché un `WHERE user_id IS NULL` permanente intesterebbe all'admin qualunque riga scritta male, in silenzio. Il prezzo: una riga senza proprietario **sparisce dalla vista del suo autore** — ma non è persa e non è invisibile a tutti, perché l'admin filtra `1=1` e la vede, col badge che dice «senza proprietario». È lì che si va a cercarla quando qualcuno dice «il dato è sparito» |
 | ⚠️ **Un campo che manca vale «main»** | La sorgente delle mosse di una regulation e' `moveset` in `data/regulations.json`, e **se manca non e' un errore**: `sorgente_moveset()` ricade su `main`. Fino al 10/09/2026 la creazione non lo scriveva affatto, quindi una regulation copiata da MA — 279 nomi di Champions — leggeva gli elenchi dei giochi principali: **80 mosse su Incineroar invece di 77**, Knock Off compresa, senza un errore da nessuna parte. Ora la creazione lo scrive sempre esplicito e il salvataggio rifiuta un nome che non esiste, ma il fallback resta: **un file scritto a mano senza quel campo dira' `main` e sembrera' giusto** |
 | **Default del DB** | `extensions.py:143` crea la colonna con `regulation_id TEXT DEFAULT 'ma'`. Non è un residuo dei 14 letterali tolti l'11/08: è il default del **DB**, e cambiarlo richiede una migrazione. Oggi non fa danno perché `_team_upsert()` passa sempre un valore esplicito |
@@ -1147,22 +1147,16 @@ sa dal codice, non un piano.
   salvata: la password non esce mai dal DB, e quello che si ricorda è una sessione.
   Da fare sapendo che l'app può uscire di casa (§1.5), quindi con scadenza e con la
   possibilità di revocarla.
-- ⬜ **Un pulsante in Utenti per copiare tutti i dati in un altro utente.** ✅ Il
-  pezzo di sotto è pronto dal 22/09/2026: `TABELLE_UTENTE` in `extensions.py` dice
-  quali tabelle hanno un proprietario e cosa farne, `tabelle_senza_regola()` la
-  tiene attaccata allo schema vero, e il travaso della **cancellazione** ci gira
-  sopra ed è provato (`scripts/prova_travaso_utente.py`, 27 su 27). Il sospetto
-  scritto qui era giusto e anche ottimista: le radici non erano più quattro, e le
-  due dimenticate rompevano in silenzio — vedi `STORICO.md`. ⬜ Resta da fare **il
-  pulsante**, che è un lavoro diverso dalla cancellazione: lì le righe **cambiano
-  mano**, qui vanno **duplicate**, e vanno decise due cose che nessun codice può
-  dedurre — se copiare vuol dire aggiungere o sostituire quello che il destinatario
-  ha già, e cosa fare delle righe `cancella` (le spunte di Python: copiarle vorrebbe
-  dire dire che ha studiato quello che non ha studiato). ⚠️ Le figlie —
-  `team_members`, `pc_components`, `fanta_roster`, `fanta_formazione` — nel travaso
-  seguono il padre da sole perché il padre resta lo stesso; in una **copia** no,
-  vanno duplicate con l'id nuovo del padre. È la differenza che rende il pulsante un
-  lavoro vero e non due righe.
+- ✅ **Un pulsante in Utenti per copiare tutti i dati in un altro utente** — fatto il
+  22/09/2026, numeri in `STORICO.md`. Le due decisioni che il codice non poteva
+  dedurre le ha prese Davide: **aggiunge** (non sostituisce, non si perde niente) e
+  le **spunte di Python non si copiano**. ⚠️ Quello che resta da sapere, perché è una
+  scelta e non un difetto: il pulsante **non è rieseguibile** — premuto due volte
+  lascia tutto in doppio, e la conferma lo dice coi numeri prima di premere. Renderlo
+  rieseguibile vorrebbe dire riconoscere «questa riga c'è già» dai **contenuti**,
+  cioè fondere per titolo, che è la scorciatoia che `importa_dati.py` rifiuta per
+  iscritto. C'è una prova apposta (`prova_travaso_utente.py`, §7) perché nessuno la
+  «corregga» credendola un baco.
 
 ### 4.4 ⚠️ Quello che il timer della giornata dà per buono
 

@@ -20,6 +20,42 @@ pagina ed esegue `new Function()` su ogni blocco `<script>` **e** su ogni handle
 
 ## 22/09/2026
 
+**Il pulsante «copia i dati in un altro utente» (§4.3)**
+
+Chiesto da Davide «per il futuro» il 22/09, fatto lo stesso giorno perché le
+fondamenta erano appena state messe dal travaso. Le due decisioni che nessun codice
+poteva dedurre le ha prese lui: **aggiunge** — le righe entrano con un id nuovo
+accanto a quelle del destinatario, non si perde niente — e le **spunte di Python non
+si copiano**, che è la stessa logica della cancellazione: il progresso è di chi lo fa.
+
+⚠️ Non è il travaso con un altro nome, ed è tutta lì la differenza: nella
+cancellazione le righe **cambiano mano** e le figlie seguono il padre da sole, perché
+il padre resta quello. In una copia il padre nuovo ha un **id nuovo**, e ogni figlia
+va riscritta con quello. Quindi accanto a `TABELLE_UTENTE` c'è ora `FIGLIE_DI`
+(`team_members`, `pc_components`, `fanta_roster`, `fanta_formazione`), e accanto a
+`tabelle_senza_regola()` c'è `figlie_senza_regola()`, che le trova dalle **chiavi
+esterne vere** e fa rifiutare la route se ne compare una non dichiarata. È la rete
+per il guasto peggiore dei due: una figlia dimenticata non dà nessun errore, fa
+nascere il padre **vuoto** — e un team senza i suoi Pokémon somiglia a un team.
+
+⚠️ Il pulsante **non è rieseguibile**, ed è una scelta: premuto due volte lascia tutto
+in doppio. La conferma lo dice **coi numeri** prima («Copiare i dati di admin (33
+giochi, 1 build del PC, 2 leghe del Fantacalcio)…»), e c'è una prova apposta perché
+nessuno la corregga credendola un baco. Renderlo rieseguibile vorrebbe dire
+riconoscere «questa riga c'è già» dai contenuti, cioè fondere per titolo: la
+scorciatoia che `importa_dati.py` rifiuta per iscritto.
+
+La conferma è costruita con `|tojson`, non con `|e` dentro apici singoli — la
+trappola di `N'Dicka` del 21/09, dove `&#39;` chiudeva la stringa JS e lasciava
+l'handler con un SyntaxError, cioè un pulsante morto e muto. Reso: `’` dentro
+una stringa a doppi apici.
+
+Verifica: **51 prove su 51** (erano 27: 24 nuove, fra cui i figli ritrovati per l'id
+del padre **nuovo**, il sorgente che non perde niente, il doppio clic che raddoppia
+davvero, e le due reti), `controlla_proprietario.py` **0 scoperte e 0 a tabella
+calcolata** su **167** query (le 4 del motore della copia sono dichiarate una per
+una), **sweep 28 pagine a 0 errori**, Fantacalcio 245 su 245, import 28 su 28.
+
 **Il ripristino dell'export era rotto da un giorno, e nessuno poteva accorgersene**
 
 `importa_dati.py` moriva con `KeyError: 'id'`: **4 prove su 23**, e le 19 rosse erano
