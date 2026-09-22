@@ -31,6 +31,7 @@ import io
 import json
 import os
 import sys
+from datetime import datetime
 
 RADICE = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 if RADICE not in sys.path:
@@ -47,7 +48,32 @@ ARCHIVIO = os.path.join(RADICE, "data", "archive")
 
 # regulation dove è consentito **aggiungere al roster** la specie base mancante
 AGGIUNGI_BASI = {"mb"}
-REGULATION = ("ma", "mb", "pokedex")
+REGISTRO = os.path.join(RADICE, "data", "regulations.json")
+
+
+def regulation_da_guardare():
+    """Gli id del **registro**, non un elenco scritto a mano.
+
+    ⚠️ Qui c'era `("ma", "mb", "pokedex")`, e il 22/09/2026 ha mentito: completata
+    Regulation MC, questo script ha risposto «niente da fare: ogni Mega nel roster è
+    già raggiungibile» mentre **sei Mega di MC non lo erano**. Non le aveva
+    guardate — MC non era nella tupla. È la stessa classe di errore di
+    `controlla_proprietario.py` con le tabelle fuori dal raggio: un «va tutto bene»
+    detto senza aver guardato è peggio di un errore, perché chiude la domanda.
+    Ora l'elenco viene da dove le regulation **esistono**, quindi una nuova entra
+    da sola.
+    """
+    with io.open(REGISTRO, encoding="utf-8") as f:
+        registro = json.load(f)
+    fuori = []
+    for voce in registro:
+        reg_id = voce.get("id")
+        # Senza `filter_file` non c'è un file da completare: è il caso delle
+        # regulation ancora nel vecchio formato, e saltarle è giusto.
+        if reg_id and voce.get("filter_file"):
+            if os.path.exists(os.path.join(FILTRI, f"{reg_id}.json")):
+                fuori.append(reg_id)
+    return tuple(fuori)
 
 
 def nomi_catalogo():
@@ -70,7 +96,7 @@ def main():
     catalogo = nomi_catalogo()
     problemi, piano = [], {}
 
-    for reg_id in REGULATION:
+    for reg_id in regulation_da_guardare():
         percorso = os.path.join(FILTRI, f"{reg_id}.json")
         with open(percorso, encoding="utf-8") as f:
             filtro = json.load(f)
@@ -130,7 +156,12 @@ def main():
         filtro["mega_map"] = applica_collegamenti(mega_map, collega)
         if aggiungi:
             filtro["pokemon"] = sorted(set(roster) | set(aggiungi))
-        filtro["last_updated"] = "2026-08-11"
+        # ⚠️ Qui c'era la data **fissa** "2026-08-11", cioè il giorno in cui
+        # questo script è stato scritto. Finché ha girato solo quel giorno non
+        # si vedeva; completando Regulation MC il 22/09/2026 avrebbe scritto
+        # nel file una data di un mese e mezzo prima — un dato falso, e del
+        # tipo peggiore: plausibile.
+        filtro["last_updated"] = datetime.now().strftime("%Y-%m-%d")
 
         with open(percorso, "w", encoding="utf-8") as f:
             json.dump(filtro, f, ensure_ascii=False, indent=2)

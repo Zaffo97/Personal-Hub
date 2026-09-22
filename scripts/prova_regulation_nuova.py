@@ -46,6 +46,12 @@ def esito(nome, ok, dettaglio=""):
 
 
 def prove(dove):
+    # ⚠️ La fotografia si prende **adesso**, prima di toccare qualunque cosa: quello
+    # che questa suite deve dimostrare in fondo e' «non ho toccato niente di vero»,
+    # e un elenco di nomi scritto a mano non lo dimostra — invecchia. Il 22/09/2026
+    # ha fatto fallire la prova per il motivo sbagliato: Regulation MC era stata
+    # aggiunta **apposta**, e la prova la chiamava un guasto.
+    reali_prima = sorted(os.listdir(os.path.join(RADICE, "data", "regulations")))
     dati = os.path.join(dove, "data")
     os.makedirs(dati, exist_ok=True)
     catalogo_dir = os.path.join(dati, "catalog")
@@ -267,8 +273,9 @@ def prove(dove):
 
     # --- 12. niente di vero e' stato toccato ---------------------------------
     veri = sorted(os.listdir(os.path.join(RADICE, "data", "regulations")))
-    esito("la cartella vera delle regulation ha ancora i suoi tre file",
-          veri == ["ma.json", "mb.json", "pokedex.json"], str(veri))
+    esito("la cartella vera delle regulation e' com'era prima della suite",
+          veri == reali_prima,
+          f"{len(veri)} file: {', '.join(veri)}")
     with open(os.path.join(RADICE, "data", "regulations", "ma.json"), encoding="utf-8") as f:
         vero_ma = json.load(f)
     esito("e MA e' intatta: 279 Pokémon, 58 Mega mappate",

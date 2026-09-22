@@ -17,13 +17,22 @@
       "mega"
     ],
     "moves_file": "moves_ma.json",
-    "roster_file": "roster_ma.json",
-    "moveset": "champions"
+    "moveset": "champions",
+    "roster_file": "roster_ma.json"
   },
   {
     "filter_file": "regulations/mb.json",
     "id": "mb",
     "label": "Regulation MB",
+    "mechanics": [
+      "mega"
+    ],
+    "moveset": "champions"
+  },
+  {
+    "filter_file": "regulations/mc.json",
+    "id": "mc",
+    "label": "Regulation MC",
     "mechanics": [
       "mega"
     ],

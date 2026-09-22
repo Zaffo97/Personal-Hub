@@ -20,6 +20,43 @@ pagina ed esegue `new Function()` su ogni blocco `<script>` **e** su ogni handle
 
 ## 22/09/2026
 
+**Regulation M-C è in piedi: 339 voci, e due script che mentivano**
+
+Il file c'era da stamattina e diceva il falso: `mc.json` era una **copia esatta di
+`mb.json`** — solo `id`, `label` e data diversi — quindi nell'app «Regulation MC»
+esisteva, si poteva scegliere, e rispondeva coi dati di MB. Non una regulation vuota:
+una che sbaglia in silenzio, che è il caso peggiore.
+
+Il dato invece c'era tutto dal 21/09: le 26 specie e le 6 Mega in
+`moveset_integrazioni.json`, col roster confermato da Serebii e Game8. Quindi niente
+ricerca, solo trascrizione verificata: `scripts/completa_mc.py` (nuovo, rieseguibile)
+risolve quei 32 nomi sul catalogo — **32 su 32**, e si ferma invece di saltare se uno
+non si risolve, perché un nome inesistente in un roster **non dà errore, sparisce** —
+e li aggiunge a quelli di MB. Roster **308 → 339** (+31: `Pawmot` c'era già), MB
+contenuta in MC come vogliono le regulation cumulative. Poi `completa_mega_map.py`
+per le 6 Mega (81 su 81 raggiungibili) e `allinea_mosse_regulation.py --reg mc` per
+le mosse, **494 → 506**: i 12 in più sono le mosse firma delle specie nuove — Pyro
+Ball e Court Change di Cinderace, Drum Beating di Rillaboom, Snipe Shot di Inteleon,
+Octolock di Grapploct, Meteor Assault di Sirfetch'd.
+
+⚠️ **Due script hanno detto «va tutto bene» senza aver guardato**, ed è per questo che
+il lavoro è durato più del previsto. `completa_mega_map.py` ha risposto «ogni Mega nel
+roster è già raggiungibile» mentre **sei Mega di MC non lo erano**: dentro aveva
+`REGULATION = ("ma", "mb", "pokedex")`, un elenco scritto a mano. Ora legge il
+**registro**. E nello stesso file, `last_updated = "2026-08-11"` **fisso**: su MC
+avrebbe scritto una data di un mese e mezzo prima. Corretti tutti e due, perché senza
+la verifica di M-C sarebbe stata una bugia.
+
+⬜ Resta fuori **una cosa sola, dichiarata**: non si sa quali **oggetti** M-C aggiunga,
+quindi MC tiene i 58 di MA/MB — come MB li copia da MA, anch'essa senza una fonte.
+
+Verifica: **32 su 32** su `prova_regulation_nuova` (la prova che bloccava i «tre file»
+della cartella ora confronta una fotografia **prima/dopo**: quello che doveva
+dimostrare era «non ho toccato niente di vero», e un elenco di nomi invecchia), 16
+controlli su 16 sulle mosse, MC provata **nell'app**: Cinderace 116 atk / 64 mosse,
+Mega Salamence 145 atk / 62 mosse, e Amoonguss giustamente **fuori** dal roster.
+Sweep 28 pagine a 0 errori, sprite 0 rotti, resto della suite 245 / 56 / 33 / 28 / 11.
+
 **Gli sprite rotti: da 333 a 0 (§4.3)**
 
 Prima misurati, poi corretti. `scripts/controlla_sprite.py` (nuovo) chiede l'URL alla
