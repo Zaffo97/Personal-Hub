@@ -1015,9 +1015,10 @@ sezione è finito:**
   attaccante**.
 
   ⬜ Quello che resta aperto qui:
-  - il consiglio **non guarda l'avversario**: niente casa/trasferta, niente forza
-    della difesa che si affronta. I dati per farlo non sono nel DB (le probabili
-    danno l'avversario, non il suo rendimento), e sarebbe un lavoro a sé
+  - ❌ **l'avversario: non interessa** — deciso da Davide il 22/09/2026. Il
+    consiglio non guarda casa/trasferta né la forza della difesa che si affronta, e
+    resta così: i dati non sono nel DB (le probabili danno l'avversario, non il suo
+    rendimento) e sarebbe stato un lavoro a sé
   - ✅ **il modificatore di difesa, dal 22/09/2026**: i moduli si confrontano sul
     `totale` = punti attesi **più** modificatore stimato, e in una lega che lo usa
     cambia la graduatoria. Il voto atteso è la `media_voto` del listone (il voto
@@ -1030,10 +1031,11 @@ sezione è finito:**
     sempre il modulo con più difensori. La pagina mostra tutti e due i numeri.
     ⬜ Resta che è una **stima**: suppone che i migliori per media voto siano
     quelli che giocano, e non sa niente dell'avversario
-  - **non c'è storico**, quindi *non sarà verificabile a posteriori* se consigliava
-    bene. È la conseguenza della scelta «una formazione per lega, che si sovrascrive»
-    (21/09/2026) ed era già scritta nello schema: per misurare il consiglio servirebbe
-    tenere cosa aveva detto e cosa è poi successo
+  - ❌ **lo storico del consiglio: non interessa** — deciso da Davide il
+    22/09/2026, «o va bene o va male». Resta la conseguenza, scritta perché non
+    venga riscoperta come un baco: non essendoci traccia di **cosa** il consiglio
+    aveva detto, non si potrà mai misurare se consigliava bene. È coerente con «una
+    formazione per lega, che si sovrascrive» (21/09/2026)
   - `bonus_imbattibilita` e `malus_autogol` restano **colonne che nessuno legge**,
     dichiaratamente: manca la statistica
 - ❌ **il secondo sistema: non serve** — deciso da Davide il 22/09/2026, le sue due
