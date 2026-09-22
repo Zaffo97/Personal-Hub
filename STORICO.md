@@ -20,6 +20,30 @@ pagina ed esegue `new Function()` su ogni blocco `<script>` **e** su ogni handle
 
 ## 22/09/2026
 
+**Il ripristino dell'export era rotto da un giorno, e nessuno poteva accorgersene**
+
+`importa_dati.py` moriva con `KeyError: 'id'`: **4 prove su 23**, e le 19 rosse erano
+tutte lo stesso errore. ⚠️ Il verso pericoloso è questo: `esporta_dati.py` continuava
+a scrivere benissimo, quindi la copia di sicurezza c'era e sembrava a posto — a non
+funzionare era **l'unica cosa per cui esiste**, rimetterla dentro. Rotto il 21/09 con
+`fanta_formazione`, che ha la chiave `(league_id, player_id)` e **nessuna colonna
+`id`**: era stata aggiunta a `ORDINE` e non a `CHIAVI`, un dizionario scritto a mano
+col default `("id",)`. Oggi in `hub_export.json` sono 25 righe vere.
+
+La correzione non è la riga mancante nel dizionario: il dizionario **non c'è più**.
+`chiave_di()` chiede la chiave primaria allo schema (`PRAGMA table_info`, colonna
+`pk`), che è la stessa lezione che `esporta_dati.py` aveva già pagato e già scritto
+nel 2026-08 — «l'ordine si chiede allo schema, non lo si indovina» — e che non era
+passata al file gemello. Più due rifiuti nuovi, perché una tabella senza chiave non
+deve morire con un `KeyError` ma **fermarsi nominandosi**: nessuna chiave primaria, o
+chiave che l'export non porta (il giorno che `esporta_dati.py` escludesse una colonna
+di troppo). Senza, quelle righe rientrerebbero **doppie** a ogni riesecuzione.
+
+Verifica: **28 prove su 28** (erano 4 su 23; 23 riparate, 5 nuove — le due del rifiuto
+con le loro «non ha scritto niente», e il **contenuto** di una riga di
+`fanta_formazione` ritrovata per la sua chiave vera, perché il conteggio di tabella è
+proprio ciò che non aveva visto il baco). `prova_esporta_completo.py` 21 su 21.
+
 **Eliminare un utente non perde più metà dei suoi dati, e §4.5 è chiusa**
 
 Il travaso di `utente_elimina()` girava su **quattro** tabelle scritte a mano, ma le

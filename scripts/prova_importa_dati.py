@@ -10,8 +10,10 @@ delle uscite. Un test che condivide lo stato con i dati veri misura anche quelli
 
 Cosa dimostra, in ordine:
 
-- il **giro vero**: DB appena creato da `init_db()` → import → le 9 tabelle hanno le
-  righe dell'export, e l'app ci si apre sopra
+- il **giro vero**: DB appena creato da `init_db()` → import → ogni tabella
+  dell'export ha le sue righe, e l'app ci si apre sopra. ⚠️ Di una si guarda
+  anche il **contenuto**: `fanta_formazione` è l'unica senza una colonna `id`,
+  ed è quella che il 22/09/2026 teneva rotto il ripristino intero
 - **rieseguibile**: la seconda esecuzione non scrive niente e lo dice
 - le **quattro reti** che devono fermarlo: righe in conflitto, `python_topics`
   riordinato con delle spunte da importare, `username` duplicato con `id` diverso,
@@ -121,12 +123,35 @@ def prove(dove):
           and "Non ho scritto niente" in out)
     rc, out = gira(base)
     combaciano = all(conta(base, t) == len(righe) for t, righe in export.items())
-    esito("import su DB vergine -> le 9 tabelle combaciano con l'export",
+    esito("import su DB vergine -> le tabelle dell'export combaciano tutte",
           rc == 0 and combaciano,
           " ".join(f"{t}={conta(base, t)}" for t in export))
     esito("l'utente rientrato senza password è dichiarato a schermo",
           "senza password" in out)
     esito("la copia di sicurezza è stata lasciata", "Copia di sicurezza" in out)
+
+    # ⚠️ Il conteggio non basta, e il 22/09/2026 si è visto perché: la tabella che
+    # ha tenuto rotto **tutto** il ripristino è `fanta_formazione`, l'unica senza
+    # una colonna `id`. Qui si guarda una riga **dentro**, ritrovata per la sua
+    # chiave vera `(league_id, player_id)`: è il caso che la vecchia `chiave_di()`
+    # non sapeva nemmeno indirizzare.
+    schierati = export.get("fanta_formazione") or []
+    if schierati:
+        atteso = schierati[0]
+        c = sqlite3.connect(base)
+        c.row_factory = sqlite3.Row
+        riga = c.execute("SELECT * FROM fanta_formazione WHERE league_id=? AND "
+                         "player_id=?", (atteso["league_id"],
+                                         atteso["player_id"])).fetchone()
+        c.close()
+        esito("la formazione schierata torna indietro riga per riga, non solo come conto",
+              riga is not None
+              and all(riga[k] == v for k, v in atteso.items()),
+              f"({atteso['league_id']}, {atteso['player_id']}) "
+              + ("assente" if riga is None else dict(riga).__str__()[:70]))
+    else:
+        esito("la formazione schierata torna indietro riga per riga, non solo come conto",
+              False, "l'export non ha righe di fanta_formazione: prova non eseguita")
 
     # --- 1b. il ripristino senza listone -------------------------------------
     # ⚠️ Il caso del 21/09/2026: la rosa e la formazione nominano giocatori che
@@ -262,6 +287,41 @@ def prove(dove):
         rc, out = gira(vecchio)
         esito("DB più vecchio dell'export -> si ferma e dice cosa fare",
               rc == 1 and "steam_tags" in out and "init_db()" in out)
+
+    # --- 8. quando non si sa riconoscere «la stessa riga» -------------------
+    # ⚠️ La rete messa il 22/09/2026 **dopo** aver pagato il caso opposto: la chiave
+    # veniva da un dizionario scritto a mano, `fanta_formazione` non c'era, e lo
+    # script moriva con un `KeyError: 'id'` che non diceva né quale tabella né cosa
+    # fare. Ora la chiave si chiede allo schema — e quando lo schema non la dà, o
+    # l'export non la porta, ci si **ferma nominando la tabella** invece di
+    # rifarne le righe doppie a ogni riesecuzione.
+    senza_pk = os.path.join(dove, "senza_pk.db")
+    shutil.copy2(db_vergine(dove, "per_pk.db"), senza_pk)
+    esegui(senza_pk,
+           "DROP TABLE fanta_formazione",
+           "CREATE TABLE fanta_formazione(league_id INTEGER, player_id INTEGER,"
+           " titolare INTEGER NOT NULL, ordine INTEGER NOT NULL, ruolo TEXT)")
+    rc, out = gira(senza_pk)
+    esito("tabella senza chiave primaria -> si ferma e la nomina",
+          rc == 1 and "fanta_formazione" in out and "chiave primaria" in out)
+    esito("   e non ha scritto niente, nemmeno le tabelle sane",
+          conta(senza_pk, "games") == 0, f"games={conta(senza_pk, 'games')}")
+
+    # L'altra metà: lo schema la chiave ce l'ha, ma l'export non la porta. Succede
+    # il giorno che `esporta_dati.py` esclude una colonna di troppo — e allora una
+    # riga dell'export non è più indirizzabile, che è la stessa cosa.
+    monco = os.path.join(dove, "export_monco.json")
+    dati = json.load(io_json(EXPORT))
+    dati["fanta_formazione"] = [{k: v for k, v in r.items() if k != "league_id"}
+                                for r in (dati.get("fanta_formazione") or [])]
+    with open(monco, "w", encoding="utf-8") as f:
+        json.dump(dati, f)
+    pulito = db_vergine(dove, "per_export_monco.db")
+    rc, out = gira(pulito, file=monco)
+    esito("chiave che l'export non porta -> si ferma e dice quale colonna manca",
+          rc == 1 and "fanta_formazione" in out and "league_id" in out)
+    esito("   e anche qui non ha scritto niente",
+          conta(pulito, "games") == 0, f"games={conta(pulito, 'games')}")
 
 
 def io_json(percorso):

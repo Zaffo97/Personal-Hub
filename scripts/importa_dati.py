@@ -10,11 +10,14 @@ e da qui rientrano giochi, team, progetti Arduino, build PC e progresso Python.
 
 **Le regole, e il perché di ognuna:**
 
-- **L'unità è la riga con il suo `id`.** Nessuna fusione per titolo o per nome: due
-  giochi che si chiamano uguale con `id` diversi sono due righe diverse, e indovinare
-  il contrario è il genere di scorciatoia che qui si paga. Le chiavi esterne
-  (`team_members.team_id`, `pc_components.build_id`, `python_progress.topic_id`)
-  puntano a quegli `id`: rimapparli vorrebbe dire riscriverle tutte
+- **L'unità è la riga con la sua chiave primaria**, che per quasi tutte è l'`id` e
+  per `python_progress` e `fanta_formazione` è doppia. Nessuna fusione per titolo o
+  per nome: due giochi che si chiamano uguale con `id` diversi sono due righe
+  diverse, e indovinare il contrario è il genere di scorciatoia che qui si paga. Le
+  chiavi esterne (`team_members.team_id`, `pc_components.build_id`,
+  `python_progress.topic_id`) puntano a quegli `id`: rimapparli vorrebbe dire
+  riscriverle tutte. ⚠️ **La chiave si chiede allo schema, non si indovina** — vedi
+  `chiave_di()`, e il 22/09/2026 sotto
 - **Non sovrascrive niente senza dirlo.** Le righe che nel DB non ci sono entrano; una
   riga già presente e **identica** si salta in silenzio, ed è ciò che rende lo script
   rieseguibile; una riga già presente e **diversa** è un conflitto: lo script si
@@ -96,10 +99,19 @@ ORDINE = [
     "regulations",
 ]
 
-# Come si riconosce "la stessa riga". Il default e' `id`; `python_progress` non ce
-# l'ha, ha la chiave doppia — lo stesso inciampo che in esporta_dati.py faceva
-# dichiarare **assente** una tabella che c'era.
-CHIAVI = {"python_progress": ("user_id", "topic_id")}
+# Come si riconosce "la stessa riga": **si chiede allo schema**, non si indovina.
+#
+# ⚠️ Qui c'era un dizionario scritto a mano con dentro il solo `python_progress`, e un
+# default `("id",)` per tutto il resto. Il 22/09/2026 ha smesso di funzionare in
+# silenzio: `fanta_formazione`, nata il 21/09 con la chiave `(league_id, player_id)` e
+# **senza** colonna `id`, non era stata aggiunta, quindi `indice()` cercava una
+# colonna che non esiste e moriva con `KeyError: 'id'` — 19 prove su 23 rosse, e
+# soprattutto **il ripristino intero rotto**: `esporta_dati.py` continuava a scrivere
+# benissimo, quindi la copia di sicurezza c'era e sembrava a posto, e a non funzionare
+# era l'unica cosa per cui esiste. È esattamente l'inciampo che `esporta_dati.py`
+# aveva già pagato e già scritto (vedi `righe_tabella()`, «l'ordine si chiede allo
+# schema»): la lezione era nel file gemello e non era passata di qua.
+_CACHE_CHIAVI = {}
 
 # Colonne che questo script non **sovrascrive** mai, per tabella. Su una riga nuova
 # invece entrano, se l'export ce le ha: e' cio' che rendera' rileggibile il
@@ -133,8 +145,23 @@ def leggibile(percorso):
     return intero
 
 
-def chiave_di(tabella):
-    return CHIAVI.get(tabella, ("id",))
+def chiave_di(db, tabella):
+    """Le colonne che individuano «la stessa riga», prese dalla chiave primaria.
+
+    Torna una tupla vuota se la tabella non ha una chiave primaria: lì non si tira a
+    indovinare — `piano_tabella()` si ferma e lo dice. Una riga senza un modo per
+    riconoscerla rientrerebbe **doppia** a ogni riesecuzione, che è il contrario di
+    quello che questo script promette.
+    """
+    if tabella in _CACHE_CHIAVI:
+        return _CACHE_CHIAVI[tabella]
+    try:
+        schema = [(r[1], r[5]) for r in db.execute(f"PRAGMA table_info({tabella})")]
+    except sqlite3.Error:
+        schema = []
+    chiave = tuple(nome for nome, pk in sorted(schema, key=lambda x: x[1]) if pk)
+    _CACHE_CHIAVI[tabella] = chiave
+    return chiave
 
 
 def schema_db(db, tabella):
@@ -187,7 +214,19 @@ def piano_tabella(db, tabella, righe_export):
     if assenti:
         return ("SCHEMA", assenti)
 
-    chiave = chiave_di(tabella)
+    # ⚠️ Prima di toccare le righe: la chiave dev'essere **usabile**, cioè esistere e
+    # stare dentro le colonne dell'export. Senza questi due controlli il caso di
+    # `fanta_formazione` usciva come `KeyError: 'id'` dentro `indice()` — un errore
+    # che non dice né quale tabella né cosa fare, e che ha tenuto rotto il ripristino
+    # per un giorno intero senza che l'export desse il minimo segno.
+    chiave = chiave_di(db, tabella)
+    if not chiave:
+        return ("CHIAVE", "non ha una chiave primaria: non c'è modo di sapere se una "
+                          "riga dell'export è già dentro")
+    fuori_export = [c for c in chiave if colonne_export and c not in colonne_export]
+    if fuori_export:
+        return ("CHIAVE", "la chiave primaria è (" + ", ".join(chiave) + ") e "
+                          "nell'export manca " + ", ".join(fuori_export))
     presenti = indice(db, tabella, colonne_export, chiave) if colonne_export else {}
     nuove, identiche, conflitti = [], 0, []
     for riga in righe_export:
@@ -262,7 +301,7 @@ def inserisci(db, tabella, riga):
 
 
 def sovrascrivi_riga(db, tabella, riga):
-    chiave = chiave_di(tabella)
+    chiave = chiave_di(db, tabella)
     fuori = MAI_SOVRASCRITTE.get(tabella, set()) | set(chiave)
     colonne = [c for c in riga.keys() if c not in fuori]
     if not colonne:
@@ -301,7 +340,7 @@ def main():
     db.execute("PRAGMA foreign_keys = ON")
 
     # --- Il piano, tabella per tabella -------------------------------------
-    piani, mancanti, schema_rotto = {}, [], []
+    piani, mancanti, schema_rotto, chiave_rotta = {}, [], [], []
     for tabella in ORDINE:
         righe = dati.get(tabella)
         if righe is None:
@@ -313,6 +352,9 @@ def main():
             continue
         if p[0] == "SCHEMA":
             schema_rotto.append((tabella, "colonne assenti nel DB: " + ", ".join(p[1])))
+            continue
+        if p[0] == "CHIAVE":
+            chiave_rotta.append((tabella, p[1]))
             continue
         piani[tabella] = p
 
@@ -346,6 +388,15 @@ def main():
             print(f"      {tabella}: {perche}")
         print("\n    Lo schema lo porta avanti `init_db()`, non questo script: avvia")
         print("    l'app una volta e riprova. Scrivere ora perderebbe quelle colonne.")
+        db.close()
+        return 1
+
+    if chiave_rotta:
+        print("\n⚠️  INTERROTTO: non so riconoscere «la stessa riga».")
+        for tabella, perche in chiave_rotta:
+            print(f"      {tabella}: {perche}")
+        print("\n    La chiave si chiede allo schema, e senza non si tira a indovinare:")
+        print("    scrivere ora rifarebbe quelle righe **doppie** a ogni riesecuzione.")
         db.close()
         return 1
 
@@ -478,7 +529,7 @@ def main():
             if args.sovrascrivi:
                 for chiave, _ in conflitti:
                     riga = next(r for r in dati[tabella]
-                                if tuple(r[c] for c in chiave_di(tabella)) == chiave)
+                                if tuple(r[c] for c in chiave_di(db, tabella)) == chiave)
                     # ⚠️ `rowcount` a zero e' la trappola gia' pagata in `_team_upsert()`:
                     # un UPDATE che non tocca niente non da' errore, e il codice sotto
                     # continua come se avesse funzionato.
