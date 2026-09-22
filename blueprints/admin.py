@@ -14,7 +14,8 @@ from flask import (Blueprint, render_template, request, redirect, url_for, flash
                    session)
 
 from data import SEZIONI, SEZIONI_SLUG
-from extensions import get_db, login_required, NESSUNA_SEZIONE, hash_password
+from extensions import (get_db, login_required, NESSUNA_SEZIONE, hash_password,
+                        TABELLE_UTENTE, tabelle_senza_regola)
 
 bp = Blueprint("admin", __name__, url_prefix="/admin")
 
@@ -184,19 +185,57 @@ def utente_elimina(uid):
     # ⚠️ Va fatto **prima** della DELETE: `get_db()` accende le chiavi esterne e
     # `user_id` punta a `users(id)`, quindi senza il travaso la cancellazione
     # fallirebbe invece di lasciare righe orfane.
+    # ⚠️ E l'elenco delle tabelle **non sta più qui**: sta in `TABELLE_UTENTE`, con
+    # accanto cosa farne. Scritto a mano, si era fermato a quattro mentre le
+    # tabelle erano sei (22/09/2026) — la spiegazione lunga è in `extensions.py`.
+    ignote = tabelle_senza_regola(db)
+    if ignote:
+        db.close()
+        flash(f"Non elimino «{r['username']}»: {', '.join(ignote)} " +
+              ("ha" if len(ignote) == 1 else "hanno") + " un proprietario e "
+              "nessuna regola in TABELLE_UTENTE, quindi non so se le sue righe "
+              "vadano passate o cancellate. Va deciso lì, non qui.", "error")
+        return redirect(url_for("admin.utenti"))
     io_admin = db.execute("SELECT id FROM users WHERE username=?",
                           (session.get("username"),)).fetchone()
+    if not io_admin:
+        db.close()
+        flash("Non elimino nessuno: non riesco a ritrovare il tuo utente, quindi "
+              "non ho a chi intestare i contenuti di chi se ne va.", "error")
+        return redirect(url_for("admin.utenti"))
     passati = 0
-    if io_admin:
-        for tabella in ("games", "teams", "arduino_projects", "pc_builds"):
-            cur = db.execute(f"UPDATE {tabella} SET user_id=? WHERE user_id=?",
-                             (io_admin["id"], uid))
-            passati += cur.rowcount
-    db.execute("DELETE FROM users WHERE id=?", (uid,))
-    db.commit(); db.close()
+    cancellate = {}
+    try:
+        for tabella, regola in TABELLE_UTENTE.items():
+            if regola == "passa":
+                cur = db.execute(f"UPDATE {tabella} SET user_id=? WHERE user_id=?",
+                                 (io_admin["id"], uid))
+                passati += cur.rowcount
+            else:
+                cur = db.execute(f"DELETE FROM {tabella} WHERE user_id=?", (uid,))
+                if cur.rowcount:
+                    cancellate[tabella] = cur.rowcount
+        db.execute("DELETE FROM users WHERE id=?", (uid,))
+        db.commit()
+    except Exception as e:
+        # ⚠️ Senza questo ramo una chiave esterna dimenticata diventava un 500 con
+        # la connessione aperta, e l'utente restava lì senza che la pagina lo
+        # dicesse. Meglio un messaggio che nomina l'errore: è il sintomo di una
+        # tabella che `TABELLE_UTENTE` non copre come crede.
+        db.rollback(); db.close()
+        flash(f"Utente «{r['username']}» non eliminato, e il DB è com'era: {e}",
+              "error")
+        return redirect(url_for("admin.utenti"))
+    db.close()
+    pezzi = [f"Utente «{r['username']}» eliminato."]
     if passati:
-        flash(f"Utente «{r['username']}» eliminato. {passati} righe di contenuto "
-              "sono passate a te.", "success")
-    else:
-        flash(f"Utente «{r['username']}» eliminato.", "success")
+        pezzi.append(f"{passati} righe di contenuto sono passate a te.")
+    if cancellate:
+        # Nominate una per una invece che sommate: è **stato personale** che
+        # sparisce, non contenuto che cambia mano, e chi preme il pulsante ha il
+        # diritto di sapere cosa ha portato via.
+        quali = ", ".join(f"{q} in {t}" for t, q in cancellate.items())
+        pezzi.append(f"Righe cancellate perché sono lo stato personale di chi se "
+                     f"ne va, non contenuto: {quali}.")
+    flash(" ".join(pezzi), "success")
     return redirect(url_for("admin.utenti"))

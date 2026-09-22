@@ -53,7 +53,14 @@ SORGENTI = [os.path.join(BASE, "blueprints"), BASE]
 # Le quattro radici hanno la colonna. I due figli il proprietario lo **ereditano**
 # dal padre con una join, quindi una query su di loro è a posto se passa per l'id
 # del padre — che a sua volta va filtrato: per questo restano in elenco.
-RADICI = ("games", "teams", "arduino_projects", "pc_builds", "fanta_leagues")
+# ⚠️ `python_progress` entra il 22/09/2026, **insieme al codice che la tocca** — il
+# travaso di `admin.py`, che prima la dimenticava. Fino a quel giorno era fuori dal
+# raggio, quindi le sue 6 query non erano né filtrate né scoperte: non esistevano, e
+# questo script diceva «0 scoperte» senza averle guardate. È la terza volta che
+# succede (le due del Fantacalcio il 21/09), ed è la ragione per cui una tabella
+# nuova si aggiunge qui **prima** di scrivere la query che la usa.
+RADICI = ("games", "teams", "arduino_projects", "pc_builds", "fanta_leagues",
+          "python_progress")
 FIGLIE = ("team_members", "pc_components", "fanta_roster", "fanta_formazione")
 # `python_topics` è l'elenco fisso dei 53 argomenti, condiviso di suo: quello che è
 # personale è la spunta, che dal blocco Python vivrà in `python_progress`.
@@ -105,6 +112,25 @@ ECCEZIONI = {
      "SELECT DISTINCT squadra FROM fanta_players WHERE squadra IS NOT NULL "
      "AND attivo=1 ORDER BY squadra"):
         "le venti squadre di Serie A, per la tendina del filtro: dato condiviso",
+    # ⚠️ Questa è **la** query che ha fatto trovare il buco di §4.5 il 22/09/2026:
+    # fino a quel giorno passava per filtrata, e la ragione era sbagliata — non
+    # perché il listone è condiviso, ma perché nella stessa funzione compare un
+    # `ambito_utente()` e la query ha dei pezzi calcolati. Ora la ragione è scritta.
+    ("blueprints/fantacalcio.py", "listone",
+     "SELECT * FROM fanta_players{…} ORDER BY ({…} IS NULL), {…}, nome"):
+        "le righe del listone da mostrare: dato condiviso, e i pezzi calcolati "
+        "sono i filtri della tendina e l'ORDER BY, che col proprietario non "
+        "c'entrano. Quello che in quella pagina è **tuo** — in quali rose sta un "
+        "giocatore — lo legge _rose(), che passa da ambito_utente() sulle leghe",
+    # La lega nuova: il proprietario questa query lo **scrive**, non lo legge, e
+    # `user_id` non compare nel testo solo perché l'elenco delle colonne si
+    # costruisce da `comuni`, dove è stato appena messo con `utente_id()`.
+    ("blueprints/fantacalcio.py", "lega_salva",
+     "INSERT INTO fanta_leagues({…}) VALUES({…})"):
+        "la INSERT della lega nuova: due righe sopra fa "
+        "`comuni['user_id'] = utente_id()`, quindi il proprietario lo scrive lei. "
+        "Il ramo che **modifica** una lega esistente, lì accanto, filtra con "
+        "solo_mie()",
     ("blueprints/fantacalcio.py", "api_giocatore",
      "SELECT * FROM fanta_players WHERE id=?"):
         "la riga di listone di un giocatore: dato condiviso, ed è il contenuto "
@@ -404,8 +430,21 @@ ECCEZIONI = {
     ("blueprints/admin.py", "utente_elimina",
      "UPDATE {…} SET user_id=? WHERE user_id=?"):
         "il travaso dei contenuti di un utente che viene eliminato: gira sulle "
-        "quattro radici e **cambia** il proprietario, non lo legge. Route da "
-        "amministratore",
+        "tabelle di `TABELLE_UTENTE` marcate `passa` e **cambia** il "
+        "proprietario, non lo legge. Route da amministratore",
+    # ⚠️ La riga sopra diceva «gira sulle quattro radici», ed era vero fino al
+    # 22/09/2026: erano quattro scritte a mano, le tabelle con un `user_id` erano
+    # sei, e le due dimenticate rompevano in silenzio. Ora l'elenco è
+    # `TABELLE_UTENTE` in `extensions.py`, accoppiato allo schema vero da
+    # `tabelle_senza_regola()`, e questa route **si rifiuta** se ne trova una che
+    # non conosce. Resta una query a tabella calcolata, e resta da leggere a mano:
+    # è quello che questo script non può fare per nessuno.
+    ("blueprints/admin.py", "utente_elimina",
+     "DELETE FROM {…} WHERE user_id=?"):
+        "la seconda metà dello stesso travaso: le tabelle marcate `cancella` in "
+        "`TABELLE_UTENTE` tengono **stato personale**, non contenuto (oggi solo "
+        "`python_progress`), e intestarlo a un altro vorrebbe dire scrivere che "
+        "ha fatto cose che non ha fatto. Quante righe erano si dice a schermo",
     ("extensions.py", "init_db",
      "UPDATE {…} SET user_id=? WHERE user_id IS NULL"):
         "la migrazione del 19/08/2026 che intesta ad admin le righe nate prima del "
@@ -439,6 +478,27 @@ def testo(nodo):
                 pezzi.append("{…}")
         return "".join(pezzi)
     return None
+
+
+def nomi_innestati(nodo):
+    """I nomi di variabile innestati in una f-string, quando sono nomi e basta.
+
+    ⚠️ Serve perché `{…}` da solo **non dice quale** pezzo è stato innestato, e su
+    quella confusione si reggeva il punto cieco chiuso il 22/09/2026: bastava che
+    in una funzione comparisse `ambito_utente()` perché **qualunque** query con un
+    pezzo calcolato passasse per filtrata. Succedeva a `listone()`, dove il pezzo
+    calcolato è l'ORDER BY della tendina e col proprietario non c'entra niente.
+    Un `{cond[0]}` o un `{" ".join(...)}` qui non tornano: è voluto, perché il
+    riconoscimento dev'essere stretto — quello che non riconosce finisce fra le
+    scoperte, che è il verso giusto in cui sbagliare.
+    """
+    fuori = set()
+    if not isinstance(nodo, ast.JoinedStr):
+        return fuori
+    for v in nodo.values:
+        if isinstance(v, ast.FormattedValue) and isinstance(v.value, ast.Name):
+            fuori.add(v.value.id)
+    return fuori
 
 
 def query_del_file(percorso):
@@ -487,6 +547,7 @@ def query_del_file(percorso):
         if (isinstance(n, ast.Call) and isinstance(n.func, ast.Name)
                 and n.func.id in ("ambito_utente", "solo_mie")):
             con_ambito.add(funzione_di(n))
+    chiamano_ambito = set(con_ambito)
     # ⚠️ Dal 21/09/2026 c'è un secondo modo, e senza questo pezzo una query fatta
     # **bene** risultava scoperta: `fanta_import._rose()` non chiama
     # `ambito_utente()` — non potrebbe, la chiamano anche gli script, che una
@@ -507,6 +568,54 @@ def query_del_file(percorso):
         if usato:
             con_ambito.add(n.name)
 
+    # ⚠️ Chiedere `ambito_utente()` da qualche parte nella funzione **non basta**:
+    # conta che sia proprio *quella* variabile a finire dentro *quella* query. È il
+    # buco di §4.5, trovato il 22/09/2026 e chiuso qui. Si prende quindi il nome a
+    # cui la condizione viene legata — `cond, par = ambito_utente()`, oppure
+    # `cond, par = ambito` in chi la riceve come parametro — e si guarda se è lui
+    # il segnaposto della query. Un'assegnazione a un nome solo (`ambito =
+    # ambito_utente(...)`, che tiene la coppia intera) non conta: quel nome nel
+    # `WHERE` non ci finisce mai.
+    nomi_ambito = {}
+    for n in ast.walk(albero):
+        if not isinstance(n, ast.Assign) or len(n.targets) != 1:
+            continue
+        v, dove = n.value, funzione_di(n)
+        da_ambito = (isinstance(v, ast.Call) and isinstance(v.func, ast.Name)
+                     and v.func.id in ("ambito_utente", "solo_mie"))
+        if not da_ambito:
+            da_ambito = (isinstance(v, ast.Name) and v.id == "ambito"
+                         and dove in con_ambito - chiamano_ambito)
+        if not da_ambito:
+            continue
+        t = n.targets[0]
+        if isinstance(t, ast.Tuple) and t.elts and isinstance(t.elts[0], ast.Name):
+            nomi_ambito.setdefault(dove, set()).add(t.elts[0].id)
+
+    # La condizione fa **un pezzo di strada** prima di arrivare nella query, e
+    # seguirlo fa parte del riconoscimento: `rosa_rimuovi()` scrive
+    # `mia = f"league_id IN (SELECT l.id FROM fanta_leagues l WHERE {cond})"` e poi
+    # innesta `{mia}`. È filtrata, e fermarsi a `cond` l'avrebbe data per scoperta.
+    # Si va a punto fisso perché la catena può essere lunga più di un passo; il
+    # legame resta stretto — serve un'assegnazione a un nome, da una f-string che
+    # innesta un nome **già** riconosciuto. Una condizione che passa per una
+    # `join()` o per un parametro di funzione qui non arriva, ed è giusto così:
+    # quello che non si riconosce va a finire fra le scoperte, non fra le filtrate.
+    assegnazioni = [n for n in ast.walk(albero)
+                    if isinstance(n, ast.Assign) and len(n.targets) == 1
+                    and isinstance(n.targets[0], ast.Name)
+                    and isinstance(n.value, ast.JoinedStr)]
+    cambiato = True
+    while cambiato:
+        cambiato = False
+        for n in assegnazioni:
+            dove = funzione_di(n)
+            noti = nomi_ambito.get(dove, set())
+            nome = n.targets[0].id
+            if nome not in noti and (nomi_innestati(n.value) & noti):
+                nomi_ambito.setdefault(dove, set()).add(nome)
+                cambiato = True
+
     fuori = []
     for n in ast.walk(albero):
         if id(n) in docstring or id(n) in dentro_fstring:
@@ -523,7 +632,8 @@ def query_del_file(percorso):
             "funzione": funzione_di(n),
             "sql": normalizza(s),
             "tabelle": sorted({m.lower() for m in CITA.findall(s)}),
-            "ambito": funzione_di(n) in con_ambito,
+            "cond_innestata": bool(nomi_innestati(n)
+                                   & nomi_ambito.get(funzione_di(n), set())),
         })
     return fuori
 
@@ -587,8 +697,11 @@ def main():
                 dichiarate.append(q)
             elif "user_id" in q["sql"].lower():
                 filtrate.append(q)
-            elif q["ambito"] and "{…}" in q["sql"]:
-                # La condizione è quella di `ambito_utente()`, innestata nella query.
+            elif q["cond_innestata"]:
+                # Il segnaposto di questa query **è** la variabile che tiene la
+                # condizione di `ambito_utente()`/`solo_mie()`. Fino al 22/09/2026
+                # qui bastava un `{…}` qualsiasi in una funzione che da qualche
+                # parte chiamava `ambito_utente()`: vedi `nomi_innestati()`.
                 filtrate.append(q)
             elif chiave in ECCEZIONI:
                 q["perche"] = ECCEZIONI[chiave]

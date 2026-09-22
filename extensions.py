@@ -758,6 +758,57 @@ def solo_mie(colonna="user_id"):
     return f"{colonna}=?", [uid]
 
 
+# --- Le tabelle che hanno un proprietario -----------------------------------
+# Non è un promemoria: è l'elenco su cui gira il travaso di `admin.py`, e sta qui
+# perché dev'esserne **uno solo**. La lezione è del 22/09/2026: l'elenco viveva
+# scritto a mano dentro `utente_elimina()` e si era fermato alle quattro radici del
+# 19/08, mentre le tabelle con un `user_id` erano diventate sei. Le due dimenticate
+# fallivano in due modi opposti, e nessuno dei due si vedeva leggendo il codice:
+# `fanta_leagues` non ha una chiave esterna verso `users`, quindi l'utente spariva e
+# la sua lega restava intestata a un id che non esiste più, portandosi dietro rosa e
+# formazione; `python_progress` invece la chiave esterna ce l'ha, quindi la
+# cancellazione **falliva** — FOREIGN KEY constraint failed, 500, e la connessione
+# nemmeno chiusa.
+#
+# Cosa dice il valore:
+#   `passa`    → le righe cambiano proprietario. Sono **contenuto**, nessuna fonte
+#                sa ricostruirle, e non si perde niente (decisione del 19/08/2026)
+#   `cancella` → le righe si cancellano, e quante erano **si dice a schermo**. Non
+#                sono contenuto, sono lo stato personale di chi non c'è più:
+#                intestare a un altro le spunte di Python vorrebbe dire scrivere
+#                che ha fatto cose che non ha fatto, cioè inventare un dato
+TABELLE_UTENTE = {
+    "games": "passa",
+    "teams": "passa",
+    "arduino_projects": "passa",
+    "pc_builds": "passa",
+    "fanta_leagues": "passa",
+    "python_progress": "cancella",
+}
+
+
+def tabelle_con_user_id(db):
+    """Le tabelle che nello schema **vero** hanno una colonna `user_id`."""
+    nomi = [r[0] for r in db.execute(
+        "SELECT name FROM sqlite_master WHERE type='table' "
+        "AND name NOT LIKE 'sqlite_%' ORDER BY name")]
+    return [n for n in nomi
+            if any(c["name"] == "user_id" for c in db.execute(f"PRAGMA table_info({n})"))]
+
+
+def tabelle_senza_regola(db):
+    """Le tabelle con un proprietario di cui `TABELLE_UTENTE` non dice niente.
+
+    È il pezzo che tiene l'elenco attaccato allo schema invece che alla memoria di
+    chi lo legge: una settima tabella con un `user_id` compare **qui**, e chi la
+    aggiunge se la trova davanti, invece di scoprirla un anno dopo da una lega
+    orfana. Chi la usa deve **fermarsi**, non tirare a indovinare: passare o
+    cancellare le righe di una tabella che non si conosce è esattamente il
+    fallback silenzioso che questo progetto paga ogni volta.
+    """
+    return [t for t in tabelle_con_user_id(db) if t not in TABELLE_UTENTE]
+
+
 def _i(v, d=0):
     try: return int(v)
     except: return d

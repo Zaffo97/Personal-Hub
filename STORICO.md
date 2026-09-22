@@ -20,6 +20,37 @@ pagina ed esegue `new Function()` su ogni blocco `<script>` **e** su ogni handle
 
 ## 22/09/2026
 
+**Eliminare un utente non perde più metà dei suoi dati, e §4.5 è chiusa**
+
+Il travaso di `utente_elimina()` girava su **quattro** tabelle scritte a mano, ma le
+tabelle con un `user_id` erano diventate **sei**. Le due dimenticate rompevano in due
+modi opposti, misurati su una copia di `hub.db`: con una spunta di Python addosso la
+`DELETE` **falliva** (`FOREIGN KEY constraint failed`, 500, connessione non chiusa),
+e con una lega del Fantacalcio l'utente spariva lasciando la lega intestata a un id
+inesistente **con 3 righe di rosa e 3 di formazione appese**, invisibili a tutti.
+Ora l'elenco è `TABELLE_UTENTE` in `extensions.py` — una sola copia, con accanto se
+le righe **passano** (contenuto) o si **cancellano** (stato personale: oggi solo
+`python_progress`, e quante erano si legge a schermo) — ed è tenuto attaccato allo
+schema vero da `tabelle_senza_regola()`: una settima tabella con un `user_id` fa
+**rifiutare** la route, che la nomina, invece di lasciare orfani. Più il `try` che
+mancava: un errore ora dice cosa è successo e lascia il DB com'era.
+
+Nello stesso giro il punto cieco di §4.5: `controlla_proprietario.py` contava
+**filtrata** qualunque query con un pezzo calcolato, purché nella stessa funzione
+comparisse `ambito_utente()`. Ora guarda **quale** variabile è innestata in quella
+query — `nomi_innestati()` tiene i nomi invece di `{…}` — e segue la catena a punto
+fisso (`mia = f"… WHERE {cond}"` → `{mia}`). Effetto misurato: 3 query uscite dalle
+filtrate — `listone()` e la INSERT di `lega_salva()`, entrambe giuste ma per una
+ragione **diversa** da quella che lo script credeva, ora scritta; e la INSERT del
+listone in `fanta_import.py`, che un'eccezione ce l'aveva già e non l'aveva mai
+usata. Aggiunta `python_progress` al raggio: era fuori, quindi le sue query non
+erano né filtrate né scoperte — **non esistevano**, ed è la terza volta.
+
+Verifica: **27 prove su 27** con `scripts/prova_travaso_utente.py` (nuovo, guida la
+route vera dal test client), `controlla_proprietario.py` a **0 scoperte e 0 a
+tabella calcolata** su **162** query (erano 157), **245 su 245** sul Fantacalcio,
+**sweep a 0 errori** su 28 pagine.
+
 **Fantacalcio: il listone da sfogliare, svuota rosa, il timer della giornata e il
 consiglio sotto il campo (§4.2)**
 
