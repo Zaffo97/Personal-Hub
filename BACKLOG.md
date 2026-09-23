@@ -640,7 +640,7 @@ quattro cose richiedono **fonti diverse**:
 | ⚠️ | **`puo_evolversi` ha tre valori** | Lo scrive `scripts/importa_evoluzioni.py` su **1342 voci su 1342**, per forma e non per specie: Corsola di Galar sì, quella di Kanto no, le Mega mai. **Assente vuol dire «non lo sappiamo»**, e l'Evolcondensa lo dice a schermo («evoluzione non nota»), come `moves: null`. ✅ **Dal 21/09/2026 sono 1342 su 1342**: le ultime due, le Mega Meowstic, hanno preso lo slug e con lui l'esito. L'import dal pannello lo calcola da sé (`pokeapi.evoluzioni()`); **una voce aggiunta a mano dall'editor invece nasce senza**, e va rilanciato lo script. Nelle forme **non si eredita** dalla specie in `api_pokemon.py`: ereditarlo darebbe `true` a tutte le Mega |
 | ✅ | **L'hover del tema scuro sotto soglia: resta com'è, deciso da Davide il 22/09/2026** | Trovato il 22/09/2026 scrivendo `scripts/prova_temi.py`, e **non corretto** perché è il colore principale dell'hub e la decisione è di Davide, non mia. `.btn-primary:hover` usa `--primary-h: #9488f7`, e il bianco sopra dà **2.95** — sotto il pavimento di 3.0, cioè illeggibile anche per un testo grande. Gli altri tre temi stanno fra 3.48 e 8.04. ⚠️ Due cose lo rendono meno grave di come suona: è uno stato **transitorio** (col mouse sopra), e da fermo lo stesso pulsante sta a 3.99. Il tema scuro è così **da sempre** — l'hover schiarisce invece di scurire, ed è la scelta di disegno di tutta la palette. Chiuderlo vuol dire scurire `--primary-h` verso #6a5ce0 circa, e accettare che l'hover diventi più scuro del pulsante fermo. La misura resta dichiarata in `DICHIARATE` dentro `prova_temi.py`, che la **ristampa a ogni esecuzione**: non è più una voce aperta, è una scelta, e va riletta solo se un giorno si rifà la palette |
 | ✅ | **Limiti dichiarati degli oggetti nel calcolatore** | **Chiusi il 23/09/2026.** Guantone (toglie il contatto), Plessimetro (campo «Uso n.», tetto ×2) e i quattro semi (+1 grado col loro terreno) sono nel motore; Metalpolvere e gemme **non erano bachi** — un Ditto caricato è per forza non trasformato, e un calcolo singolo è il primo colpo. Numeri in `STORICO.md` |
-| ⬜ | **Tre mosse di pugno senza nessun flag** | Trovato il 23/09/2026 provando il Guantone, e **non corretto** perché fuori scope. `Rage Fist`, `Jet Punch` e `Headlong Rush` hanno `flags: None` in `data/catalog/moves.json`: niente `punch`, e niente `contact`. Quindi col Guantone non si attivano, e Unghiedure e Lanugine non le vedono, **senza nessun errore**. ⚠️ `None` non è raro — 363 mosse su 919 — ma per la gran parte sono mosse di stato o a distanza, dove è giusto: la domanda da farsi prima di correggere è **quali altre mosse da contatto** sono in quel mucchio, e la fonte va decisa (PokéAPI non ha i flag). ⚠️ E `Double Shock` col flag `punch` **non è un errore**: la 1.2.0 di Champions l'ha resa una mossa di pugno, vedi `allinea_dati_mosse_champions.py` |
+| ⬜ | **Le mosse di pugno: tre mancano e una è di troppo** | Trovato il 23/09/2026 provando il Guantone, e **non corretto** perché fuori scope. Bulbapedia (*Punching move*) ne elenca **25**, il catalogo ne ha **23**: mancano `Rage Fist`, `Jet Punch` e `Headlong Rush`, che hanno `flags: None` — niente `punch` e niente `contact`, quindi col Guantone non si attivano e Unghiedure e Lanugine non le vedono, **senza nessun errore** — e c'è di troppo `Storm Throw`, che Bulbapedia non elenca e il dump nemmeno: il `punch` viene dal file storico `moves_ma.json`. ⚠️ **La causa dei tre buchi è il dump, e non è che «PokéAPI non ha i flag»**: `move_flag_map.csv` li ha per **748 mosse**, ma nessuna di Gen 8-9 (Rage Fist 889, Jet Punch 857, Headlong Rush 838, Double Shock 892: zero righe). Quindi il buco non è di tre mosse, è di **tutte le mosse recenti**: contate il 23/09/2026, fra le mosse di danno con id ≥ 827 (Gen 8-9) **77 non hanno nessuna riga di flag nel dump**, e nel catalogo **70** di queste hanno `flags: None`. Le altre 7 hanno flag scritti a mano e vanno verificate anche loro (Aqua Cutter e Mountain Gale risultano `contact`). Il `contact` va quindi contato su quelle 77 prima di correggere: la fonte per loro è Bulbapedia, come per la 1.2.0. ⚠️ `Double Shock` col flag `punch` **è giusto**: sta nell'elenco di Bulbapedia, e la 1.2.0 di Champions l'ha resa un pugno (vedi `allinea_dati_mosse_champions.py`) |
 
 ## 4. Voci minori, per sezione
 
@@ -1132,6 +1132,29 @@ sa dal codice, non un piano.
   rispondere prima di scrivere una riga è **quali colonne la fonte comanda e quali
   no**, e la regola d'oro dei dati vale sempre: si scrive con `salva_catalogo()` e
   `_save_abilities()`, che fanno la copia di sicurezza.
+
+  **Misurato il 23/09/2026, e la domanda cambia forma.**
+  - **Il catalogo e il dump oggi coincidono quasi del tutto**: su 1342 voci (specie e
+    forme, tutte con uno slug nel dump) **1318** hanno stat, tipi e abilità identici.
+    Le **24** che differiscono sono le curate: abilità diverse su 23 (quasi tutte Mega di
+    Champions, più Samurott, Goodra, Decidueye e Avalugg di Hisui e Palafin), tipi su 3
+    (Mega Clefable, Meganium, Feraligatr), stat su 1 (Mega Floette). Un aggiornamento
+    che «riallinea» le voci esistenti toccherebbe **solo quelle 24**, cioè esattamente
+    il lavoro da non perdere.
+  - **Quello che il dump porterebbe oggi di nuovo è quasi niente**: dry-run di
+    `build_catalog.py` → +3 specie, +1 mossa, +1 abilità, +1 oggetto. E il dump è **fermo**
+    (§5.2: Champions fino a M-B, ultimo commit del 21/07/2026).
+  - ⚠️ **E le +3 specie sono tre doppioni.** Sono `aegislash-shield`, `morpeko-full-belly`
+    e `palafin-zero`, che nel catalogo ci sono già come `aegislash-shield-forme`,
+    `morpeko-full-belly-mode` e `palafin-zero-form`. `build_catalog.py` confronta chiave e
+    nome, **non lo slug**, quindi lanciato davvero li scriverebbe, e il suo riassunto
+    direbbe «voci curate modificate: 0» — vero, e fuorviante. Il pannello `/pesca` questa
+    porta l'ha chiusa il 10/09 (STORICO, «doppione sotto un'altra chiave»), lo script no.
+    Non corretto: va deciso insieme al pulsante, che ci starebbe sopra.
+  - Quindi il pezzo che manca non è «sovrascrivere dalla fonte», è **accorgersi quando la
+    fonte cambia**: le voci nuove entrano (come fa già `build_catalog.py`, una volta
+    chiusa la porta dei doppioni), e le differenze sulle voci esistenti si **mostrano**
+    per una decisione, non si applicano.
 - ⬜ **Un pulsante per creare una regulation nuova senza inserire i dati a mano**,
   con una **fonte affidabile da cui confrontare i dati**. Il guscio c'è dal
   10/09/2026 (§1.3, la regulation nuova dall'interfaccia): quello che manca è la
