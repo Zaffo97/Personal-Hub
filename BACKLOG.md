@@ -1161,6 +1161,37 @@ sa dal codice, non un piano.
   10/09/2026 (§1.3, la regulation nuova dall'interfaccia): quello che manca è la
   fonte. ⚠️ È la stessa domanda di §2.3 e §5.2 — un roster e un moveset non si
   inventano, e finché la fonte non è decisa questa voce non è pronta.
+
+  **Fonti decise da Davide il 23/09/2026**: Serebii e Game8, come per M-C, più
+  Bulbapedia. **Misurato lo stesso giorno, senza scrivere niente:**
+  - **Bulbapedia** ha una pagina per regulation («Regulation Set M-A/M-B/M-C»), con il
+    roster **completo** in righe `{{CPCard|numero|nome|ig=-Forma}}`: 272, 310 e 344
+    schede, Mega comprese. **Serebii** ha `pokemonchampions/rankedbattle/regulationm-c.shtml`
+    con **solo le aggiunte** («Newly Useable Pokémon», icone `NNN-suffisso`) e — la parte
+    che nessun'altra fonte dava — **«Newly Added Items»**.
+  - **Le due fonti concordano specie per specie**: M-A 186 e 186, M-B 208 e 208, zero
+    differenze; in M-C l'unica è **Kingambit**, che Serebii ha e Bulbapedia no.
+  - **E insieme dicono che i nostri roster hanno errori.** In M-B mancano **nove
+    specie** che entrambe le fonti danno: Annihilape, Gholdengo, Grimmsnarl, Houndstone,
+    Mawile (con la Mega), Musharna, Overqwil, Qwilfish, Vileplume. **Pawmot** è nel nostro
+    MA e MB, mentre Serebii lo mette fra i **nuovi di M-C** e Bulbapedia non lo ha prima.
+    **Hisuian Arcanine** è in tutte e tre per Bulbapedia, in nessuna delle nostre.
+    Squawkabilly: Bulbapedia elenca 4 piumaggi, noi 1. Da noi e non da loro, **per
+    convenzione nostra**: le forme di battaglia (Aegislash Spada, Castform, Morpeko,
+    Palafin Eroe), Maushold da tre, Mega Meowstic femmina. Nomi da mappare: Gourgeist
+    «Jumbo» è il nostro «Super», Vivillon «Fancy» è Vivillon.
+  - **Gli oggetti hanno una fonte**, e il buco dichiarato di §2.3 si chiude: M-B aggiunge
+    **15** oggetti (Wide Lens, Muscle Band, Wise Glasses, Expert Belt, Light Clay, **Life
+    Orb**, Zoom Lens, **Metronome**, Iron Ball, le quattro rocce, Shed Shell, Big Root) e
+    M-C **12** (Leek, Rocky Helmet, Air Balloon, Red Card, Binding Band, Eject Button,
+    Normal Gem, Terrain Extender, i quattro semi). Nessuno è fra i 58 di MA. Oggi MB e MC
+    copiano i 58, quindi **con MB scelta il calcolatore non offre Life Orb**.
+  - ⬜ Game8 non l'ho ancora letto: serve come terzo voto dove le prime due non
+    concordano (oggi solo Kingambit).
+  - Il pulsante, quindi, è il confronto qui sopra reso ripetibile: legge le due fonti,
+    le risolve sul catalogo (numero + forma → slug del dump), **mostra** accordi e
+    disaccordi, e scrive solo dopo una conferma. Il primo uso sarebbe correggere MA, MB e
+    MC stesse — ma quello cambia dati curati, e va deciso da Davide.
 - ✅ **Gli sprite mancanti** — chiusi il 22/09/2026: da **333 URL rotti a 0**, numeri
   in `STORICO.md`. ⚠️ Il rimando «sta anche in §3» era **stale**: in §3 non c'era
   niente sugli sprite.
