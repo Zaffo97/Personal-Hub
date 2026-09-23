@@ -20,6 +20,19 @@ pagina ed esegue `new Function()` su ogni blocco `<script>` **e** su ogni handle
 
 ## 23/09/2026
 
+**23 flag sbagliati tolti — decisione di Davide**
+
+Il rovescio del giro sui flag: `integra_flag_mosse.py` aggiunge soltanto, e aveva trovato
+flag **di troppo**, tutti dal file storico `moves_ma.json`. `scripts/togli_flag_sbagliati.py`
+li toglie: `contact` da **19 mosse vecchie** (Absorb, Beak Blast, Beat Up, Bone Club, Bulk Up,
+Glacial Lance, Grass Pledge, Icicle Crash, Metal Burst, Mud Slap, Pin Missile, Rock Tomb, Sacred
+Fire, Seed Bomb, Sky Attack, Snarl, Spirit Shackle, Stone Edge, Twineedle) e da **3 di Gen 9**
+(Aqua Cutter, Gigaton Hammer, Mountain Gale), `punch` da **Storm Throw**. ⚠️ La prova non è
+nell'elenco, si **ricontrolla a ogni giro**: per le vecchie il dump deve avere righe per quella
+mossa e non avere il flag (una mossa senza righe non prova niente, e lo script si ferma); per le
+Gen 9 l'infobox deve dire `touches=no`. Verifica: 23 tolti, secondo giro «niente da fare»,
+`integra_flag_mosse.py` ora dà 0 disaccordi, `prova_champions_1_2_0.py` 40 su 40.
+
 **I flag delle mosse di Gen 8-9, da Bulbapedia — decisione di Davide**
 
 Trovati provando il Guantone: Rage Fist, Jet Punch e Headlong Rush non avevano `punch`, e
