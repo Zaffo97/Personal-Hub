@@ -1302,6 +1302,16 @@ leggono sul loro sito, come si è fatto per fantacalcio.it e Serebii.
 | **Statistiche** | scheda del giocatore, consiglio | un'API con piano gratuito (es. **API-Football**), **oppure toglierle** se il consiglio può farne a meno | quanto le usa davvero il consiglio (misurare prima); copertura dei giocatori di Serie A; limiti e termini |
 | **Probabili formazioni** | campo, consiglio | **nessuna fonte gratuita e pulita**: sono contenuto editoriale di tutti (fantacalcio.it, Gazzetta, Sky). Tre strade, da scegliere con Davide: (a) un **link** che apre la pagina nel suo browser; (b) un **incolla**, come per la rosa; (c) lasciarle come sono accettando il rischio — esclusa dalla decisione di oggi | con (a) o (b) il consiglio perde l'aggiornamento automatico: va detto a schermo, non lasciato scoprire |
 
+**Strumenti già esistenti da valutare prima di scriverne di nuovi** (segnalati da Davide il
+23/09/2026, **non ancora guardati**): **fantacalcio-mcp**, il repository **Fantacalcio-PY** su
+GitHub, **FantaLab**. Per ognuno la prima domanda è **da dove prende i dati**: ⚠️ se a sua volta
+legge le pagine di fantacalcio.it, usarlo **non** mette in regola niente — sposta solo lo
+scraping dentro il codice di un altro, e il divieto dell'art. 3 resta lo stesso. Vanno bene
+se usano una fonte con un permesso (un'API ufficiale, dati con licenza, un accordo); in quel
+caso contano anche la loro licenza (per il codice su GitHub) e i loro termini (per un
+servizio come FantaLab). Nessuna di queste informazioni è verificata: vanno lette sui loro
+siti, come i termini di fantacalcio.it.
+
 Cosa va toccato, per non dimenticare niente: `fantacalcio_it.py` (le quattro letture),
 `fanta_import.py` (le due soglie e l'aggiornamento automatico entrando nella sezione, che
 **deve sparire** per le fonti non più automatiche), `scripts/importa_listone.py` e
