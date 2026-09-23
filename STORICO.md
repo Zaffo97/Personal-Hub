@@ -20,6 +20,29 @@ pagina ed esegue `new Function()` su ogni blocco `<script>` **e** su ogni handle
 
 ## 23/09/2026
 
+**I flag delle mosse di Gen 8-9, da Bulbapedia — decisione di Davide**
+
+Trovati provando il Guantone: Rage Fist, Jet Punch e Headlong Rush non avevano `punch`, e
+nemmeno `contact`. La causa è il dump: `move_flag_map.csv` ha righe per **748 mosse** e per
+**nessuna** con id ≥ 743, cioè Gen 8 in poi. Nel catalogo: 95 mosse (tolte le Max e G-Max).
+
+`scripts/integra_flag_mosse.py` legge da Bulbapedia l'infobox di ogni mossa (`touches`,
+`protect`, `magiccoat`, `snatch`, `mirrormove`, `sound`) e otto pagine-elenco (`punch` 25,
+`bite` 10, `slicing` 31, `sound` 35, `bullet` 26, `pulse` 7, `dance` 12, `powder` 8).
+⚠️ Due titoli li avevo sbagliati — *Ballistic move* e *Powder move* non esistono, sono *Ball
+and bomb move* e *Powder and spore move* — e lo script **si è fermato senza scrivere**, che
+è quello per cui c'è. Esito: **84 mosse completate**, 28 prendono `contact` e 3 `punch`, 11
+erano già complete. **Solo aggiunte**: i flag scritti a mano restano, compresi quelli della
+1.2.0 (Double Shock pugno, Dire Claw taglio, Dragon Cheer suono).
+
+Verifica: secondo giro «niente da fare»; `prova_champions_1_2_0.py` 40 su 40; nel
+calcolatore Jet Punch col Guantone 17-20 → 19-22, Wave Crash col contatto spuntato da solo e
+con Unghiedure 34-40 → 44-52; regola #8 85-102.
+
+⚠️ **E il giro ha trovato il contrario**: 23 flag **di troppo**, tutti dal file storico
+`moves_ma.json` — `contact` su 19 mosse vecchie (Stone Edge, Rock Tomb, Seed Bomb, perfino
+Bulk Up) e 3 di Gen 9, `punch` su Storm Throw. Non corretti: a backlog, §3.
+
 **Lo sprite di ripiego lo dicono anche l'elenco team e il team builder — §4.3**
 
 L'ultima coda della voce sugli sprite. Lì le immagini sono da 58 px, quindi la frase va

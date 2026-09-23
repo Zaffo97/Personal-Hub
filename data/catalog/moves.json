@@ -142,6 +142,8 @@
     "desc": "The user expels pressurized water to cut at the target like a blade. This move has a heightened chance of landing a critical hit.",
     "flags": [
       "contact",
+      "mirror",
+      "protect",
       "slicing"
     ],
     "accuracy": 100,
@@ -174,7 +176,10 @@
     "type": "water",
     "desc": "The user toys with the target and attacks it using light and fluid dance steps. This also boosts the user's Speed stat.",
     "flags": [
-      "contact"
+      "contact",
+      "dance",
+      "mirror",
+      "protect"
     ],
     "accuracy": 100,
     "nome_it": "Idroballetto",
@@ -722,7 +727,11 @@
     "nome_en": "Chilling Water",
     "stat_changes": {
       "atk": -1
-    }
+    },
+    "flags": [
+      "mirror",
+      "protect"
+    ]
   },
   "Chilly Reception": {
     "category": "status",
@@ -1080,6 +1089,8 @@
     "effect_chance": 30,
     "flags": [
       "contact",
+      "mirror",
+      "protect",
       "slicing"
     ],
     "accuracy": 100,
@@ -1426,7 +1437,12 @@
     "desc": "The user races forward at ultrafast speeds, piercing its target with futuristic electricity. This move's power is boosted more than usual if it's a supereffective hit.",
     "accuracy": 100,
     "nome_it": "Fulmiscatto",
-    "nome_en": "Electro Drift"
+    "nome_en": "Electro Drift",
+    "flags": [
+      "contact",
+      "mirror",
+      "protect"
+    ]
   },
   "Electroweb": {
     "bp": 55,
@@ -2010,7 +2026,9 @@
     "type": "steel",
     "desc": "The user swings its whole body around to attack with its huge hammer. This move can't be used twice in a row.",
     "flags": [
-      "contact"
+      "contact",
+      "mirror",
+      "protect"
     ],
     "accuracy": 100,
     "nome_it": "Granmartello",
@@ -2490,7 +2508,12 @@
     "desc": "The user covers its feet in thin ice and twirls around, slamming into the target. This move's spinning motion also destroys the terrain.",
     "accuracy": 100,
     "nome_it": "Vortighiaccio",
-    "nome_en": "Ice Spinner"
+    "nome_en": "Ice Spinner",
+    "flags": [
+      "contact",
+      "mirror",
+      "protect"
+    ]
   },
   "Icicle Crash": {
     "bp": 85,
@@ -2535,7 +2558,11 @@
     "effect_chance": 30,
     "accuracy": 100,
     "nome_it": "Corteo Spettrale",
-    "nome_en": "Infernal Parade"
+    "nome_en": "Infernal Parade",
+    "flags": [
+      "mirror",
+      "protect"
+    ]
   },
   "Iron Defense": {
     "category": "status",
@@ -3004,7 +3031,9 @@
     "desc": "The user hurls giant chunks of ice at the target to inflict damage. This may also make the target flinch.",
     "effect_chance": 30,
     "flags": [
-      "contact"
+      "contact",
+      "mirror",
+      "protect"
     ],
     "accuracy": 85,
     "nome_it": "Soffio d’Iceberg",
@@ -3469,7 +3498,9 @@
     "type": "psychic",
     "desc": "Cloaking itself in psychic energy, the user slams into the target. This also boosts the user’s Defense stat.",
     "flags": [
-      "contact"
+      "contact",
+      "mirror",
+      "protect"
     ],
     "accuracy": 90,
     "nome_it": "Barrierassalto",
@@ -3836,7 +3867,11 @@
     "desc": "The user salt cures the target, inflicting damage every turn. Steel and Water types are more strongly affected by this move.",
     "accuracy": 100,
     "nome_it": "Sotto Sale",
-    "nome_en": "Salt Cure"
+    "nome_en": "Salt Cure",
+    "flags": [
+      "mirror",
+      "protect"
+    ]
   },
   "Sand Attack": {
     "category": "status",
@@ -4589,7 +4624,12 @@
     "nome_en": "Syrup Bomb",
     "stat_changes": {
       "spe": -1
-    }
+    },
+    "flags": [
+      "bullet",
+      "mirror",
+      "protect"
+    ]
   },
   "Tackle": {
     "bp": 40,
@@ -4782,7 +4822,12 @@
     "nome_en": "Trailblaze",
     "stat_changes": {
       "spe": 1
-    }
+    },
+    "flags": [
+      "contact",
+      "mirror",
+      "protect"
+    ]
   },
   "Tri Attack": {
     "bp": 80,
@@ -10192,7 +10237,10 @@
     "desc": "",
     "type_it": "Normale",
     "nome_it": "Scambioforza",
-    "nome_en": "Power Shift"
+    "nome_en": "Power Shift",
+    "flags": [
+      "mirror"
+    ]
   },
   "Stone Axe": {
     "bp": 65,
@@ -10202,7 +10250,13 @@
     "accuracy": 90,
     "type_it": "Roccia",
     "nome_it": "Rocciascure",
-    "nome_en": "Stone Axe"
+    "nome_en": "Stone Axe",
+    "flags": [
+      "contact",
+      "mirror",
+      "protect",
+      "slicing"
+    ]
   },
   "Springtide Storm": {
     "bp": 100,
@@ -10212,7 +10266,11 @@
     "accuracy": 80,
     "type_it": "Folletto",
     "nome_it": "Tempesta Zefirea",
-    "nome_en": "Springtide Storm"
+    "nome_en": "Springtide Storm",
+    "flags": [
+      "mirror",
+      "protect"
+    ]
   },
   "Mystical Power": {
     "bp": 70,
@@ -10222,7 +10280,11 @@
     "accuracy": 90,
     "type_it": "Psico",
     "nome_it": "Forza Mistica",
-    "nome_en": "Mystical Power"
+    "nome_en": "Mystical Power",
+    "flags": [
+      "mirror",
+      "protect"
+    ]
   },
   "Raging Fury": {
     "bp": 120,
@@ -10232,7 +10294,11 @@
     "accuracy": 100,
     "type_it": "Fuoco",
     "nome_it": "Ira Furente",
-    "nome_en": "Raging Fury"
+    "nome_en": "Raging Fury",
+    "flags": [
+      "mirror",
+      "protect"
+    ]
   },
   "Wave Crash": {
     "bp": 120,
@@ -10242,7 +10308,12 @@
     "accuracy": 100,
     "type_it": "Acqua",
     "nome_it": "Ondaschianto",
-    "nome_en": "Wave Crash"
+    "nome_en": "Wave Crash",
+    "flags": [
+      "contact",
+      "mirror",
+      "protect"
+    ]
   },
   "Chloroblast": {
     "bp": 150,
@@ -10252,7 +10323,11 @@
     "accuracy": 95,
     "type_it": "Erba",
     "nome_it": "Clorofillaser",
-    "nome_en": "Chloroblast"
+    "nome_en": "Chloroblast",
+    "flags": [
+      "mirror",
+      "protect"
+    ]
   },
   "Victory Dance": {
     "bp": 0,
@@ -10261,7 +10336,11 @@
     "desc": "",
     "type_it": "Lotta",
     "nome_it": "Danzavittoria",
-    "nome_en": "Victory Dance"
+    "nome_en": "Victory Dance",
+    "flags": [
+      "dance",
+      "snatch"
+    ]
   },
   "Headlong Rush": {
     "bp": 120,
@@ -10271,7 +10350,13 @@
     "accuracy": 100,
     "type_it": "Terra",
     "nome_it": "Scontro Frontale",
-    "nome_en": "Headlong Rush"
+    "nome_en": "Headlong Rush",
+    "flags": [
+      "contact",
+      "mirror",
+      "protect",
+      "punch"
+    ]
   },
   "Barb Barrage": {
     "bp": 60,
@@ -10281,7 +10366,11 @@
     "accuracy": 100,
     "type_it": "Veleno",
     "nome_it": "Mille Fielespine",
-    "nome_en": "Barb Barrage"
+    "nome_en": "Barb Barrage",
+    "flags": [
+      "mirror",
+      "protect"
+    ]
   },
   "Esper Wing": {
     "bp": 80,
@@ -10291,7 +10380,11 @@
     "accuracy": 100,
     "type_it": "Psico",
     "nome_it": "Ali d’Aura",
-    "nome_en": "Esper Wing"
+    "nome_en": "Esper Wing",
+    "flags": [
+      "mirror",
+      "protect"
+    ]
   },
   "Bitter Malice": {
     "bp": 75,
@@ -10301,7 +10394,11 @@
     "accuracy": 100,
     "type_it": "Spettro",
     "nome_it": "Livore",
-    "nome_en": "Bitter Malice"
+    "nome_en": "Bitter Malice",
+    "flags": [
+      "mirror",
+      "protect"
+    ]
   },
   "Shelter": {
     "bp": 0,
@@ -10310,7 +10407,10 @@
     "desc": "",
     "type_it": "Acciaio",
     "nome_it": "Barricata",
-    "nome_en": "Shelter"
+    "nome_en": "Shelter",
+    "flags": [
+      "snatch"
+    ]
   },
   "Triple Arrows": {
     "bp": 90,
@@ -10320,7 +10420,11 @@
     "accuracy": 100,
     "type_it": "Lotta",
     "nome_it": "Triplodardo",
-    "nome_en": "Triple Arrows"
+    "nome_en": "Triple Arrows",
+    "flags": [
+      "mirror",
+      "protect"
+    ]
   },
   "Ceaseless Edge": {
     "bp": 65,
@@ -10330,7 +10434,13 @@
     "accuracy": 90,
     "type_it": "Buio",
     "nome_it": "Lama Milleflutti",
-    "nome_en": "Ceaseless Edge"
+    "nome_en": "Ceaseless Edge",
+    "flags": [
+      "contact",
+      "mirror",
+      "protect",
+      "slicing"
+    ]
   },
   "Bleakwind Storm": {
     "bp": 100,
@@ -10340,7 +10450,11 @@
     "accuracy": 80,
     "type_it": "Volante",
     "nome_it": "Tempesta Boreale",
-    "nome_en": "Bleakwind Storm"
+    "nome_en": "Bleakwind Storm",
+    "flags": [
+      "mirror",
+      "protect"
+    ]
   },
   "Wildbolt Storm": {
     "bp": 100,
@@ -10350,7 +10464,11 @@
     "accuracy": 80,
     "type_it": "Elettro",
     "nome_it": "Tempesta Tonante",
-    "nome_en": "Wildbolt Storm"
+    "nome_en": "Wildbolt Storm",
+    "flags": [
+      "mirror",
+      "protect"
+    ]
   },
   "Sandsear Storm": {
     "bp": 100,
@@ -10360,7 +10478,11 @@
     "accuracy": 80,
     "type_it": "Terra",
     "nome_it": "Tempesta Ardente",
-    "nome_en": "Sandsear Storm"
+    "nome_en": "Sandsear Storm",
+    "flags": [
+      "mirror",
+      "protect"
+    ]
   },
   "Lunar Blessing": {
     "bp": 0,
@@ -10369,7 +10491,10 @@
     "desc": "",
     "type_it": "Psico",
     "nome_it": "Invocaluna",
-    "nome_en": "Lunar Blessing"
+    "nome_en": "Lunar Blessing",
+    "flags": [
+      "snatch"
+    ]
   },
   "Take Heart": {
     "bp": 0,
@@ -10378,7 +10503,10 @@
     "desc": "",
     "type_it": "Psico",
     "nome_it": "Baldimpulso",
-    "nome_en": "Take Heart"
+    "nome_en": "Take Heart",
+    "flags": [
+      "snatch"
+    ]
   },
   "Tera Blast": {
     "bp": 80,
@@ -10392,7 +10520,11 @@
     "stat_changes": {
       "atk": -1,
       "spa": -1
-    }
+    },
+    "flags": [
+      "mirror",
+      "protect"
+    ]
   },
   "Silk Trap": {
     "bp": 0,
@@ -10414,7 +10546,12 @@
     "accuracy": 90,
     "type_it": "Lotta",
     "nome_it": "Calcio ad Ascia",
-    "nome_en": "Axe Kick"
+    "nome_en": "Axe Kick",
+    "flags": [
+      "contact",
+      "mirror",
+      "protect"
+    ]
   },
   "Last Respects": {
     "bp": 50,
@@ -10424,7 +10561,11 @@
     "accuracy": 100,
     "type_it": "Spettro",
     "nome_it": "Omaggio ai KO",
-    "nome_en": "Last Respects"
+    "nome_en": "Last Respects",
+    "flags": [
+      "mirror",
+      "protect"
+    ]
   },
   "Lumina Crash": {
     "bp": 80,
@@ -10437,7 +10578,11 @@
     "nome_en": "Lumina Crash",
     "stat_changes": {
       "spd": -2
-    }
+    },
+    "flags": [
+      "mirror",
+      "protect"
+    ]
   },
   "Order Up": {
     "bp": 80,
@@ -10447,7 +10592,11 @@
     "accuracy": 100,
     "type_it": "Drago",
     "nome_it": "Alta Cucina",
-    "nome_en": "Order Up"
+    "nome_en": "Order Up",
+    "flags": [
+      "mirror",
+      "protect"
+    ]
   },
   "Jet Punch": {
     "bp": 60,
@@ -10457,7 +10606,13 @@
     "accuracy": 100,
     "type_it": "Acqua",
     "nome_it": "Pugnojet",
-    "nome_en": "Jet Punch"
+    "nome_en": "Jet Punch",
+    "flags": [
+      "contact",
+      "mirror",
+      "protect",
+      "punch"
+    ]
   },
   "Spicy Extract": {
     "bp": 0,
@@ -10470,7 +10625,12 @@
     "stat_changes": {
       "atk": 2,
       "def": -2
-    }
+    },
+    "flags": [
+      "mirror",
+      "protect",
+      "reflectable"
+    ]
   },
   "Spin Out": {
     "bp": 100,
@@ -10493,7 +10653,13 @@
     "accuracy": 90,
     "type_it": "Normale",
     "nome_it": "Infestazione",
-    "nome_en": "Population Bomb"
+    "nome_en": "Population Bomb",
+    "flags": [
+      "contact",
+      "mirror",
+      "protect",
+      "slicing"
+    ]
   },
   "Glaive Rush": {
     "bp": 120,
@@ -10503,7 +10669,12 @@
     "accuracy": 100,
     "type_it": "Drago",
     "nome_it": "Spadoncarica",
-    "nome_en": "Glaive Rush"
+    "nome_en": "Glaive Rush",
+    "flags": [
+      "contact",
+      "mirror",
+      "protect"
+    ]
   },
   "Revival Blessing": {
     "bp": 0,
@@ -10522,7 +10693,12 @@
     "accuracy": 95,
     "type_it": "Acqua",
     "nome_it": "Triplo Tuffo",
-    "nome_en": "Triple Dive"
+    "nome_en": "Triple Dive",
+    "flags": [
+      "contact",
+      "mirror",
+      "protect"
+    ]
   },
   "Mortal Spin": {
     "bp": 30,
@@ -10532,7 +10708,12 @@
     "accuracy": 100,
     "type_it": "Veleno",
     "nome_it": "Glitturbine",
-    "nome_en": "Mortal Spin"
+    "nome_en": "Mortal Spin",
+    "flags": [
+      "contact",
+      "mirror",
+      "protect"
+    ]
   },
   "Doodle": {
     "bp": 0,
@@ -10542,7 +10723,11 @@
     "accuracy": 100,
     "type_it": "Normale",
     "nome_it": "Ricalco",
-    "nome_en": "Doodle"
+    "nome_en": "Doodle",
+    "flags": [
+      "mirror",
+      "protect"
+    ]
   },
   "Fillet Away": {
     "bp": 0,
@@ -10556,7 +10741,10 @@
       "atk": 2,
       "spa": 2,
       "spe": 2
-    }
+    },
+    "flags": [
+      "snatch"
+    ]
   },
   "Kowtow Cleave": {
     "bp": 85,
@@ -10565,7 +10753,13 @@
     "desc": "",
     "type_it": "Buio",
     "nome_it": "Genufendente",
-    "nome_en": "Kowtow Cleave"
+    "nome_en": "Kowtow Cleave",
+    "flags": [
+      "contact",
+      "mirror",
+      "protect",
+      "slicing"
+    ]
   },
   "Flower Trick": {
     "bp": 70,
@@ -10574,7 +10768,11 @@
     "desc": "",
     "type_it": "Erba",
     "nome_it": "Prestigiafiore",
-    "nome_en": "Flower Trick"
+    "nome_en": "Flower Trick",
+    "flags": [
+      "mirror",
+      "protect"
+    ]
   },
   "Torch Song": {
     "bp": 80,
@@ -10587,7 +10785,12 @@
     "nome_en": "Torch Song",
     "stat_changes": {
       "spa": 1
-    }
+    },
+    "flags": [
+      "mirror",
+      "protect",
+      "sound"
+    ]
   },
   "Raging Bull": {
     "bp": 90,
@@ -10597,7 +10800,12 @@
     "accuracy": 100,
     "type_it": "Normale",
     "nome_it": "Scatenatoro",
-    "nome_en": "Raging Bull"
+    "nome_en": "Raging Bull",
+    "flags": [
+      "contact",
+      "mirror",
+      "protect"
+    ]
   },
   "Make It Rain": {
     "bp": 120,
@@ -10610,7 +10818,11 @@
     "nome_en": "Make It Rain",
     "stat_changes": {
       "spa": -2
-    }
+    },
+    "flags": [
+      "mirror",
+      "protect"
+    ]
   },
   "Psyblade": {
     "bp": 80,
@@ -10620,7 +10832,13 @@
     "accuracy": 100,
     "type_it": "Psico",
     "nome_it": "Psicolama",
-    "nome_en": "Psyblade"
+    "nome_en": "Psyblade",
+    "flags": [
+      "contact",
+      "mirror",
+      "protect",
+      "slicing"
+    ]
   },
   "Hydro Steam": {
     "bp": 80,
@@ -10630,7 +10848,11 @@
     "accuracy": 100,
     "type_it": "Acqua",
     "nome_it": "Idrovapore",
-    "nome_en": "Hydro Steam"
+    "nome_en": "Hydro Steam",
+    "flags": [
+      "mirror",
+      "protect"
+    ]
   },
   "Ruination": {
     "bp": 1,
@@ -10640,7 +10862,11 @@
     "accuracy": 90,
     "type_it": "Buio",
     "nome_it": "Catastrofe",
-    "nome_en": "Ruination"
+    "nome_en": "Ruination",
+    "flags": [
+      "mirror",
+      "protect"
+    ]
   },
   "Collision Course": {
     "bp": 100,
@@ -10650,7 +10876,12 @@
     "accuracy": 100,
     "type_it": "Lotta",
     "nome_it": "Turboschianto",
-    "nome_en": "Collision Course"
+    "nome_en": "Collision Course",
+    "flags": [
+      "contact",
+      "mirror",
+      "protect"
+    ]
   },
   "Shed Tail": {
     "bp": 0,
@@ -10694,7 +10925,12 @@
     "nome_en": "Pounce",
     "stat_changes": {
       "spe": -1
-    }
+    },
+    "flags": [
+      "contact",
+      "mirror",
+      "protect"
+    ]
   },
   "Hyper Drill": {
     "bp": 100,
@@ -10704,7 +10940,11 @@
     "accuracy": 100,
     "type_it": "Normale",
     "nome_it": "Ipertrapano",
-    "nome_en": "Hyper Drill"
+    "nome_en": "Hyper Drill",
+    "flags": [
+      "contact",
+      "mirror"
+    ]
   },
   "Twin Beam": {
     "bp": 40,
@@ -10714,7 +10954,11 @@
     "accuracy": 100,
     "type_it": "Psico",
     "nome_it": "Doppioraggio",
-    "nome_en": "Twin Beam"
+    "nome_en": "Twin Beam",
+    "flags": [
+      "mirror",
+      "protect"
+    ]
   },
   "Rage Fist": {
     "bp": 50,
@@ -10724,7 +10968,13 @@
     "accuracy": 100,
     "type_it": "Spettro",
     "nome_it": "Pugno Furibondo",
-    "nome_en": "Rage Fist"
+    "nome_en": "Rage Fist",
+    "flags": [
+      "contact",
+      "mirror",
+      "protect",
+      "punch"
+    ]
   },
   "Armor Cannon": {
     "bp": 120,
@@ -10738,7 +10988,11 @@
     "stat_changes": {
       "def": -1,
       "spd": -1
-    }
+    },
+    "flags": [
+      "mirror",
+      "protect"
+    ]
   },
   "Bitter Blade": {
     "bp": 90,
@@ -10748,7 +11002,13 @@
     "accuracy": 100,
     "type_it": "Fuoco",
     "nome_it": "Lama del Rimorso",
-    "nome_en": "Bitter Blade"
+    "nome_en": "Bitter Blade",
+    "flags": [
+      "contact",
+      "mirror",
+      "protect",
+      "slicing"
+    ]
   },
   "Double Shock": {
     "bp": 120,
@@ -10760,6 +11020,9 @@
     "nome_it": "Doppiolampo",
     "nome_en": "Double Shock",
     "flags": [
+      "contact",
+      "mirror",
+      "protect",
       "punch"
     ]
   },
@@ -10771,7 +11034,12 @@
     "accuracy": 100,
     "type_it": "Buio",
     "nome_it": "Ritorsione",
-    "nome_en": "Comeuppance"
+    "nome_en": "Comeuppance",
+    "flags": [
+      "contact",
+      "mirror",
+      "protect"
+    ]
   },
   "Blazing Torque": {
     "bp": 80,
@@ -10781,7 +11049,10 @@
     "accuracy": 100,
     "type_it": "Fuoco",
     "nome_it": "Turboustione",
-    "nome_en": "Blazing Torque"
+    "nome_en": "Blazing Torque",
+    "flags": [
+      "protect"
+    ]
   },
   "Wicked Torque": {
     "bp": 80,
@@ -10791,7 +11062,10 @@
     "accuracy": 100,
     "type_it": "Buio",
     "nome_it": "Turbotenebra",
-    "nome_en": "Wicked Torque"
+    "nome_en": "Wicked Torque",
+    "flags": [
+      "protect"
+    ]
   },
   "Noxious Torque": {
     "bp": 100,
@@ -10801,7 +11075,10 @@
     "accuracy": 100,
     "type_it": "Veleno",
     "nome_it": "Turbotossina",
-    "nome_en": "Noxious Torque"
+    "nome_en": "Noxious Torque",
+    "flags": [
+      "protect"
+    ]
   },
   "Combat Torque": {
     "bp": 100,
@@ -10811,7 +11088,10 @@
     "accuracy": 100,
     "type_it": "Lotta",
     "nome_it": "Turborissa",
-    "nome_en": "Combat Torque"
+    "nome_en": "Combat Torque",
+    "flags": [
+      "protect"
+    ]
   },
   "Magical Torque": {
     "bp": 100,
@@ -10821,7 +11101,10 @@
     "accuracy": 100,
     "type_it": "Folletto",
     "nome_it": "Turboincanto",
-    "nome_en": "Magical Torque"
+    "nome_en": "Magical Torque",
+    "flags": [
+      "protect"
+    ]
   },
   "Blood Moon": {
     "bp": 140,
@@ -10831,7 +11114,11 @@
     "accuracy": 100,
     "type_it": "Normale",
     "nome_it": "Luna Rossa",
-    "nome_en": "Blood Moon"
+    "nome_en": "Blood Moon",
+    "flags": [
+      "mirror",
+      "protect"
+    ]
   },
   "Matcha Gotcha": {
     "bp": 80,
@@ -10841,7 +11128,11 @@
     "accuracy": 90,
     "type_it": "Erba",
     "nome_it": "Spruzzatè",
-    "nome_en": "Matcha Gotcha"
+    "nome_en": "Matcha Gotcha",
+    "flags": [
+      "mirror",
+      "protect"
+    ]
   },
   "Ivy Cudgel": {
     "bp": 100,
@@ -10851,7 +11142,11 @@
     "accuracy": 100,
     "type_it": "Erba",
     "nome_it": "Clava di Liane",
-    "nome_en": "Ivy Cudgel"
+    "nome_en": "Ivy Cudgel",
+    "flags": [
+      "mirror",
+      "protect"
+    ]
   },
   "Electro Shot": {
     "bp": 130,
@@ -10864,7 +11159,11 @@
     "nome_en": "Electro Shot",
     "stat_changes": {
       "spa": 1
-    }
+    },
+    "flags": [
+      "mirror",
+      "protect"
+    ]
   },
   "Tera Starstorm": {
     "bp": 120,
@@ -10874,7 +11173,11 @@
     "accuracy": 100,
     "type_it": "Normale",
     "nome_it": "Teracluster",
-    "nome_en": "Tera Starstorm"
+    "nome_en": "Tera Starstorm",
+    "flags": [
+      "mirror",
+      "protect"
+    ]
   },
   "Fickle Beam": {
     "bp": 80,
@@ -10884,7 +11187,11 @@
     "accuracy": 100,
     "type_it": "Drago",
     "nome_it": "Irregolaser",
-    "nome_en": "Fickle Beam"
+    "nome_en": "Fickle Beam",
+    "flags": [
+      "mirror",
+      "protect"
+    ]
   },
   "Burning Bulwark": {
     "bp": 0,
@@ -10904,7 +11211,11 @@
     "accuracy": 100,
     "type_it": "Elettro",
     "nome_it": "Saetta",
-    "nome_en": "Thunderclap"
+    "nome_en": "Thunderclap",
+    "flags": [
+      "mirror",
+      "protect"
+    ]
   },
   "Mighty Cleave": {
     "bp": 95,
@@ -10914,7 +11225,12 @@
     "accuracy": 100,
     "type_it": "Roccia",
     "nome_it": "Taglio Poderoso",
-    "nome_en": "Mighty Cleave"
+    "nome_en": "Mighty Cleave",
+    "flags": [
+      "contact",
+      "mirror",
+      "slicing"
+    ]
   },
   "Tachyon Cutter": {
     "bp": 50,
@@ -10924,7 +11240,12 @@
     "accuracy": 0,
     "type_it": "Acciaio",
     "nome_it": "Tachiontaglio",
-    "nome_en": "Tachyon Cutter"
+    "nome_en": "Tachyon Cutter",
+    "flags": [
+      "mirror",
+      "protect",
+      "slicing"
+    ]
   },
   "Hard Press": {
     "bp": 0,
@@ -10934,7 +11255,12 @@
     "accuracy": 100,
     "type_it": "Acciaio",
     "nome_it": "Pressa d’Acciaio",
-    "nome_en": "Hard Press"
+    "nome_en": "Hard Press",
+    "flags": [
+      "contact",
+      "mirror",
+      "protect"
+    ]
   },
   "Alluring Voice": {
     "bp": 80,
@@ -10944,7 +11270,12 @@
     "accuracy": 100,
     "type_it": "Folletto",
     "nome_it": "Ammaliavoce",
-    "nome_en": "Alluring Voice"
+    "nome_en": "Alluring Voice",
+    "flags": [
+      "mirror",
+      "protect",
+      "sound"
+    ]
   },
   "Temper Flare": {
     "bp": 75,
@@ -10954,7 +11285,12 @@
     "accuracy": 100,
     "type_it": "Fuoco",
     "nome_it": "Rabbia Bruciante",
-    "nome_en": "Temper Flare"
+    "nome_en": "Temper Flare",
+    "flags": [
+      "contact",
+      "mirror",
+      "protect"
+    ]
   },
   "Supercell Slam": {
     "bp": 100,
@@ -10964,7 +11300,12 @@
     "accuracy": 95,
     "type_it": "Elettro",
     "nome_it": "Elettrotuffo",
-    "nome_en": "Supercell Slam"
+    "nome_en": "Supercell Slam",
+    "flags": [
+      "contact",
+      "mirror",
+      "protect"
+    ]
   },
   "Psychic Noise": {
     "bp": 75,
@@ -10974,7 +11315,12 @@
     "accuracy": 100,
     "type_it": "Psico",
     "nome_it": "Psicorumore",
-    "nome_en": "Psychic Noise"
+    "nome_en": "Psychic Noise",
+    "flags": [
+      "mirror",
+      "protect",
+      "sound"
+    ]
   },
   "Upper Hand": {
     "bp": 65,
@@ -10984,7 +11330,12 @@
     "accuracy": 100,
     "type_it": "Lotta",
     "nome_it": "Colpo di Mano",
-    "nome_en": "Upper Hand"
+    "nome_en": "Upper Hand",
+    "flags": [
+      "contact",
+      "mirror",
+      "protect"
+    ]
   },
   "Malignant Chain": {
     "bp": 100,
@@ -10994,7 +11345,10 @@
     "accuracy": 100,
     "type_it": "Veleno",
     "nome_it": "Intossicatena",
-    "nome_en": "Malignant Chain"
+    "nome_en": "Malignant Chain",
+    "flags": [
+      "protect"
+    ]
   },
   "Shadow Rush": {
     "bp": 55,
