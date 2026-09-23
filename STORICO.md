@@ -20,6 +20,32 @@ pagina ed esegue `new Function()` su ogni blocco `<script>` **e** su ogni handle
 
 ## 23/09/2026
 
+**Il pulsante «Aggiorna tutto dalla fonte» — §4.3, decisione di Davide**
+
+Entra solo il **nuovo**; le differenze sulle voci esistenti si **mostrano** in una tabella e
+non si applicano. Card in Catalogo → Pokémon, due route (`/api/catalogo/aggiorna/anteprima`,
+che non scrive, e `/applica`), logica in `pokedex_aggiorna.py`, che **carica
+`scripts/build_catalog.py` e ne chiama le funzioni** invece di copiarle — la lezione di
+`fanta_import.py`. Scrive con `salva_catalogo()` e `_save_abilities()`, e per le specie nuove
+prende anche la lista mosse da `pokeapi.moveset()`, come `/pesca`.
+
+Prima di costruirlo andava chiuso il difetto che ci stava sotto: **`build_catalog.py` avrebbe
+scritto 6 doppioni**, e il suo riassunto diceva «voci curate modificate: 0». Tre specie
+(`aegislash-shield`, `morpeko-full-belly`, `palafin-zero`, già nel catalogo sotto un'altra
+chiave: ora confronta anche lo **slug**) e tre voci scritte diversamente (`Mud-Slap` contro
+`Mud Slap`, `King’s Rock` con l'apostrofo tipografico: ora confronta i nomi con
+`normalizza()`). Più `scarica_cache(aggiorna=True)`, senza il quale «aggiorna» avrebbe
+riletto per sempre la prima copia scaricata, e `intatte()` spostata fuori da `main()`.
+Dry-run: da +3/+1/+1/+1 a **+0 specie, +0 mosse, +1 abilità, +0 oggetti**.
+`prova_build_catalog.py` da 9 a **11 prove**, e le due nuove **falliscono col codice di prima**
+(9 su 11), provato rimettendolo al suo posto.
+
+Primo giro vero dal browser: **1 voce nuova**, l'abilità **Aura Guard** — 8 righe in più in
+`abilities.json`, copia in `data/archive/` — e **32 differenze** mostrate. Secondo giro:
+«niente di nuovo», pulsante spento. `controlla_abilita.py` a posto (387 voci), traduzioni
+651/651, sweep del catalogo 0 errori. ⚠️ Fra le 32 ci sono **5 Mega di M-C con le abilità
+vuote** nel catalogo, che il dump di oggi ha: lasciate, a backlog.
+
 **23 flag sbagliati tolti — decisione di Davide**
 
 Il rovescio del giro sui flag: `integra_flag_mosse.py` aggiunge soltanto, e aveva trovato

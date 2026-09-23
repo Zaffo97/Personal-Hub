@@ -116,6 +116,40 @@ def prove(dove):
     esito("⚠️ e sulle abilità guarda dentro l'involucro, non l'involucro",
           ok is False and len(dopo) == 386, f"sul disco restano {len(dopo)}")
 
+    # --- 9. una specie già presente sotto un'altra chiave non rientra --------
+    # Il caso vero del 23/09/2026: `aegislash-shield` nel dump, `aegislash-shield-forme`
+    # nel catalogo. Il confronto era su chiave e nome, e lo script la dava per nuova.
+    # `leggi()` finto: nessun CSV, solo le righe che servono.
+    tabelle = {
+        "pokemon.csv": [{"id": "681", "identifier": "aegislash-shield", "species_id": "681",
+                         "is_default": "1"}],
+        "pokemon_species_names.csv": [{"pokemon_species_id": "681", "local_language_id": "9",
+                                       "name": "Aegislash"}],
+        "type_names.csv": [], "pokemon_types.csv": [], "ability_names.csv": [],
+        "pokemon_abilities.csv": [], "pokemon_forms.csv": [], "pokemon_form_names.csv": [],
+        "pokemon_stats.csv": [{"pokemon_id": "681", "stat_id": str(i), "base_stat": "50"}
+                              for i in range(1, 7)],
+        "items.csv": [{"id": "1", "category_id": "12"}],
+        "item_categories.csv": [{"id": "12", "identifier": "held-items"}],
+        "item_names.csv": [{"item_id": "1", "local_language_id": "9", "name": "King’s Rock"}],
+        "item_flavor_text.csv": [],
+    }
+    leggi_vero = B.leggi
+    B.leggi = lambda nome: tabelle[nome]
+    try:
+        esistente = {"aegislash-shield-forme": {"name": "Aegislash (Shield Forme)",
+                                                "slug": "aegislash-shield"}}
+        _, conti = B.costruisci_pokemon(esistente)
+        esito("una specie col suo slug già in catalogo non è «nuova»",
+              conti["nuove_specie"] == 0, f"nuove specie: {conti['nuove_specie']}")
+
+        # --- 10. né un oggetto scritto con un altro apostrofo ----------------
+        _, conti = B.costruisci_oggetti({"King's Rock": {"category": "other"}})
+        esito("«King’s Rock» del dump è il «King's Rock» del catalogo",
+              conti["aggiunti"] == 0, f"aggiunti: {conti['aggiunti']}")
+    finally:
+        B.leggi = leggi_vero
+
     # --- 8. niente di vero è stato toccato -----------------------------------
     with io.open(os.path.join(RADICE, "data", "catalog", "pokemon.json"), encoding="utf-8") as f:
         vero = json.load(f)

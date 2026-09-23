@@ -41,6 +41,7 @@ import csv
 import io
 import json
 import os
+import re
 import sys
 import tempfile
 
@@ -87,10 +88,15 @@ FILE_CSV = [
 
 
 # ── lettura CSV ──────────────────────────────────────────────────────────────
-def scarica_cache():
+def scarica_cache(aggiorna=False):
+    """Scarica i CSV che mancano; con `aggiorna=True` anche quelli che ci sono già.
+
+    ⚠️ Senza `aggiorna` la cache non invecchia mai: un file scaricato una volta viene
+    riletto per sempre, e «aggiorna dalla fonte» leggerebbe la fonte di mesi prima.
+    """
     os.makedirs(CACHE, exist_ok=True)
     mancanti = [f for f in FILE_CSV
-                if not os.path.exists(os.path.join(CACHE, f))
+                if aggiorna or not os.path.exists(os.path.join(CACHE, f))
                 or os.path.getsize(os.path.join(CACHE, f)) == 0]
     if not mancanti:
         print(f"cache CSV già presente in {CACHE}")
@@ -124,6 +130,17 @@ def testo_recente(righe, chiave_id, lingua=IT):
         if k not in fuori or v >= fuori[k][0]:
             fuori[k] = (v, pulisci(r["flavor_text"]))
     return {k: v[1] for k, v in fuori.items()}
+
+
+def normalizza(nome):
+    """Il nome ridotto all'osso, per riconoscere la stessa voce scritta in due modi.
+
+    ⚠️ Il dump e il catalogo non scrivono sempre uguale: «Mud-Slap» contro «Mud Slap»,
+    «King’s Rock» con l'apostrofo tipografico contro «King's Rock». Confrontati alla
+    lettera sembravano voci nuove, e il 23/09/2026 lo script le avrebbe scritte come
+    doppioni.
+    """
+    return re.sub(r"[^a-z0-9]", "", (nome or "").lower())
 
 
 def carica_json(percorso, default):
@@ -223,6 +240,15 @@ def costruisci_pokemon(esistente):
     chiavi_esistenti = set(catalogo)
     nomi_esistenti = {v.get("name", k).lower() for k, v in catalogo.items()}
     forme_esistenti = {n.lower() for v in catalogo.values() for n in (v.get("forms") or {})}
+    # ⚠️ Anche lo **slug**, non solo chiave e nome. Fino al 23/09/2026 il confronto era
+    # su quei due, e tre specie del dump — `aegislash-shield`, `morpeko-full-belly`,
+    # `palafin-zero` — risultavano «nuove» perché nel catalogo stanno sotto
+    # `aegislash-shield-forme`, `morpeko-full-belly-mode` e `palafin-zero-form`: lanciato
+    # davvero, lo script avrebbe scritto tre doppioni. È la stessa porta che il pannello
+    # `/pesca` ha chiuso il 10/09 con `_stesso_slug_altrove()`.
+    slug_esistenti = {(v.get("slug") or k).lower() for k, v in catalogo.items()}
+    slug_esistenti |= {(f.get("slug") or "").lower() for v in catalogo.values()
+                       for f in (v.get("forms") or {}).values()} - {""}
 
     nuove_specie = nuove_forme = mega_potenziate = 0
     for r in pokemon:
@@ -236,7 +262,8 @@ def costruisci_pokemon(esistente):
 
         if r["is_default"] == "1":
             chiave = slug
-            if chiave in chiavi_esistenti or nome_sp.lower() in nomi_esistenti:
+            if (chiave in chiavi_esistenti or nome_sp.lower() in nomi_esistenti
+                    or slug.lower() in slug_esistenti):
                 continue
             catalogo[chiave] = {
                 "name": nome_sp, "types": tipi, "abilities": abilita,
@@ -251,7 +278,7 @@ def costruisci_pokemon(esistente):
         f = forme.get(pid)
         pkn, fn = forme_nomi.get(f["id"], ("", "")) if f else ("", "")
         nome = nome_forma(nome_sp, pkn, fn)
-        if nome.lower() in forme_esistenti:
+        if nome.lower() in forme_esistenti or slug.lower() in slug_esistenti:
             continue
         base = {k: stat[k] for k in ORDINE_STAT}
         # Le Mega entrano con le loro base stat ufficiali, come ogni altra voce:
@@ -318,11 +345,13 @@ def costruisci_mosse(esistenti):
     desc = testo_recente(leggi("move_flavor_text.csv"), "move_id")
 
     fuori = json.loads(json.dumps(esistenti))
+    presenti = {normalizza(k) for k in fuori} | {normalizza(v.get("nome_en")) for v in fuori.values()}
     aggiunte = 0
     for r in mosse:
         nome = nomi_en.get(r["id"])
-        if not nome or nome in fuori:
+        if not nome or normalizza(nome) in presenti:
             continue
+        presenti.add(normalizza(nome))
         voce = {
             "bp": int(r["power"]) if r["power"] else 0,
             "category": classi.get(r["damage_class_id"], "status"),
@@ -362,7 +391,9 @@ def costruisci_abilita(esistenti):
     desc = testo_recente(leggi("ability_flavor_text.csv"), "ability_id")
 
     fuori = json.loads(json.dumps(esistenti))
-    presenti = {k.lower() for k in fuori}
+    # le chiavi sono italiane: si confronta anche `nome_en`, altrimenti un'abilità
+    # senza nome italiano nel dump non riconoscerebbe la sua voce già curata
+    presenti = {normalizza(k) for k in fuori} | {normalizza(v.get("nome_en")) for v in fuori.values()}
     aggiunte = senza_nome_it = 0
     for r in ab:
         nome = it.get(r["id"]) or en.get(r["id"])
@@ -370,7 +401,7 @@ def costruisci_abilita(esistenti):
             continue
         if not it.get(r["id"]):
             senza_nome_it += 1
-        if nome.lower() in presenti:
+        if normalizza(nome) in presenti or normalizza(en.get(r["id"])) in presenti:
             continue
         fuori[nome] = {
             "desc": desc.get(r["id"], ""),
@@ -379,7 +410,7 @@ def costruisci_abilita(esistenti):
             "effect": {"type": "none"},
             "nome_en": en.get(r["id"], ""),
         }
-        presenti.add(nome.lower())
+        presenti.add(normalizza(nome))
         aggiunte += 1
     return fuori, dict(aggiunte=aggiunte, senza_nome_it=senza_nome_it)
 
@@ -392,6 +423,7 @@ def costruisci_oggetti(esistenti):
     desc = testo_recente(leggi("item_flavor_text.csv"), "item_id")
 
     fuori = json.loads(json.dumps(esistenti))
+    presenti = {normalizza(k) for k in fuori} | {normalizza(v.get("nome_en")) for v in fuori.values()}
     aggiunti = scartati = 0
     for r in items:
         cat = categorie.get(r["category_id"], "")
@@ -399,8 +431,9 @@ def costruisci_oggetti(esistenti):
             scartati += 1
             continue
         nome = nomi_en.get(r["id"])
-        if not nome or nome in fuori:
+        if not nome or normalizza(nome) in presenti:
             continue
+        presenti.add(normalizza(nome))
         fuori[nome] = {
             "category": "other",
             # niente `modifier`: il moltiplicatore va deciso a mano, come per i 58 curati
@@ -409,6 +442,38 @@ def costruisci_oggetti(esistenti):
         }
         aggiunti += 1
     return fuori, dict(aggiunti=aggiunti, scartati=scartati)
+
+
+# Nessuna voce curata deve essere cambiata. Aggiungere una forma nuova a una
+# specie esistente è lecito; alterare un campo o una forma già presenti no.
+def intatte(etichetta, orig, nuovo):
+    """Le voci curate che l'import ha cambiato: deve tornare vuoto.
+
+    Fuori da `main()` dal 23/09/2026 perché la stessa rete serve al pulsante
+    «aggiorna dalla fonte» (`pokedex_aggiorna.py`).
+    """
+    fuori = []
+    for k, v in orig.items():
+        n = nuovo.get(k)
+        if n is None:
+            fuori.append(f"{etichetta}/{k} sparita")
+            continue
+        for campo, valore in v.items():
+            if campo == "forms":
+                for nf, vf in valore.items():
+                    nuova = (n.get("forms") or {}).get(nf)
+                    if nuova is None:
+                        fuori.append(f"{etichetta}/{k}.forms[{nf}] sparita")
+                    # campi in più (es. `slug`) sono ammessi; quelli esistenti no
+                    elif any(nuova.get(c) != v2 for c, v2 in vf.items()):
+                        fuori.append(f"{etichetta}/{k}.forms[{nf}]")
+            elif n.get(campo) != valore:
+                # unica differenza ammessa: il flag contact aggiunto sopra
+                if (etichetta == "mosse" and campo == "flags"
+                        and set(n.get(campo) or []) - set(valore or []) == {"contact"}):
+                    continue
+                fuori.append(f"{etichetta}/{k}.{campo}")
+    return fuori
 
 
 # ── main ─────────────────────────────────────────────────────────────────────
@@ -449,32 +514,6 @@ def main():
         print(f"           {', '.join(ci[:10])}{'...' if len(ci) > 10 else ''}")
     print(f"ABILITÀ  {len(ab_esistenti):5d} -> {len(ab):5d}   (+{s3['aggiunte']}, {s3['senza_nome_it']} senza nome IT ufficiale)")
     print(f"OGGETTI  {len(it_esistenti):5d} -> {len(og):5d}   (+{s4['aggiunti']}, {s4['scartati']} scartati perché non da battaglia)")
-
-    # Nessuna voce curata deve essere cambiata. Aggiungere una forma nuova a una
-    # specie esistente è lecito; alterare un campo o una forma già presenti no.
-    def intatte(etichetta, orig, nuovo):
-        fuori = []
-        for k, v in orig.items():
-            n = nuovo.get(k)
-            if n is None:
-                fuori.append(f"{etichetta}/{k} sparita")
-                continue
-            for campo, valore in v.items():
-                if campo == "forms":
-                    for nf, vf in valore.items():
-                        nuova = (n.get("forms") or {}).get(nf)
-                        if nuova is None:
-                            fuori.append(f"{etichetta}/{k}.forms[{nf}] sparita")
-                        # campi in più (es. `slug`) sono ammessi; quelli esistenti no
-                        elif any(nuova.get(c) != v2 for c, v2 in vf.items()):
-                            fuori.append(f"{etichetta}/{k}.forms[{nf}]")
-                elif n.get(campo) != valore:
-                    # unica differenza ammessa: il flag contact aggiunto sopra
-                    if (etichetta == "mosse" and campo == "flags"
-                            and set(n.get(campo) or []) - set(valore or []) == {"contact"}):
-                        continue
-                    fuori.append(f"{etichetta}/{k}.{campo}")
-        return fuori
 
     problemi = (intatte("pokemon", pk_esistente, pk) + intatte("mosse", mv_esistenti, mv)
                 + intatte("abilità", ab_esistenti, ab) + intatte("oggetti", it_esistenti, og))

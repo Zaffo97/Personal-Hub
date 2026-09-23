@@ -740,5 +740,18 @@
   "Uso n.": "Use no.",
   "Quante volte di fila è stata usata la stessa mossa: +20% a ogni uso dopo il primo, fino a ×2": "How many times in a row the same move has been used: +20% for each use after the first, up to ×2",
   "primo uso": "first use",
-  "serve il suo terreno": "needs its terrain"
+  "serve il suo terreno": "needs its terrain",
+  "Aggiorna tutto dalla fonte": "Update everything from the source",
+  "Aggiungi le voci nuove": "Add the new entries",
+  "Campo": "Field",
+  "Controlla la fonte": "Check the source",
+  "Fonte": "Source",
+  "Forme": "Forms",
+  "Niente di nuovo nella fonte.": "Nothing new in the source.",
+  "Pokémon, mosse, abilità e oggetti · entra solo il nuovo": "Pokémon, moves, abilities and items · only new entries come in",
+  "Specie": "Species",
+  "Voce": "Entry",
+  "senza elenco mosse: {nomi}": "no move list: {nomi}",
+  "{n} differenze su voci esistenti — restano come sono": "{n} differences on existing entries — they stay as they are",
+  "{n} voci nuove scritte": "{n} new entries written"
 }

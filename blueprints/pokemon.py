@@ -1568,6 +1568,27 @@ def api_catalogo_importa():
                                               if "champions" not in m)})
 
 
+# Aggiornare tutto il Pokédex dalla fonte (§4.3, deciso con Davide il 23/09/2026):
+# entra solo il **nuovo**, e le differenze sulle voci esistenti si mostrano senza
+# applicarle. Due route come per `pesca`/`importa`: la prima non scrive niente.
+@bp.route("/api/catalogo/aggiorna/anteprima", methods=["POST"])
+@login_required
+def api_catalogo_aggiorna_anteprima():
+    import pokedex_aggiorna
+    a = pokedex_aggiorna.anteprima(aggiorna_fonte=True)
+    a.pop("_costruiti", None)
+    return jsonify(a), (200 if a.get("ok") else 409)
+
+
+@bp.route("/api/catalogo/aggiorna/applica", methods=["POST"])
+@login_required
+def api_catalogo_aggiorna_applica():
+    import pokedex_aggiorna
+    esito = pokedex_aggiorna.applica()
+    esito.pop("_costruiti", None)
+    return jsonify(esito), (200 if esito.get("ok") else 409)
+
+
 @bp.route("/api/abilities/update", methods=["POST"])
 @login_required
 def api_abilities_update():

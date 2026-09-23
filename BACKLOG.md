@@ -1122,7 +1122,7 @@ sa dal codice, non un piano.
 
 **Sezione Pokémon**
 
-- ⬜ **Un pulsante che aggiorni da solo tutto il Pokédex** quando la fonte cambia:
+- ✅ **Un pulsante che aggiorni da solo tutto il Pokédex** — **fatto il 23/09/2026**, numeri in `STORICO.md`: card «Aggiorna tutto dalla fonte» in Catalogo → Pokémon, logica in `pokedex_aggiorna.py`; entra solo il nuovo, le differenze si mostrano. ⬜ Resta la domanda sulle **5 Mega di M-C con le abilità vuote** (sotto). La richiesta era: quando la fonte cambia,
   Pokémon nuovi, statistiche, oggetti, mosse e abilità. C'è già il pezzo di sotto —
   `pokeapi.py` legge e `scripts/build_catalog.py` scrive — e c'è già il precedente
   giusto nel Fantacalcio: la logica in un modulo solo (`fanta_import.py`), gli
@@ -1152,6 +1152,12 @@ sa dal codice, non un piano.
     direbbe «voci curate modificate: 0» — vero, e fuorviante. Il pannello `/pesca` questa
     porta l'ha chiusa il 10/09 (STORICO, «doppione sotto un'altra chiave»), lo script no.
     Non corretto: va deciso insieme al pulsante, che ci starebbe sopra.
+  - ⬜ **Trovato dal pulsante al primo giro, da decidere**: 5 Mega di M-C — Absol Z,
+    Garchomp Z, Lucario Z, Golisopod, Baxcalibur — hanno `abilities: []` nel catalogo, e
+    il dump di oggi le ha (Sharpness, Levitate, **Aura Guard**, Tough Claws, Thermal
+    Exchange). Non è una scelta curata, è un buco: ma la regola approvata è «si mostra,
+    non si applica», quindi è rimasto. Aura Guard, l'abilità di Mega Lucario Z, è entrata
+    nel catalogo col pulsante, senza `effect`.
   - Quindi il pezzo che manca non è «sovrascrivere dalla fonte», è **accorgersi quando la
     fonte cambia**: le voci nuove entrano (come fa già `build_catalog.py`, una volta
     chiusa la porta dei doppioni), e le differenze sulle voci esistenti si **mostrano**

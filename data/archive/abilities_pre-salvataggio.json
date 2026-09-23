@@ -3600,13 +3600,24 @@
       "nome_it": "Pelledrago"
     },
     "Megasolar": {
-      "desc": "",
-      "category": "other",
+      "desc": "Agisce come se ci fosse il Sole forte indipendentemente dal meteo reale.",
+      "category": "weather_override",
       "effect": {
-        "type": "none"
+        "type": "weather_override",
+        "weather": "harshsun"
       },
-      "nome_en": "Megasolar",
-      "nome_it": "Megasolar"
+      "nome_en": "Mega Sol",
+      "nome_it": "Megasolar",
+      "weather_override": "harshsun",
+      "atk_boost": {
+        "type": "Fuoco",
+        "multiplier": 1.5
+      },
+      "atk_penalty": {
+        "type": "Acqua",
+        "multiplier": 0.5
+      },
+      "weather_ball_type": "Fuoco"
     },
     "Spargipiccante": {
       "desc": "When the Pokémon takes damage from a move, it burns the attacker.",

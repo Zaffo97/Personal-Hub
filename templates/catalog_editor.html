@@ -65,6 +65,25 @@ textarea.code-area{min-height:300px}
     <div id="imp_esito" style="margin-top:.7rem"></div>
   </div>
 </div>
+
+{# Deciso con Davide il 23/09/2026: dalla fonte entra solo il nuovo, e quello che
+   è diverso nelle voci esistenti si mostra ma non si applica — sono quasi sempre
+   correzioni fatte a mano (le Mega di Champions). Vedi pokedex_aggiorna.py #}
+<div class="card" style="margin-bottom:1rem">
+  <div class="card-header">
+    <span class="card-title">🔄 {{ t('Aggiorna tutto dalla fonte') }}</span>
+    <span class="text-xs text-muted">{{ t('Pokémon, mosse, abilità e oggetti · entra solo il nuovo') }}</span>
+  </div>
+  <div class="card-body" style="padding-top:.6rem">
+    <div style="display:flex;gap:.6rem;flex-wrap:wrap">
+      <button class="btn btn-secondary btn-sm" type="button" onclick="aggVedi()">
+        🔍 {{ t('Controlla la fonte') }}</button>
+      <button class="btn btn-primary btn-sm" type="button" id="agg_scrivi"
+              onclick="aggScrivi()" disabled>💾 {{ t('Aggiungi le voci nuove') }}</button>
+    </div>
+    <div id="agg_esito" style="margin-top:.7rem"></div>
+  </div>
+</div>
 {% endif %}
 
 <div style="display:grid;grid-template-columns:1fr 420px;gap:1rem;align-items:start">
@@ -263,6 +282,63 @@ async function impScrivi(){
     + '</div>' + impProblemi(d.problemi)
     + '<div class="text-xs text-muted" style="margin-top:.4rem">' + t('Ricarica la pagina per vederle in elenco.') + '</div>');
   impSpegni();
+}
+
+// ── Aggiorna tutto dalla fonte ───────────────────────────────────────────────
+// Stessi due passi dell'import: `aggVedi()` mostra, `aggScrivi()` scrive. Le
+// differenze sulle voci esistenti sono solo da leggere: nessun pulsante le applica.
+function aggMsg(html){ document.getElementById('agg_esito').innerHTML = html; }
+
+function aggNuove(n){
+  const gruppi = [['specie', t('Specie')], ['forme', t('Forme')], ['mosse', t('Mosse')],
+                  ['abilita', t('Abilità')], ['oggetti', t('Oggetti')]];
+  const righe = gruppi.filter(([k]) => (n[k] || []).length)
+    .map(([k, et]) => '<li><strong>' + et + ' (' + n[k].length + ')</strong>: '
+      + n[k].map(esc).join(', ') + '</li>').join('');
+  return righe ? '<ul style="margin:.3rem 0;padding-left:1.1rem;font-size:.78rem">' + righe + '</ul>'
+               : '<p class="text-xs text-muted" style="margin:.3rem 0">' + t('Niente di nuovo nella fonte.') + '</p>';
+}
+
+function aggDifferenze(diff){
+  if (!diff || !diff.length) return '';
+  return '<details style="margin-top:.5rem"><summary class="text-xs">'
+    + tf('{n} differenze su voci esistenti — restano come sono', {n: diff.length}) + '</summary>'
+    + '<table class="cat-table" style="font-size:.75rem;margin-top:.4rem"><thead><tr><th>'
+    + t('Voce') + '</th><th>' + t('Campo') + '</th><th>' + t('Catalogo') + '</th><th>'
+    + t('Fonte') + '</th></tr></thead><tbody>'
+    + diff.map(d => '<tr><td>' + esc(d.voce) + '</td><td>' + esc(d.campo) + '</td><td>'
+        + esc(d.catalogo) + '</td><td class="text-muted">' + esc(d.fonte) + '</td></tr>').join('')
+    + '</tbody></table></details>';
+}
+
+async function aggVedi(){
+  document.getElementById('agg_scrivi').disabled = true;
+  aggMsg('<span class="text-xs text-muted">' + t('Scarico la fonte, ci vuole un minuto...') + '</span>');
+  const r = await fetch('/pokemon/api/catalogo/aggiorna/anteprima', {method: 'POST'});
+  const d = await r.json();
+  if (!d.ok){
+    aggMsg('<span class="text-xs" style="color:var(--danger,#c33)">' + esc(d.errore || 'errore')
+      + ((d.problemi || []).length ? ': ' + d.problemi.map(esc).join(', ') : '') + '</span>');
+    return;
+  }
+  aggMsg(aggNuove(d.nuove || {}) + aggDifferenze(d.differenze));
+  document.getElementById('agg_scrivi').disabled = !d.quante_nuove;
+}
+
+async function aggScrivi(){
+  document.getElementById('agg_scrivi').disabled = true;
+  const r = await fetch('/pokemon/api/catalogo/aggiorna/applica', {method: 'POST'});
+  const d = await r.json();
+  if (!d.ok){
+    aggMsg('<span class="text-xs" style="color:var(--danger,#c33)">' + esc(d.errore || 'errore') + '</span>');
+    return;
+  }
+  const senza = d.senza_mosse || [];
+  aggMsg('<div class="text-xs">✅ ' + tf('{n} voci nuove scritte', {n: d.scritte || 0})
+    + (senza.length ? ' · <span style="color:var(--warning,#d90)">'
+        + tf('senza elenco mosse: {nomi}', {nomi: senza.join(', ')}) + '</span>' : '')
+    + '</div><div class="text-xs text-muted" style="margin-top:.4rem">'
+    + t('Ricarica la pagina per vederle in elenco.') + '</div>');
 }
 {% endif %}
 
