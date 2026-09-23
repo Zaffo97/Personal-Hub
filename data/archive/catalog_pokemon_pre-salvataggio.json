@@ -6755,7 +6755,8 @@
         ],
         "nome_it": "Mega Meowstic (Male)",
         "nome_en": "Mega Meowstic (Male)",
-        "slug": "meowstic-male-mega"
+        "slug": "meowstic-male-mega",
+        "puo_evolversi": false
       },
       "Mega Meowstic (Female)": {
         "types": [
@@ -6774,7 +6775,8 @@
         ],
         "nome_it": "Mega Meowstic (Female)",
         "nome_en": "Mega Meowstic (Female)",
-        "slug": "meowstic-female-mega"
+        "slug": "meowstic-female-mega",
+        "puo_evolversi": false
       }
     },
     "slug": "meowstic-male",

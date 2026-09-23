@@ -20,6 +20,21 @@ pagina ed esegue `new Function()` su ogni blocco `<script>` **e** su ogni handle
 
 ## 23/09/2026
 
+**Le abilità delle 5 Mega di M-C, e i termini d'uso letti — decisione di Davide**
+
+`scripts/riempi_abilita_vuote.py` (nuovo, generico) riempie **solo le liste vuote** dal dump,
+e si ferma se un'abilità non ha una voce nel catalogo abilità (il legame passa da `nome_en`).
+Mega Absol Z → Sharpness, Mega Garchomp Z → Levitate, Mega Lucario Z → Aura Guard, Mega
+Golisopod → Tough Claws, Mega Baxcalibur → Thermal Exchange: **5 su 5 confermate da Serebii**
+(«Mega Abilities» di Champions). Le 9 Mega di Leggende Z-A restano vuote anche nel dump, ed è
+giusto. Differenze mostrate dal pulsante del Pokédex: 32 → 27. `controlla_abilita.py` a posto,
+prove `catalogo_vivo` 11/11, `import_specie` 30/30, `champions_1_2_0` 40/40. A backlog:
+Affilama e Aura Guard senza effetto nel motore.
+
+Letti i termini d'uso: **fantacalcio.it vieta lo scraping** (art. 3), anche per uso personale;
+Serebii non ha termini pubblicati, solo il copyright. Scritto in §1.5 con le citazioni, e la
+scelta su fantacalcio.it è di Davide.
+
 **Catalogo non più evidenziato fra gli strumenti Pokémon** — segnalato da Davide: il pulsante pieno (`btn-primary`) sembrava la voce già selezionata e non si capiva che fosse da cliccare. Ora `btn-secondary` come gli altri. Sweep di `/pokemon/` 0 errori.
 
 **Le regulation allineate a Serebii e Bulbapedia — §4.3, decisione di Davide**

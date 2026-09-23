@@ -334,6 +334,29 @@ Da incrociare con 1.5: online questo export deve girare **da solo sul server**.
 
 ### 1.5 🟨 Mettere l'app online
 
+> **Aggiornato il 23/09/2026 da Davide**: per ora non si mette online niente. Quando
+> succederà, **solo sulla sua rete di casa**, al massimo con strumenti come **Railway**. ⚠️
+> Railway era stato escluso dal vincolo «gratis» (il disco persistente si paga): se torna in
+> gioco, il vincolo va riconfermato con lui, non dato per caduto.
+
+> **I termini d'uso delle fonti, letti il 23/09/2026** — non un parere legale, solo quello
+> che c'è scritto:
+> - **fantacalcio.it** (Fantacalcio S.r.l., Napoli), *Termini e condizioni*, art. 3:
+>   vieta di «usare programmi software o altri meccanismi automatici o manuali per copiare
+>   o accedere alle pagine della Piattaforma o al loro Contenuto (ivi compresi sistemi atti
+>   a effettuare il c.d. scraping)»; art. 8: a fini personali e non commerciali l'utente può
+>   «esclusivamente visualizzare» i contenuti. **La lettura di listone, statistiche,
+>   probabili e calendario che fa `fantacalcio_it.py` è quindi contraria ai loro termini**,
+>   anche per uso personale. In più il `robots.txt` blocca `/probabiliformazioniseriea`
+>   (noi leggiamo la stessa pagina con i trattini). Il rischio pratico per un uso privato a
+>   bassa frequenza è basso, ma il divieto è scritto: la decisione su come proseguire è di
+>   Davide. ⬜ Da decidere
+> - **Serebii**: non ha termini d'uso pubblicati, solo la privacy e «All Content is ©
+>   Copyright of Serebii.net». Il `robots.txt` non blocca le pagine che leggiamo. Leggerle
+>   per uso personale non va contro niente di scritto; **ripubblicarle** sì
+> - **Bulbapedia** (per completezza): testo in CC BY-NC-SA, uso non commerciale con
+>   attribuzione; la lettura in formato grezzo è una funzione normale di MediaWiki
+
 Usare la web app dal telefono e da altri PC, **in contemporanea**.
 
 > **I due vincoli, posti da Davide il 12/08/2026:**
@@ -640,6 +663,7 @@ quattro cose richiedono **fonti diverse**:
 | ⚠️ | **`puo_evolversi` ha tre valori** | Lo scrive `scripts/importa_evoluzioni.py` su **1342 voci su 1342**, per forma e non per specie: Corsola di Galar sì, quella di Kanto no, le Mega mai. **Assente vuol dire «non lo sappiamo»**, e l'Evolcondensa lo dice a schermo («evoluzione non nota»), come `moves: null`. ✅ **Dal 21/09/2026 sono 1342 su 1342**: le ultime due, le Mega Meowstic, hanno preso lo slug e con lui l'esito. L'import dal pannello lo calcola da sé (`pokeapi.evoluzioni()`); **una voce aggiunta a mano dall'editor invece nasce senza**, e va rilanciato lo script. Nelle forme **non si eredita** dalla specie in `api_pokemon.py`: ereditarlo darebbe `true` a tutte le Mega |
 | ✅ | **L'hover del tema scuro sotto soglia: resta com'è, deciso da Davide il 22/09/2026** | Trovato il 22/09/2026 scrivendo `scripts/prova_temi.py`, e **non corretto** perché è il colore principale dell'hub e la decisione è di Davide, non mia. `.btn-primary:hover` usa `--primary-h: #9488f7`, e il bianco sopra dà **2.95** — sotto il pavimento di 3.0, cioè illeggibile anche per un testo grande. Gli altri tre temi stanno fra 3.48 e 8.04. ⚠️ Due cose lo rendono meno grave di come suona: è uno stato **transitorio** (col mouse sopra), e da fermo lo stesso pulsante sta a 3.99. Il tema scuro è così **da sempre** — l'hover schiarisce invece di scurire, ed è la scelta di disegno di tutta la palette. Chiuderlo vuol dire scurire `--primary-h` verso #6a5ce0 circa, e accettare che l'hover diventi più scuro del pulsante fermo. La misura resta dichiarata in `DICHIARATE` dentro `prova_temi.py`, che la **ristampa a ogni esecuzione**: non è più una voce aperta, è una scelta, e va riletta solo se un giorno si rifà la palette |
 | ✅ | **Limiti dichiarati degli oggetti nel calcolatore** | **Chiusi il 23/09/2026.** Guantone (toglie il contatto), Plessimetro (campo «Uso n.», tetto ×2) e i quattro semi (+1 grado col loro terreno) sono nel motore; Metalpolvere e gemme **non erano bachi** — un Ditto caricato è per forza non trasformato, e un calcolo singolo è il primo colpo. Numeri in `STORICO.md` |
+| ⬜ | **Due abilità senza effetto nel motore** | Trovate il 23/09/2026 riempiendo le abilità delle Mega di M-C. **Affilama** (Sharpness, di Mega Absol Z) ha `effect: none`, e dovrebbe potenziare le mosse **da taglio** — che da oggi hanno il flag `slicing`, quindi il motore potrebbe leggerlo. **Aura Guard** (Mega Lucario Z) è nuova e senza descrizione: l'effetto va cercato su una fonte prima di scriverlo. Il valore di Affilama va preso da Bulbapedia, non da memoria |
 | ✅ | **I flag delle mosse di Gen 8-9** | **Chiuso il 23/09/2026, decisione di Davide**: integrati da Bulbapedia con `scripts/integra_flag_mosse.py`. Il dump ha i flag di 748 mosse ma nessuna di Gen 8+: **95** mosse del catalogo, **84** completate (28 prendono `contact`, 3 prendono `punch` — Rage Fist, Jet Punch, Headlong Rush), 11 già complete. Solo aggiunte. Numeri in `STORICO.md` |
 | ✅ | **23 flag sbagliati che venivano da `moves_ma.json`** | **Tolti il 23/09/2026, decisione di Davide**, con `scripts/togli_flag_sbagliati.py`: `contact` da 19 mosse vecchie (Stone Edge, Rock Tomb, Seed Bomb, Bulk Up…) e da Aqua Cutter, Gigaton Hammer, Mountain Gale; `punch` da Storm Throw. La prova si ricontrolla a ogni giro (dump, o infobox di Bulbapedia per le Gen 9), e lo script si ferma se ne manca una. Numeri in `STORICO.md` |
 
@@ -1122,7 +1146,7 @@ sa dal codice, non un piano.
 
 **Sezione Pokémon**
 
-- ✅ **Un pulsante che aggiorni da solo tutto il Pokédex** — **fatto il 23/09/2026**, numeri in `STORICO.md`: card «Aggiorna tutto dalla fonte» in Catalogo → Pokémon, logica in `pokedex_aggiorna.py`; entra solo il nuovo, le differenze si mostrano. ⬜ Resta la domanda sulle **5 Mega di M-C con le abilità vuote** (sotto). La richiesta era: quando la fonte cambia,
+- ✅ **Un pulsante che aggiorni da solo tutto il Pokédex** — **fatto il 23/09/2026**, numeri in `STORICO.md`: card «Aggiorna tutto dalla fonte» in Catalogo → Pokémon, logica in `pokedex_aggiorna.py`; entra solo il nuovo, le differenze si mostrano. La richiesta era: quando la fonte cambia,
   Pokémon nuovi, statistiche, oggetti, mosse e abilità. C'è già il pezzo di sotto —
   `pokeapi.py` legge e `scripts/build_catalog.py` scrive — e c'è già il precedente
   giusto nel Fantacalcio: la logica in un modulo solo (`fanta_import.py`), gli
@@ -1152,7 +1176,7 @@ sa dal codice, non un piano.
     direbbe «voci curate modificate: 0» — vero, e fuorviante. Il pannello `/pesca` questa
     porta l'ha chiusa il 10/09 (STORICO, «doppione sotto un'altra chiave»), lo script no.
     Non corretto: va deciso insieme al pulsante, che ci starebbe sopra.
-  - ⬜ **Trovato dal pulsante al primo giro, da decidere**: 5 Mega di M-C — Absol Z,
+  - ✅ **Riempite il 23/09/2026, decisione di Davide** (`scripts/riempi_abilita_vuote.py`, confermate da Serebii «Mega Abilities»). Era: 5 Mega di M-C — Absol Z,
     Garchomp Z, Lucario Z, Golisopod, Baxcalibur — hanno `abilities: []` nel catalogo, e
     il dump di oggi le ha (Sharpness, Levitate, **Aura Guard**, Tough Claws, Thermal
     Exchange). Non è una scelta curata, è un buco: ma la regola approvata è «si mostra,

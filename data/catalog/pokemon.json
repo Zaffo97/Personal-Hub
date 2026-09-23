@@ -2865,7 +2865,9 @@
           "spd": 60,
           "spe": 151
         },
-        "abilities": [],
+        "abilities": [
+          "Sharpness"
+        ],
         "slug": "absol-mega-z",
         "nome_it": "Mega Absol Z",
         "nome_en": "Mega Absol Z",
@@ -3204,7 +3206,9 @@
           "spd": 85,
           "spe": 151
         },
-        "abilities": [],
+        "abilities": [
+          "Levitate"
+        ],
         "slug": "garchomp-mega-z",
         "nome_it": "Mega Garchomp Z",
         "nome_en": "Mega Garchomp Z",
@@ -3270,7 +3274,9 @@
           "spd": 70,
           "spe": 151
         },
-        "abilities": [],
+        "abilities": [
+          "Aura Guard"
+        ],
         "slug": "lucario-mega-z",
         "nome_it": "Mega Lucario Z",
         "nome_en": "Mega Lucario Z",
@@ -24172,7 +24178,9 @@
           "spd": 120,
           "spe": 40
         },
-        "abilities": [],
+        "abilities": [
+          "Tough Claws"
+        ],
         "slug": "golisopod-mega",
         "nome_it": "Mega Golisopod",
         "nome_en": "Mega Golisopod",
@@ -29812,7 +29820,9 @@
           "spd": 101,
           "spe": 87
         },
-        "abilities": [],
+        "abilities": [
+          "Thermal Exchange"
+        ],
         "slug": "baxcalibur-mega",
         "nome_it": "Mega Baxcalibur",
         "nome_en": "Mega Baxcalibur",
