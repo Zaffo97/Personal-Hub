@@ -18,6 +18,51 @@ pagina ed esegue `new Function()` su ogni blocco `<script>` **e** su ogni handle
 
 ---
 
+## 23/09/2026
+
+**I limiti dichiarati degli oggetti nel calcolatore — §3, chiusi**
+
+Erano cinque, scritti il 14/09/2026. Tre andavano scritti nel motore, due **non erano
+bachi** e andavano solo detti. Valori da Bulbapedia, una pagina per oggetto.
+
+- **Guantone**: le mosse di pugno **non fanno più contatto**, quindi Unghiedure e
+  Lanugine non le vedono. Il contatto adesso si decide in `calcDamage()` **prima** dei
+  moltiplicatori delle abilità, che era il motivo per cui il Guantone non poteva
+  toglierlo. Provato su Incineroar: Fuocopugno 129-153, con Unghiedure 168-198, e con
+  Unghiedure + Guantone **141-168**, uguale al solo Guantone. Fatto a mano: potenza
+  floor(75×1.1)=82, base 56, 47×1.5×2 = 141, 56×3 = 168. Lanugine: senza Guantone
+  ×0.5×2 = invariato, col Guantone resta solo il ×2 del Fuoco. Fuococarica, che non è
+  un pugno: Unghiedure si applica e il Guantone dice «non si attiva».
+- **Plessimetro**: `effect: metronome` e `modifier: 1.2` (+819/4096 per uso), sul danno
+  **finale** come dice la pagina *Damage* di Bulbapedia («other»), con tetto ×2. Un
+  campo **«Uso n.»** compare accanto alla tendina solo con questo oggetto. Sulla regola
+  #8: uso 1 → 85-102 «(primo uso)», uso 3 → **119-142**, uso 6 e uso 10 → 170-204.
+  ⚠️ Il primo giro dava **118**: 85 × 1.4 in virgola mobile fa 118,999…, e il floor
+  perdeva un punto. Misurato su 400 valori: capita **solo** a ×1.4 (16 su 400), mai ai
+  moltiplicatori che c'erano già (1.1, 1.2, 1.3, 1.5…). Corretto con un `+1e-9` sulla
+  riga del moltiplicatore finale, sicuro perché i moltiplicatori hanno al più due decimali.
+- **Semi** (Elettro, Erba, Psico, Nebbia): `effect: seed_<terreno>`, `stat` def o spd,
+  `modifier: 1` che qui è **un grado**, non un moltiplicatore — l'etichetta nella tendina
+  dice «+1 DEF» e non «×1». Col terreno giusto il grado si somma a quelli scelti a mano
+  (tetto +6) e il critico lo ignora come gli altri. Erbaseme + terreno erboso = **58-69**,
+  identico a Difesa +1 senza seme; col critico 129-153, identico al critico senza seme;
+  col terreno sbagliato dice «(serve il suo terreno)», su una mossa dell'altra categoria
+  «(non si attiva)».
+- **Metalpolvere: non era un baco.** Ditto caricato nel calcolatore **è** un Ditto non
+  trasformato, perché un Ditto trasformato si carica come il Pokémon che copia, e lì la
+  specie non combacia e la polvere giustamente non si attiva.
+- **Gemme: non era un baco.** Un calcolo singolo **è** il primo colpo, cioè quello in
+  cui la gemma si consuma: ×1.3 è il numero giusto.
+
+Dati scritti da `scripts/completa_effetti_oggetti.py` (5 voci, rieseguibile, `--dry-run`,
+rifiuta una voce che non trova nello stato del 14/09). Riguarda solo `pokedex`: MA, MB
+e MC hanno i loro 58 oggetti e nessuno di questi. Verifica: regola #8 A=183 D=122
+HP=221 85-102; sweep di `/pokemon/calcolatori` 2 script e 88 handler, 0 errori in IT
+ed EN; `controlla_traduzioni.py` 638 su 638; console senza errori. Provato su un banco
+con una copia di `hub.db`, non sul DB vero.
+
+---
+
 ## 22/09/2026
 
 **Tema e lingua seguono l'utente, non il browser — §1.4 falla 2 chiusa**

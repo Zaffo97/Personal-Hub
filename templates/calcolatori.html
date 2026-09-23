@@ -156,8 +156,14 @@
                Fino al 14/09/2026 il value era il solo moltiplicatore, e il JS lo applicava
                all'Attacco qualunque fosse l'oggetto: vedi oggettoScelto() in calcolatori-danno.js #}
             <option value="">{{ t('— Nessun oggetto —') }}</option>
-            {% for iname, idata in items_data["items"]|dictsort %}{% if idata.category in ["choice","damage","conditional","type_boost","orb","utility"] and idata.modifier is not none %}<option value="{{ iname }}" data-effect="{{ idata.effect or '' }}" data-mod="{{ idata.modifier }}" data-specie="{{ (idata.specie or [])|join('|') }}" data-tipi="{{ (idata.tipi or [])|join('|') }}" data-stat="{{ idata.stat or '' }}">{{ nome_vis(idata, iname) }} ×{{ idata.modifier }}</option>{% endif %}{% endfor %}
-          </select></div>
+            {% for iname, idata in items_data["items"]|dictsort %}{% if idata.category in ["choice","damage","conditional","type_boost","orb","utility"] and idata.modifier is not none %}<option value="{{ iname }}" data-effect="{{ idata.effect or '' }}" data-mod="{{ idata.modifier }}" data-specie="{{ (idata.specie or [])|join('|') }}" data-tipi="{{ (idata.tipi or [])|join('|') }}" data-stat="{{ idata.stat or '' }}">{{ nome_vis(idata, iname) }} {% if (idata.effect or '').startswith('seed_') %}+{{ idata.modifier }} {{ 'DEF' if idata.stat == 'def' else 'SP DEF' }}{% elif idata.effect == 'metronome' %}×{{ idata.modifier }} {{ t('per uso') }}{% else %}×{{ idata.modifier }}{% endif %}</option>{% endif %}{% endfor %}
+          </select>
+          {# Solo col Plessimetro: il moltiplicatore dipende da quante volte di fila e'
+             stata usata la mossa. Lo mostra e lo nasconde calcDamage(). #}
+          <div id="atk_item_usi_box" style="display:none;align-items:center;gap:.3rem;margin-top:.25rem;font-size:.7rem" title="{{ t('Quante volte di fila è stata usata la stessa mossa: +20% a ogni uso dopo il primo, fino a ×2') }}">
+            <label for="atk_item_usi" style="white-space:nowrap">{{ t('Uso n.') }}</label>
+            <input type="number" id="atk_item_usi" class="form-control" min="1" max="6" value="1" style="width:4rem;font-size:.75rem" oninput="calcDamage()">
+          </div></div>
       </div>
       <div class="form-group">
         <label style="font-size:.72rem">Status ATK</label>
@@ -396,7 +402,7 @@
         <div class="form-group"><label style="font-size:.72rem">Item DEF</label>
           <select id="def_item" class="form-control" style="font-size:.78rem" onchange="calcDamage()">
             <option value="">{{ t('— Nessun oggetto —') }}</option>
-            {% for iname, idata in items_data["items"]|dictsort %}{% if idata.category in ["defensive","healing","berry","survival","support","weather","terrain"] and idata.modifier is not none %}<option value="{{ iname }}" data-effect="{{ idata.effect or '' }}" data-mod="{{ idata.modifier }}" data-specie="{{ (idata.specie or [])|join('|') }}" data-tipi="{{ (idata.tipi or [])|join('|') }}" data-stat="{{ idata.stat or '' }}">{{ nome_vis(idata, iname) }} ×{{ idata.modifier }}</option>{% endif %}{% endfor %}
+            {% for iname, idata in items_data["items"]|dictsort %}{% if idata.category in ["defensive","healing","berry","survival","support","weather","terrain"] and idata.modifier is not none %}<option value="{{ iname }}" data-effect="{{ idata.effect or '' }}" data-mod="{{ idata.modifier }}" data-specie="{{ (idata.specie or [])|join('|') }}" data-tipi="{{ (idata.tipi or [])|join('|') }}" data-stat="{{ idata.stat or '' }}">{{ nome_vis(idata, iname) }} {% if (idata.effect or '').startswith('seed_') %}+{{ idata.modifier }} {{ 'DEF' if idata.stat == 'def' else 'SP DEF' }}{% elif idata.effect == 'metronome' %}×{{ idata.modifier }} {{ t('per uso') }}{% else %}×{{ idata.modifier }}{% endif %}</option>{% endif %}{% endfor %}
           </select>
         </div>
         <!-- ABILITY DEF -->

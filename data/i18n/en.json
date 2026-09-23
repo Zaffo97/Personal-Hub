@@ -735,5 +735,10 @@
   "non si attiva": "not active",
   "evoluzione non nota": "evolution unknown",
   "altra forma": "another form",
-  "Questa forma non ha un'immagine sua: quella che vedi e' di un'altra voce.": "This form has no image of its own: what you see belongs to another entry."
+  "Questa forma non ha un'immagine sua: quella che vedi e' di un'altra voce.": "This form has no image of its own: what you see belongs to another entry.",
+  "per uso": "per use",
+  "Uso n.": "Use no.",
+  "Quante volte di fila è stata usata la stessa mossa: +20% a ogni uso dopo il primo, fino a ×2": "How many times in a row the same move has been used: +20% for each use after the first, up to ×2",
+  "primo uso": "first use",
+  "serve il suo terreno": "needs its terrain"
 }

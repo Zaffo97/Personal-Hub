@@ -5,14 +5,18 @@
       "username": "admin",
       "display_name": "Admin",
       "role": "admin",
-      "sections": null
+      "sections": null,
+      "tema": null,
+      "lingua": null
     },
     {
       "id": 2,
       "username": "Tizzy",
       "display_name": "Tizzy",
       "role": "user",
-      "sections": "gaming,pokemon,fantacalcio"
+      "sections": "gaming,pokemon,fantacalcio",
+      "tema": null,
+      "lingua": null
     }
   ],
   "games": [

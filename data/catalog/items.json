@@ -1152,11 +1152,13 @@
     "nome_en": "Zoom Lens"
   },
   "Metronome": {
-    "category": "other",
+    "category": "conditional",
     "desc": "Strumento da dare a un Pokémon. Potenzia una mossa usata più volte di seguito. Il potenziamento svanisce al cambio di mossa.",
     "categoria_pokeapi": "held-items",
     "nome_it": "Plessimetro",
-    "nome_en": "Metronome"
+    "nome_en": "Metronome",
+    "effect": "metronome",
+    "modifier": 1.2
   },
   "Iron Ball": {
     "category": "other",
@@ -2522,8 +2524,9 @@
     "categoria_pokeapi": "held-items",
     "nome_it": "Elettroseme",
     "nome_en": "Electric Seed",
-    "effect": null,
-    "modifier": null
+    "effect": "seed_electric",
+    "modifier": 1,
+    "stat": "def"
   },
   "Psychic Seed": {
     "category": "terrain",
@@ -2531,8 +2534,9 @@
     "categoria_pokeapi": "held-items",
     "nome_it": "Psicoseme",
     "nome_en": "Psychic Seed",
-    "effect": null,
-    "modifier": null
+    "effect": "seed_psychic",
+    "modifier": 1,
+    "stat": "spd"
   },
   "Misty Seed": {
     "category": "terrain",
@@ -2540,8 +2544,9 @@
     "categoria_pokeapi": "held-items",
     "nome_it": "Nebbiaseme",
     "nome_en": "Misty Seed",
-    "effect": null,
-    "modifier": null
+    "effect": "seed_misty",
+    "modifier": 1,
+    "stat": "spd"
   },
   "Grassy Seed": {
     "category": "terrain",
@@ -2549,8 +2554,9 @@
     "categoria_pokeapi": "held-items",
     "nome_it": "Erbaseme",
     "nome_en": "Grassy Seed",
-    "effect": null,
-    "modifier": null
+    "effect": "seed_grassy",
+    "modifier": 1,
+    "stat": "def"
   },
   "Fighting Memory": {
     "category": "other",

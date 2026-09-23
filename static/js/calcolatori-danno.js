@@ -181,7 +181,8 @@ function oggettoScelto(id){
     specie: elenco(o.dataset.specie),
     tipi:   elenco(o.dataset.tipi),
     stat:   o.dataset.stat || '',
-    nome:   o.textContent.replace(/\s*×.*$/, '').trim(),
+    // l'etichetta finisce con «×1.5», «×1.2 per uso» o, per i semi, «+1 DEF»
+    nome:   o.textContent.replace(/\s+(×|\+\d).*$/, '').trim(),
   };
 }
 
@@ -226,12 +227,24 @@ function calcDamage(){
   const defTera  = document.getElementById('def_tera')?.value||'';
   const defType1 = document.getElementById('def_type1')?.value||'';
   const defType2 = document.getElementById('def_type2')?.value||'';
-  const contact   = document.getElementById('f_contact')?.checked||false;
+  const contattoSpuntato = document.getElementById('f_contact')?.checked||false;
   const atkPinch  = document.getElementById('f_atk_pinch')?.checked||false;
   const atkAbilityName = document.getElementById('atk_ability')?.value || '';
   const defAbilityName = document.getElementById('def_ability')?.value || '';
 
+  // Il campo «uso consecutivo» ha senso solo col Plessimetro: prima dell'alert,
+  // perche' la tendina chiama calcDamage() anche senza attaccante.
+  const usiBox = document.getElementById('atk_item_usi_box');
+  if (usiBox) usiBox.style.display = atkOgg?.effect === 'metronome' ? 'flex' : 'none';
+
   if(!BS.atk?.hp&&!BS.atk?.atk){alert(t('Carica almeno l\'attaccante!'));return;}
+
+  // La mossa scelta dall'elenco: serve ai flag (pugno). Senza, il flag non si conosce.
+  const mossa = MOVES_DB[risolviChiave(MOVES_DB, document.getElementById('mv_name').value)];
+  const pugno = (mossa?.flags || []).includes('punch');
+  // Guantone: le mosse di pugno non fanno contatto (Bulbapedia), quindi Unghie Dure
+  // e Soffice non le vedono. Va deciso qui, prima dei moltiplicatori delle abilita'.
+  const contact = contattoSpuntato && !(atkOgg?.effect === 'boost_punch' && pugno);
 
   const aFx = abilityEffect(atkAbilityName);
   const dFx = abilityEffect(defAbilityName);
@@ -321,8 +334,13 @@ function calcDamage(){
   // Stage — un critico ignora gli stage che sfavoriscono chi attacca: quelli
   // negativi dell'attaccante e quelli positivi del difensore. Prima li applicava
   // comunque, quindi un critico contro Difesa a +2 dava 52 invece di 102.
+  // Semi: col terreno giusto il difensore ha gia' +1 grado nella stat del seme.
+  // Si somma agli stage scelti a mano (tetto +6) e il critico lo ignora come gli altri.
+  const semeAttivo = !!defOgg && defOgg.effect.startsWith('seed_')
+    && terrain === defOgg.effect.slice(5) && defOgg.stat === dStat;
+  const defStageTot = Math.min(6, defStage + (semeAttivo ? defOgg.mod : 0));
   const atkStageEff = (crit && atkStage < 0) ? 0 : atkStage;
-  const defStageEff = (crit && defStage > 0) ? 0 : defStage;
+  const defStageEff = (crit && defStageTot > 0) ? 0 : defStageTot;
   A = Math.floor(A * stageMult(atkStageEff));
   D = Math.floor(D * stageMult(defStageEff));
 
@@ -391,11 +409,11 @@ function calcDamage(){
   // come nei giochi: la potenza (bpEff), la stat (A / D) e il danno finale.
   let bpEff = bp;
   let atkOggAttivo = false;
-  let finaleAtk = 1.0;   // Assorbisfera, Abilcintura: sul danno, nel ciclo dei roll
+  let atkOggNota = '';
+  let finaleAtk = 1.0;   // Assorbisfera, Abilcintura, Plessimetro: sul danno, nel ciclo dei roll
   if (atkOgg) {
     const fx = atkOgg.effect;
     const tipoBoost = fx.startsWith('boost_') ? TIPI_EN_IT[fx.slice(6)] : null;
-    const mossa = MOVES_DB[risolviChiave(MOVES_DB, document.getElementById('mv_name').value)];
     // mvType e' gia' quello dopo le "-ate": Folletto con Pixilate prende Piuma fatata
     const potenza = () => { bpEff = Math.floor(bp * atkOgg.mod); atkOggAttivo = true; };
     const stat    = () => { A = Math.floor(A * atkOgg.mod); atkOggAttivo = true; };
@@ -413,7 +431,7 @@ function calcDamage(){
       if (cat === 'special') potenza();
     } else if (fx === 'boost_punch') {
       // senza una mossa scelta dall'elenco il flag non si conosce: non si attiva
-      if ((mossa?.flags || []).includes('punch')) potenza();
+      if (pugno) potenza();
     } else if (fx === 'boost_specie') {
       const tipi = atkOgg.tipi.map(x => TIPI_EN_IT[x]);
       if (specieCombacia(atkOgg.specie, BS.atk) && (!tipi.length || tipi.includes(mvType))) potenza();
@@ -423,6 +441,13 @@ function calcDamage(){
       finaleAtk = atkOgg.mod; atkOggAttivo = true;
     } else if (fx === 'expert_belt') {
       if (typeEff > 1) { finaleAtk = atkOgg.mod; atkOggAttivo = true; }
+    } else if (fx === 'metronome') {
+      // +0.2 per ogni uso consecutivo precedente, tetto ×2 (Bulbapedia, «other»).
+      // Arrotondato ai centesimi: 1 + 0.2×5 in virgola mobile fa 1.9999…
+      const n = Math.max(1, parseInt(document.getElementById('atk_item_usi')?.value) || 1);
+      const f = Math.min(2, Math.round((1 + (atkOgg.mod - 1) * (n - 1)) * 100) / 100);
+      if (f > 1) { finaleAtk = f; atkOggAttivo = true; }
+      else atkOggNota = t('primo uso');
     }
     // Ogni altro effetto (Stolascelta: `boost_spe`) non tocca il danno: resta inattivo.
   }
@@ -453,6 +478,10 @@ function calcDamage(){
       else if (evo !== false) defOggNota = t('evoluzione non nota');
     } else if (fx === 'stat_specie') {
       if (defOgg.stat === dStat && specieCombacia(defOgg.specie, BS.def)) stat();
+    } else if (fx.startsWith('seed_')) {
+      // il grado e' gia' entrato in D con gli stage, qui si dice solo se c'e'
+      if (semeAttivo) defOggAttivo = true;
+      else if (terrain !== fx.slice(5)) defOggNota = t('serve il suo terreno');
     }
     // `air_balloon` agisce prima, sull'immunita': vedi sopra, vicino a Levitazione.
   }
@@ -511,7 +540,10 @@ function calcDamage(){
     dmg = Math.floor(dmg * stab * typeEff);
 
     // Oggetti sul danno finale: Assorbisfera / Abilcintura e la bacca che dimezza
-    if (finaleAtk !== 1.0) dmg = Math.floor(dmg * finaleAtk);
+    // +1e-9: 85 × 1.4 in virgola mobile fa 118.999…, e il floor dava 118 invece di
+    // 119 (Plessimetro al terzo uso: 16 valori su 400). I moltiplicatori hanno al
+    // massimo due decimali, quindi il margine non puo' scavalcare un intero vero.
+    if (finaleAtk !== 1.0) dmg = Math.floor(dmg * finaleAtk + 1e-9);
     if (baccaMult !== 1.0) dmg = Math.floor(dmg * baccaMult);
 
     return dmg;
@@ -537,7 +569,7 @@ function calcDamage(){
   // oggetto scelto che non cambia il numero somiglia troppo a un guasto.
   const oggTag = (ogg, attivo, nota) => !ogg ? ''
     : ` @ ${ogg.nome}` + (attivo ? '' : ` (${nota || t('non si attiva')})`);
-  const atkOggTag = oggTag(atkOgg, atkOggAttivo);
+  const atkOggTag = oggTag(atkOgg, atkOggAttivo, atkOggNota);
   const defOggTag = oggTag(defOgg, defOggAttivo, defOggNota);
   const stabLabel = stab > 1 ? ` +STAB(${stab}×)` : '';
   let effLabel = '';
