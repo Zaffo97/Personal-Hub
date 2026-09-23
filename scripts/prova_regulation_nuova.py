@@ -172,8 +172,10 @@ def prove(dove):
         # il dump di maggio, lo deriva `scripts/allinea_mosse_regulation.py` dalle
         # mosse del roster. Il senso della prova resta quello: MA legge il **filtro**,
         # non i file storici, che direbbero 208 / 461.
-        esito("MA dice 279 / 492 / 58, non i 208 / 461 / 58 dei file vecchi",
-              conteggi["ma"] == (279, 492, 58), str(conteggi["ma"]))
+        # 490 e non più 492 dal 23/09/2026: il confronto con le fonti ha tolto Pawmot da
+        # MA (arriva in M-C) e aggiunto Arcanine di Hisui, e le mosse si sono riderivate.
+        esito("MA dice 279 / 490 / 58, non i 208 / 461 / 58 dei file vecchi",
+              conteggi["ma"] == (279, 490, 58), str(conteggi["ma"]))
         # 1342 e non più 1343 dal 13/09/2026: il roster di Pokedex è specie più forme, e
         # la fusione del doppione di Floette ha tolto `eternal-flower-floette`, che era
         # lo stesso Pokémon della forma annidata `Floette (Eternal Flower)`.

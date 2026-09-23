@@ -20,6 +20,48 @@ pagina ed esegue `new Function()` su ogni blocco `<script>` **e** su ogni handle
 
 ## 23/09/2026
 
+**Le regulation allineate a Serebii e Bulbapedia — §4.3, decisione di Davide**
+
+Il pulsante «Confronta con le fonti» nella pagina della regulation, logica in
+`regulation_fonti.py`, guscio `scripts/confronta_regulation.py`. Bulbapedia dà il roster
+**completo** («Regulation Set M-C», righe `{{CPCard}}`), Serebii le **aggiunte** e gli
+**oggetti aggiunti**. Le regole: una **specie** cambia solo se le due fonti concordano; le
+**forme** vengono da Bulbapedia; le **forme nostre** (Aegislash Spada, Castform, Morpeko,
+Palafin Eroe, Maushold da tre, Mega Meowstic femmina) restano; gli **oggetti** si aggiungono
+e non si tolgono; un nome che non si risolve ferma tutto. Dopo la scrittura la mega_map si
+ricollega e le mosse si riderivano con `allinea_mosse_regulation.py`, lanciato così com'è.
+
+Primo uso, su MA, MB e MC:
+- **MA**: − Pawmot (arriva in M-C: Serebii lo mette fra i nuovi di M-C, Bulbapedia non
+  l'ha prima), + Arcanine di Hisui. 279 voci, mosse 492 → **490**, oggetti 58
+- **MB**: + Annihilape, Gholdengo, Grimmsnarl, Houndstone, Mawile e Mega Mawile, Musharna,
+  Overqwil, Qwilfish, Vileplume, Arcanine di Hisui; − Pawmot. 308 → **318**, mosse 494 →
+  **496**, oggetti 58 → **73** (Life Orb, Expert Belt, Metronome, Muscle Band, Wise Glasses…)
+- **MC**: le stesse dieci, più i tre piumaggi di Squawkabilly. 339 → **353**, mosse 506 →
+  **510**, oggetti 58 → **85** (i 15 di M-B più i 12 di M-C, semi compresi)
+- ≠ **Kingambit** in M-C: Serebii sì, Bulbapedia no. Resta nel roster, e il confronto lo
+  ristampa ogni volta
+
+I tre piumaggi entravano **senza lista mosse**. Il dump non ha righe `champions` per loro;
+Bulbapedia dà **una lista sola** senza sezioni per forma, e il dump dà i quattro piumaggi
+**identici** in Scarlatto/Violetto (47 mosse). Due fonti, come chiesto per le Mega: ora
+ereditano la lista della specie (43 mosse, le 43 righe di Bulbapedia) con
+`scripts/dichiara_eredita.py`, generico e con `--fonte` obbligatorio.
+
+⚠️ **Trovato strada facendo, e corretto** perché senza la verifica sarebbe stata una bugia:
+`salva_moveset()` scriveva `pokemon_moves.json` con `indent=2`, mentre chi lo genera usa
+`indent=1` — ogni salvataggio dall'interfaccia, anche dal pannello `/pesca`, riscriveva le
+~200.000 righe del file per cambiarne poche. Ora `indent=1`: le tre eredità sono 150 righe
+di diff invece di 211.778.
+
+Verifica: secondo giro del confronto a zero su tutte e tre; nessuna voce di MA, MB o MC senza
+lista mosse; ogni Mega raggiungibile; prove `champions_1_2_0` 40/40, `moveset_main` 19/19,
+`mosse_regulation` 16/16, `regulation_nuova` 32/32, `catalogo_vivo` 11/11, `build_catalog`
+11/11, `import_specie` 30/30 — con tre numeri attesi aggiornati **perché i dati sono cambiati
+davvero** (MA 492 → 490 mosse, voci con lista Champions 370 → 373); sprite 0 rotti;
+traduzioni 665/665; sweep 0 errori. Nel browser: MC dice 353 / 510 / 85, il calcolatore su MB
+offre Life Orb, regola #8 85-102.
+
 **Il pulsante «Aggiorna tutto dalla fonte» — §4.3, decisione di Davide**
 
 Entra solo il **nuovo**; le differenze sulle voci esistenti si **mostrano** in una tabella e

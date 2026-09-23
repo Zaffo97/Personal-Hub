@@ -175,6 +175,22 @@
         </div>
         <div id="mega_esito" style="font-size:.75rem;margin-top:.5rem;display:none"></div>
       </div>
+
+      {% if reg.id|length == 2 %}
+      {# Solo le regulation di Champions (ma, mb, mc…): la sigla M-C si deduce dall'id,
+         e le fonti hanno una pagina per ognuna. Regole in regulation_fonti.py #}
+      <hr style="margin:1rem 0;border-color:var(--border)">
+      <div>
+        <p style="font-size:.78rem;color:var(--text-muted);margin-bottom:.5rem">
+          {{ t('<strong>Confronta con le fonti.</strong> Roster e oggetti letti da Serebii e Bulbapedia. Una specie entra o esce solo se le due fonti concordano; le forme di battaglia restano; gli oggetti si aggiungono e non si tolgono. Dopo la scrittura le mosse si riderivano da sole.')|safe }}
+        </p>
+        <div style="display:flex;gap:.5rem;flex-wrap:wrap;align-items:center">
+          <button class="btn btn-secondary btn-sm" onclick="fonti(true)">🔍 {{ t('Confronta') }}</button>
+          <button class="btn btn-primary btn-sm" id="fonti_scrivi" onclick="fonti(false)" disabled>✅ {{ t('Allinea alle fonti') }}</button>
+        </div>
+        <div id="fonti_esito" style="font-size:.75rem;margin-top:.5rem;display:none"></div>
+      </div>
+      {% endif %}
       {% else %}
       <p style="font-size:.82rem;color:var(--text-muted);margin-bottom:1rem">
         {{ tf('Modifica direttamente roster, mosse e oggetti di questa regulation. Ogni editor carica e salva solo i file di <strong>{reg}</strong>.', {'reg': reg.label})|safe }}
@@ -461,6 +477,58 @@ async function megaMap(anteprima) {
     esito.innerHTML = '';
     righe.forEach(x => esito.appendChild(rigaMega(x)));
     if (d.scritto) setTimeout(() => window.location.reload(), 2500);
+  } catch(e) {
+    esito.style.color = 'var(--error,#e05555)';
+    esito.textContent = t('Errore rete:') + ' ' + e;
+  }
+}
+
+// -- Confronta con le fonti -------------------------------------------------
+// Come la mega_map: `anteprima` non scrive. Il pulsante che scrive si accende solo
+// dopo un confronto che ha trovato qualcosa da cambiare. Le righe passano da
+// textContent (rigaMega): i nomi arrivano da siti esterni.
+async function fonti(anteprima) {
+  const esito = document.getElementById('fonti_esito');
+  const scrivi = document.getElementById('fonti_scrivi');
+  scrivi.disabled = true;
+  esito.style.display = 'block';
+  esito.style.color = 'var(--text-muted)';
+  esito.textContent = anteprima ? t('Leggo le fonti, ci vuole un minuto...') : t('Scrivo...');
+  try {
+    const r = await fetch('/pokemon/api/regulation/{{ reg.id }}/fonti', {
+      method: 'POST', headers: {'Content-Type':'application/json'},
+      body: JSON.stringify({ anteprima: !!anteprima })
+    });
+    const d = await r.json();
+    esito.innerHTML = '';
+    if (!d.ok) {
+      esito.style.color = 'var(--error,#e05555)';
+      esito.appendChild(rigaMega(t('Errore:') + ' ' + (d.errore || '')));
+      (d.problemi || []).slice(0, 10).forEach(p => esito.appendChild(rigaMega('⚠️ ' + p)));
+      return;
+    }
+    const k = d.conti || {};
+    const righe = [tf('Bulbapedia {b} voci, Serebii {s}, roster {r}, specie concordi {c}',
+                      {b: k.bulbapedia, s: k.serebii, r: k.roster, c: k.specie_concordi})];
+    // tf() scritto per esteso su ogni riga: controlla_traduzioni.py cerca le stringhe
+    // letterali, e un'etichetta passata come variabile resterebbe in italiano
+    const elenco = v => ' ' + ((v || []).join(', ') || '—');
+    righe.push(tf('Da aggiungere ({n}):', {n: (d.da_aggiungere || []).length}) + elenco(d.da_aggiungere));
+    righe.push(tf('Da togliere ({n}):', {n: (d.da_togliere || []).length}) + elenco(d.da_togliere));
+    righe.push(tf('Oggetti nuovi ({n}):', {n: (d.oggetti_nuovi || []).length}) + elenco(d.oggetti_nuovi));
+    righe.push(tf('Forme nostre che restano ({n}):', {n: (d.forme_nostre || []).length}) + elenco(d.forme_nostre));
+    (d.disaccordi || []).forEach(x => righe.push('≠ ' + tf('{specie}: {fonte}, resta com\'è', x)));
+    if (d.scritto) {
+      righe.push(tf('Scritto: roster {n}, mosse {m}.',
+                    {n: d.roster_dopo, m: d.mosse_ok ? t('riderivate') : t('NON riderivate')}));
+    } else if (d.messaggio) {
+      righe.push(d.messaggio);
+    }
+    righe.forEach(x => esito.appendChild(rigaMega(x)));
+    esito.style.color = d.scritto ? 'var(--primary)' : 'var(--text-muted)';
+    const daFare = (d.da_aggiungere || []).length + (d.da_togliere || []).length + (d.oggetti_nuovi || []).length;
+    scrivi.disabled = !anteprima || !daFare;
+    if (d.scritto) setTimeout(() => window.location.reload(), 3000);
   } catch(e) {
     esito.style.color = 'var(--error,#e05555)';
     esito.textContent = t('Errore rete:') + ' ' + e;

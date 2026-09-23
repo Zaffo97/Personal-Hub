@@ -753,5 +753,19 @@
   "Voce": "Entry",
   "senza elenco mosse: {nomi}": "no move list: {nomi}",
   "{n} differenze su voci esistenti — restano come sono": "{n} differences on existing entries — they stay as they are",
-  "{n} voci nuove scritte": "{n} new entries written"
+  "{n} voci nuove scritte": "{n} new entries written",
+  "<strong>Confronta con le fonti.</strong> Roster e oggetti letti da Serebii e Bulbapedia. Una specie entra o esce solo se le due fonti concordano; le forme di battaglia restano; gli oggetti si aggiungono e non si tolgono. Dopo la scrittura le mosse si riderivano da sole.": "<strong>Compare with the sources.</strong> Roster and items read from Serebii and Bulbapedia. A species comes in or goes out only if both sources agree; battle forms stay; items are added and never removed. After writing, the moves are derived again automatically.",
+  "Allinea alle fonti": "Align with the sources",
+  "Bulbapedia {b} voci, Serebii {s}, roster {r}, specie concordi {c}": "Bulbapedia {b} entries, Serebii {s}, roster {r}, species in agreement {c}",
+  "Confronta": "Compare",
+  "Leggo le fonti, ci vuole un minuto...": "Reading the sources, it takes a minute...",
+  "NON riderivate": "NOT derived again",
+  "Scritto: roster {n}, mosse {m}.": "Written: roster {n}, moves {m}.",
+  "Scrivo...": "Writing...",
+  "riderivate": "derived again",
+  "{specie}: {fonte}, resta com'è": "{specie}: {fonte}, left as it is",
+  "Da aggiungere ({n}):": "To add ({n}):",
+  "Da togliere ({n}):": "To remove ({n}):",
+  "Oggetti nuovi ({n}):": "New items ({n}):",
+  "Forme nostre che restano ({n}):": "Our forms that stay ({n}):"
 }

@@ -20,8 +20,12 @@ Il punto 3 è l'unico che cambia *cosa contiene* una regulation, e per questo no
 automatico: aggiungere una specie a un roster è una scelta di contenuto, non un dato
 deducibile. L'11/08/2026 Davide ha deciso di popolare **MB**, che era rimasta un
 segnaposto (MA più 16 Mega, con mosse, oggetti e `mega_map` identici a MA); il roster
-di **MA** invece viene dalla wiki di Pokémon Central e non si tocca — lì lo script si
+di **MA** invece veniva dalla wiki di Pokémon Central e qui non si tocca — lo script si
 limita a collegare `Meowstic (Male)`, che era già dentro insieme alla sua Mega.
+
+⚠️ Dal 23/09/2026 i roster di MA, MB e MC **si allineano alle fonti** (Serebii e
+Bulbapedia) con `regulation_fonti.py`, decisione di Davide: è lì che una specie entra o
+esce, e questo script resta quello che collega le Mega.
 
 Copia di sicurezza in `data/archive/regulation_<id>_pre-mega-map.json`.
 Rieseguibile: alla seconda esecuzione non trova più niente da fare.

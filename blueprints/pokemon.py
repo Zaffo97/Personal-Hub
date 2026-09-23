@@ -781,6 +781,22 @@ def api_regulation_copia_da(reg_id):
     return jsonify({"ok": True, "sorgente": sorgente.get("label", sorgente_id), "copiati": copiati})
 
 
+# Roster e oggetti confrontati con Serebii e Bulbapedia (§4.3, deciso con Davide il
+# 23/09/2026). Una route sola come la mega_map: `anteprima` non scrive niente. Le
+# regole — una specie cambia solo se le due fonti concordano — stanno in
+# `regulation_fonti.py`, e le usa anche `scripts/confronta_regulation.py`.
+@bp.route("/api/regulation/<reg_id>/fonti", methods=["POST"])
+@login_required
+def api_regulation_fonti(reg_id):
+    import regulation_fonti
+    payload = request.get_json(silent=True) or {}
+    if payload.get("anteprima", True):
+        esito = regulation_fonti.confronto(reg_id, aggiorna=bool(payload.get("aggiorna")))
+    else:
+        esito = regulation_fonti.applica(reg_id)
+    return jsonify(esito), (200 if esito.get("ok") else 409)
+
+
 @bp.route("/api/regulation/<reg_id>/mega-map", methods=["POST"])
 @login_required
 def api_regulation_mega_map(reg_id):
@@ -1421,8 +1437,12 @@ def salva_moveset(nuove):
     meta["aggiornato_da_interfaccia"] = datetime.now().strftime("%Y-%m-%d")
     dati["_meta"] = meta
     os.makedirs(os.path.dirname(MOVESET_FILE), exist_ok=True)
+    # ⚠️ `indent=1`, come `importa_mosse_specie.py` che genera il file. Fino al
+    # 23/09/2026 qui c'era `indent=2`: ogni salvataggio dall'interfaccia riscriveva
+    # tutte le ~200.000 righe per cambiarne poche, e il diff non diceva più cosa era
+    # cambiato davvero.
     with open(MOVESET_FILE, "w", encoding="utf-8") as f:
-        json.dump(dati, f, ensure_ascii=False, indent=2)
+        json.dump(dati, f, ensure_ascii=False, indent=1)
     _MOVESET["mtime"] = None                  # la cache si rilegge al prossimo giro
 
 

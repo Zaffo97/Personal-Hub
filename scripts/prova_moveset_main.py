@@ -192,7 +192,9 @@ def prove_champions():
     # 21/09/2026, le 4 forme Gigantamax che ereditano la loro lista nuova, le 6 Mega
     # di M-C che prendono la lista della loro specie (fonte per-forma: Pokemon Zone)
     # e le 2 Mega Meowstic, che il dump aveva gia' e a cui mancava solo lo slug.
-    esito("le voci di Champions sono 370", len(con_ch) == 370, f"{len(con_ch)}")
+    # Piu' 3 dal 23/09/2026: i piumaggi di Squawkabilly, che ereditano la lista della
+    # specie (Bulbapedia ne da' una sola, e il dump le da' identiche in SV).
+    esito("le voci di Champions sono 373", len(con_ch) == 373, f"{len(con_ch)}")
     esito("nessun blocco `champions` porta un `vg`: non lo sceglie nessuna regola",
           all("vg" not in v["champions"] for v in con_ch.values()), f"{tot} mosse")
 
