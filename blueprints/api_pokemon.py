@@ -666,21 +666,25 @@ def _generate_alt_keys(key: str) -> list:
     return alts
 
 
-@bp.route('/pokemon/<path:name>')
-def api_pokemon(name):
+def _risolvi_voce(name):
+    """(chiave, voce) del catalogo per un nome scritto a mano, o (chiave, None)."""
     key = _normalize_key(name)
     data = _find_in_catalog(key)
-
     if not data:
         for alt in _generate_alt_keys(key):
             data = _find_in_catalog(alt)
             if data:
-                key = alt
-                break
+                return alt, data
+    return key, data
 
-    if not data:
-        return jsonify({'ok': False, 'error': f'not found: {name}'}), 404
 
+def _sprite_voce(key):
+    """(sprite, sprite_hd, ripiego_di) per una chiave del catalogo.
+
+    Sta fuori da `api_pokemon()` dal 23/09/2026 perché la stessa domanda — «questa
+    immagine è sua o di un'altra voce?» — la fanno anche l'elenco team e il team
+    builder, che gli sprite dei membri li leggono dal DB e non dall'API.
+    """
     # Lo slug della forma viene dall'indice (es. "Mega Venusaur" -> "venusaur-mega").
     # Tutti gli sprite vengono da pokemondb: il repo pokesprite non contiene le forme
     # regionali, le Rotom ne' i Pokemon recenti, e dava 404 su 38 nomi.
@@ -716,6 +720,30 @@ def api_pokemon(name):
         s_pdb = _slug_pdb(slug)
         sprite    = f"{PDB_SPRITE}/{s_pdb}.png"
         sprite_hd = f"{PDB_ART}/{s_pdb}.jpg"
+    return sprite, sprite_hd, ripiego_di
+
+
+@bp.app_template_global()
+def sprite_ripiego_di(nome):
+    """Di quale voce è lo sprite mostrato per `nome`; `None` se è il suo.
+
+    Globale di Jinja per `pokemon.html` e `team_form.html`: lì lo sprite viene da
+    `team_members.sprite_url`, quindi la risposta dell'API non c'è. Si chiede per
+    **nome** e non per URL, perché lo stesso URL può essere giusto per una voce e un
+    ripiego per un'altra (Raticate di Alola e il suo Totem).
+    """
+    if not nome:
+        return None
+    key, data = _risolvi_voce(nome)
+    return _sprite_voce(key)[2] if data else None
+
+
+@bp.route('/pokemon/<path:name>')
+def api_pokemon(name):
+    key, data = _risolvi_voce(name)
+    if not data:
+        return jsonify({'ok': False, 'error': f'not found: {name}'}), 404
+    sprite, sprite_hd, ripiego_di = _sprite_voce(key)
 
     # Mosse che questa voce puo' imparare nella regulation richiesta. `moves: null`
     # non e' "nessuna mossa" ma "non lo sappiamo": succede sulle forme inventate, che

@@ -1148,10 +1148,11 @@ sa dal codice, non un piano.
   accanto all'immagine, con la frase intera nel tooltip. ⚠️ La scritta è corta
   **perché deve esserlo**: il contenitore dello sprite ha `height:70px` fisso ed è in
   riga, quindi una frase lunga si spezzava in tre righe addosso al disegno.
-  ⬜ Resta fuori l'elenco team e il team builder, dove gli sprite sono da 58 px e una
-  scritta per ognuno sarebbe rumore: lì servirebbe un `title`, e il team builder ha
-  il problema in più che gli `sprite_url` dei membri salvati stanno nel DB, quindi al
-  momento di renderli la risposta dell'API non c'è.
+  ✅ **E l'elenco team e il team builder lo dicono dal 23/09/2026**, nel `title`
+  (a 58 px una scritta sarebbe rumore). Il nodo era che lì lo sprite viene dal DB:
+  ora `sprite_ripiego_di(nome)` è un globale di Jinja in `api_pokemon.py`, che
+  risponde per **nome** e non per URL — lo stesso URL è giusto per Raticate di Alola
+  e un ripiego per il suo Totem. Numeri in `STORICO.md`.
 
 **Altro**
 

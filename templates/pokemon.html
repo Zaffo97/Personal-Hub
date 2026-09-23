@@ -102,7 +102,9 @@
     <div class="team-members-row">
       {% for m in team.members %}
       {% if m and m.pokemon %}
-      <div class="pk-slot" title="{{ m.pokemon }}{% if m.held_item %} @ {{ m.held_item }}{% endif %}">
+      {# ⚠️ Sprite da 58 px: una scritta per ognuno sarebbe rumore, quindi il ripiego
+         sta nel title, dopo il nome. Vedi sprite_ripiego_di() in api_pokemon.py #}
+      <div class="pk-slot" title="{{ m.pokemon }}{% if m.held_item %} @ {{ m.held_item }}{% endif %}{% if sprite_ripiego_di(m.pokemon) %} — {{ t("Questa forma non ha un'immagine sua: quella che vedi e' di un'altra voce.") }}{% endif %}">
         {% if m.sprite_url %}
         <img src="{{ m.sprite_url }}" alt="{{ m.pokemon }}" loading="lazy">
         {% else %}

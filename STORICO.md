@@ -20,6 +20,26 @@ pagina ed esegue `new Function()` su ogni blocco `<script>` **e** su ogni handle
 
 ## 23/09/2026
 
+**Lo sprite di ripiego lo dicono anche l'elenco team e il team builder — §4.3**
+
+L'ultima coda della voce sugli sprite. Lì le immagini sono da 58 px, quindi la frase va
+nel `title` e non in una scritta: nell'elenco si aggiunge a quello che c'era già
+(«nome @ oggetto — Questa forma non ha un'immagine sua…»), nel team builder sta
+sull'immagine, sia al primo render sia quando il JS carica un Pokémon.
+
+Il nodo era che lì lo sprite viene da `team_members.sprite_url`, cioè dal DB, e la
+risposta dell'API non c'è. La risoluzione dello sprite è uscita da `api_pokemon()` in
+due funzioni (`_risolvi_voce`, `_sprite_voce`) che la route usa com'era, più un globale
+di Jinja, `sprite_ripiego_di(nome)`. ⚠️ Si chiede per **nome**, non per URL: lo stesso
+URL di `lurantis.png` è giusto per Lurantis e un ripiego per il suo Totem.
+
+Verifica: `controlla_sprite.py` dopo lo spostamento dà gli stessi numeri di ieri, 2570
+URL, 0 rotti, 114 ripieghi su 57 voci. Su una copia di `hub.db`, un team con
+`totem-lurantis` e Incineroar: nell'elenco e nel team builder la frase c'è sul Totem e
+non su Incineroar, in IT e in EN; scrivendo i due nomi nel team builder dal browser,
+stesso esito. Sweep di `/pokemon/`, `/pokemon/team/new`, `/pokemon/team/1/edit` e
+`/pokemon/calcolatori`: 0 errori. Console senza errori.
+
 **I limiti dichiarati degli oggetti nel calcolatore — §3, chiusi**
 
 Erano cinque, scritti il 14/09/2026. Tre andavano scritti nel motore, due **non erano

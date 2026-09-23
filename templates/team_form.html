@@ -67,7 +67,7 @@
       <div class="slot-num">{{ i+1 }}</div>
       <div class="sprite-wrap" id="sw_{{ i }}">
         {% if m and m.sprite_url %}
-          <img src="{{ m.sprite_url }}" style="width:58px;height:58px;image-rendering:pixelated" loading="lazy">
+          <img src="{{ m.sprite_url }}" style="width:58px;height:58px;image-rendering:pixelated" loading="lazy"{% if sprite_ripiego_di(m.pokemon) %} title="{{ t("Questa forma non ha un'immagine sua: quella che vedi e' di un'altra voce.") }}"{% endif %}>
         {% elif m and m.pokemon %}
           <span style="font-size:1.8rem">🥚</span>
         {% else %}
@@ -382,7 +382,10 @@ function fetchPkmn(slot) {
       if (hiddenInp) hiddenInp.value = spriteUrl;
       const sw = document.getElementById('sw_' + slot);
       if (sw && spriteUrl) {
-        sw.innerHTML = '<img src="' + spriteUrl + '" style="width:58px;height:58px;image-rendering:pixelated">';
+        // Il ripiego nel title, come nell'elenco team: a 58 px una scritta sarebbe rumore
+        const titolo = d.sprite_ripiego_di
+          ? ' title="' + t('Questa forma non ha un\'immagine sua: quella che vedi e\' di un\'altra voce.') + '"' : '';
+        sw.innerHTML = '<img src="' + spriteUrl + '" style="width:58px;height:58px;image-rendering:pixelated"' + titolo + '>';
       }
       const abDl = document.getElementById('ab_list_' + slot);
       if (abDl && d.abilities) abDl.innerHTML = d.abilities.map(a => '<option value="' + a + '">').join('');
