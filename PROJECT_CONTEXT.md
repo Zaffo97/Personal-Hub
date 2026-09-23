@@ -769,6 +769,7 @@ Di conseguenza tutto ciò che questa tabella dava per "funzionante" non era mai 
 
 | Data | Contenuto |
 |------|-----------|
+| 2026-09-23 | **Catalogo non più evidenziato** nella barra strumenti di `/pokemon/`: `btn-secondary` come gli altri, chiesto da Davide |
 | 2026-09-23 | **Regulation allineate a Serebii e Bulbapedia.** `regulation_fonti.py` (nuovo, root) + `scripts/confronta_regulation.py` + route `/api/regulation/<id>/fonti` e card nell'editor regulation. MA 279/490/58, MB 318/496/73, MC 353/510/85. `scripts/dichiara_eredita.py` (nuovo) per i piumaggi di Squawkabilly. ⚠️ `salva_moveset()` ora scrive `indent=1` come il generatore: prima riscriveva tutto il file. Kingambit in M-C: disaccordo fra le fonti, resta |
 | 2026-09-23 | **Il pulsante «Aggiorna tutto dalla fonte».** `pokedex_aggiorna.py` (nuovo, root) carica `scripts/build_catalog.py` con importlib e ne usa le funzioni: entra il nuovo, le differenze si mostrano. `build_catalog.py`: slug e `normalizza()` contro i doppioni (erano 6), `scarica_cache(aggiorna=)`, `intatte()` a livello di modulo. `prova_build_catalog.py` 11/11. Primo giro: Aura Guard aggiunta, 32 differenze mostrate, fra cui 5 Mega di M-C con abilità vuote (a backlog) |
 | 2026-09-23 | **23 flag sbagliati tolti.** `scripts/togli_flag_sbagliati.py`: `contact` da 22 mosse e `punch` da Storm Throw, tutti dal file storico `moves_ma.json`. La prova (dump o infobox di Bulbapedia) si ricontrolla a ogni giro. 40/40 su `prova_champions_1_2_0.py` |

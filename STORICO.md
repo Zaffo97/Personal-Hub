@@ -20,6 +20,8 @@ pagina ed esegue `new Function()` su ogni blocco `<script>` **e** su ogni handle
 
 ## 23/09/2026
 
+**Catalogo non più evidenziato fra gli strumenti Pokémon** — segnalato da Davide: il pulsante pieno (`btn-primary`) sembrava la voce già selezionata e non si capiva che fosse da cliccare. Ora `btn-secondary` come gli altri. Sweep di `/pokemon/` 0 errori.
+
 **Le regulation allineate a Serebii e Bulbapedia — §4.3, decisione di Davide**
 
 Il pulsante «Confronta con le fonti» nella pagina della regulation, logica in

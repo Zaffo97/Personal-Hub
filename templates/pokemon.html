@@ -58,7 +58,9 @@
      amministratori. Nasconderli e' **cosmesi**: il controllo vero e' il
      before_request in blueprints/pokemon.py, che risponde anche a chi digita l'URL.
      Due blocchi e non uno, per non cambiare l'ordine dei pulsanti a chi e' admin. #}
-  {% if e_admin %}<a href="/pokemon/catalogo" class="btn btn-primary btn-sm">📚 {{ t('Catalogo') }}</a>{% endif %}
+  {# btn-secondary come gli altri: il pieno sembrava la voce già selezionata, e
+     non si capiva che fosse da cliccare (Davide, 23/09/2026) #}
+  {% if e_admin %}<a href="/pokemon/catalogo" class="btn btn-secondary btn-sm">📚 {{ t('Catalogo') }}</a>{% endif %}
   <a href="/pokemon/calcolatori" class="btn btn-secondary btn-sm">📊 {{ t('Calcolatori VGC') }}</a>
   {% if e_admin %}
   <a href="/pokemon/regulations" class="btn btn-secondary btn-sm">📌 {{ t('Editor Regulation') }}</a>
