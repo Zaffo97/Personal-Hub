@@ -90,6 +90,10 @@ Non sono storia: sono le cose che questo progetto ha già pagato e che tornano a
 
 ## 📌 L'ordine deciso il 21/08/2026
 
+> **Prima di tutto, dal 23/09/2026 — decisione di Davide: mettere in regola le fonti del
+> Fantacalcio (§4.6).** fantacalcio.it vieta la lettura automatica delle sue pagine; il piano,
+> un dato alla volta, è scritto lì. Si parte **verificando** le fonti nuove, non scrivendo codice.
+
 **Mettere l'app online (§1.5) va per ultimo**, per scelta di Davide: «caricare il sito da
 qualche parte lo voglio tenere come una delle ultime cose». I quattro buchi di sicurezza
 che rendevano pericoloso esporla sono comunque **chiusi lo stesso giorno**, quindi la
@@ -350,7 +354,7 @@ Da incrociare con 1.5: online questo export deve girare **da solo sul server**.
 >   anche per uso personale. In più il `robots.txt` blocca `/probabiliformazioniseriea`
 >   (noi leggiamo la stessa pagina con i trattini). Il rischio pratico per un uso privato a
 >   bassa frequenza è basso, ma il divieto è scritto: la decisione su come proseguire è di
->   Davide. ⬜ Da decidere
+>   Davide. ✅ **Deciso il 23/09/2026: si mette in regola**, piano in §4.6
 > - **Serebii**: non ha termini d'uso pubblicati, solo la privacy e «All Content is ©
 >   Copyright of Serebii.net». Il `robots.txt` non blocca le pagine che leggiamo. Leggerle
 >   per uso personale non va contro niente di scritto; **ripubblicarle** sì
@@ -1277,6 +1281,36 @@ sa dal codice, non un piano.
   cioè fondere per titolo, che è la scorciatoia che `importa_dati.py` rifiuta per
   iscritto. C'è una prova apposta (`prova_travaso_utente.py`, §7) perché nessuno la
   «corregga» credendola un baco.
+
+### 4.6 ⬜ Mettere in regola le fonti del Fantacalcio — **da fare alla prossima sessione**
+
+> Decisione di Davide del 23/09/2026: «voglio evitare problemi». I *Termini e condizioni*
+> di fantacalcio.it (art. 3) vietano di leggere le pagine con un programma, scraping
+> compreso, anche per uso personale; l'art. 8 permette solo di **visualizzare** i
+> contenuti. Oggi `fantacalcio_it.py` legge quattro pagine: si sostituiscono tutte, **una
+> fonte per dato**, e nessuna lettura automatica di fantacalcio.it deve restare. Citazioni
+> e contesto in §1.5.
+
+⚠️ **Prima di scrivere codice, verificare** — il piano sotto è fatto di cose ricordate,
+non misurate: copertura, limiti del piano gratuito e termini d'uso di ogni fonte nuova si
+leggono sul loro sito, come si è fatto per fantacalcio.it e Serebii.
+
+| Dato | Chi lo usa oggi | Fonte nuova proposta | Da verificare |
+|---|---|---|---|
+| **Listone** (quotazioni, ruoli) | rose, listone sfogliabile, consiglio | **il file Excel che fantacalcio.it offre agli utenti**, scaricato **da Davide** a mano e **caricato** nell'hub: nessun programma legge il sito. Le quotazioni sono le loro, e le due leghe usano quelle: un'altra fonte non darebbe gli stessi numeri | che il file ci sia ancora e da dove si scarica; che abbia gli stessi campi che `importa_listone.py` usa oggi (nome, squadra, ruolo Classic, quotazioni); che i termini permettano di tenerlo sul proprio dispositivo (l'art. 8 parla di salvataggio locale «al solo fine di supportare la fruizione») |
+| **Calendario** (orari: serve al timer, §4.4) | timer della giornata | un'**API ufficiale** con chiave: **football-data.org**, piano gratuito | che copra la Serie A con data **e ora** e i rinvii; limiti di chiamate; termini |
+| **Statistiche** | scheda del giocatore, consiglio | un'API con piano gratuito (es. **API-Football**), **oppure toglierle** se il consiglio può farne a meno | quanto le usa davvero il consiglio (misurare prima); copertura dei giocatori di Serie A; limiti e termini |
+| **Probabili formazioni** | campo, consiglio | **nessuna fonte gratuita e pulita**: sono contenuto editoriale di tutti (fantacalcio.it, Gazzetta, Sky). Tre strade, da scegliere con Davide: (a) un **link** che apre la pagina nel suo browser; (b) un **incolla**, come per la rosa; (c) lasciarle come sono accettando il rischio — esclusa dalla decisione di oggi | con (a) o (b) il consiglio perde l'aggiornamento automatico: va detto a schermo, non lasciato scoprire |
+
+Cosa va toccato, per non dimenticare niente: `fantacalcio_it.py` (le quattro letture),
+`fanta_import.py` (le due soglie e l'aggiornamento automatico entrando nella sezione, che
+**deve sparire** per le fonti non più automatiche), `scripts/importa_listone.py` e
+`importa_probabili.py`, il pulsante «Aggiorna ora», la cache in `data/cache/fantacalcio/`
+(da svuotare quando nessuno la scrive più), `prova_fantacalcio.py`. Il listone
+`fanta_players` resta fuori dall'export come oggi: si rifà dal file.
+
+⚠️ Il **timer** (§4.4) e il **consiglio** dipendono da calendario e probabili: cambiare
+fonte cambia quello che danno per buono, e la §4.4 va riletta insieme.
 
 ### 4.4 ⚠️ Quello che il timer della giornata dà per buono
 

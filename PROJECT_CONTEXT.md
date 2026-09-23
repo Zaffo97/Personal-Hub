@@ -769,6 +769,7 @@ Di conseguenza tutto ciò che questa tabella dava per "funzionante" non era mai 
 
 | Data | Contenuto |
 |------|-----------|
+| 2026-09-23 | **Decisione di Davide: mettere in regola le fonti del Fantacalcio** alla prossima sessione. Piano in BACKLOG §4.6: listone dal file Excel scaricato a mano, calendario e statistiche da API con chiave, probabili da decidere. Niente codice oggi |
 | 2026-09-23 | **Abilità delle 5 Mega di M-C** riempite dal dump (`scripts/riempi_abilita_vuote.py`, solo liste vuote), confermate da Serebii. **Termini d'uso letti**: fantacalcio.it vieta lo scraping (art. 3), Serebii non ha termini: in §1.5. Davide: niente online per ora, poi solo rete di casa o Railway |
 | 2026-09-23 | **Catalogo non più evidenziato** nella barra strumenti di `/pokemon/`: `btn-secondary` come gli altri, chiesto da Davide |
 | 2026-09-23 | **Regulation allineate a Serebii e Bulbapedia.** `regulation_fonti.py` (nuovo, root) + `scripts/confronta_regulation.py` + route `/api/regulation/<id>/fonti` e card nell'editor regulation. MA 279/490/58, MB 318/496/73, MC 353/510/85. `scripts/dichiara_eredita.py` (nuovo) per i piumaggi di Squawkabilly. ⚠️ `salva_moveset()` ora scrive `indent=1` come il generatore: prima riscriveva tutto il file. Kingambit in M-C: disaccordo fra le fonti, resta |
