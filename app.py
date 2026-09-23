@@ -6,7 +6,7 @@ import os
 import json
 from flask import Flask
 from extensions import (init_db, lingua_attiva, nome_vis, t, tf, traduzioni,
-                        categorie, chiave_di_sessione)
+                        categorie, chiave_di_sessione, tema_in_sessione)
 from data import SEZIONI, BLUEPRINT_SEZIONE
 
 def create_app():
@@ -39,8 +39,14 @@ def create_app():
         # costruiscono pezzi di interfaccia nel browser, e senza questo resterebbero
         # in italiano anche in modalità inglese. In italiano è `{}`, cioè niente.
         lingua = lingua_attiva()
+        # ⚠️ Il tema dell'utente arriva **dal server**, non da `localStorage`, e non è
+        # un dettaglio: renderizzandolo nell'attributo `data-theme` la pagina nasce
+        # già del colore giusto. Applicato dal JS in fondo arriverebbe a pagina
+        # dipinta, cioè un lampo scuro a ogni caricamento per chi usa Chiaro o
+        # Sabbia. `None` quando non c'è una sessione o l'utente non ha mai scelto:
+        # lì decide `localStorage`, com'è sempre stato.
         return {"lang": lingua, "nome_vis": nome_vis, "t": t, "tf": tf,
-                "categorie": categorie,
+                "categorie": categorie, "tema_utente": tema_in_sessione(),
                 "traduzioni_json": json.dumps(traduzioni(lingua), ensure_ascii=False)}
 
     # La sidebar mostra solo le sezioni permesse. È un context processor e non un

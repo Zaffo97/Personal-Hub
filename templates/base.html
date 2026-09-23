@@ -1,5 +1,9 @@
 <!DOCTYPE html>
-<html lang="{{ lang }}" data-theme="dark">
+{# ⚠️ `data-theme` lo scrive il **server** quando l'utente un tema l'ha scelto: così la
+   pagina nasce già del colore giusto, senza il lampo scuro che darebbe applicarlo dal
+   JS in fondo. Quando non c'è (nessuna sessione, o scelta mai fatta) resta `dark` e
+   decide `localStorage`, com'è sempre stato. #}
+<html lang="{{ lang }}" data-theme="{{ tema_utente or 'dark' }}">
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width,initial-scale=1">
@@ -360,9 +364,16 @@ const TEMI=['dark','light','oceano','sabbia'];
 // mano, non deve diventare un `data-theme` che non esiste: quello lascerebbe la
 // pagina **senza nessun tema**, cioe' col solo `:root`, che e' lo scuro — giusto per
 // caso, e sbagliato il giorno che `:root` cambia.
-const saved=TEMI.includes(localStorage.getItem('hub_theme'))
-  ?localStorage.getItem('hub_theme'):'dark';
-html.setAttribute('data-theme',saved);updateThemeIcon(saved);segnaTemaAttivo(saved);
+// ⚠️ Se il server ha gia' messo il tema dell'utente nell'attributo, **quello vince**:
+// e' la scelta che segue la persona fra un PC e l'altro, e `localStorage` qui e' solo
+// la memoria di questo browser. Il caso si vede entrando da una macchina nuova: senza
+// questa riga il tema salvato verrebbe sovrascritto dal default locale al primo
+// caricamento, e la colonna nel DB non servirebbe a niente.
+const temaServer='{{ tema_utente or "" }}';
+const saved=TEMI.includes(temaServer)?temaServer
+  :(TEMI.includes(localStorage.getItem('hub_theme'))?localStorage.getItem('hub_theme'):'dark');
+html.setAttribute('data-theme',saved);localStorage.setItem('hub_theme',saved);
+updateThemeIcon(saved);segnaTemaAttivo(saved);
 // ⚠️ `tema` e non `t`: la variabile ombrava la funzione t() delle traduzioni dentro
 // queste due funzioni. Oggi non fa danno perche' non ci si traduce niente, ma e' la
 // stessa trappola dei `{% raw %}{% for t in … %}{% endraw %}` negli editor, e qui t() e' globale.
@@ -370,6 +381,27 @@ function scegliTema(tema){
   if(!TEMI.includes(tema))return;
   html.setAttribute('data-theme',tema);localStorage.setItem('hub_theme',tema);
   updateThemeIcon(tema);segnaTemaAttivo(tema);chiudiTemi();
+  salvaPreferenza({tema:tema});
+}
+// ⚠️ Il colore cambia **subito**, e il salvataggio viaggia dopo: se la rete non c'e' o
+// non c'e' nessuna sessione, la pagina resta del colore scelto lo stesso. Un tema che
+// aspetta una risposta del server per cambiare sarebbe lento per niente — e uno che
+// torna indietro se il salvataggio fallisce sarebbe peggio.
+function salvaPreferenza(dati){
+  const corpo=JSON.stringify(dati);
+  try{
+    // ⚠️ `sendBeacon` e non `fetch`, e il motivo e' il cambio lingua: quello ricarica
+    // la pagina **subito dopo**, e un `fetch` in volo lo annulla la navigazione — la
+    // preferenza si sarebbe persa proprio nel caso in cui serve. `sendBeacon` e'
+    // fatto per sopravvivere a questo. Il `fetch` resta come riserva dove non c'e'.
+    if(navigator.sendBeacon){
+      navigator.sendBeacon('/preferenze',
+        new Blob([corpo],{type:'application/json'}));
+      return;
+    }
+    fetch('/preferenze',{method:'POST',headers:{'Content-Type':'application/json'},
+                         body:corpo,keepalive:true}).catch(function(){});
+  }catch(e){}
 }
 function segnaTemaAttivo(tema){
   document.querySelectorAll('.tema-voce').forEach(function(v){
@@ -408,6 +440,10 @@ function toggleLingua(){
   const attuale=(document.getElementById('langBtn').dataset.lang||'it').toLowerCase();
   const nuova=attuale==='it'?'en':'it';
   document.cookie='hub_lang='+nuova+';path=/;max-age=31536000;samesite=lax';
+  // ⚠️ Il cookie **prima**, il salvataggio dopo, e il ricaricamento non lo aspetta:
+  // la lingua la legge `lingua_attiva()` dal cookie a ogni pagina, quindi il cookie e'
+  // quello che fa funzionare *adesso*. La riga nel DB serve al **prossimo PC**.
+  salvaPreferenza({lingua:nuova});
   location.reload();
 }
 function toggleSidebar(){

@@ -127,12 +127,12 @@ DICHIARATE = {
     ("dark", "bianco su primary-h (hover)"):
         "2.95, e il tema scuro è così da sempre: il viola dell'hover schiarisce "
         "invece di scurire, che è la scelta di disegno di tutto il tema. Trovata "
-        "il 22/09/2026 scrivendo questo script, **non corretta**: cambiarla vuol "
-        "dire cambiare il colore principale dell'hub, e non è una cosa da fare di "
-        "propria iniziativa dentro un lavoro sui temi nuovi. È uno **stato "
-        "transitorio** su un pulsante già leggibile da fermo (3.99), quindi non "
-        "rende niente inservibile — ma va deciso, non dimenticato: sta in §3 del "
-        "backlog",
+        "il 22/09/2026 scrivendo questo script. **Davide ha deciso di lasciarla**: "
+        "è uno **stato transitorio** su un pulsante già leggibile da fermo (3.99), "
+        "e cambiarla vorrebbe dire cambiare il colore principale dell'hub — "
+        "l'hover diventerebbe più scuro del pulsante fermo invece che più chiaro. "
+        "Non è una voce aperta: è una scelta, e si rilegge solo se un giorno si "
+        "rifà la palette",
 }
 
 

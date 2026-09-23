@@ -106,7 +106,7 @@ L'ordine che ne esce, e che vale finché Davide non lo cambia:
 > **Cambiato il 14/09/2026**: Davide ha scelto di **finire prima la sezione Pokémon**.
 > Quindi vengono anticipate l'assegnazione delle 7 categorie di oggetti vuote (§3) e la
 > verifica del moveset contro Bulbapedia (§5.2). Le sezioni del §4 vengono dopo.
-4. ~~§1.4 — l'export `--completo`~~ ✅ **chiuso il 18/09/2026**: resta aperta solo la falla 2 (tema e lingua non sono nel DB)
+4. ~~§1.4 — l'export `--completo`~~ ✅ **chiuso del tutto**: il completo il 18/09/2026, e la falla 2 (tema e lingua fuori dal DB) il 22/09/2026
 5. ~~§3 — i bachi noti~~ ✅ **guardati tutti il 10/09/2026**: tre chiusi, uno mezzo,
    uno che non si riproduce, uno lasciato apposta
 6. §5 — il giro di collaudo, la verifica dei moveset, l'inventario del codice morto
@@ -303,10 +303,17 @@ da `init_db()` in una cartella temporanea. Numeri e prove in `STORICO.md`.
    distanza hanno la stessa riga con una data diversa: è in `MAI_SOVRASCRITTE`, altrimenti
    ogni ripristino su un DB appena inizializzato si fermerebbe su un conflitto — su una
    tabella morta, per un timestamp — e l'unica uscita sarebbe `--sovrascrivi`
-2. ⚠️ **Due personalizzazioni non sono nel DB**, quindi nessun export potrà mai prenderle:
-   il **tema** è in `localStorage` e la **lingua** nel cookie `hub_lang`, entrambi per
-   browser. Vanno su colonne di `users` se devono seguire l'utente — cioè esattamente
-   quando l'app sarà online e la userai dal telefono e dal PC
+2. ✅ **Chiusa il 22/09/2026.** Erano il **tema** in `localStorage` e la **lingua** nel
+   cookie `hub_lang`, entrambi per browser: nessun export poteva prenderli. Ora `users`
+   ha le colonne `tema` e `lingua`, e la scelta **segue la persona** — al login il tema
+   entra in sessione (il server lo scrive in `data-theme`, così la pagina nasce del
+   colore giusto invece di lampeggiare) e la lingua viene riscritta nel cookie.
+   ⚠️ Il browser **non sparisce**: la pagina di login un utente non ce l'ha, quindi
+   `localStorage` e il cookie restano la via veloce. E `NULL` vuol dire «non ha mai
+   scelto», non «ha scelto lo scuro». Prove: `scripts/prova_preferenze.py`, 17 su 17,
+   e quella che conta gira su un **secondo test client** — cioè un browser nuovo,
+   senza localStorage e senza cookie, che è l'unico posto dove si vede se la colonna
+   serve a qualcosa
 
 **✅ I due export esistono, dal 18/09/2026.** `esporta_dati.py` è rimasto com'era e
 scrive il file committabile senza password; `--completo --uscita <percorso>` scrive il
@@ -631,7 +638,7 @@ quattro cose richiedono **fonti diverse**:
 | ✅ | **Le 7 categorie di oggetti senza nessuna voce** | **Chiuso il 14/09/2026, decisioni di Davide.** Le 7 vuote erano i gruppi delle due tendine Item del calcolatore, e `other` erano esattamente gli oggetti senza `effect`: dare una categoria voleva dire dare un effetto. **88 oggetti** assegnati con `scripts/assegna_categorie_oggetti.py`, ogni valore preso da Bulbapedia; `other` passa da 339 a 251, e 12 effetti nuovi sono scritti nel motore. Riguarda solo `pokedex`: MA e MB restano sui loro 58. Gli oggetti delle leggende (Adamasfera, Splendisfera, Grigiosfera, Cuorugiada, maschere di Ogerpon) stanno in `conditional`, confermato da Davide. Numeri in `STORICO.md` |
 | ⚠️ | **Un effetto che il motore non conosce non si attiva** | Il calcolatore gestisce **gli effetti elencati nel docstring di `scripts/assegna_categorie_oggetti.py`**, più `pikachu_boost` e `resist_<tipo>`. Un oggetto nuovo con un `effect` e un `modifier` compare nella tendina, ma finché `calcDamage()` non conosce l'effetto il risultato dice «non si attiva». È voluto: fino al 14/09 un oggetto sconosciuto moltiplicava l'Attacco in silenzio. Quindi **ogni effetto nuovo va scritto anche nel motore**, e provato con un caso calcolato a mano. ⚠️ La tendina mostra le voci con `modifier` **non nullo**, e 0 è un valore: il Palloncino ha `modifier: 0` |
 | ⚠️ | **`puo_evolversi` ha tre valori** | Lo scrive `scripts/importa_evoluzioni.py` su **1342 voci su 1342**, per forma e non per specie: Corsola di Galar sì, quella di Kanto no, le Mega mai. **Assente vuol dire «non lo sappiamo»**, e l'Evolcondensa lo dice a schermo («evoluzione non nota»), come `moves: null`. ✅ **Dal 21/09/2026 sono 1342 su 1342**: le ultime due, le Mega Meowstic, hanno preso lo slug e con lui l'esito. L'import dal pannello lo calcola da sé (`pokeapi.evoluzioni()`); **una voce aggiunta a mano dall'editor invece nasce senza**, e va rilanciato lo script. Nelle forme **non si eredita** dalla specie in `api_pokemon.py`: ereditarlo darebbe `true` a tutte le Mega |
-| ⬜ | **L'hover del tema scuro sta sotto la soglia di contrasto** | Trovato il 22/09/2026 scrivendo `scripts/prova_temi.py`, e **non corretto** perché è il colore principale dell'hub e la decisione è di Davide, non mia. `.btn-primary:hover` usa `--primary-h: #9488f7`, e il bianco sopra dà **2.95** — sotto il pavimento di 3.0, cioè illeggibile anche per un testo grande. Gli altri tre temi stanno fra 3.48 e 8.04. ⚠️ Due cose lo rendono meno grave di come suona: è uno stato **transitorio** (col mouse sopra), e da fermo lo stesso pulsante sta a 3.99. Il tema scuro è così **da sempre** — l'hover schiarisce invece di scurire, ed è la scelta di disegno di tutta la palette. Chiuderlo vuol dire scurire `--primary-h` verso #6a5ce0 circa, e accettare che l'hover diventi più scuro del pulsante fermo. La misura è dichiarata in `DICHIARATE` dentro `prova_temi.py`, che la **ristampa a ogni esecuzione** proprio per non farla diventare una cosa che nessuno guarda più |
+| ✅ | **L'hover del tema scuro sotto soglia: resta com'è, deciso da Davide il 22/09/2026** | Trovato il 22/09/2026 scrivendo `scripts/prova_temi.py`, e **non corretto** perché è il colore principale dell'hub e la decisione è di Davide, non mia. `.btn-primary:hover` usa `--primary-h: #9488f7`, e il bianco sopra dà **2.95** — sotto il pavimento di 3.0, cioè illeggibile anche per un testo grande. Gli altri tre temi stanno fra 3.48 e 8.04. ⚠️ Due cose lo rendono meno grave di come suona: è uno stato **transitorio** (col mouse sopra), e da fermo lo stesso pulsante sta a 3.99. Il tema scuro è così **da sempre** — l'hover schiarisce invece di scurire, ed è la scelta di disegno di tutta la palette. Chiuderlo vuol dire scurire `--primary-h` verso #6a5ce0 circa, e accettare che l'hover diventi più scuro del pulsante fermo. La misura resta dichiarata in `DICHIARATE` dentro `prova_temi.py`, che la **ristampa a ogni esecuzione**: non è più una voce aperta, è una scelta, e va riletta solo se un giorno si rifà la palette |
 | ⬜ | **Limiti dichiarati degli oggetti nel calcolatore** | Trovati scrivendoli il 14/09/2026 e lasciati fuori di proposito: il **Guantone** alza la potenza ma non toglie il contatto (Unghie Dure e Soffice lo vedono ancora); il **Plessimetro** resta in `other`, perché serve un campo «usi consecutivi»; i **semi** del terreno hanno solo l'etichetta, e il loro +1 andrebbe collegato alla tendina del terreno; la **Metalpolvere** non sa se Ditto si è trasformato; e le **gemme** si consumano al primo colpo, cosa che un calcolo singolo non vede |
 
 ## 4. Voci minori, per sezione
@@ -1158,11 +1165,13 @@ sa dal codice, non un piano.
   due a **quattro**: Scuro e Chiaro restano, più **Oceano** (scuro freddo, accento
   ciano) e **Sabbia** (chiaro caldo, accento terracotta). L'interruttore è diventato
   un **menu**, perché con quattro temi un toggle non vuol dire più niente.
-  ⚠️ **Resta aperto quello che era già scritto qui**: il tema scelto **non è nel DB**,
-  sta in `localStorage`. È la falla 2 di §1.4 — l'export non se lo porta dietro, e su
-  un PC nuovo si riparte da Scuro. Con quattro temi si nota di più di prima, ma la
-  falla è quella, non una nuova: si chiude dando al tema una colonna in `users`, e
-  allora la porterebbe anche il backup.
+  ✅ **E la falla 2 di §1.4 è chiusa il 22/09/2026**: `users` ha ora le colonne `tema`
+  e `lingua`. Il browser resta la via veloce — `localStorage` e il cookie servono
+  ancora alla pagina di login, dove un utente non c'è — ma la verità **segue la
+  persona**: al login il tema entra in sessione (e il server lo scrive in
+  `data-theme`, quindi niente lampo scuro) e la lingua viene riscritta nel cookie,
+  che è quello che `lingua_attiva()` legge a ogni pagina. ⚠️ `NULL` vuol dire «non ha
+  mai scelto», che è diverso da «ha scelto lo scuro».
 - ✅ **Ricordare utente e password** — fatto il 22/09/2026, numeri in `STORICO.md`.
   La spunta al login dice «Resta collegato su questo dispositivo per 30 giorni»,
   perché è quello che fa: la password non esce mai da `users`, nel cookie va un

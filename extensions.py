@@ -15,12 +15,75 @@ COOKIE_LINGUA = "hub_lang"
 
 
 def lingua_attiva():
-    """'it' o 'en'. Fuori da una richiesta, o con un valore strano, torna 'it'."""
+    """'it' o 'en'. Fuori da una richiesta, o con un valore strano, torna 'it'.
+
+    ⚠️ Legge **il cookie**, non il DB, e di proposito: questa funzione gira su ogni
+    pagina e su ogni tendina renderizzata dal server, e una query per volta sarebbe
+    un prezzo pagato mille volte per un dato che cambia due volte l'anno. La scelta
+    salvata sull'utente viene **scritta nel cookie al login** (vedi `auth.login`), e
+    da lì in poi le due dicono la stessa cosa. Chi non ha una sessione — la pagina di
+    login — ha comunque il cookie, ed è il motivo per cui il cookie resta.
+    """
     try:
         scelta = request.cookies.get(COOKIE_LINGUA)
     except RuntimeError:          # nessun contesto di richiesta
         return "it"
     return scelta if scelta in LINGUE else "it"
+
+
+TEMI = ("dark", "light", "oceano", "sabbia")
+
+
+def tema_in_sessione():
+    """Il tema salvato di chi sta guardando, o `None`.
+
+    ⚠️ Sta **in sessione**, non riletto dal DB a ogni pagina: lo scrive `login()` e lo
+    aggiorna il salvataggio. Una query per pagina per un dato che cambia due volte
+    l'anno sarebbe un prezzo pagato mille volte — la stessa ragione per cui
+    `lingua_attiva()` legge il cookie.
+    """
+    try:
+        scelto = session.get("tema")
+    except RuntimeError:
+        return None
+    return scelto if scelto in TEMI else None
+
+
+def salva_preferenza(db, uid, campo, valore):
+    """Scrive `tema` o `lingua` sull'utente. Torna True se ha scritto.
+
+    ⚠️ La colonna **non** arriva da chi chiama senza passare di qui: finisce dentro
+    una query, e un nome di colonna che viene da fuori è la porta d'ingresso di
+    sempre. E il valore si controlla contro l'elenco dei validi — non per diffidenza
+    del browser, ma perché un `data-theme` inesistente lascerebbe la pagina col solo
+    `:root` senza dare nessun errore.
+    """
+    if campo == "tema":
+        if valore not in TEMI:
+            return False
+    elif campo == "lingua":
+        if valore not in LINGUE:
+            return False
+    else:
+        return False
+    db.execute(f"UPDATE users SET {campo}=? WHERE id=?", (valore, uid))
+    return True
+
+
+def preferenze_utente(db, uid):
+    """`(tema, lingua)` salvati sull'utente. `None` dove non ha mai scelto.
+
+    ⚠️ I valori si **validano leggendoli**, non solo scrivendoli: una riga arrivata
+    da un `importa_dati.py` di un DB più vecchio, o ritoccata a mano, non deve poter
+    mettere un `data-theme` che non esiste — la pagina resterebbe col solo `:root`,
+    cioè giusta per caso.
+    """
+    r = db.execute("SELECT tema, lingua FROM users WHERE id=?", (uid,)).fetchone()
+    if not r:
+        return None, None
+    tema = r["tema"] if r["tema"] in TEMI else None
+    lingua = r["lingua"] if r["lingua"] in LINGUE else None
+    return tema, lingua
 
 
 def nome_vis(voce, chiave="", lingua=None):
@@ -507,6 +570,23 @@ def init_db():
     # ⚠️ La colonna `python_topics.done` **resta nel DB e nessuno la legge piu'**:
     # toglierla e' una migrazione a se', da fare con l'inventario del codice morto.
     # Fino ad allora e' la fotografia delle spunte dell'admin al 19/08/2026.
+
+    # --- Tema e lingua seguono l'utente, non il browser (22/09/2026) ----------
+    # ⚠️ Erano le **due personalizzazioni che nessun export poteva prendere** (§1.4,
+    # falla 2): il tema in `localStorage` e la lingua nel cookie `hub_lang`, tutti e
+    # due **per browser**. Quindi cambiando PC — o ripristinando su una macchina
+    # nuova, che è il caso d'uso di tutto `importa_dati.py` — si ripartiva da capo,
+    # e nessuno lo diceva.
+    # ⚠️ **Il browser resta la via veloce e non sparisce**: `localStorage` e il
+    # cookie servono ancora alla pagina di login, dove un utente non c'è. Qui si
+    # aggiunge la **verità che segue la persona**, e `NULL` vuol dire «non ha mai
+    # scelto», che è diverso da «ha scelto lo scuro».
+    for colonna in ("tema", "lingua"):
+        try:
+            db.execute(f"ALTER TABLE users ADD COLUMN {colonna} TEXT")
+            db.commit()
+        except Exception:
+            pass                            # la colonna c'e' gia'
 
     for tabella in ("games", "teams", "arduino_projects", "pc_builds"):
         try:

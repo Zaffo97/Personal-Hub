@@ -20,6 +20,38 @@ pagina ed esegue `new Function()` su ogni blocco `<script>` **e** su ogni handle
 
 ## 22/09/2026
 
+**Tema e lingua seguono l'utente, non il browser — §1.4 falla 2 chiusa**
+
+Erano le due personalizzazioni che **nessun export poteva prendere**, perché non erano
+nel DB: il tema in `localStorage`, la lingua nel cookie `hub_lang`, tutti e due per
+browser. Cambiando PC — o ripristinando su una macchina nuova, che è il caso d'uso di
+tutto `importa_dati.py` — si ripartiva da capo, e nessuno lo diceva.
+
+Ora `users` ha `tema` e `lingua`. ⚠️ **Il browser non sparisce**: la pagina di login un
+utente non ce l'ha, quindi `localStorage` e il cookie restano la via veloce. Quello che
+si aggiunge è la verità che segue la persona, e i due pezzi che la fanno funzionare
+sono opposti: il **tema** entra in sessione al login e lo scrive il **server**
+nell'attributo `data-theme` — applicato dal JS in fondo arriverebbe a pagina già
+dipinta, cioè un lampo scuro a ogni caricamento per chi usa Chiaro o Sabbia — mentre la
+**lingua** viene riscritta nel **cookie**, perché è quello che `lingua_attiva()` legge
+su ogni pagina e su ogni tendina renderizzata dal server. Salvarla e basta l'avrebbe
+lasciata scritta e inerte, che è il caso peggiore: il dato c'è e non fa niente.
+
+⚠️ Il salvataggio parte con **`sendBeacon`**, non con `fetch`, e il motivo è il cambio
+lingua: quello ricarica la pagina subito dopo, e un `fetch` in volo lo annulla la
+navigazione — la preferenza si sarebbe persa proprio nel caso in cui serve.
+
+⚠️ E `NULL` vuol dire «non ha mai scelto», che non è «ha scelto lo scuro».
+
+Verifica: **17 prove su 17** (`scripts/prova_preferenze.py`, nuovo). Quella che conta
+gira su un **secondo test client** — un browser nuovo, senza `localStorage` e senza
+cookie: è l'unico posto dove si vede se la colonna serve a qualcosa, e una prova che
+salva e rilegge dalla stessa sessione sarebbe passata anche con la falla intatta.
+⚠️ Scrivendola ci sono cascato: la prima versione cercava `data-theme="dark"` in tutta
+la pagina, e quella stringa c'è **sempre** perché sta nel CSS dei temi. Ora guarda il
+tag `<html>`. Le colonne compaiono in `hub.db` al **prossimo avvio dell'app**
+(`init_db()`), e da lì l'export se le porta.
+
 **Uno sprite di ripiego adesso lo dice (§4.3)**
 
 Le **114 URL su 57 voci** che mostrano l'immagine di un'altra voce erano già una
