@@ -1304,12 +1304,12 @@ leggono sul loro sito, come si è fatto per fantacalcio.it e Serebii.
 
 **Strumenti già esistenti da valutare prima di scriverne di nuovi** (segnalati da Davide il
 23/09/2026, **non ancora guardati**): **fantacalcio-mcp**, il repository **Fantacalcio-PY** su
-GitHub, **FantaLab**. Per ognuno la prima domanda è **da dove prende i dati**: ⚠️ se a sua volta
+GitHub, **FantaLab**; e **Fantagoat**, aggiunto da Davide il 24/09/2026. Per ognuno la prima domanda è **da dove prende i dati**: ⚠️ se a sua volta
 legge le pagine di fantacalcio.it, usarlo **non** mette in regola niente — sposta solo lo
 scraping dentro il codice di un altro, e il divieto dell'art. 3 resta lo stesso. Vanno bene
 se usano una fonte con un permesso (un'API ufficiale, dati con licenza, un accordo); in quel
 caso contano anche la loro licenza (per il codice su GitHub) e i loro termini (per un
-servizio come FantaLab). Nessuna di queste informazioni è verificata: vanno lette sui loro
+servizio come FantaLab o Fantagoat). Nessuna di queste informazioni è verificata: vanno lette sui loro
 siti, come i termini di fantacalcio.it.
 
 Cosa va toccato, per non dimenticare niente: `fantacalcio_it.py` (le quattro letture),
