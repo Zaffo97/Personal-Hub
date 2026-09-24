@@ -420,6 +420,15 @@ poi il collaudo obbligatorio del vincolo 1 — salvare, riavviare, ricontrollare
 punti che scrivono file su disco** mentre l'app gira, che sono il vero motivo per cui questa
 app non si sposta da sola: quelli non sono stati toccati.
 
+⬜ **Debian, segnato da Davide il 24/09/2026: un domani l'hub girerà su Debian, e le chiavi
+non potranno stare in variabili d'ambiente di Windows** (`setx`). Serve un'alternativa, da
+pensare. Oggi dall'ambiente si leggono `SECRET_KEY`, `STEAM_API_KEY`, `STEAM_ID`,
+`IGDB_CLIENT_ID`, `IGDB_CLIENT_SECRET`, `HUB_DEBUG`, `HUB_HOST`, `HUB_PORT` e, dalla §4.6,
+`FOOTBALL_DATA_API_KEY`. Una strada già usata nel progetto è quella di `SECRET_KEY`: un file
+in `data/` escluso da git (`data/secret_key.txt`). Qualunque cosa si scelga, **deve restare
+fuori dal repository** (i termini di football-data.org lo chiedono esplicitamente, §6.1) e
+fuori da `hub_export.json`.
+
 **Sulla contemporaneità**: SQLite regge un uso come questo senza problemi. I **file JSON
 scritti a mano no** — vedi la trappola sulle scritture concorrenti. Le cache in memoria
 sono sull'mtime — ⚠️ **lo sono da poco**: quella del catalogo in `api_pokemon.py` è stata sistemata il 21/08/2026, e fino a quel giorno questa riga
@@ -1351,12 +1360,19 @@ lette dalle pagine il 22/09):
   **`POSTPONED`**, `CANCELLED`, `AWARDED`. Il rinvio quindi si vede. ⚠️ `SCHEDULED` vuol dire
   data **approssimativa**: diventa `TIMED` solo quando c'è **data e ora esatte**. Il timer
   (§4.4) deve fidarsi solo di `TIMED`, altrimenti dà una scadenza inventata
-- ⚠️ la pagina dei prezzi dice «**Schedules delayed**» per il piano gratuito, e **non ho trovato
-  dove dicano di quanto**. Per un timer che deve dire *entro quando* non è un dettaglio: un
-  anticipo spostato al venerdì potrebbe arrivare in ritardo. Da misurare con la chiave,
-  confrontando con il calendario ufficiale
-- ⚠️ il filtro per giornata **non è documentato** nella pagina sulle partite (ci sono `date`,
-  `dateFrom`, `dateTo`, `status`): da provare con la chiave
+- ✅ **provata con la chiave il 24/09/2026**: `competitions/SA/matches` dà **380 partite**,
+  10 per giornata; giornate 1-5 `FINISHED`, **6-12 `TIMED`** (70 partite con data e ora
+  esatte), **dalla 13 alla 38 `SCHEDULED`** (260, data approssimativa). Il filtro
+  `?matchday=6` **funziona** anche se la pagina sulle partite non lo documenta
+- ✅ **la giornata 6 coincide con fantacalcio.it**: 10 partite su 10, stesso orario al minuto,
+  confrontate con `fanta_calendario` (letto il 24/09 alle 19:38). Le squadre si legano col
+  `shortName`, due con un ritocco: `Como 1907` → `como`, `Venezia FC` → `venezia`
+- ⚠️ «**Schedules delayed**» resta **non misurato**: servirebbe un orario spostato da vedere
+  arrivare. `lastUpdated` della giornata 6 è `2026-09-24T00:20:33Z`. Da riguardare alla prima
+  partita spostata o rinviata
+- ⚠️ `utcDate` è in UTC, e su Windows `zoneinfo` **non trova `Europe/Rome`** senza il
+  pacchetto `tzdata` (provato: `ZoneInfoNotFoundError`). Va aggiunto a `requirements.txt`,
+  oppure l'ora legale va gestita in altro modo. Su Debian il fuso c'è già nel sistema
 - termini, letti nella pagina di registrazione: **§7.1** chiede di scrivere
   «Football data provided by the Football-Data.org API» nella pagina che li usa; **§6.1** la
   chiave **non va in un repository** → va in un file escluso da git (`.env` o simile);
