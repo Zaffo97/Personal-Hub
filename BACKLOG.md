@@ -1291,6 +1291,13 @@ sa dal codice, non un piano.
 > fonte per dato**, e nessuna lettura automatica di fantacalcio.it deve restare. Citazioni
 > e contesto in §1.5.
 
+> **Come, deciso da Davide il 24/09/2026: in una sezione nuova, «Fantacalcio 2».** La
+> sezione di oggi **non si tocca**: resta com'è, fonti comprese, per poterci tornare se
+> l'esperimento non convince. Le fonti nuove si provano solo nella 2. ⬜ Da decidere
+> prima di scriverla: se la 2 **condivide** leghe, rose e formazioni con la prima (stesse
+> tabelle) o ha **le sue**; e il nome della route. Quando si sceglie quale tenere, l'altra
+> si spegne: la lista «cosa va toccato» sotto vale per **quel** momento, non per adesso.
+
 ⚠️ **Prima di scrivere codice, verificare** — il piano sotto è fatto di cose ricordate,
 non misurate: copertura, limiti del piano gratuito e termini d'uso di ogni fonte nuova si
 leggono sul loro sito, come si è fatto per fantacalcio.it e Serebii.
