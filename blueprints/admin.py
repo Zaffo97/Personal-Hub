@@ -38,6 +38,7 @@ ETICHETTE = {
     "fanta2_roster": "giocatori in rosa (Fantacalcio 2)",
     "fanta2_formazione": "giocatori schierati (Fantacalcio 2)",
     "python_progress": "spunte di Python",
+    "fanta2_titolari": "titolari segnati (Fantacalcio 2)",
 }
 
 # Dal 12/08/2026 le password nuove nascono già con lo schema forte (scrypt con sale

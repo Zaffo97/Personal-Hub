@@ -66,7 +66,7 @@ PAGINE = [
     "/fantacalcio/lega/1/formazione", "/fantacalcio/listone",
     # La Fantacalcio 2 (§4.6, 24/09/2026): le stesse pagine, con template suoi.
     "/fantacalcio2/", "/fantacalcio2/lega/1", "/fantacalcio2/lega/1/formazione",
-    "/fantacalcio2/listone",
+    "/fantacalcio2/listone", "/fantacalcio2/lega/1/chi-gioca",
 ]
 
 # Le pagine che **si aprono con una POST**, aggiunte il 21/09/2026 con l'anteprima

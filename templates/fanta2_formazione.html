@@ -41,7 +41,7 @@
 .pal-titolare{background:#22c55e}.pal-panchina{background:#f59e0b}
 .pal-fuori{background:#ef4444}.pal-non_gioca{background:#9ca3af}
 /* Fantacalcio 2: la squadra gioca, non gioca, o il giocatore e' ceduto. */
-.pal-gioca{background:#22c55e}.pal-ceduto{background:#ef4444}
+.pal-gioca{background:rgba(34,197,94,.45)}.pal-ceduto{background:#ef4444}
 .posto-pct{font-size:.55rem;color:rgba(255,255,255,.8)}
 
 /* La panchina: una lista **ordinata**, perché l'ordine decide chi subentra. */
@@ -105,6 +105,7 @@
       </p>
     </div>
     <div class="flex gap-2">
+      <a class="btn" href="{{ url_for('fantacalcio2.chi_gioca', lid=lega.id) }}">&#128064; Chi gioca</a>
       <a class="btn" href="#consiglio">&#129504; Il consiglio &darr;</a>
       <a class="btn" href="{{ url_for('fantacalcio2.lega', lid=lega.id) }}">&larr; Rosa e regole</a>
     </div>
@@ -155,12 +156,13 @@
   <div>
     <div class="campo" id="campo"></div>
     <div class="text-xs text-muted mt-2" id="legenda">
-      <span class="pallino pal-gioca"></span>la sua squadra gioca &middot;
+      <span class="pallino pal-titolare"></span>titolare &middot;
+      <span class="pallino pal-panchina"></span>in dubbio &middot;
+      <span class="pallino pal-fuori"></span>non gioca (segnato da te) o ceduto &middot;
       <span class="pallino pal-non_gioca"></span>la sua squadra non gioca &middot;
-      <span class="pallino pal-ceduto"></span>ceduto
-      <br>La titolarità qui non si sa:
-      <a href="{{ link_probabili }}" target="_blank" rel="noopener">apri le probabili</a>
-      prima di salvare.
+      <span class="pallino pal-gioca" style="opacity:.45"></span>squadra in campo, non segnato
+      <br>Titolari, dubbi e «non gioca» li segni tu in
+      <a href="{{ url_for('fantacalcio2.chi_gioca', lid=lega.id) }}">Chi gioca</a>.
     </div>
   </div>
 
@@ -210,8 +212,11 @@ const DATI = {
     ruolo: {{ (g.ruolo_classic or '')|tojson }}, attivo: {{ g.attivo or 0 }},
     fm: {{ g.fantamedia if g.fantamedia is not none else 'null' }},
     {% set p = partita.get(g.id, {}) %}
-    stato: {{ ('ceduto' if p.perche == 'ceduto' else 'gioca' if p.gioca else 'non_gioca' if p.gioca is sameas false else '')|tojson }},
-    testo: {{ (('vs ' ~ p.avversario ~ (' (c)' if p.in_casa else ' (f)')) if p.gioca else (p.perche or ''))|tojson }}
+    {% set s = scelta.get(g.id) %}
+    stato: {{ ('ceduto' if p.perche == 'ceduto' else 'non_gioca' if p.gioca is sameas false
+               else {'titolare': 'titolare', 'dubbio': 'panchina', 'fuori': 'fuori'}.get(s, 'gioca' if p.gioca else ''))|tojson }},
+    testo: {{ ((scelte[s] ~ ' · ' if s else '') ~ ('vs ' ~ p.avversario ~ (' (c)' if p.in_casa else ' (f)'))
+               if p.gioca else (p.perche or ''))|tojson }}
   }{% if not loop.last %},{% endif %}
   {% endfor %}
 };

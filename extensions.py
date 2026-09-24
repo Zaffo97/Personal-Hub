@@ -502,6 +502,21 @@ def init_db():
     -- La classifica **totale**: l'unica del piano gratuito (niente casa/trasferta,
     -- `form` vuoto). Serve a mostrare l'avversario accanto al giocatore, non a
     -- pesarlo: decisione di Davide del 24/09/2026.
+    -- Chi gioca, **secondo te** (25/09/2026): la titolarita' la segna Davide guardando
+    -- le probabili, perche' nessun programma le legge. Una riga per utente, giornata
+    -- e giocatore: vale per **tutte** le tue leghe (un giocatore titolare lo e' in
+    -- ognuna), e la giornata dopo riparte da vuoto da sola.
+    -- ⚠️ Ha un `user_id` suo, e non per abitudine: due utenti possono pensarla
+    -- diversamente sullo stesso giocatore. In `TABELLE_UTENTE` e' `cancella`: e' stato
+    -- personale, non contenuto — passarlo a un altro vorrebbe dire scrivere che ha
+    -- deciso cose che non ha deciso.
+    CREATE TABLE IF NOT EXISTS fanta2_titolari(
+        user_id INTEGER NOT NULL,
+        giornata INTEGER NOT NULL,
+        player_id INTEGER NOT NULL,
+        stato TEXT NOT NULL,
+        aggiornato_il TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+        PRIMARY KEY(user_id, giornata, player_id));
     CREATE TABLE IF NOT EXISTS fanta2_classifica(
         squadra_slug TEXT PRIMARY KEY,
         squadra TEXT, posizione INTEGER, punti INTEGER, giocate INTEGER,
@@ -969,6 +984,9 @@ TABELLE_UTENTE = {
     # La Fantacalcio 2 (§4.6): stesse regole della prima, per la stessa ragione.
     "fanta2_leagues": "passa",
     "python_progress": "cancella",
+    # Chi gioca secondo te, giornata per giornata: stato personale come le spunte di
+    # Python, quindi si cancella e si dice quante erano (25/09/2026).
+    "fanta2_titolari": "cancella",
     # ⚠️ `cancella` qui non è ordine, è **sicurezza**, e la rete si è fatta trovare
     # subito: questa tabella è nata il 22/09/2026 e `tabelle_senza_regola()` l'ha
     # messa davanti prima che servisse ricordarsene. Se fosse `passa`, eliminare un

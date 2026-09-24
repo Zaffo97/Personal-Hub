@@ -1,20 +1,25 @@
 {# ── Il consiglio della Fantacalcio 2 (§4.6) ─────────────────────────────────
    Sotto il campo, come nella prima sezione, e per la stessa ragione. Cambia il
    criterio, ed e' per questo che meta' del file e' la sua dichiarazione: qui la
-   titolarita' **non si sa** (le probabili non vengono lette), e un consiglio che
-   non lo dicesse sembrerebbe sapere una cosa che non sa.
+   titolarita' la **segna Davide** (pagina «Chi gioca», dal 25/09/2026), e chi non
+   ha segnato resta «non so» — un consiglio che non lo dicesse sembrerebbe sapere
+   una cosa che non sa.
    Se si cambia l'ordinamento in `fanta2.py`, questo testo cambia con lui.
    Lo stile delle classi sta nell'`extra_head` di `fanta2_formazione.html`. #}
+{% set non_segnati = valutazioni|selectattr('scelta', 'none')|rejectattr('escluso')|list %}
+{% if non_segnati %}
 <div class="card mb-3" style="border-color:var(--warning)">
   <div class="card-body text-sm">
-    <strong>&#9888; Questo consiglio non sa chi è titolare.</strong>
-    Le probabili formazioni in questa sezione non vengono lette: prima di
-    schierare, <a href="{{ link_probabili }}" target="_blank" rel="noopener">aprile
-    su fantacalcio.it</a> e controlla chi gioca davvero.
+    <strong>&#9888; {{ non_segnati|length }} giocator{{ 'e' if non_segnati|length == 1 else 'i' }}
+      della rosa senza una tua scelta.</strong>
+    Per loro il consiglio non sa se sono titolari: vengono dopo quelli che hai segnato.
+    <a href="{{ url_for('fantacalcio2.chi_gioca', lid=lega.id) }}">Segnali in Chi gioca</a>,
+    con le probabili accanto.
     {% if not calendario_c_e %}<br>E il calendario non è importato, quindi non sa
     nemmeno quali squadre giocano.{% endif %}
   </div>
 </div>
+{% endif %}
 
 <div class="card mb-3">
   <details>
@@ -25,12 +30,18 @@
   <div class="card-body spiega">
     <ol>
       <li><strong>Può giocare?</strong> Va in fondo chi di sicuro <em>non</em> gioca:
-        i <strong>ceduti</strong> e chi ha la squadra <strong>senza partita</strong>
-        in questa giornata (partita rinviata o annullata). Lo dice il calendario di
-        football-data.org. La titolarità non è considerata.</li>
-      <li><strong>Conviene?</strong> Decide la <strong>fantamedia ricalcolata con le
-        regole di questa lega</strong>, non quella pubblicata dal sito. Chi non ha
-        ancora partite a voto va dopo chi ne ha: il suo valore è assente, non zero.</li>
+        i <strong>ceduti</strong>, chi ha la squadra <strong>senza partita</strong>
+        (partita rinviata o annullata, lo dice il calendario di football-data.org) e
+        chi hai segnato <strong>«non gioca»</strong>.</li>
+      <li><strong>È titolare?</strong> Lo dici tu in <em>Chi gioca</em>: prima chi hai
+        segnato <strong>titolare</strong>, poi chi è <strong>in dubbio</strong>, poi chi
+        <strong>non hai segnato</strong>. «In dubbio» viene prima di «non segnato»
+        perché è uno che hai guardato e che può giocare; un non segnato può essere
+        chiunque. È una scelta di lettura, non un dato.</li>
+      <li><strong>Conviene?</strong> Dentro ogni gruppo decide la <strong>fantamedia
+        ricalcolata con le regole di questa lega</strong>, non quella pubblicata dal
+        sito. Chi non ha ancora partite a voto va dopo chi ne ha: il suo valore è
+        assente, non zero.</li>
       <li>La panchina segue lo stesso ordine, con al massimo tanti giocatori per ruolo
         quanti ne schiera il modulo: un secondo portiere di riserva non subentra mai.</li>
     </ol>
@@ -92,6 +103,7 @@
           {% endif %}
           {% if c.senza_fm %}<br>⚠️ {{ c.senza_fm }} senza fantamedia{% endif %}
           {% if c.forzati %}<br>⚠️ {{ c.forzati|length }} che non giocano{% endif %}
+          {% if c.incerti %}<br>{{ c.incerti|length }} non segnati titolari{% endif %}
         </div>
         <div class="flex gap-1 mt-2">
           <a class="btn btn-sm btn-secondary"
@@ -129,6 +141,12 @@
     <span class="text-xs text-muted">{{ v.g.squadra or '—' }}</span>
   </td>
   <td class="text-xs">
+    {% if v.scelta == 'titolare' %}<span class="fascia fascia-sicuro">titolare</span>
+    {% elif v.scelta == 'dubbio' %}<span class="fascia fascia-ballottaggio">in dubbio</span>
+    {% elif v.scelta == 'fuori' %}<span class="fascia fascia-panchina">non gioca</span>
+    {% elif not v.escluso %}<span class="fascia fascia-none">non segnato</span>{% endif %}
+  </td>
+  <td class="text-xs">
     {% if p.gioca %}
       vs {{ p.avversario }} ({{ 'casa' if p.in_casa else 'fuori' }}){% if p.avv %},
       {{ p.avv.posizione }}ª &middot; {{ p.avv.gol_fatti }}/{{ p.avv.gol_subiti }}{% endif %}
@@ -162,7 +180,7 @@
   <div style="overflow-x:auto">
     <table class="table">
       <thead><tr>
-        <th></th><th></th><th>Giocatore</th><th>Avversario (posizione, gol fatti/subiti)</th>
+        <th></th><th></th><th>Giocatore</th><th>Gioca?</th><th>Avversario (posizione, gol fatti/subiti)</th>
         <th class="num">FM lega</th><th class="num">Pg</th>
       </tr></thead>
       <tbody>
@@ -191,7 +209,7 @@
     Questi giocatori non giocano questa giornata, e sono nell'undici solo perché il
     loro reparto non si poteva completare altrimenti.
     <div class="text-xs text-muted mt-1">
-      {% for v in dettaglio.forzati %}{{ v.g.nome }} ({{ v.partita.perche }}){% if not loop.last %}, {% endif %}{% endfor %}
+      {% for v in dettaglio.forzati %}{{ v.g.nome }} ({{ v.partita.perche if v.gioca is sameas false else 'segnato «non gioca»' }}){% if not loop.last %}, {% endif %}{% endfor %}
     </div>
   </div>
 </div>
@@ -214,7 +232,10 @@
           <td class="num text-muted">{{ loop.index }}</td>
           <td>{{ v.g.nome }}
             <span class="text-xs text-muted">{{ v.g.squadra or '—' }}</span>
-            {% if v.gioca is sameas false %}<span class="fascia fascia-panchina">{{ v.partita.perche }}</span>{% endif %}</td>
+            {% if v.gioca is sameas false %}<span class="fascia fascia-panchina">{{ v.partita.perche }}</span>
+            {% elif v.scelta == 'titolare' %}<span class="fascia fascia-sicuro">titolare</span>
+            {% elif v.scelta == 'dubbio' %}<span class="fascia fascia-ballottaggio">in dubbio</span>
+            {% elif v.scelta == 'fuori' %}<span class="fascia fascia-panchina">non gioca</span>{% endif %}</td>
           <td class="num">{% if v.fm is not none %}{{ '%.2f'|format(v.fm) }}{% else %}—{% endif %}</td>
           <td class="num text-muted">{{ v.partite }} pg</td>
         </tr>

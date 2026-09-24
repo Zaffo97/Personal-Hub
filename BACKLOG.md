@@ -1321,18 +1321,38 @@ sa dal codice, non un piano.
 | **Calendario e classifica** | football-data.org, piano gratuito | con la chiave, da solo entrando se la copia ha più di un giorno, o con «Aggiorna ora» |
 | **Probabili** | nessuna | un **link** che le apre nel browser di Davide (strada «a») |
 
-Il **consiglio** non sa chi è titolare, e lo dice in un riquadro giallo: mette in fondo chi
-**di sicuro non gioca** (ceduto, squadra senza partita, partita rinviata) e ordina gli altri
-per **fantamedia della lega**, che ora comprende anche l'**autogol** (408 su 414 esatti coi
-valori standard, erano 407). L'**avversario** — posizione in classifica, gol fatti e subiti —
+**Chi gioca, dal 25/09/2026** — la domanda di Davide era «mi interessa sapere chi gioca e
+chi no». Scelta sua: la titolarità la **segna lui**, nella pagina `/lega/<id>/chi-gioca`, con
+le probabili di fantacalcio.it **in un riquadro** a sinistra (le carica il suo browser, nessun
+programma le legge) e la rosa a destra con tre stati — titolare, in dubbio, non gioca — che si
+salvano a ogni clic. Una riga per utente, giornata e giocatore (`fanta2_titolari`): vale per
+tutte le sue leghe e la giornata dopo riparte da vuoto. ⚠️ Il riquadro: fantacalcio.it il
+24/09 non mandava né `X-Frame-Options` né una CSP che lo vietasse, ma nel pannello browser di
+Claude è rimasto **bianco** (nessuna richiesta partita: è il pannello che non lo carica, non
+il sito). **Va provato nel Chrome di Davide**; se resta bianco c'è «Apri in una scheda». E i
+termini sono stati letti solo per gli art. 3 e 8: un divieto esplicito di incorniciare la
+pagina, se c'è, starebbe altrove.
+
+Il **consiglio** mette in fondo chi **di sicuro non gioca** (ceduto, squadra senza partita,
+partita rinviata, o segnato «non gioca»), poi ordina per **tua scelta** — titolare, in dubbio,
+non segnato: una scelta di lettura, dichiarata in pagina — e dentro ogni gruppo per
+**fantamedia della lega**, che ora comprende anche l'**autogol** (408 su 414 esatti coi valori
+standard, erano 407). L'avviso sulla formazione segnala i titolari che hai segnato «non gioca»
+o «in dubbio». L'**avversario** — posizione in classifica, gol fatti e subiti —
 si **mostra e non si pesa**: decisione di Davide del 24/09/2026, e ⚠️ **supera** quella del
 22/09 («l'avversario non interessa», che valeva per la prima sezione). Il **modificatore di
 difesa** è il valore pieno: senza probabili non c'è la probabilità per cui moltiplicarlo.
 
 ⬜ **Resta aperto:**
 
-- **Provarla a mano in browser.** Le pagine sono provate dal test client e dallo sweep
-  (0 errori su 5 pagine per lingua), ma chiedono il login e la password la mette Davide.
+- **Provarla a mano in browser**, e soprattutto **il riquadro delle probabili nel Chrome di
+  Davide**. Le pagine sono provate dal test client e dallo sweep (0 errori su 6 pagine per
+  lingua); l'elenco delle leghe è stato visto in browser dopo il login di Davide il
+  25/09/2026, le altre pagine aspettano una lega con la rosa.
+- ⬜ **La copia dei dati fra utenti non dice che le scelte di «Chi gioca» restano fuori.**
+  `fanta2_titolari` è `cancella` come le spunte di Python, quindi non si copia — giusto — ma il
+  messaggio di `admin.utenti_copia` nomina solo Python. Trovato il 25/09/2026, non corretto
+  (fuori scope, e le scelte valgono una settimana).
 - **Il ritardo del calendario gratuito** («Schedules delayed»): non misurato, serve una
   partita spostata da veder arrivare.
 - **La chiave su Debian**: oggi `FOOTBALL_DATA_API_KEY` si legge dall'ambiente e, su

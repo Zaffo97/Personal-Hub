@@ -115,6 +115,12 @@ FUORI_DAL_BACKUP = {
     # da nessuna parte è indistinguibile da una dimenticata.
     "sessioni_ricordate": "sessioni «resta collegato»: permessi vivi, non dati — "
                           "su un PC nuovo si rientra con la password",
+    # Fantacalcio 2, 25/09/2026: chi gioca secondo te, per la giornata in corso.
+    # Invecchia in una settimana — la giornata dopo riparte da vuoto — e rifarlo sono
+    # una ventina di clic: in un export che si committa cambierebbe a ogni giornata
+    # senza portare niente che valga la pena ritrovare su un PC nuovo.
+    "fanta2_titolari": "chi gioca secondo te, giornata per giornata: vale una "
+                       "settimana, si rifà in un minuto",
 }
 
 

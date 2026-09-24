@@ -18,6 +18,16 @@ pagina ed esegue `new Function()` su ogni blocco `<script>` **e** su ogni handle
 
 ---
 
+## 25/09/2026
+
+**Fantacalcio 2: «Chi gioca» (§4.6)** — decisione di Davide: la titolarità la segna lui, con le
+probabili di fantacalcio.it in un riquadro accanto alla rosa (le carica il suo browser) e tre
+stati per giocatore salvati a ogni clic (`fanta2_titolari`, per utente e giornata). Il consiglio
+ordina esclusi in fondo, poi titolare → in dubbio → non segnato, poi fantamedia; l'avviso sulla
+formazione guarda le scelte. `prova_fantacalcio2.py` **72 su 72** (15 nuove: isolamento fra
+utenti, stati e giornate rifiutati, ordine del consiglio, avviso, JS della pagina), 234 query
+0 scoperte, sweep 0 errori. Il riquadro resta da provare nel Chrome di Davide.
+
 ## 24/09/2026
 
 **La Fantacalcio 2: le fonti del Fantacalcio in regola, in una sezione a parte (§4.6)** —

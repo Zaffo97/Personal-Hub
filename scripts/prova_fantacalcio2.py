@@ -454,6 +454,80 @@ def prove(dove):
     esito("⚠️ l'attribuzione chiesta dai termini di football-data è in pagina",
           F.ATTRIBUZIONE in elenco)
 
+    # --- 9a. chi gioca, segnato da te ---------------------------------------------
+    # Decisione di Davide del 25/09/2026: la titolarità la segna lui, con le probabili
+    # nel riquadro accanto. Si prova che la scelta si salva **sua**, che il consiglio
+    # la usa nell'ordine dichiarato, e che l'avviso sulla formazione la guarda.
+    print("\n== 9a. chi gioca, segnato da te ==")
+    r = c.get(f"/fantacalcio2/lega/{lid}/chi-gioca")
+    testo = r.data.decode("utf-8", "replace")
+    esito("la pagina si apre, col riquadro delle probabili",
+          r.status_code == 200 and "<iframe" in testo and B.LINK_PROBABILI in testo)
+    if esprima is not None:
+        guai = rotti(testo)
+        esito("e il suo JavaScript compila", not guai, str(guai[:3]))
+    esito("un altro utente non apre la pagina di una lega non sua",
+          b"Lega non trovata" in a.get(f"/fantacalcio2/lega/{lid}/chi-gioca",
+                                       follow_redirects=True).data)
+
+    def segna(cl, pid, stato, giornata=6):
+        return cl.post("/fantacalcio2/chi-gioca/segna",
+                       data={"player_id": pid, "stato": stato, "giornata": giornata})
+
+    esito("una scelta si salva", segna(c, 31, "titolare").get_json() == {
+        "ok": True, "stato": "titolare"})
+    esito("⚠️ uno stato inventato viene rifiutato", segna(c, 31, "forse").status_code == 400)
+    esito("⚠️ e una giornata che non è quella in corso anche",
+          segna(c, 31, "titolare", giornata=7).status_code == 409)
+    esito("e un giocatore che non c'è", segna(c, 123456, "titolare").status_code == 404)
+    segna(c, 21, "titolare")
+    segna(c, 22, "dubbio")
+    segna(c, 33, "fuori")
+    segna(a, 31, "fuori")                     # l'altro utente la pensa diversamente
+    db = extensions.get_db()
+    mie = {r["player_id"]: r["stato"] for r in db.execute(
+        "SELECT player_id, stato FROM fanta2_titolari WHERE user_id=?", (ids["davide"],))}
+    db.close()
+    esito("⚠️ le scelte di un altro utente non toccano le tue",
+          mie == {31: "titolare", 21: "titolare", 22: "dubbio", 33: "fuori"}, str(mie))
+
+    db = extensions.get_db()
+    with app.test_request_context():
+        from flask import session
+        session["username"], session["role"], session["user_id"] = "davide", "user", ids["davide"]
+        _, ctx = B._consiglio(db, lid)
+    db.close()
+    c442 = next(x for x in ctx["consigli"] if x["modulo"] == "4-4-2")
+    cen = [v["g"]["id"] for v in c442["titolari"] if v["g"]["ruolo_classic"] == "c"]
+    esito("⚠️ a centrocampo: prima il titolare, poi quello in dubbio (a fantamedia pari)",
+          cen[:2] == [21, 22], str(cen))
+    att = [v["g"]["id"] for v in c442["titolari"] if v["g"]["ruolo_classic"] == "a"]
+    # Tre attaccanti: 31 segnato titolare, 32 con la partita rinviata, 33 segnato
+    # «non gioca». Ne servono due, quindi uno che non gioca entra per forza: fra due
+    # esclusi decide la fantamedia (32 ne ha una, 33 no), e resta dichiarato forzato.
+    esito("in attacco: il titolare segnato è il primo, e il secondo posto è un forzato",
+          att == [31, 32] and [v["g"]["id"] for v in c442["forzati"]
+                               if v["g"]["ruolo_classic"] == "a"] == [32]
+          and 33 not in att, f"{att} forzati {[v['g']['id'] for v in c442['forzati']]}")
+    esito("⚠️ e sulla scelta dell'altro utente il consiglio tace: 31 resta titolare",
+          next(v for v in ctx["valutazioni"] if v["g"]["id"] == 31)["scelta"] == "titolare")
+
+    c.post(f"/fantacalcio2/lega/{lid}/consiglio/applica", data={"modulo": "4-4-2"})
+    segna(c, 21, "fuori")                     # ci ripensi dopo aver schierato
+    pagina = c.get(f"/fantacalcio2/lega/{lid}").data.decode("utf-8", "replace")
+    esito("l'avviso dice chi hai schierato e poi segnato «non gioca»",
+          "segnato «non gioca»" in _html.unescape(pagina) or "segnato «non gioca»" in pagina)
+    esito("un secondo clic sullo stesso stato lo toglie",
+          segna(c, 21, "").get_json() == {"ok": True, "stato": None})
+    db = extensions.get_db()
+    esito("…e la riga sparisce davvero",
+          not db.execute("SELECT 1 FROM fanta2_titolari WHERE user_id=? AND player_id=21",
+                         (ids["davide"],)).fetchone())
+    db.close()
+    campo = c.get(f"/fantacalcio2/lega/{lid}/formazione").data.decode("utf-8", "replace")
+    esito("il campo porta la scelta accanto al giocatore",
+          '"titolare"' in campo and (esprima is None or not rotti(campo)))
+
     # --- 9. upload dalla pagina, e la lega che se ne va ------------------------------
     print("\n== 9. il caricamento dalla pagina, e l'eliminazione ==")
     meno = [g for g in GIOCATORI if g[0] != 15]          # Dif Cinque esce dal file

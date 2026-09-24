@@ -1,15 +1,15 @@
 {# L'avviso sulla formazione gia' schierata, per la Fantacalcio 2 (§4.6).
 
    Stessa forma di `_fanta_allerta.html`, ma il confronto non e' con le probabili
-   (qui non ci sono): e' col **calendario**. Quindi dice solo cose che il calendario
-   sa per certo — chi e' schierato titolare e **non gioca** (ceduto, squadra senza
-   partita, partita rinviata) — e niente sulla titolarita'.
+   (qui non ci sono): e' col **calendario** e con **le tue scelte** di «Chi gioca».
+   Dice chi e' schierato titolare e non gioca (ceduto, squadra senza partita, partita
+   rinviata, o segnato «non gioca»), e chi hai segnato in dubbio.
    Si usa con `{% from "_fanta2_allerta.html" import avviso %}`. #}
 {% macro avviso(allerta, giornata, url_campo=None) %}
-{% if allerta and (allerta.fuori or allerta.spariti) %}
+{% if allerta and (allerta.fuori or allerta.incerti or allerta.spariti) %}
 <div class="card mb-3" style="border-color:#d97706">
   <div style="padding:.8rem 1rem" class="text-sm">
-    <strong>&#9888; Nella formazione schierata c'è chi non gioca</strong>
+    <strong>&#9888; {% if allerta.fuori or allerta.spariti %}Nella formazione schierata c'è chi non gioca{% else %}Nella formazione schierata c'è chi è in dubbio{% endif %}</strong>
     <span class="text-xs text-muted">(giornata {{ giornata or '—' }})</span>
 
     {% if allerta.spariti %}
@@ -34,9 +34,22 @@
     </div>
     {% endif %}
 
+    {% if allerta.incerti %}
+    <div class="mt-2">
+      <strong>{{ allerta.incerti|length }}</strong>
+      titolar{{ 'e' if allerta.incerti|length == 1 else 'i' }} che hai segnat{{ 'o' if allerta.incerti|length == 1 else 'i' }}
+      <strong>in dubbio</strong>:
+      <div class="text-xs mt-1">
+        {% for v in allerta.incerti %}
+        <span class="badge badge-warning">{{ v.nome }}</span>
+        {% endfor %}
+      </div>
+    </div>
+    {% endif %}
+
     {% if allerta.occasioni %}
     <div class="mt-2">
-      In panchina, dello stesso ruolo, hai:
+      In panchina, dello stesso ruolo, hai chi hai segnato titolare:
       <div class="text-xs mt-1">
         {% for v in allerta.occasioni %}
         <span class="badge badge-success">{{ v.nome }}{% if v.fm is not none %} &middot; FM {{ '%.2f'|format(v.fm) }}{% endif %}</span>
@@ -51,8 +64,8 @@
     </div>
     {% endif %}
     <div class="text-xs text-muted mt-2">
-      Confronto col calendario di football-data.org. La titolarità non è controllata:
-      qui le probabili non vengono lette.
+      Confronto col calendario di football-data.org e con quello che hai segnato in
+      «Chi gioca» per questa giornata.
     </div>
   </div>
 </div>

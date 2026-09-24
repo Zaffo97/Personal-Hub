@@ -140,9 +140,25 @@ def _contesto_giornata(db):
             "scadenza": G.scadenza(db, giornata)}
 
 
+def _scelte(db, giornata):
+    """`{player_id: stato}`: chi gioca **secondo te**, per quella giornata.
+
+    ⚠️ `solo_mie()` e non `ambito_utente()`, anche in lettura: per un admin
+    `ambito_utente()` vuol dire «tutti», e il suo consiglio mescolerebbe le scelte di
+    altri utenti con le sue — due persone possono pensarla diversamente sullo stesso
+    giocatore, ed è per questo che la tabella ha un `user_id`.
+    """
+    if not giornata:
+        return {}
+    cond, par = solo_mie()
+    return {r["player_id"]: r["stato"] for r in db.execute(
+        f"SELECT player_id, stato FROM fanta2_titolari WHERE giornata=? AND {cond}",
+        (giornata,) + tuple(par))}
+
+
 def _valuta(db, lega, rosa, ctx):
     return G.valuta_rosa(rosa, ctx["partite"], ctx["tabella"], lega,
-                         ctx["calendario_c_e"])
+                         ctx["calendario_c_e"], _scelte(db, ctx["giornata"]))
 
 
 def _allerta(db, lid, rosa, valutazioni):
@@ -374,6 +390,7 @@ def lega(lid):
 
     partita = {v["g"]["id"]: v["partita"] for v in valutazioni}
     fm_lega = {v["g"]["id"]: v["fm"] for v in valutazioni}
+    scelta = {v["g"]["id"]: v["scelta"] for v in valutazioni}
     per_ruolo = {r: [g for g in rosa if g["ruolo_classic"] == r]
                  for r in ORDINE_RUOLI_FANTA}
     spenti = [g for g in rosa if not g["attivo"]]
@@ -398,8 +415,9 @@ def lega(lid):
         soglie_standard=MOD_DIFESA_SOGLIE,
         esempi_difesa=[(m, modificatore_difesa(m, soglie))
                        for m in (5.5, 6.0, 6.5, 7.0, 7.5)],
-        partita=partita, fm_lega=fm_lega, allerta=allerta,
-        link_probabili=LINK_PROBABILI, attribuzione=F.ATTRIBUZIONE, **ctx)
+        partita=partita, fm_lega=fm_lega, scelta=scelta, scelte=G.SCELTE,
+        allerta=allerta, link_probabili=LINK_PROBABILI,
+        attribuzione=F.ATTRIBUZIONE, **ctx)
 
 
 def _consiglio(db, lid):
@@ -418,6 +436,73 @@ def _consiglio(db, lid):
                consigli=G.consiglia_moduli(valutazioni, moduli,
                                            lega.get("n_panchinari"), regole=lega))
     return lega, ctx
+
+
+@bp.route("/lega/<int:lid>/chi-gioca")
+@login_required
+def chi_gioca(lid):
+    """Le probabili di fantacalcio.it **accanto** alla tua rosa, per segnare chi gioca.
+
+    Decisione di Davide del 25/09/2026. A sinistra la pagina del sito in un riquadro
+    — il browser di Davide la carica e la mostra, nessun programma la legge — e a
+    destra la rosa con tre stati per giocatore. Si salva a ogni clic.
+    ⚠️ Il riquadro può restare bianco (un sito può rifiutare di farsi incorniciare,
+    o il browser bloccarlo): la pagina lo dice e mette il link per aprirla a parte.
+    """
+    db = get_db()
+    lega = _lega_mia(db, lid)
+    if lega is None:
+        db.close()
+        flash("Lega non trovata", "error")
+        return _torna()
+    rosa = _rosa_della_lega(db, lid)
+    ctx = _contesto_giornata(db)
+    valutazioni = _valuta(db, lega, rosa, ctx)
+    db.close()
+    return render_template(
+        "fanta2_chi_gioca.html", lega=lega, ruoli=RUOLI_FANTA,
+        ordine=ORDINE_RUOLI_FANTA, per_ruolo=G.per_reparto(valutazioni),
+        scelte=G.SCELTE, link_probabili=LINK_PROBABILI,
+        attribuzione=F.ATTRIBUZIONE, **ctx)
+
+
+@bp.route("/chi-gioca/segna", methods=["POST"])
+@login_required
+def segna():
+    """Una scelta sola, dal clic: `player_id`, `giornata`, `stato` (vuoto = togli).
+
+    Risponde in JSON perché la chiama la pagina senza ricaricarsi. ⚠️ Di quello che
+    arriva non si fida niente: lo stato dev'essere uno dei tre, il giocatore deve
+    esistere nel listone, e la giornata **dev'essere quella corrente** — una scelta
+    scritta su una giornata a caso non la leggerebbe mai nessuno, e sparirebbe senza
+    errore. La riga porta l'`user_id` di chi clicca, sempre.
+    """
+    pid = _i(request.form.get("player_id"))
+    giornata = _i(request.form.get("giornata"))
+    stato = (request.form.get("stato") or "").strip()
+    if stato and stato not in G.SCELTE:
+        return jsonify({"errore": "Stato non valido"}), 400
+    uid = utente_id()
+    db = get_db()
+    corrente = G.giornata_corrente(db)
+    if not corrente or giornata != corrente:
+        db.close()
+        return jsonify({"errore": "La giornata non è quella in corso: ricarica la "
+                                  "pagina"}), 409
+    if not db.execute("SELECT 1 FROM fanta2_players WHERE id=?", (pid,)).fetchone():
+        db.close()
+        return jsonify({"errore": "Giocatore non trovato nel listone"}), 404
+    if stato:
+        db.execute("INSERT INTO fanta2_titolari(user_id, giornata, player_id, stato) "
+                   "VALUES(?,?,?,?) ON CONFLICT(user_id, giornata, player_id) "
+                   "DO UPDATE SET stato=excluded.stato, aggiornato_il=CURRENT_TIMESTAMP",
+                   (uid, giornata, pid, stato))
+    else:
+        db.execute("DELETE FROM fanta2_titolari WHERE user_id=? AND giornata=? "
+                   "AND player_id=?", (uid, giornata, pid))
+    db.commit()
+    db.close()
+    return jsonify({"ok": True, "stato": stato or None})
 
 
 @bp.route("/lega/<int:lid>/formazione")
@@ -450,12 +535,14 @@ def formazione(lid):
                  or (consigli[0] if consigli else None))
     partita = {v["g"]["id"]: v["partita"] for v in ctx["valutazioni"]}
     fm_lega = {v["g"]["id"]: v["fm"] for v in ctx["valutazioni"]}
+    scelta = {v["g"]["id"]: v["scelta"] for v in ctx["valutazioni"]}
     return render_template(
         "fanta2_formazione.html", lega=lega, ruoli=RUOLI_FANTA,
         ordine=ORDINE_RUOLI_FANTA, moduli=moduli, modulo=scelto,
         schierati=schierati, allerta=allerta,
         reparti={m: scomponi_modulo(m) for m in moduli}, dettaglio=dettaglio,
         minimo_partite=MINIMO_PARTITE_FIDATO, partita=partita, fm_lega=fm_lega,
+        scelta=scelta, scelte=G.SCELTE,
         link_probabili=LINK_PROBABILI, attribuzione=F.ATTRIBUZIONE, **ctx)
 
 

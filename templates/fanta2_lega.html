@@ -45,7 +45,9 @@
         {% if speso %}&middot; spesi {{ speso|round(0)|int }}{% endif %}
       </p></div>
     <div class="flex gap-2">
-      <a class="btn btn-primary" href="{{ url_for('fantacalcio2.formazione', lid=lega.id) }}">
+      <a class="btn btn-primary" href="{{ url_for('fantacalcio2.chi_gioca', lid=lega.id) }}">
+        &#128064; Chi gioca</a>
+      <a class="btn" href="{{ url_for('fantacalcio2.formazione', lid=lega.id) }}">
         &#9917; Schiera la formazione</a>
       <a class="btn" href="{{ url_for('fantacalcio2.formazione', lid=lega.id, _anchor='consiglio') }}">
         &#129504; Consiglio</a>
@@ -74,8 +76,8 @@
 </div>
 {% endif %}
 
-{# La giornata dei tuoi, dal calendario. ⚠️ Non e' la titolarita': quella qui non
-   si sa. E' se la squadra gioca, contro chi, e com'e' messo l'avversario. #}
+{# La giornata dei tuoi: dal calendario se la squadra gioca e contro chi, e da te
+   (pagina «Chi gioca») se lui e' titolare. #}
 <div class="card mb-3">
   <div class="card-header">
     <div class="card-title">
@@ -87,8 +89,8 @@
         <input type="hidden" name="torna_a" value="/fantacalcio2/lega/{{ lega.id }}">
         <button class="btn btn-secondary btn-sm" type="submit">&#8635; Calendario</button>
       </form>
-      <a class="btn btn-secondary btn-sm" href="{{ link_probabili }}" target="_blank"
-         rel="noopener">Probabili &#8599;</a>
+      <a class="btn btn-secondary btn-sm"
+         href="{{ url_for('fantacalcio2.chi_gioca', lid=lega.id) }}">&#128064; Chi gioca</a>
     </div>
   </div>
   <div style="padding:.75rem 1rem">
@@ -98,23 +100,26 @@
         Usa <strong>Calendario</strong> qui sopra.
       </div>
     {% else %}
-      {% set conta = namespace(gioca=0, no=0, ceduti=0, ignoto=0) %}
+      {% set conta = namespace(gioca=0, no=0, ceduti=0, ignoto=0, segnati=0) %}
       {% for g in rosa %}
         {% set p = partita.get(g.id, {}) %}
         {% if p.gioca %}{% set conta.gioca = conta.gioca + 1 %}
         {% elif p.perche == 'ceduto' %}{% set conta.ceduti = conta.ceduti + 1 %}
         {% elif p.gioca is sameas false %}{% set conta.no = conta.no + 1 %}
         {% else %}{% set conta.ignoto = conta.ignoto + 1 %}{% endif %}
+        {% if scelta.get(g.id) %}{% set conta.segnati = conta.segnati + 1 %}{% endif %}
       {% endfor %}
       <div class="text-sm">
         <span class="prob prob-titolare">{{ conta.gioca }} con la squadra in campo</span>
         {% if conta.no %}<span class="prob prob-non_gioca">{{ conta.no }} la sua squadra non gioca</span>{% endif %}
         {% if conta.ceduti %}<span class="prob prob-fuori">{{ conta.ceduti }} ceduti</span>{% endif %}
         {% if conta.ignoto %}<span class="prob prob-non_gioca">{{ conta.ignoto }} senza partita abbinata</span>{% endif %}
+        <span class="prob prob-panchina">{{ conta.segnati }} segnati da te</span>
       </div>
       <div class="text-xs text-muted mt-2">
         «Con la squadra in campo» vuol dire che la sua squadra gioca questa giornata,
-        <strong>non</strong> che lui sia titolare: per quello apri le probabili.
+        <strong>non</strong> che lui sia titolare: quello lo segni tu in
+        <strong>Chi gioca</strong>, guardando le probabili accanto alla rosa.
         Accanto a ogni giocatore c'è l'avversario, con la sua posizione in classifica
         e i gol che ha fatto e subito: è un'informazione, il consiglio non la pesa.
         <br><em>{{ attribuzione }}</em>
@@ -228,7 +233,8 @@
         <div>
           <div class="g-nome">{{ g.nome }}
             {% if not g.attivo %}<span class="badge badge-warning">{{ 'ceduto' if g.ceduto else 'fuori listone' }}</span>
-            {% elif p.gioca is sameas false %}<span class="prob prob-non_gioca">{{ p.perche }}</span>{% endif %}
+            {% elif p.gioca is sameas false %}<span class="prob prob-non_gioca">{{ p.perche }}</span>
+            {% elif scelta.get(g.id) %}<span class="prob {{ {'titolare': 'prob-titolare', 'dubbio': 'prob-panchina', 'fuori': 'prob-fuori'}[scelta[g.id]] }}">{{ scelte[scelta[g.id]] }}</span>{% endif %}
           </div>
           <div class="g-dati">
             {% if p.gioca %}
