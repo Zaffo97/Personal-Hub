@@ -1341,6 +1341,29 @@ lette dalle pagine il 22/09):
   `xml` della libreria standard, che basta a questi due file. Da decidere quando si scrive
   l'import
 
+**football-data.org per il calendario, letto il 24/09/2026 (sito e documentazione, non l'API):**
+
+- ✅ la **Serie A è nel piano gratuito** (pagina *Coverage*, «free. Forever»): 12 competizioni,
+  **10 chiamate al minuto**, serve una chiave. Senza chiave si leggono solo l'elenco delle
+  aree e delle competizioni, quindi **le partite non le ho potute vedere**
+- ✅ ogni partita ha `utcDate` (ISO 8601, in UTC: va portata all'ora italiana), `matchday` e
+  uno `status` fra `SCHEDULED`, `TIMED`, `IN_PLAY`, `PAUSED`, `FINISHED`, `SUSPENDED`,
+  **`POSTPONED`**, `CANCELLED`, `AWARDED`. Il rinvio quindi si vede. ⚠️ `SCHEDULED` vuol dire
+  data **approssimativa**: diventa `TIMED` solo quando c'è **data e ora esatte**. Il timer
+  (§4.4) deve fidarsi solo di `TIMED`, altrimenti dà una scadenza inventata
+- ⚠️ la pagina dei prezzi dice «**Schedules delayed**» per il piano gratuito, e **non ho trovato
+  dove dicano di quanto**. Per un timer che deve dire *entro quando* non è un dettaglio: un
+  anticipo spostato al venerdì potrebbe arrivare in ritardo. Da misurare con la chiave,
+  confrontando con il calendario ufficiale
+- ⚠️ il filtro per giornata **non è documentato** nella pagina sulle partite (ci sono `date`,
+  `dateFrom`, `dateTo`, `status`): da provare con la chiave
+- termini, letti nella pagina di registrazione: **§7.1** chiede di scrivere
+  «Football data provided by the Football-Data.org API» nella pagina che li usa; **§6.1** la
+  chiave **non va in un repository** → va in un file escluso da git (`.env` o simile);
+  **§9.1** chiusa l'iscrizione non si possono più mostrare i dati presi. L'uso non commerciale
+  lo dicono **fonti di terzi**, non l'ho letto da loro
+- ⬜ **serve che Davide si registri** (gratis, con la sua email): il conto lo crea lui
+
 **Strumenti già esistenti: guardati il 24/09/2026, nessuno è una fonte utilizzabile.** La
 domanda era da dove prendono i dati: se leggono fantacalcio.it (o un altro sito senza
 permesso), usarli sposta solo lo scraping nel codice di un altro.
