@@ -1345,17 +1345,28 @@ difesa** è il valore pieno: senza probabili non c'è la probabilità per cui mo
 
 ⬜ **Resta aperto:**
 
-- ⬜ **Richiesta di Davide del 25/09/2026, per la prossima sessione**: «vorrei come nella prima
-  sezione il campo dove posso inserire i miei giocatori, quindi un consiglio sul modulo, **non
-  voglio segnare titolare, dubbio eccetera**». ⚠️ Da chiarire con lui **prima** di scrivere
-  codice, perché due cose non tornano: (1) il campo col consiglio sotto **c'è già** nella
-  Fantacalcio 2 (`/fantacalcio2/lega/<id>/formazione`, dalla scheda della lega «Schiera la
-  formazione») — può darsi che non l'abbia visto, perché senza una lega con la rosa non ci si
-  arriva; (2) la stessa sera aveva chiesto «mi interessa sapere chi gioca e chi no», e senza
-  leggere le probabili l'unica fonte di quel dato era segnarlo a mano. Le domande da fargli:
-  la pagina «Chi gioca» va **tolta** o resta facoltativa? E il consiglio senza segni va bene
-  così com'è (chi non gioca per il calendario in fondo, poi fantamedia), o vuole un criterio
-  diverso per decidere chi gioca?
+- ✅ **Chiarito con Davide il 25/09/2026**: il campo col consiglio sul modulo c'era già e va
+  bene così; la **titolarità la guarda lui** sulla pagina di fantacalcio.it. La pagina «Chi
+  gioca» resta, e i segni sono **facoltativi**.
+- ⬜ **Da fare alla prossima sessione — salvare la formazione anche incompleta** (Fantacalcio 2).
+  Richiesta di Davide del 25/09/2026: «devo poter salvare la formazione in qualsiasi modo,
+  anche se mancano i titolari o la panchina, perché se devo ballare tra una pagina e l'altra
+  mi serve questo». Oggi `formazione_salva()` usa la **validazione severa** di
+  `controlla_formazione()` (scelta di Davide del 21/09 per la prima sezione): meno di 11
+  titolari o un reparto che non torna **non si salva**. ⚠️ Nella 2 va allentata, e la prima
+  **non si tocca**. Proposta da confermare con lui prima di scriverla:
+  - **si salva sempre** una formazione incompleta: meno di 11 titolari, reparti non pieni,
+    panchina vuota;
+  - **restano rifiutati** solo i casi che non sono «incompleta» ma **sbagliata**: un giocatore
+    che non è in rosa, lo stesso giocatore due volte, un ruolo in un posto che il modulo non ha
+    (un attaccante sul posto di un difensore), un modulo che la lega non ammette, e una panchina
+    **più lunga** del limite della lega;
+  - quello che manca **si dice** dopo il salvataggio e nell'avviso sopra il campo («mancano 2
+    difensori»), invece di impedire il salvataggio — altrimenti una formazione a metà sembra
+    una formazione finita;
+  - «Applica» del consiglio resta com'è: produce sempre una formazione completa.
+  Prova da aggiungere a `prova_fantacalcio2.py`: una formazione da 9 si salva e si rilegge
+  uguale, un doppione no.
 - **Provarla a mano in browser**, e soprattutto **il riquadro delle probabili nel Chrome di
   Davide**. Le pagine sono provate dal test client e dallo sweep (0 errori su 6 pagine per
   lingua); l'elenco delle leghe è stato visto in browser dopo il login di Davide il
