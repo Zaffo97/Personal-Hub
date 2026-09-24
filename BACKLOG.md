@@ -679,6 +679,7 @@ quattro cose richiedono **fonti diverse**:
 | ⬜ | **Due abilità senza effetto nel motore** | Trovate il 23/09/2026 riempiendo le abilità delle Mega di M-C. **Affilama** (Sharpness, di Mega Absol Z) ha `effect: none`, e dovrebbe potenziare le mosse **da taglio** — che da oggi hanno il flag `slicing`, quindi il motore potrebbe leggerlo. **Aura Guard** (Mega Lucario Z) è nuova e senza descrizione: l'effetto va cercato su una fonte prima di scriverlo. Il valore di Affilama va preso da Bulbapedia, non da memoria |
 | ✅ | **I flag delle mosse di Gen 8-9** | **Chiuso il 23/09/2026, decisione di Davide**: integrati da Bulbapedia con `scripts/integra_flag_mosse.py`. Il dump ha i flag di 748 mosse ma nessuna di Gen 8+: **95** mosse del catalogo, **84** completate (28 prendono `contact`, 3 prendono `punch` — Rage Fist, Jet Punch, Headlong Rush), 11 già complete. Solo aggiunte. Numeri in `STORICO.md` |
 | ✅ | **23 flag sbagliati che venivano da `moves_ma.json`** | **Tolti il 23/09/2026, decisione di Davide**, con `scripts/togli_flag_sbagliati.py`: `contact` da 19 mosse vecchie (Stone Edge, Rock Tomb, Seed Bomb, Bulk Up…) e da Aqua Cutter, Gigaton Hammer, Mountain Gale; `punch` da Storm Throw. La prova si ricontrolla a ogni giro (dump, o infobox di Bulbapedia per le Gen 9), e lo script si ferma se ne manca una. Numeri in `STORICO.md` |
+| ⬜ | **Eliminare una lega della prima sezione lascia la sua formazione** | Trovato il 24/09/2026 ricopiando la route nella Fantacalcio 2, **non corretto** (regola #1: la prima sezione non si tocca). `lega_elimina()` in `blueprints/fantacalcio.py` toglie a mano la rosa — il `ON DELETE CASCADE` SQLite lo applica solo coi foreign key accesi — ma **non** `fanta_formazione`: le righe della formazione restano orfane, invisibili a tutti. Oggi sono **0** (contato sul DB vero), perché nessuna lega è stata eliminata dopo aver schierato. Nella Fantacalcio 2 la stessa route toglie anche la formazione, e c'è la prova |
 
 ## 4. Voci minori, per sezione
 
@@ -1291,7 +1292,7 @@ sa dal codice, non un piano.
   iscritto. C'è una prova apposta (`prova_travaso_utente.py`, §7) perché nessuno la
   «corregga» credendola un baco.
 
-### 4.6 ⬜ Mettere in regola le fonti del Fantacalcio — **da fare alla prossima sessione**
+### 4.6 🟨 Mettere in regola le fonti del Fantacalcio — **la Fantacalcio 2 è in piedi dal 24/09/2026**
 
 > Decisione di Davide del 23/09/2026: «voglio evitare problemi». I *Termini e condizioni*
 > di fantacalcio.it (art. 3) vietano di leggere le pagine con un programma, scraping
@@ -1301,16 +1302,52 @@ sa dal codice, non un piano.
 > e contesto in §1.5.
 
 > **Come, deciso da Davide il 24/09/2026: in una sezione nuova, «Fantacalcio 2»**, route
-> `/fantacalcio2`. La sezione di oggi **non si tocca**: resta com'è, fonti comprese, per
-> poterci tornare se l'esperimento non convince. Le fonti nuove si provano solo nella 2.
-> La 2 ha **tabelle sue** per leghe, rose e formazioni (le rose si reincollano in blocco);
-> il **listone** invece è **in comune**, perché si rifà comunque dal file. Quando si
-> sceglie quale tenere, l'altra si spegne: la lista «cosa va toccato» sotto vale per
-> **quel** momento, non per adesso.
+> `/fantacalcio2`. La sezione di prima **non si tocca**: resta com'è, fonti comprese, per
+> poterci tornare se l'esperimento non convince. La 2 ha **tabelle sue per tutto**
+> (`fanta2_*`), **listone compreso**: all'inizio il listone doveva essere in comune, ma la
+> prima sezione lo riscrive da sola dal sito entrando e la 2 dagli Excel, e con una tabella
+> sola le due si sarebbero sovrascritte a vicenda (i 63 ceduti spenti da una e riaccesi
+> dall'altra) — Davide ha scelto «listone suo». Quando si sceglie quale tenere, l'altra si
+> spegne: la lista «cosa va toccato» in fondo vale per **quel** momento.
 
-⚠️ **Prima di scrivere codice, verificare** — il piano sotto è fatto di cose ricordate,
-non misurate: copertura, limiti del piano gratuito e termini d'uso di ogni fonte nuova si
-leggono sul loro sito, come si è fatto per fantacalcio.it e Serebii.
+**Cosa c'è, dal 24/09/2026** — `fanta2_fonti.py` (legge), `fanta2.py` (logica),
+`blueprints/fantacalcio2.py`, sette template (`fantacalcio2.html`, `fanta2_*.html`,
+`_fanta2_consiglio.html`, `_fanta2_allerta.html`), `scripts/importa_listone2.py` e
+`scripts/prova_fantacalcio2.py` (**57 su 57**). Le fonti:
+
+| Dato | Fonte | Come arriva |
+|---|---|---|
+| **Listone e statistiche** | i due Excel di fantacalcio.it | Davide li scarica **col suo login** e li carica dalla pagina (o con `importa_listone2.py`). Letti in memoria, **mai salvati**: sono contenuti presi con un account, e non devono finire nel repository |
+| **Calendario e classifica** | football-data.org, piano gratuito | con la chiave, da solo entrando se la copia ha più di un giorno, o con «Aggiorna ora» |
+| **Probabili** | nessuna | un **link** che le apre nel browser di Davide (strada «a») |
+
+Il **consiglio** non sa chi è titolare, e lo dice in un riquadro giallo: mette in fondo chi
+**di sicuro non gioca** (ceduto, squadra senza partita, partita rinviata) e ordina gli altri
+per **fantamedia della lega**, che ora comprende anche l'**autogol** (408 su 414 esatti coi
+valori standard, erano 407). L'**avversario** — posizione in classifica, gol fatti e subiti —
+si **mostra e non si pesa**: decisione di Davide del 24/09/2026, e ⚠️ **supera** quella del
+22/09 («l'avversario non interessa», che valeva per la prima sezione). Il **modificatore di
+difesa** è il valore pieno: senza probabili non c'è la probabilità per cui moltiplicarlo.
+
+⬜ **Resta aperto:**
+
+- **Provarla a mano in browser.** Le pagine sono provate dal test client e dallo sweep
+  (0 errori su 5 pagine per lingua), ma chiedono il login e la password la mette Davide.
+- **Il ritardo del calendario gratuito** («Schedules delayed»): non misurato, serve una
+  partita spostata da veder arrivare.
+- **La chiave su Debian**: oggi `FOOTBALL_DATA_API_KEY` si legge dall'ambiente e, su
+  Windows, dal registro dell'utente (così `setx` basta senza riavviare l'hub da un terminale
+  nuovo). Su Debian il registro non c'è: è la voce di §1.5.
+- **Scegliere quale sezione tenere**, e spegnere l'altra con le sue tabelle. ⚠️ Se si spegne
+  la **prima**: `blueprints/fantacalcio2.py` **importa** da `blueprints/fantacalcio.py`
+  `REGOLE`, i valori ufficiali, `_prezzo()` e `_numeri()` — vanno spostati prima, altrimenti
+  la 2 non parte più. E la Dashboard legge `scadenza_giornata()` della prima.
+- ⚠️ **I permessi**: la 2 è una sezione a sé (`fantacalcio2` in `SEZIONI`). Chi ha i permessi
+  «tutte» la vede da subito; un utente con un elenco di sezioni scelte no, finché un admin
+  non gliela spunta.
+
+Le verifiche fatte prima di scrivere il codice, il 24/09/2026 — restano qui perché sono
+la ragione di ogni scelta sopra:
 
 | Dato | Chi lo usa oggi | Fonte nuova proposta | Da verificare |
 |---|---|---|---|
@@ -1346,9 +1383,8 @@ lette dalle pagine il 22/09):
 - ⚠️ **i file non vanno nel repository.** Sono contenuti di fantacalcio.it scaricati col login:
   metterli su GitHub vorrebbe dire ripubblicarli. Si caricano dalla pagina della Fantacalcio 2,
   si leggono e basta; se serve una copia, in una cartella esclusa da git
-- per leggerli serve `openpyxl`, che **non è installato**. La prova l'ho fatta con `zipfile` e
-  `xml` della libreria standard, che basta a questi due file. Da decidere quando si scrive
-  l'import
+- `openpyxl` **non è installato**, e non è servito: `fanta2_fonti.leggi_xlsx()` legge i due
+  file con `zipfile` e `xml` della libreria standard
 
 **football-data.org per il calendario, letto il 24/09/2026 (sito e documentazione, non l'API):**
 
@@ -1370,17 +1406,18 @@ lette dalle pagine il 22/09):
 - ⚠️ «**Schedules delayed**» resta **non misurato**: servirebbe un orario spostato da vedere
   arrivare. `lastUpdated` della giornata 6 è `2026-09-24T00:20:33Z`. Da riguardare alla prima
   partita spostata o rinviata
-- ⚠️ `utcDate` è in UTC, e su Windows `zoneinfo` **non trova `Europe/Rome`** senza il
-  pacchetto `tzdata` (provato: `ZoneInfoNotFoundError`). Va aggiunto a `requirements.txt`,
-  oppure l'ora legale va gestita in altro modo. Su Debian il fuso c'è già nel sistema
+- ⚠️ `utcDate` è in UTC, e su Windows `zoneinfo` **non trovava `Europe/Rome`** senza il
+  pacchetto `tzdata` (provato: `ZoneInfoNotFoundError`). ✅ `fanta2_fonti.ora_italiana()` usa
+  `zoneinfo` se c'è e altrimenti la **regola dell'ora legale europea** (ultima domenica di
+  marzo e di ottobre, alle 01:00 UTC): nessuna dipendenza in più, provata sui due cambi
 - termini, letti nella pagina di registrazione: **§7.1** chiede di scrivere
   «Football data provided by the Football-Data.org API» nella pagina che li usa; **§6.1** la
   chiave **non va in un repository** → va in un file escluso da git (`.env` o simile);
   **§9.1** chiusa l'iscrizione non si possono più mostrare i dati presi. L'uso non commerciale
   lo dicono **fonti di terzi**, non l'ho letto da loro
-- ✅ **Davide si è registrato il 24/09/2026** e ha la chiave. Va nella variabile d'ambiente
-  `FOOTBALL_DATA_API_KEY`, come `STEAM_API_KEY` (PROJECT_CONTEXT, sezione Steam): niente file
-  nel progetto, niente campo nell'interfaccia
+- ✅ **Davide si è registrato il 24/09/2026** e ha la chiave, nella variabile d'ambiente
+  `FOOTBALL_DATA_API_KEY` (`setx`), come `STEAM_API_KEY`: niente file nel progetto, niente
+  campo nell'interfaccia
 
 **Strumenti già esistenti: guardati il 24/09/2026, nessuno è una fonte utilizzabile.** La
 domanda era da dove prendono i dati: se leggono fantacalcio.it (o un altro sito senza
@@ -1397,7 +1434,8 @@ Resta quindi il piano della tabella: fonti con un permesso (il file Excel scaric
 un'API con chiave), da verificare una per una. FantaLab e Fantagoat restano utili **come app**
 accanto all'hub, non come fonti.
 
-Cosa va toccato, per non dimenticare niente: `fantacalcio_it.py` (le quattro letture),
+Cosa va toccato **il giorno che si spegne la prima sezione**, per non dimenticare niente:
+`fantacalcio_it.py` (le quattro letture),
 `fanta_import.py` (le due soglie e l'aggiornamento automatico entrando nella sezione, che
 **deve sparire** per le fonti non più automatiche), `scripts/importa_listone.py` e
 `importa_probabili.py`, il pulsante «Aggiorna ora», la cache in `data/cache/fantacalcio/`

@@ -1,0 +1,304 @@
+{% extends "base.html" %}
+{#
+  Il listone da sfogliare (chiesto da Davide il 22/09/2026).
+
+  Prima di oggi il listone si poteva solo **cercare per nome** dentro la rosa di
+  una lega: si vedeva un giocatore per volta, e solo per aggiungerlo. Qui ci sono
+  tutti, si filtrano e si ordinano, e cliccandone uno si apre la sua scheda con
+  tutti i numeri che il listone porta.
+
+  ⚠️ La scheda si chiede al server (`/fantacalcio2/api/giocatore/<id>`) invece di
+  essere scritta in pagina per ognuno: le righe sono ~600 e ognuna ha venti campi,
+  più la partita e le rose.
+
+  Fantacalcio 2 (§4.6): copia di `fanta_listone.html`. Il listone viene dai due
+  Excel caricati dalla pagina della sezione, e la scheda mostra la **partita** della
+  giornata al posto della probabile.
+#}
+{% block title %}Listone &ndash; Fantacalcio 2{% endblock %}
+{% block topbar_title %}&#9917; Listone &mdash; Fantacalcio 2{% endblock %}
+{% block body_class %}sez-fanta{% endblock %}
+{% block extra_head %}
+<link rel="stylesheet" href="{{ url_for('static', filename='css/fantacalcio.css') }}">
+<style>
+.listone-griglia{display:grid;grid-template-columns:minmax(0,1.6fr) minmax(280px,1fr);
+  gap:.9rem;align-items:start}
+@media (max-width:900px){.listone-griglia{grid-template-columns:1fr}}
+/* La tabella scrolla per conto suo: seicento righe che allungano la pagina
+   porterebbero la scheda fuori dallo schermo al primo clic. */
+.listone-scroll{max-height:70dvh;overflow-y:auto}
+.listone-scroll table{width:100%}
+.listone-scroll thead th{position:sticky;top:0;background:var(--surface);z-index:2}
+.riga-g{cursor:pointer}
+.riga-g:hover{background:var(--surface-off)}
+.riga-g.scelto{background:var(--primary-dim)}
+.ruolo{display:inline-flex;align-items:center;justify-content:center;width:1.2rem;height:1.2rem;
+  border-radius:50%;font-size:.6rem;font-weight:700;color:#fff}
+.ruolo-p{background:#d97706}.ruolo-d{background:#2563eb}
+.ruolo-c{background:#16a34a}.ruolo-a{background:#dc2626}
+.num{text-align:right;font-variant-numeric:tabular-nums;white-space:nowrap}
+.spento{opacity:.55}
+/* La scheda resta in vista mentre si scorre l'elenco: è tutto il punto di averla
+   accanto invece che in un'altra pagina. */
+.scheda{position:sticky;top:calc(var(--topbar) + .6rem)}
+.scheda-dati{display:grid;grid-template-columns:repeat(auto-fill,minmax(120px,1fr));gap:.4rem}
+.scheda-dati > div{background:var(--surface-off);border:1px solid var(--border);
+  border-radius:12px;padding:.35rem .6rem}
+.scheda-et{font-size:.62rem;color:var(--text-muted);text-transform:uppercase;letter-spacing:.03em}
+.scheda-val{font-size:.95rem;font-weight:700;font-variant-numeric:tabular-nums}
+.prob{font-size:.66rem;font-weight:700;padding:.05rem .32rem;border-radius:var(--radius-sm);
+  white-space:nowrap}
+.prob-titolare{background:rgba(22,163,74,.16);color:#16a34a}
+.prob-panchina{background:rgba(217,119,6,.16);color:#d97706}
+.prob-fuori{background:rgba(220,38,38,.14);color:#dc2626}
+.prob-non_gioca{background:var(--surface-off);color:var(--text-muted)}
+</style>
+{% endblock %}
+{% block content %}
+<div class="page-header">
+  <div class="flex items-center justify-between flex-wrap gap-2">
+    <div>
+      <h1>&#128203; Listone</h1>
+      <p class="text-muted text-sm">
+        {{ righe|length }} giocator{{ 'e' if righe|length == 1 else 'i' }} nell'elenco
+        {% if totali.attivi %}&middot; {{ totali.attivi }} attivi in Serie A{% endif %}
+        {% if totali.spenti %}&middot; {{ totali.spenti }} ceduti o usciti{% endif %}
+        {% if totali.visto %}&middot; caricato il {{ totali.visto }}{% endif %}
+      </p>
+    </div>
+    <div class="flex gap-2">
+      <a class="btn" href="{{ url_for('fantacalcio2.fantacalcio2') }}">&larr; Fantacalcio 2</a>
+    </div>
+  </div>
+</div>
+
+<div class="card mb-3">
+  <div style="padding:.75rem 1rem">
+    {# I filtri sono un GET: la ricerca che hai fatto resta nell'indirizzo, quindi
+       si può ricaricare, salvare o mandare a qualcuno. #}
+    <form method="get" class="flex gap-2 items-end flex-wrap">
+      <div style="flex:1;min-width:180px">
+        <label class="text-xs text-muted">Nome</label>
+        <input class="form-control" name="q" value="{{ q }}" placeholder="Parte del nome">
+      </div>
+      <div>
+        <label class="text-xs text-muted">Ruolo</label>
+        <select class="form-control" name="ruolo">
+          <option value="">Tutti</option>
+          {% for r in ['p', 'd', 'c', 'a'] %}
+          <option value="{{ r }}"{% if ruolo == r %} selected{% endif %}>{{ ruoli[r] }}</option>
+          {% endfor %}
+        </select>
+      </div>
+      <div>
+        <label class="text-xs text-muted">Squadra</label>
+        <select class="form-control" name="squadra">
+          <option value="">Tutte</option>
+          {% for s in squadre %}
+          <option value="{{ s }}"{% if squadra == s %} selected{% endif %}>{{ s }}</option>
+          {% endfor %}
+        </select>
+      </div>
+      <div>
+        <label class="text-xs text-muted">Ordina per</label>
+        <select class="form-control" name="ordine">
+          {% for chiave, voce in ordini.items() %}
+          <option value="{{ chiave }}"{% if ordine == chiave %} selected{% endif %}>{{ voce[1] }}</option>
+          {% endfor %}
+        </select>
+      </div>
+      <label class="text-sm flex items-center gap-1" style="margin-bottom:.35rem">
+        <input type="checkbox" name="spenti" value="1"{% if spenti %} checked{% endif %}>
+        Mostra anche chi ha lasciato la Serie A
+      </label>
+      <button class="btn btn-primary" type="submit">Filtra</button>
+      <a class="btn btn-secondary" href="{{ url_for('fantacalcio2.listone') }}">Azzera</a>
+    </form>
+  </div>
+</div>
+
+<div class="listone-griglia">
+  <div class="card mb-0">
+    <div class="card-header">
+      <div class="card-title">L'elenco</div>
+      <span class="text-xs text-muted">Clicca una riga per aprirne la scheda</span>
+    </div>
+    <div class="listone-scroll">
+      <table class="table">
+        <thead><tr>
+          <th></th><th>Giocatore</th><th>Squadra</th>
+          <th class="num">QA</th><th class="num">FVM</th>
+          <th class="num">FM</th><th class="num">Pg</th>
+        </tr></thead>
+        <tbody>
+          {% for g in righe %}
+          <tr class="riga-g{% if not g.attivo %} spento{% endif %}" data-id="{{ g.id }}">
+            <td><span class="ruolo ruolo-{{ g.ruolo_classic }}">{{ (g.ruolo_classic or '?')|upper }}</span></td>
+            <td>
+              <strong>{{ g.nome }}</strong>
+              {% if not g.attivo %}<span class="badge badge-warning">{{ 'ceduto' if g.ceduto else 'fuori listone' }}</span>{% endif %}
+              {% if mie.get(g.id) %}
+              <span class="badge badge-success" title="{{ mie[g.id]|map(attribute='nome')|join(', ') }}">in rosa</span>
+              {% endif %}
+            </td>
+            <td class="text-xs text-muted">{{ g.squadra or '—' }}</td>
+            <td class="num">{{ g.qa if g.qa is not none else '—' }}</td>
+            <td class="num">{{ g.fvm if g.fvm is not none else '—' }}</td>
+            <td class="num">{{ '%.2f'|format(g.fantamedia) if g.fantamedia is not none else '—' }}</td>
+            <td class="num text-muted">{{ g.partite_a_voto if g.partite_a_voto is not none else '—' }}</td>
+          </tr>
+          {% else %}
+          <tr><td colspan="7" class="text-sm text-muted" style="padding:1rem">
+            Nessun giocatore con questi filtri.
+            {% if not spenti %}Chi ha lasciato la Serie A è escluso: la spunta qui
+            sopra lo rimette nell'elenco.{% endif %}
+          </td></tr>
+          {% endfor %}
+        </tbody>
+      </table>
+    </div>
+  </div>
+
+  {# La scheda. Nasce vuota e lo dice: un riquadro pieno di trattini sembrerebbe
+     un giocatore senza dati invece di «non ne hai ancora scelto uno». #}
+  <div class="card mb-0 scheda" id="scheda">
+    <div class="card-header">
+      <div class="card-title" id="scheda_nome">La scheda</div>
+      <span class="text-xs text-muted" id="scheda_squadra"></span>
+    </div>
+    <div class="card-body" id="scheda_corpo">
+      <div class="text-sm text-muted">
+        Clicca un giocatore nell'elenco per vedere qui tutti i suoi dati:
+        quotazioni, medie, gol, assist, cartellini, la sua partita di questa
+        giornata e in quali tue rose si trova.
+      </div>
+    </div>
+  </div>
+</div>
+
+<script>
+/* La scheda di un giocatore, chiesta al server quando si clicca la sua riga.
+   ⚠️ Il numero della richiesta serve: una risposta lenta arrivata dopo una veloce
+   riscriverebbe la scheda con il giocatore di prima, e nessuno se ne accorgerebbe
+   — è la stessa rete già messa alla ricerca della rosa. */
+(function(){
+  var RUOLI = {p: 'Portiere', d: 'Difensore', c: 'Centrocampista', a: 'Attaccante'};
+  var nome = document.getElementById('scheda_nome');
+  var squadra = document.getElementById('scheda_squadra');
+  var corpo = document.getElementById('scheda_corpo');
+  var ultima = 0;
+
+  function n(v, decimali){
+    /* «—» e non 0: un dato che manca e uno zero vero sono due cose diverse, ed è
+       la differenza fra «non ha mai segnato» e «non ha mai giocato». */
+    if (v === null || v === undefined || v === '') return '—';
+    return decimali ? Number(v).toFixed(decimali) : v;
+  }
+  function esc(t){
+    var d = document.createElement('div');
+    d.textContent = (t === null || t === undefined) ? '' : String(t);
+    return d.innerHTML;
+  }
+  function casella(etichetta, valore){
+    return '<div><div class="scheda-et">' + esc(etichetta) + '</div>' +
+           '<div class="scheda-val">' + esc(valore) + '</div></div>';
+  }
+
+  function disegna(dati){
+    var g = dati.giocatore, p = dati.partita || {};
+    nome.innerHTML = esc(g.nome) + (g.attivo ? '' :
+      ' <span class="badge badge-warning">' + (g.ceduto ? 'ceduto' : 'fuori listone') + '</span>');
+    squadra.textContent = (g.squadra || '—') + ' · ' +
+      (RUOLI[g.ruolo_classic] || '?') +
+      (g.ruolo_mantra ? ' · Mantra: ' + g.ruolo_mantra.toUpperCase() : '');
+
+    /* La partita della giornata, dal calendario: se la squadra gioca, contro chi e
+       com'è messo l'avversario. ⚠️ Non è la titolarità, che qui non si sa. */
+    var html = '<div class="mb-2 text-xs">';
+    if (p.gioca === true) {
+      html += '<span class="prob prob-titolare">la squadra gioca</span> ' +
+              '<span class="text-muted">giornata ' + esc(dati.giornata) + ' · contro ' +
+              esc(p.avversario) + (p.in_casa ? ' in casa' : ' in trasferta') +
+              (p.avv ? ' · ' + esc(p.avv.posizione) + 'ª, ' + esc(p.avv.gol_fatti) +
+                       ' gol fatti e ' + esc(p.avv.gol_subiti) + ' subiti' : '') +
+              '</span>';
+    } else if (p.gioca === false) {
+      html += '<span class="prob prob-non_gioca">' + esc(p.perche) + '</span>';
+    } else {
+      html += '<span class="text-muted">Calendario non importato: non so se gioca.</span>';
+    }
+    html += '</div>';
+
+    html += '<div class="scheda-dati">' +
+      casella('Quotazione attuale', n(g.qa)) +
+      casella('Quotazione iniziale', n(g.qi)) +
+      casella('Valore di mercato', n(g.fvm)) +
+      casella('Fantamedia', n(g.fantamedia, 2)) +
+      casella('Media voto', n(g.media_voto, 2)) +
+      casella('Partite a voto', n(g.partite_a_voto)) +
+      casella('Gol', n(g.gol)) +
+      casella('Assist', n(g.assist)) +
+      casella('Rigori (segnati/tirati)', n(g.rigori)) +
+      casella('Ammonizioni', n(g.ammonizioni)) +
+      casella('Espulsioni', n(g.espulsioni)) +
+      casella('Autogol', n(g.autogol)) +
+      '</div>';
+    /* I due campi da portiere si mostrano solo ai portieri: «rigori parati: —» a
+       un attaccante è una riga che non vuol dire niente. */
+    if (g.ruolo_classic === 'p') {
+      html += '<div class="scheda-dati mt-2">' +
+        casella('Gol subiti', n(g.gol_subiti)) +
+        casella('Rigori parati', n(g.rigori_parati)) + '</div>';
+    }
+
+    if (dati.rose && dati.rose.length) {
+      html += '<div class="mt-3 text-sm"><strong>Nelle tue rose</strong><div class="mt-1">';
+      dati.rose.forEach(function(r){
+        html += '<div class="text-xs"><a href="/fantacalcio2/lega/' + r.lid + '">' +
+                esc(r.lega) + '</a>' +
+                (r.prezzo ? ' · pagato ' + esc(Math.round(r.prezzo)) : '') + '</div>';
+      });
+      html += '</div></div>';
+    } else {
+      html += '<div class="mt-3 text-xs text-muted">Non è in nessuna delle tue rose.</div>';
+    }
+    html += '<div class="text-xs text-muted mt-2">Dati del listone' +
+            (g.visto_il ? ' caricati il ' + esc(g.visto_il) : '') + '.</div>';
+    corpo.innerHTML = html;
+  }
+
+  document.querySelectorAll('.riga-g').forEach(function(riga){
+    riga.addEventListener('click', function(){
+      document.querySelectorAll('.riga-g.scelto').forEach(function(x){
+        x.classList.remove('scelto');
+      });
+      riga.classList.add('scelto');
+      var mia = ++ultima;
+      nome.textContent = 'Carico…';
+      squadra.textContent = '';
+      corpo.innerHTML = '<div class="text-sm text-muted">Un attimo…</div>';
+      fetch('/fantacalcio2/api/giocatore/' + riga.dataset.id)
+        .then(function(r){ return r.json(); })
+        .then(function(dati){
+          if (mia !== ultima) return;
+          if (dati.errore) {
+            nome.textContent = 'Non trovato';
+            corpo.innerHTML = '<div class="text-sm text-muted">' + esc(dati.errore) + '</div>';
+            return;
+          }
+          disegna(dati);
+        })
+        .catch(function(){
+          if (mia !== ultima) return;
+          nome.textContent = 'Scheda non disponibile';
+          corpo.innerHTML = '<div class="text-sm text-muted">La scheda non è ' +
+            'arrivata. Ricarica la pagina e riprova.</div>';
+        });
+      if (window.innerWidth <= 900) {
+        document.getElementById('scheda').scrollIntoView({behavior: 'smooth', block: 'start'});
+      }
+    });
+  });
+})();
+</script>
+{% endblock %}

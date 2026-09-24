@@ -245,6 +245,9 @@ function tipoVis(tipo){
     {% if 'fantacalcio' in sezioni_permesse %}
     <a href="/fantacalcio" class="nav-item {% if request.endpoint and request.endpoint.startswith('fantacalcio.') %}active{% endif %}"><em>&#9917;</em> Fantacalcio</a>
     {% endif %}
+    {% if 'fantacalcio2' in sezioni_permesse %}
+    <a href="/fantacalcio2" class="nav-item {% if request.endpoint and request.endpoint.startswith('fantacalcio2.') %}active{% endif %}"><em>&#9917;</em> Fantacalcio 2</a>
+    {% endif %}
 
 <div class="sidebar-section" style="margin-top:.6rem">Tools</div>
 <a href="/export" class="nav-item"><em>💾</em> Esporta JSON</a>

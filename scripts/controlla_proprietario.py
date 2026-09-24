@@ -65,8 +65,9 @@ SORGENTI = [os.path.join(BASE, "blueprints"), BASE]
 # scoperta su questa tabella non mostrerebbe una riga di troppo in un elenco, darebbe
 # a qualcuno la sessione di qualcun altro.
 RADICI = ("games", "teams", "arduino_projects", "pc_builds", "fanta_leagues",
-          "python_progress", "sessioni_ricordate")
-FIGLIE = ("team_members", "pc_components", "fanta_roster", "fanta_formazione")
+          "fanta2_leagues", "python_progress", "sessioni_ricordate")
+FIGLIE = ("team_members", "pc_components", "fanta_roster", "fanta_formazione",
+          "fanta2_roster", "fanta2_formazione")
 # `python_topics` è l'elenco fisso dei 53 argomenti, condiviso di suo: quello che è
 # personale è la spunta, che dal blocco Python vivrà in `python_progress`.
 # `fanta_players` è il **listone**: condiviso come il catalogo Pokémon, nessun
@@ -83,7 +84,8 @@ FIGLIE = ("team_members", "pc_components", "fanta_roster", "fanta_formazione")
 # Serie A che non è di nessun utente. Aggiungerla dopo avrebbe voluto dire un altro
 # «0 scoperte» detto senza aver guardato.
 ALTRE = ("python_topics", "fanta_players", "fanta_probabili",
-         "fanta_probabili_squadre", "fanta_calendario")
+         "fanta_probabili_squadre", "fanta_calendario",
+         "fanta2_players", "fanta2_calendario", "fanta2_classifica")
 TABELLE = RADICI + FIGLIE + ALTRE
 
 CITA = re.compile(r"\b(?:FROM|INTO|UPDATE|JOIN)\s+(%s)\b" % "|".join(TABELLE), re.I)
@@ -511,6 +513,103 @@ ECCEZIONI = {
      "SELECT id, name, format, record FROM teams WHERE regulation_id=? ORDER BY created_at DESC"):
         "chi tocca una regulation deve vedere tutti i team che ne dipendono, non solo "
         "i propri. Route da amministratore",
+    # ── Fantacalcio 2 (§4.6, 24/09/2026) ─────────────────────────────────
+    # Le stesse ragioni della prima sezione, sulle tabelle `fanta2_*`: il listone,
+    # il calendario e la classifica sono condivisi; rosa e formazione passano da
+    # una lega già verificata.
+    ('blueprints/fantacalcio2.py', '_scrivi_formazione',
+     'INSERT INTO fanta2_formazione(league_id, player_id, titolare, ordine, ruolo) VALUES(?,?,?,?,?)'):
+        "la lega è verificata da chi chiama, e subito dopo l'UPDATE sulla lega con solo_mie() guarda il rowcount (e toglie quello che ha scritto se è zero)",
+    ('blueprints/fantacalcio2.py', '_scendi_dal_campo',
+     'DELETE FROM fanta2_formazione WHERE league_id=? AND player_id IN ({…})'):
+        'toglie dal campo chi il chiamante ha appena tolto dalla rosa con solo_mie() e rowcount guardato',
+    ('blueprints/fantacalcio2.py', 'lega_salva',
+     'INSERT INTO fanta2_leagues({…}) VALUES({…})'):
+        "la INSERT della lega nuova: poco sopra fa `comuni['user_id'] = utente_id()`; il ramo che modifica filtra con solo_mie()",
+    ('blueprints/fantacalcio2.py', '_scrivi_formazione',
+     'DELETE FROM fanta2_formazione WHERE league_id=?'):
+        "la lega è verificata da chi chiama, e subito dopo l'UPDATE sulla lega con solo_mie() guarda il rowcount (e toglie quello che ha scritto se è zero)",
+    ('blueprints/fantacalcio2.py', 'rosa_aggiungi',
+     'INSERT INTO fanta2_roster(league_id, player_id, prezzo, note) VALUES(?,?,?,?)'):
+        'il listone condiviso per il nome, e la INSERT nella rosa di una lega appena verificata con _lega_mia()',
+    ('blueprints/fantacalcio2.py', 'fantacalcio2',
+     'SELECT COUNT(*) AS attivi, MAX(visto_il) AS visto, (SELECT COUNT(*) FROM fanta2_players WHERE attivo=0) AS spenti FROM fanta2_players WHERE attivo=1'):
+        'il listone è condiviso: quanti giocatori e da quando è la stessa risposta per tutti',
+    ('blueprints/fantacalcio2.py', 'rosa_aggiungi',
+     'SELECT nome FROM fanta2_players WHERE id=?'):
+        'il listone condiviso per il nome, e la INSERT nella rosa di una lega appena verificata con _lega_mia()',
+    ('blueprints/fantacalcio2.py', 'rosa_incolla_conferma',
+     'INSERT INTO fanta2_roster(league_id, player_id, prezzo) VALUES(?,?,?)'):
+        'gli id del listone condiviso per rifiutare quelli inventati, e la INSERT nella rosa di una lega appena verificata con _lega_mia()',
+    ('blueprints/fantacalcio2.py', 'listone',
+     'SELECT COUNT(*) AS attivi, MAX(visto_il) AS visto, (SELECT COUNT(*) FROM fanta2_players WHERE attivo=0) AS spenti FROM fanta2_players WHERE attivo=1'):
+        'il listone da sfogliare: dato condiviso; le rose tue sono lette a parte con ambito_utente()',
+    ('blueprints/fantacalcio2.py', 'api_giocatore',
+     'SELECT * FROM fanta2_players WHERE id=?'):
+        'la riga del listone condiviso; le rose tue sono lette a parte con ambito_utente()',
+    ('blueprints/fantacalcio2.py', 'api_giocatori',
+     'SELECT id, nome, squadra, ruolo_classic, qa, fvm, fantamedia, attivo FROM fanta2_players WHERE nome LIKE ? ORDER BY attivo DESC, fvm DESC, nome LIMIT 25'):
+        'la ricerca nel listone condiviso, per scegliere chi mettere in rosa',
+    ('blueprints/fantacalcio2.py', '_contesto_giornata',
+     'SELECT 1 FROM fanta2_calendario LIMIT 1'):
+        'se il calendario è stato importato: dato condiviso, uguale per tutti',
+    ('blueprints/fantacalcio2.py', '_schierati',
+     'SELECT player_id, titolare, ordine FROM fanta2_formazione WHERE league_id=? ORDER BY titolare DESC, ordine'):
+        'la lega arriva sempre da una lettura già filtrata (_lega_mia() o ambito_utente()), come nella prima sezione',
+    ('blueprints/fantacalcio2.py', '_listone',
+     'SELECT id, nome, squadra, squadra_slug, ruolo_classic, qa, fvm, fantamedia, attivo FROM fanta2_players'):
+        'il listone condiviso, letto intero per contare gli omonimi di un nome incollato',
+    ('blueprints/fantacalcio2.py', 'rosa_incolla_conferma',
+     'SELECT id FROM fanta2_players'):
+        'gli id del listone condiviso per rifiutare quelli inventati, e la INSERT nella rosa di una lega appena verificata con _lega_mia()',
+    ('blueprints/fantacalcio2.py', 'listone',
+     'SELECT * FROM fanta2_players{…} ORDER BY ({…} IS NULL), {…}, nome'):
+        'il listone da sfogliare: dato condiviso; le rose tue sono lette a parte con ambito_utente()',
+    ('blueprints/fantacalcio2.py', 'listone',
+     'SELECT DISTINCT squadra FROM fanta2_players WHERE squadra IS NOT NULL AND attivo=1 ORDER BY squadra'):
+        'il listone da sfogliare: dato condiviso; le rose tue sono lette a parte con ambito_utente()',
+    ('blueprints/fantacalcio2.py', '_allerta',
+     'SELECT id, nome FROM fanta2_players WHERE id IN ({…})'):
+        'il nome di chi è schierato ma non è più in rosa, preso dal listone condiviso',
+    ('fanta2.py', 'aggiorna_calendario',
+     'DELETE FROM fanta2_calendario'):
+        'calendario e classifica della Serie A da football-data.org: dati condivisi, e le squadre del listone condiviso per abbinarli',
+    ('fanta2.py', 'aggiorna_calendario',
+     'INSERT INTO fanta2_calendario(match_id, giornata, stato, inizio, utc, casa, casa_slug, fuori, fuori_slug, gol_casa, gol_fuori, aggiornata_fonte) VALUES(?,?,?,?,?,?,?,?,?,?,?,?)'):
+        'calendario e classifica della Serie A da football-data.org: dati condivisi, e le squadre del listone condiviso per abbinarli',
+    ('fanta2.py', 'aggiorna_calendario',
+     'DELETE FROM fanta2_classifica'):
+        'calendario e classifica della Serie A da football-data.org: dati condivisi, e le squadre del listone condiviso per abbinarli',
+    ('fanta2.py', 'aggiorna_calendario',
+     'INSERT INTO fanta2_classifica(squadra_slug, squadra, posizione, punti, giocate, gol_fatti, gol_subiti) VALUES(?,?,?,?,?,?,?)'):
+        'calendario e classifica della Serie A da football-data.org: dati condivisi, e le squadre del listone condiviso per abbinarli',
+    ('fanta2.py', 'partite_della_giornata',
+     'SELECT * FROM fanta2_calendario WHERE giornata=? ORDER BY inizio'):
+        'le partite della giornata: dato condiviso',
+    ('fanta2.py', 'importa_listone',
+     'INSERT INTO fanta2_players(id, {…}, attivo, visto_il, aggiornato_il) VALUES(?, {…}, ?, ?, CURRENT_TIMESTAMP) ON CONFLICT(id) DO UPDATE SET {…}, attivo=excluded.attivo, visto_il=excluded.visto_il, aggiornato_il=CURRENT_TIMESTAMP'):
+        "l'import del listone condiviso dai due Excel: nessun proprietario, come fanta_import.aggiorna_listone()",
+    ('fanta2.py', 'importa_listone',
+     'UPDATE fanta2_players SET attivo=0, aggiornato_il=CURRENT_TIMESTAMP WHERE id=?'):
+        "l'import del listone condiviso dai due Excel: nessun proprietario, come fanta_import.aggiorna_listone()",
+    ('fanta2.py', 'importa_listone',
+     'SELECT * FROM fanta2_players'):
+        "l'import del listone condiviso dai due Excel: nessun proprietario, come fanta_import.aggiorna_listone()",
+    ('fanta2.py', 'eta_calendario',
+     'SELECT MAX(aggiornato_il) AS q FROM fanta2_calendario'):
+        "l'età del calendario condiviso",
+    ('fanta2.py', 'aggiorna_calendario',
+     'SELECT DISTINCT squadra_slug FROM fanta2_players WHERE attivo=1 AND squadra_slug IS NOT NULL'):
+        'calendario e classifica della Serie A da football-data.org: dati condivisi, e le squadre del listone condiviso per abbinarli',
+    ('fanta2.py', 'giornata_corrente',
+     'SELECT MIN(giornata) AS g FROM fanta2_calendario WHERE stato IN ({…})'):
+        'la giornata in corso: il calendario della Serie A è uguale per tutti',
+    ('fanta2.py', 'scadenza',
+     'SELECT * FROM fanta2_calendario WHERE giornata=? ORDER BY inizio'):
+        "il fischio d'inizio della giornata: dato condiviso, uguale per tutte le leghe",
+    ('fanta2.py', 'classifica',
+     'SELECT * FROM fanta2_classifica ORDER BY posizione'):
+        'la classifica della Serie A: dato condiviso',
 }
 
 

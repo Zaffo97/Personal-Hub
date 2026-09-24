@@ -90,6 +90,9 @@ TABELLE = [
     # — quindi non pesa, ma senza questa riga un ripristino rimetterebbe in piedi
     # leghe e rose e lascerebbe il campo vuoto **senza dire niente**.
     "fanta_leagues", "fanta_roster", "fanta_formazione",
+    # La Fantacalcio 2 (§4.6, 24/09/2026): stesse ragioni, tabelle sue. Il suo
+    # listone (`fanta2_players`) resta fuori come l'altro: si rifà dai due Excel.
+    "fanta2_leagues", "fanta2_roster", "fanta2_formazione",
 ]
 
 # In più, solo con `--completo`. `regulations` è una **tabella morta** — la scrive solo

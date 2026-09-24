@@ -92,6 +92,9 @@ ORDINE = [
     # altrimenti le rose puntano a giocatori che non ci sono ancora.
     # ⚠️ La formazione **dopo** la rosa: nomina i giocatori che la rosa contiene.
     "fanta_leagues", "fanta_roster", "fanta_formazione",
+    # La Fantacalcio 2 (§4.6): stesso ordine, e il suo listone (`fanta2_players`)
+    # va ricaricato dai due Excel **prima**, per la stessa ragione.
+    "fanta2_leagues", "fanta2_roster", "fanta2_formazione",
     # ⚠️ Solo il backup `--completo` ce l'ha (§1.4, 18/09/2026). Con l'export
     # committabile questa riga fa solo comparire `regulations` fra le «tabelle non
     # presenti nell'export», che è la verità — prima non compariva affatto, ed è così
@@ -470,13 +473,17 @@ def main():
     # `esporta_dati.py` lo dichiarava da sempre («il listone va reimportato
     # prima»); quello che mancava era dirlo **qui**, dove serve.
     mancanti = {}
-    for tabella in ("fanta_roster", "fanta_formazione"):
+    # La Fantacalcio 2 ha il suo listone, e le sue righe si guardano su quello.
+    for tabella, listone in (("fanta_roster", "fanta_players"),
+                             ("fanta_formazione", "fanta_players"),
+                             ("fanta2_roster", "fanta2_players"),
+                             ("fanta2_formazione", "fanta2_players")):
         nuove = piani.get(tabella, ([],))[0]
         for riga in nuove:
             pid = riga.get("player_id")
             if pid is None:
                 continue
-            if not db.execute("SELECT 1 FROM fanta_players WHERE id=?", (pid,)).fetchone():
+            if not db.execute(f"SELECT 1 FROM {listone} WHERE id=?", (pid,)).fetchone():
                 mancanti.setdefault(tabella, set()).add(pid)
     if mancanti:
         quanti = sum(len(v) for v in mancanti.values())

@@ -1,0 +1,463 @@
+{# La Fantacalcio 2 (§4.6): copia di `fanta_lega.html`, con la partita al posto della probabile. #}
+{% extends "base.html" %}
+{% from "_fanta2_allerta.html" import avviso as allerta_formazione %}
+{% from "_fanta_timer.html" import timer %}
+{% block title %}{{ lega.nome }} &ndash; Fantacalcio 2{% endblock %}
+{% block topbar_title %}&#9917; {{ lega.nome }}{% endblock %}
+{% block body_class %}sez-fanta{% endblock %}
+{% block extra_head %}
+<link rel="stylesheet" href="{{ url_for('static', filename='css/fantacalcio.css') }}">
+<style>
+.rosa-griglia{display:grid;grid-template-columns:repeat(auto-fill,minmax(280px,1fr));gap:.85rem}
+.giocatore{display:flex;align-items:center;justify-content:space-between;gap:.5rem;
+  padding:.4rem .55rem;border-bottom:1px solid var(--border)}
+.giocatore:last-child{border-bottom:none}
+.g-nome{font-weight:600;font-size:.82rem}
+.g-dati{font-size:.7rem;color:var(--text-muted)}
+.ruolo{display:inline-flex;align-items:center;justify-content:center;width:1.25rem;height:1.25rem;
+  border-radius:50%;font-size:.62rem;font-weight:700;color:#fff}
+.ruolo-p{background:#d97706}.ruolo-d{background:#2563eb}
+.ruolo-c{background:#16a34a}.ruolo-a{background:#dc2626}
+.spento{opacity:.55}
+#ris{position:absolute;z-index:50;background:var(--surface);border:1px solid var(--border);
+  border-radius:var(--radius-sm);max-height:280px;overflow-y:auto;min-width:320px;display:none}
+#ris.open{display:block}
+#ris div{padding:.35rem .6rem;cursor:pointer;font-size:.78rem}
+#ris div:hover{background:var(--surface-off)}
+.regole-lista{display:grid;grid-template-columns:repeat(auto-fill,minmax(190px,1fr));gap:.4rem}
+/* La probabile di un giocatore: quattro stati, e sono davvero quattro cose diverse.
+   «non convocato» e «la sua squadra non gioca» non si mescolano. */
+.prob{font-size:.66rem;font-weight:700;padding:.05rem .32rem;border-radius:var(--radius-sm);
+  white-space:nowrap}
+.prob-titolare{background:rgba(22,163,74,.16);color:#16a34a}
+.prob-panchina{background:rgba(217,119,6,.16);color:#d97706}
+.prob-fuori{background:rgba(220,38,38,.14);color:#dc2626}
+.prob-non_gioca{background:var(--surface-off);color:var(--text-muted)}
+</style>
+{% endblock %}
+{% block content %}
+<div class="page-header">
+  <div class="flex items-center justify-between flex-wrap gap-2">
+    <div><h1>&#9917; {{ lega.nome }}</h1>
+      <p class="text-muted text-sm">
+        Classic &middot; {{ rosa|length }} in rosa &middot; {{ lega.n_panchinari }} panchinari
+        {% if lega.mod_difesa %}&middot; modificatore difesa{% endif %}
+        {% if speso %}&middot; spesi {{ speso|round(0)|int }}{% endif %}
+      </p></div>
+    <div class="flex gap-2">
+      <a class="btn btn-primary" href="{{ url_for('fantacalcio2.formazione', lid=lega.id) }}">
+        &#9917; Schiera la formazione</a>
+      <a class="btn" href="{{ url_for('fantacalcio2.formazione', lid=lega.id, _anchor='consiglio') }}">
+        &#129504; Consiglio</a>
+      <a class="btn" href="{{ url_for('fantacalcio2.listone') }}">&#128203; Listone</a>
+      <a class="btn" href="{{ url_for('fantacalcio2.fantacalcio2') }}">&larr; Le leghe</a>
+    </div>
+  </div>
+</div>
+
+<div class="mb-3">{{ timer(scadenza, 'scadenza_lega') }}</div>
+
+{{ allerta_formazione(allerta, giornata,
+                      url_for('fantacalcio2.formazione', lid=lega.id)) }}
+
+{% if spenti %}
+{# Il caso del mercato: un giocatore che la Serie A non ha piu' ma che tu hai
+   ancora in rosa. Non si toglie da soli - e' una tua decisione. #}
+<div class="card mb-3" style="border-color:#d97706">
+  <div style="padding:.8rem 1rem" class="text-sm">
+    <strong>&#9888; {{ spenti|length }} giocatori in rosa non sono più in Serie A.</strong>
+    Sono nel foglio «Ceduti» del file, o non ci sono più. Restano in rosa finché non li togli.
+    <div class="text-xs text-muted mt-1">
+      {{ spenti|map(attribute='nome')|join(', ') }}
+    </div>
+  </div>
+</div>
+{% endif %}
+
+{# La giornata dei tuoi, dal calendario. ⚠️ Non e' la titolarita': quella qui non
+   si sa. E' se la squadra gioca, contro chi, e com'e' messo l'avversario. #}
+<div class="card mb-3">
+  <div class="card-header">
+    <div class="card-title">
+      &#128197; La giornata
+      {% if giornata %}<span class="text-xs text-muted">&mdash; {{ giornata }}</span>{% endif %}
+    </div>
+    <div class="flex gap-1">
+      <form method="post" action="{{ url_for('fantacalcio2.aggiorna_calendario') }}">
+        <input type="hidden" name="torna_a" value="/fantacalcio2/lega/{{ lega.id }}">
+        <button class="btn btn-secondary btn-sm" type="submit">&#8635; Calendario</button>
+      </form>
+      <a class="btn btn-secondary btn-sm" href="{{ link_probabili }}" target="_blank"
+         rel="noopener">Probabili &#8599;</a>
+    </div>
+  </div>
+  <div style="padding:.75rem 1rem">
+    {% if not calendario_c_e %}
+      <div class="text-sm text-muted">
+        Il calendario non è stato importato: senza, non so chi gioca questa giornata.
+        Usa <strong>Calendario</strong> qui sopra.
+      </div>
+    {% else %}
+      {% set conta = namespace(gioca=0, no=0, ceduti=0, ignoto=0) %}
+      {% for g in rosa %}
+        {% set p = partita.get(g.id, {}) %}
+        {% if p.gioca %}{% set conta.gioca = conta.gioca + 1 %}
+        {% elif p.perche == 'ceduto' %}{% set conta.ceduti = conta.ceduti + 1 %}
+        {% elif p.gioca is sameas false %}{% set conta.no = conta.no + 1 %}
+        {% else %}{% set conta.ignoto = conta.ignoto + 1 %}{% endif %}
+      {% endfor %}
+      <div class="text-sm">
+        <span class="prob prob-titolare">{{ conta.gioca }} con la squadra in campo</span>
+        {% if conta.no %}<span class="prob prob-non_gioca">{{ conta.no }} la sua squadra non gioca</span>{% endif %}
+        {% if conta.ceduti %}<span class="prob prob-fuori">{{ conta.ceduti }} ceduti</span>{% endif %}
+        {% if conta.ignoto %}<span class="prob prob-non_gioca">{{ conta.ignoto }} senza partita abbinata</span>{% endif %}
+      </div>
+      <div class="text-xs text-muted mt-2">
+        «Con la squadra in campo» vuol dire che la sua squadra gioca questa giornata,
+        <strong>non</strong> che lui sia titolare: per quello apri le probabili.
+        Accanto a ogni giocatore c'è l'avversario, con la sua posizione in classifica
+        e i gol che ha fatto e subito: è un'informazione, il consiglio non la pesa.
+        <br><em>{{ attribuzione }}</em>
+      </div>
+    {% endif %}
+  </div>
+</div>
+
+{% if copertura %}
+<div class="card mb-3">
+  <div class="card-header"><div class="card-title">I moduli ammessi</div></div>
+  <div style="padding:.75rem 1rem" class="text-sm">
+    {% for c in copertura %}
+    <div class="mb-1">
+      <strong>{{ c.modulo }}</strong>
+      <span class="text-xs text-muted">
+        ({{ c.serve.p }} P, {{ c.serve.d }} D, {{ c.serve.c }} C, {{ c.serve.a }} A)
+      </span>
+      {% if c.mancano %}
+        <span class="badge badge-warning">mancano
+          {% for r, n in c.mancano.items() %}{{ n }} {{ nome_ruolo(r, n) }}{% if not loop.last %}, {% endif %}{% endfor %}
+        </span>
+      {% else %}
+        <span class="badge badge-success">copribile</span>
+      {% endif %}
+    </div>
+    {% endfor %}
+    <div class="text-xs text-muted mt-2">
+      Il conto considera solo i giocatori ancora nel listone: chi ha lasciato la
+      Serie A non copre un ruolo.
+    </div>
+  </div>
+</div>
+{% endif %}
+
+<div class="card mb-3">
+  <div class="card-header"><div class="card-title">Aggiungi alla rosa</div></div>
+  <div style="padding:.75rem 1rem">
+    <form method="post" action="{{ url_for('fantacalcio2.rosa_aggiungi', lid=lega.id) }}"
+          class="flex gap-2 items-end flex-wrap">
+      <div style="position:relative;flex:1;min-width:260px">
+        <label class="text-xs text-muted">Giocatore</label>
+        <input class="form-control" id="cerca" autocomplete="off"
+               placeholder="Scrivi almeno due lettere">
+        <input type="hidden" name="player_id" id="player_id">
+        <div id="ris"></div>
+      </div>
+      <div style="width:110px">
+        <label class="text-xs text-muted">Prezzo pagato</label>
+        <input class="form-control" name="prezzo" type="number" step="1" min="0" value="0">
+      </div>
+      <button class="btn btn-primary" type="submit">Aggiungi</button>
+    </form>
+    <div class="text-xs text-muted mt-1" id="scelto"></div>
+
+    {# Una rosa sono ~25 giocatori: uno per volta vuol dire 25 ricerche, ed e'
+       il motivo per cui questa rosa era ferma a un giocatore. Si incolla e si
+       guarda **prima** di scrivere - l'anteprima non e' una comodita', e' la
+       parte che rende l'abbinamento dei nomi sicuro. #}
+    <details class="mt-3" style="border-top:1px solid var(--border);padding-top:.65rem">
+      <summary style="cursor:pointer" class="text-sm font-600">
+        &#128203; Incolla la rosa intera
+      </summary>
+      <form method="post"
+            action="{{ url_for('fantacalcio2.rosa_incolla', lid=lega.id) }}"
+            class="mt-2">
+        <textarea class="form-control" name="testo" rows="8"
+                  style="font-family:ui-monospace,monospace"
+                  placeholder="Portieri&#10;Di Gregorio JUV 18&#10;Difensori&#10;Bastoni 22&#10;Thuram"></textarea>
+        <div class="flex gap-2 items-center mt-2 flex-wrap">
+          <button class="btn btn-primary" type="submit">Leggi la lista</button>
+          <span class="text-xs text-muted">
+            Una riga per giocatore, con il prezzo pagato se lo conosci. Prima di
+            scrivere in rosa viene mostrata un'anteprima da confermare.
+          </span>
+        </div>
+      </form>
+    </details>
+  </div>
+</div>
+
+<div class="rosa-griglia">
+  {% for r in ordine %}
+  <div class="card mb-0">
+    <div class="card-header">
+      <div class="card-title">
+        <span class="ruolo ruolo-{{ r }}">{{ r|upper }}</span> {{ ruoli[r] }}
+      </div>
+      <div class="flex items-center gap-1">
+        <span class="badge badge-neutral">{{ per_ruolo[r]|length }}</span>
+        {# Svuotare il reparto: compare solo dove c'e' qualcosa da svuotare, e
+           chiede conferma dicendo **quanti** ne sta togliendo. #}
+        {% if per_ruolo[r] %}
+        <form method="post" action="{{ url_for('fantacalcio2.rosa_svuota', lid=lega.id) }}"
+              {# «gli attaccanti», non «i attaccanti»: l'articolo cambia per un
+                 ruolo su quattro, e leggerlo sbagliato in una conferma toglie
+                 credibilita' proprio alla domanda che non si vuole sbagliare. #}
+              {% set art = 'gli' if r == 'a' else 'i' %}
+              onsubmit='return confirm({{ ("Togliere dalla rosa tutti " ~ art ~ " " ~ nome_ruolo(r, 2) ~ " (" ~ per_ruolo[r]|length ~ ")? Chi era schierato esce anche dal campo.")|tojson }})'>
+          <input type="hidden" name="ruolo" value="{{ r }}">
+          <button class="btn btn-sm btn-secondary" type="submit"
+                  title="Togli tutti {{ art }} {{ nome_ruolo(r, 2) }} dalla rosa">Svuota</button>
+        </form>
+        {% endif %}
+      </div>
+    </div>
+    <div>
+      {% for g in per_ruolo[r] %}
+      {% set p = partita.get(g.id, {}) %}
+      <div class="giocatore {% if not g.attivo %}spento{% endif %}">
+        <div>
+          <div class="g-nome">{{ g.nome }}
+            {% if not g.attivo %}<span class="badge badge-warning">{{ 'ceduto' if g.ceduto else 'fuori listone' }}</span>
+            {% elif p.gioca is sameas false %}<span class="prob prob-non_gioca">{{ p.perche }}</span>{% endif %}
+          </div>
+          <div class="g-dati">
+            {% if p.gioca %}
+              vs {{ p.avversario or '—' }}
+              ({% if p.in_casa %}in casa{% else %}fuori{% endif %})
+              {% if p.avv %}&middot; {{ p.avv.posizione }}ª, {{ p.avv.gol_fatti }} gol fatti e {{ p.avv.gol_subiti }} subiti{% endif %}
+              {% if not p.ora_certa %}&middot; orario da definire{% endif %}
+              &middot;
+            {% endif %}
+            {{ g.squadra or '—' }} &middot; QA {{ g.qa if g.qa is not none else '—' }}
+            &middot; FVM {{ g.fvm if g.fvm is not none else '—' }}
+            {% if g.fantamedia is not none %}&middot; FM {{ g.fantamedia }}{% endif %}
+            {% if g.prezzo %}&middot; pagato {{ g.prezzo|round(0)|int }}{% endif %}
+          </div>
+        </div>
+        <form method="post"
+              action="{{ url_for('fantacalcio2.rosa_rimuovi', lid=lega.id, rid=g.rid) }}"
+              onsubmit='return confirm({{ ("Togliere " ~ g.nome ~ " dalla rosa?")|tojson }})'>
+          <button class="btn btn-sm btn-danger" type="submit">&times;</button>
+        </form>
+      </div>
+      {% else %}
+      <div style="padding:.6rem .7rem" class="text-xs text-muted">Nessuno.</div>
+      {% endfor %}
+    </div>
+  </div>
+  {% endfor %}
+</div>
+
+{# Correggere senza disfare. Fino al 21/09/2026 il prezzo si poteva cambiare solo
+   nell'anteprima dell'incolla - una volta in rosa si toglieva e si rimetteva - e il
+   togli era una riga per volta, cioe' venticinque conferme per rifare una rosa.
+   Sta in un <details> e non nella griglia qui sopra perche' la griglia si legge:
+   le caselle di testo in mezzo ai numeri le renderebbero un modulo. #}
+{% if rosa %}
+<div class="card mt-3">
+  <div class="card-header"><div class="card-title">Correggi la rosa</div></div>
+  <div style="padding:.75rem 1rem">
+    <details>
+      <summary style="cursor:pointer" class="text-sm font-600">
+        &#9999;&#65039; Prezzi e rimozioni in blocco ({{ rosa|length }} in rosa)
+      </summary>
+      <form method="post"
+            action="{{ url_for('fantacalcio2.rosa_modifica', lid=lega.id) }}"
+            onsubmit="return confermaModifica(this)" class="mt-2">
+        <table class="table">
+          <thead>
+            <tr>
+              <th>Giocatore</th>
+              <th style="width:120px">Prezzo pagato</th>
+              <th style="width:70px;text-align:center">Togli</th>
+            </tr>
+          </thead>
+          <tbody>
+            {% for g in rosa %}
+            <tr{% if not g.attivo %} class="spento"{% endif %}>
+              <td>
+                <span class="ruolo ruolo-{{ g.ruolo_classic }}">{{ g.ruolo_classic|upper }}</span>
+                {{ g.nome }}
+                <span class="text-xs text-muted">{{ g.squadra or '—' }}</span>
+                {% if not g.attivo %}<span class="badge badge-warning">{{ 'ceduto' if g.ceduto else 'fuori listone' }}</span>{% endif %}
+              </td>
+              <td>
+                <input class="form-control" type="number" step="1" min="0"
+                       name="prezzo_{{ g.rid }}"
+                       value="{% if g.prezzo %}{{ g.prezzo|round(0)|int }}{% else %}0{% endif %}">
+              </td>
+              <td style="text-align:center">
+                <input type="checkbox" name="togli" value="{{ g.rid }}">
+              </td>
+            </tr>
+            {% endfor %}
+          </tbody>
+        </table>
+        <div class="flex gap-2 items-center mt-2 flex-wrap">
+          <button class="btn btn-primary" type="submit">Salva le modifiche</button>
+          <span class="text-xs text-muted">
+            Vengono salvati solo i prezzi modificati; i giocatori spuntati escono
+            dalla rosa, con una sola conferma per tutti.
+          </span>
+        </div>
+      </form>
+    </details>
+    {# Rifare la rosa da zero: un pulsante invece di venticinque caselle spuntate.
+       Sta in fondo e staccato, perche' e' l'azione piu' distruttiva della pagina. #}
+    <div class="flex items-center gap-2 flex-wrap mt-3"
+         style="border-top:1px solid var(--border);padding-top:.7rem">
+      <form method="post" action="{{ url_for('fantacalcio2.rosa_svuota', lid=lega.id) }}"
+            onsubmit='return confirm({{ ("Svuotare tutta la rosa? Escono " ~ rosa|length ~ " giocatori, e la formazione schierata resta senza di loro.")|tojson }})'>
+        <input type="hidden" name="ruolo" value="tutti">
+        <button class="btn btn-sm btn-danger" type="submit">Svuota tutta la rosa</button>
+      </form>
+      <span class="text-xs text-muted">
+        Toglie tutti i {{ rosa|length }} giocatori di questa lega. I reparti si
+        svuotano uno per volta dal pulsante <strong>Svuota</strong> del riquadro
+        del ruolo.
+      </span>
+    </div>
+  </div>
+</div>
+{% endif %}
+
+<div class="card mt-3">
+  <div class="card-header"><div class="card-title">Le regole di questa lega</div></div>
+  <div style="padding:.75rem 1rem">
+    <div class="regole-lista">
+      {% for colonna, etichetta, ufficiale, valori in regole %}
+      <div class="text-sm">
+        {{ etichetta }}:
+        <strong>{{ lega[colonna] if lega[colonna] is not none else '—' }}</strong>
+        {% if ufficiale %}
+          <span class="text-xs" style="color:var(--text-faint)">
+            (ufficiale: {{ valore_ufficiale.get(colonna) }})</span>
+        {% endif %}
+      </div>
+      {% endfor %}
+    </div>
+    {# Il modificatore di difesa: la struttura viene dal regolamento, i numeri no.
+       Si dicono tutti e due, perché sapere «è acceso» non basta per capire cosa fa. #}
+    <div class="mt-3" style="padding-top:.6rem;border-top:1px solid var(--border)">
+      <div class="text-sm font-600 mb-1">
+        Modificatore di difesa:
+        {% if lega.mod_difesa %}<span class="badge badge-success">acceso</span>
+        {% else %}<span class="badge badge-neutral">spento</span>{% endif %}
+      </div>
+      {% if lega.mod_difesa %}
+      <div class="text-xs text-muted mb-2">
+        Media aritmetica
+        {% if lega.mod_difesa_portiere is not none and not lega.mod_difesa_portiere %}
+          dei <strong>migliori 4 difensori</strong>
+        {% else %}
+          del <strong>portiere e dei migliori 3 difensori</strong>
+        {% endif %}
+        senza contare bonus e malus, e solo se almeno <strong>4 difensori</strong>
+        prendono voto. I valori della tabella si cambiano da <strong>Modifica</strong>.
+      </div>
+      {# ⚠️ La tabella si legge **a intervalli** — «da 6,26 a 6,50» — e non come
+         una colonna di soglie: con sei fasce a quarti, «da 6,26» costringe a
+         guardare la riga sopra per sapere dove finisce, ed è il modo in cui le
+         fasce sono scritte ovunque. Il conto non cambia: `fasce_mod_difesa()`
+         riscrive le stesse soglie, non altre. #}
+      <div class="regole-lista">
+        {% for f in fasce %}
+        <div class="text-sm">
+          {% if f.a is none %}da <strong>{{ '%g'|format(f.da) }}</strong> in su
+          {% elif f.a == f.da %}esattamente <strong>{{ '%g'|format(f.da) }}</strong>
+          {% else %}da <strong>{{ '%g'|format(f.da) }}</strong> a
+            <strong>{{ '%g'|format(f.a) }}</strong>{% endif %}
+          &rarr; <strong>{{ '%+g'|format(f.punti) }}</strong>
+          punt{% if f.punti == 1 or f.punti == -1 %}o{% else %}i{% endif %}</div>
+        {% endfor %}
+      </div>
+      <div class="text-xs text-muted mt-2">
+        Qualche esempio con questa tabella:
+        {% for media, punti in esempi_difesa %}
+          <span style="white-space:nowrap">{{ media }} &rarr; {{ '%+g'|format(punti) }}</span>{% if not loop.last %} &middot; {% endif %}
+        {% endfor %}
+        {% if soglie == soglie_standard %}
+          <br>Questi sono i valori più diffusi. Se la tua lega ne usa altri, si
+          cambiano da <strong>Modifica</strong>.
+        {% endif %}
+      </div>
+      {% endif %}
+    </div>
+    {% if lega.note %}
+    <div class="mt-2 text-sm" style="white-space:pre-wrap">{{ lega.note }}</div>
+    {% endif %}
+    <div class="text-xs text-muted mt-2">
+      I cartellini valgono al massimo &minus;1 a partita: doppia ammonizione, rosso
+      diretto o giallo più rosso pesano allo stesso modo.
+    </div>
+  </div>
+</div>
+
+<script>
+// Una conferma sola per tutta la rosa: l'elenco qui sopra non e' una riga per volta,
+// quindi nemmeno la domanda lo e'. Senza niente di spuntato non chiede niente - si
+// stanno solo correggendo dei prezzi. ⚠️ Deve stare **fuori** dall'IIFE: un
+// `onsubmit` cerca la funzione fra le globali.
+function confermaModifica(f){
+  const n = f.querySelectorAll('input[name="togli"]:checked').length;
+  if (!n) return true;
+  return confirm(n === 1 ? 'Togliere 1 giocatore dalla rosa?'
+                         : 'Togliere ' + n + ' giocatori dalla rosa?');
+}
+(function(){
+  const cerca = document.getElementById('cerca');
+  const ris = document.getElementById('ris');
+  const campo = document.getElementById('player_id');
+  const scelto = document.getElementById('scelto');
+  const RUOLI = {p: 'P', d: 'D', c: 'C', a: 'A'};
+  let ultima = 0;
+
+  cerca.addEventListener('input', function(){
+    const q = cerca.value.trim();
+    campo.value = '';
+    scelto.textContent = '';
+    if (q.length < 2) { ris.classList.remove('open'); return; }
+    // Il numero della richiesta: senza questo una risposta lenta arrivata dopo una
+    // veloce riscriverebbe l'elenco con i risultati di una ricerca precedente.
+    const mia = ++ultima;
+    fetch('/fantacalcio2/api/giocatori?q=' + encodeURIComponent(q))
+      .then(r => r.json())
+      .then(function(voci){
+        if (mia !== ultima) return;
+        ris.innerHTML = '';
+        if (!voci.length) { ris.classList.remove('open'); return; }
+        voci.forEach(function(g){
+          const d = document.createElement('div');
+          const fm = (g.fantamedia === null || g.fantamedia === undefined) ? '—' : g.fantamedia;
+          d.textContent = (RUOLI[g.ruolo_classic] || '?') + ' · ' + g.nome +
+                          ' (' + (g.squadra || '—') + ') · QA ' + (g.qa === null ? '—' : g.qa) +
+                          ' · FM ' + fm + (g.attivo ? '' : ' · ceduto');
+          d.onclick = function(){
+            campo.value = g.id;
+            cerca.value = g.nome;
+            scelto.textContent = 'Scelto: ' + g.nome + ' (' + (g.squadra || '—') + ')';
+            ris.classList.remove('open');
+          };
+          ris.appendChild(d);
+        });
+        ris.classList.add('open');
+      })
+      .catch(function(){ ris.classList.remove('open'); });
+  });
+
+  document.addEventListener('click', function(e){
+    if (e.target !== cerca && !ris.contains(e.target)) ris.classList.remove('open');
+  });
+})();
+</script>
+{% endblock %}

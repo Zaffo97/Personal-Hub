@@ -18,6 +18,20 @@ pagina ed esegue `new Function()` su ogni blocco `<script>` **e** su ogni handle
 
 ---
 
+## 24/09/2026
+
+**La Fantacalcio 2: le fonti del Fantacalcio in regola, in una sezione a parte (§4.6)** —
+decisioni di Davide: sezione nuova su `/fantacalcio2` con **tabelle sue**, listone compreso;
+probabili come link; consiglio per fantamedia; avversario mostrato e non pesato. Verificato
+prima di scrivere: nessuno dei quattro strumenti segnalati è una fonte utilizzabile; i due
+Excel (login di Davide) hanno lo stesso `Id` per 597 su 597 e numeri identici; football-data.org
+provata con la chiave, giornata 6 identica al minuto. Import vero: 535 in Serie A e 63 ceduti,
+380 partite, 20 squadre su 20 abbinate, listone della prima sezione intatto. Fantamedia con
+l'autogol: 408 su 414 (era 407). `prova_fantacalcio2.py` **57 su 57**, `prova_fantacalcio.py`
+245/245, `controlla_proprietario.py` 230 query **0 scoperte** (31 dichiarate nuove), sweep
+**0 errori** (5 pagine nuove per lingua), importa_dati 28/28, esporta_completo 21/21, travaso
+56/56. Resta aperto in §4.6: la prova a mano in browser e la scelta della sezione da tenere.
+
 ## 23/09/2026
 
 **Le abilità delle 5 Mega di M-C, e i termini d'uso letti — decisione di Davide**

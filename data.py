@@ -77,6 +77,10 @@ SEZIONI = [
     ("python",     "🐍 Python Tracker", "/python",    ["python_tracker"]),
     ("pcbuilder",  "🖥️ PC Builder",     "/pcbuilder", ["pcbuilder"]),
     ("fantacalcio", "⚽ Fantacalcio",    "/fantacalcio", ["fantacalcio"]),
+    # §4.6, 24/09/2026: la stessa sezione con le fonti in regola, **a parte** per
+    # decisione di Davide. Una sezione vera, col suo permesso: chi ha solo la prima
+    # non vede la seconda.
+    ("fantacalcio2", "⚽ Fantacalcio 2", "/fantacalcio2", ["fantacalcio2"]),
 ]
 SEZIONI_SLUG = [s[0] for s in SEZIONI]
 # blueprint -> sezione, ricavata da SEZIONI così le due non possono divergere

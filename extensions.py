@@ -423,6 +423,90 @@ def init_db():
         ordine INTEGER NOT NULL,
         ruolo TEXT,
         PRIMARY KEY(league_id, player_id));
+    -- ── Fantacalcio 2 (§4.6, 24/09/2026) ─────────────────────────────────
+    -- La stessa sezione con **fonti in regola**: il listone dai due Excel che
+    -- Davide scarica col suo login, calendario e classifica da football-data.org.
+    -- ⚠️ **Tabelle sue, tutte**, per decisione di Davide: la prima sezione resta
+    -- com'e' per poterci tornare. Anche il listone, e non per scrupolo: la prima
+    -- sezione lo riscrive da sola dal sito entrando, questa dagli Excel, e con una
+    -- tabella in comune le due si sovrascriverebbero a vicenda (i 63 ceduti spenti
+    -- da una e riaccesi dall'altra). Quando si sceglie quale tenere, l'altra si
+    -- spegne con le sue tabelle.
+    -- `ceduto` e' il foglio «Ceduti» del file: chi ha lasciato la Serie A. Come
+    -- `attivo=0` nella prima sezione, spento e non cancellato. `autogol` c'e' qui e
+    -- non la': le pagine non lo pubblicavano, il file si'.
+    CREATE TABLE IF NOT EXISTS fanta2_players(
+        id INTEGER PRIMARY KEY,
+        nome TEXT NOT NULL,
+        squadra TEXT, squadra_slug TEXT,
+        ruolo_classic TEXT, ruolo_mantra TEXT,
+        qi INTEGER, qa INTEGER, fvm INTEGER,
+        partite_a_voto INTEGER, media_voto REAL, fantamedia REAL,
+        gol INTEGER, gol_subiti INTEGER, rigori TEXT, rigori_parati INTEGER,
+        assist INTEGER, ammonizioni INTEGER, espulsioni INTEGER, autogol INTEGER,
+        ceduto INTEGER DEFAULT 0,
+        attivo INTEGER DEFAULT 1,
+        visto_il TEXT,
+        aggiornato_il TIMESTAMP DEFAULT CURRENT_TIMESTAMP);
+    -- Leghe, rose e formazioni: stesse colonne della prima sezione, stessi
+    -- vincoli, stesso proprietario (`user_id` sulla lega, ereditato dalle figlie).
+    CREATE TABLE IF NOT EXISTS fanta2_leagues(
+        id INTEGER PRIMARY KEY, user_id INTEGER,
+        nome TEXT NOT NULL,
+        sistema TEXT DEFAULT 'classic',
+        moduli TEXT DEFAULT '3-4-3,3-5-2,4-3-3,4-4-2,4-5-1,5-3-2,5-4-1',
+        n_panchinari INTEGER DEFAULT 7,
+        mod_difesa INTEGER DEFAULT 0,
+        mod_difesa_portiere INTEGER DEFAULT 1,
+        mod_difesa_soglie TEXT,
+        bonus_gol REAL DEFAULT 3,
+        bonus_assist REAL DEFAULT 1,
+        malus_amm REAL DEFAULT -0.5, malus_esp REAL DEFAULT -1,
+        malus_gol_subito REAL DEFAULT -1,
+        bonus_imbattibilita REAL DEFAULT 1,
+        bonus_rigore_parato REAL DEFAULT 3,
+        malus_rigore_sbagliato REAL DEFAULT -3,
+        malus_autogol REAL DEFAULT -2,
+        modulo_scelto TEXT,
+        note TEXT,
+        created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP);
+    CREATE TABLE IF NOT EXISTS fanta2_roster(
+        id INTEGER PRIMARY KEY,
+        league_id INTEGER REFERENCES fanta2_leagues(id) ON DELETE CASCADE,
+        player_id INTEGER REFERENCES fanta2_players(id),
+        prezzo REAL DEFAULT 0, note TEXT,
+        UNIQUE(league_id, player_id));
+    CREATE TABLE IF NOT EXISTS fanta2_formazione(
+        league_id INTEGER REFERENCES fanta2_leagues(id) ON DELETE CASCADE,
+        player_id INTEGER REFERENCES fanta2_players(id),
+        titolare INTEGER NOT NULL,
+        ordine INTEGER NOT NULL,
+        ruolo TEXT,
+        PRIMARY KEY(league_id, player_id));
+    -- Il calendario da football-data.org: **tutta la stagione**, una riga per
+    -- partita, riscritta a ogni aggiornamento. Dato condiviso e rigenerabile,
+    -- quindi fuori dall'export come il listone.
+    -- ⚠️ `stato` conta quanto l'ora: `SCHEDULED` vuol dire che l'ora e'
+    -- **approssimativa**, e solo `TIMED` (o una partita gia' cominciata) ha l'ora
+    -- vera. `inizio` e' in ora italiana come in `fanta_calendario`.
+    -- ⚠️ `casa_slug`/`fuori_slug` possono essere NULL: una squadra che non si
+    -- abbina al listone resta senza, e la pagina lo dice invece di indovinare.
+    CREATE TABLE IF NOT EXISTS fanta2_calendario(
+        match_id INTEGER PRIMARY KEY,
+        giornata INTEGER, stato TEXT,
+        inizio TEXT, utc TEXT,
+        casa TEXT, casa_slug TEXT, fuori TEXT, fuori_slug TEXT,
+        gol_casa INTEGER, gol_fuori INTEGER,
+        aggiornata_fonte TEXT,
+        aggiornato_il TIMESTAMP DEFAULT CURRENT_TIMESTAMP);
+    -- La classifica **totale**: l'unica del piano gratuito (niente casa/trasferta,
+    -- `form` vuoto). Serve a mostrare l'avversario accanto al giocatore, non a
+    -- pesarlo: decisione di Davide del 24/09/2026.
+    CREATE TABLE IF NOT EXISTS fanta2_classifica(
+        squadra_slug TEXT PRIMARY KEY,
+        squadra TEXT, posizione INTEGER, punti INTEGER, giocate INTEGER,
+        gol_fatti INTEGER, gol_subiti INTEGER,
+        aggiornato_il TIMESTAMP DEFAULT CURRENT_TIMESTAMP);
     -- ── «Ricorda credenziali» (22/09/2026) ────────────────────────────────
     -- ⚠️ **Qui dentro non c'e' nessuna password, e non ci sara' mai.** Quello che
     -- si ricorda e' una **sessione**: un numero casuale da 32 byte che vive nel
@@ -882,6 +966,8 @@ TABELLE_UTENTE = {
     "arduino_projects": "passa",
     "pc_builds": "passa",
     "fanta_leagues": "passa",
+    # La Fantacalcio 2 (§4.6): stesse regole della prima, per la stessa ragione.
+    "fanta2_leagues": "passa",
     "python_progress": "cancella",
     # ⚠️ `cancella` qui non è ordine, è **sicurezza**, e la rete si è fatta trovare
     # subito: questa tabella è nata il 22/09/2026 e `tabelle_senza_regola()` l'ha
@@ -913,6 +999,8 @@ FIGLIE_DI = {
     "pc_builds": (("pc_components", "build_id"),),
     "fanta_leagues": (("fanta_roster", "league_id"),
                       ("fanta_formazione", "league_id")),
+    "fanta2_leagues": (("fanta2_roster", "league_id"),
+                       ("fanta2_formazione", "league_id")),
 }
 
 

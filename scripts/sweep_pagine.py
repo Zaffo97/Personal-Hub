@@ -64,6 +64,9 @@ PAGINE = [
     # che questo sweep serve davvero. `/consiglio` non c'e' piu' nell'elenco
     # perche' ora e' un rimando - lo sweep direbbe «302» e avrebbe ragione.
     "/fantacalcio/lega/1/formazione", "/fantacalcio/listone",
+    # La Fantacalcio 2 (§4.6, 24/09/2026): le stesse pagine, con template suoi.
+    "/fantacalcio2/", "/fantacalcio2/lega/1", "/fantacalcio2/lega/1/formazione",
+    "/fantacalcio2/listone",
 ]
 
 # Le pagine che **si aprono con una POST**, aggiunte il 21/09/2026 con l'anteprima
@@ -79,6 +82,8 @@ PAGINE = [
 # «non trovata», invece della sola forma facile.
 PAGINE_POST = [
     ("/fantacalcio/lega/1/rosa/incolla",
+     {"testo": "Difensori\nThuram\nBastoni 22\nNomeCheNonEsiste 3"}),
+    ("/fantacalcio2/lega/1/rosa/incolla",
      {"testo": "Difensori\nThuram\nBastoni 22\nNomeCheNonEsiste 3"}),
 ]
 

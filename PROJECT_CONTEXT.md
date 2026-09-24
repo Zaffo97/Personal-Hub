@@ -525,6 +525,23 @@ Tutto il blueprint è chiuso da un `before_request`: una route nuova nasce prote
 | `/fantacalcio/lega/<id>/consiglio/applica` | POST | Porta un modulo consigliato nel campo, passando dalla stessa validazione |
 | `/fantacalcio/probabili` | GET | Le dieci partite della giornata, coi tuoi segnati |
 
+### Fantacalcio 2 — `blueprints/fantacalcio2.py` (dal 24/09/2026, §4.6)
+La stessa sezione con **fonti in regola** e **tabelle sue** (`fanta2_*`): listone dai due
+Excel che Davide scarica col suo login, calendario e classifica da football-data.org, le
+probabili solo come link. La logica sta in `fanta2.py`, le letture in `fanta2_fonti.py`.
+⚠️ Importa `REGOLE`, i valori ufficiali, `_prezzo()` e `_numeri()` da `blueprints/fantacalcio.py`.
+
+| URL | Metodo | Descrizione |
+|-----|--------|-------------|
+| `/fantacalcio2/` | GET | Leghe, carica-listone, link alle probabili, calendario col timer, attribuzione di football-data |
+| `/fantacalcio2/listone/carica` | POST multipart | I due `.xlsx` (`file_a`, `file_b`, ordine libero): letti in memoria, **mai salvati** |
+| `/fantacalcio2/calendario/aggiorna` | POST | Partite e classifica da football-data.org (due chiamate) |
+| `/fantacalcio2/listone` · `/api/giocatore/<id>` · `/api/giocatori?q=` | GET | Come nella prima sezione; la scheda porta la **partita** della giornata invece della probabile |
+| `/fantacalcio2/lega/salva` · `/lega/<id>/elimina` | POST | La lega; l'eliminazione toglie rosa **e** formazione |
+| `/fantacalcio2/lega/<id>` | GET | Rosa con la partita di ognuno (avversario, classifica), avviso, timer |
+| `/fantacalcio2/lega/<id>/rosa/…` | POST | `aggiungi`, `<rid>/rimuovi`, `modifica`, `incolla`(+`/conferma`), `svuota`: come nella prima |
+| `/fantacalcio2/lega/<id>/formazione` (+`/salva`) · `/consiglio/applica` | GET/POST | Il campo e il consiglio **senza titolarità**: fantamedia della lega, chi non gioca in fondo |
+
 ---
 
 ## 🗄️ Database — Tabelle SQLite
@@ -555,6 +572,10 @@ Tutte create da `init_db()` in `extensions.py`.
 | `fanta_probabili` | giornata, player_id, nome, squadra_slug, ruolo, titolare, percentuale — PK(giornata, player_id) |
 | `sessioni_ricordate` | id, **user_id**, **impronta** UNIQUE (sha256 del token, mai il token), creata_il, scade_il, usata_il, da (user-agent accorciato) |
 | `fanta_calendario` | giornata, match_id, squadra_casa(_slug), squadra_fuori(_slug), **inizio**, stadio — PK(giornata, match_id) |
+| `fanta2_players` | id (lo stesso di fantacalcio.it), nome, squadra (nome intero)/_slug, ruolo_classic/_mantra, qi/qa/fvm, statistiche, **autogol**, **ceduto**, attivo, visto_il |
+| `fanta2_leagues` · `fanta2_roster` · `fanta2_formazione` | Come `fanta_leagues`/`_roster`/`_formazione`; la lega ha `user_id`, le figlie lo ereditano |
+| `fanta2_calendario` | **match_id** PK, giornata, **stato** (`SCHEDULED` = ora approssimativa, `TIMED` = esatta), inizio (ora italiana), utc, casa/fuori(_slug), gol |
+| `fanta2_classifica` | squadra_slug PK, squadra, posizione, punti, giocate, gol_fatti, gol_subiti — solo la classifica **totale** |
 
 > ⚠️ **`sessioni_ricordate` non contiene nessuna password, e non è un dato da salvare.**
 > È la spunta «resta collegato» (22/09/2026): nel cookie del browser va un numero
@@ -769,6 +790,7 @@ Di conseguenza tutto ciò che questa tabella dava per "funzionante" non era mai 
 
 | Data | Contenuto |
 |------|-----------|
+| 2026-09-24 | **La Fantacalcio 2 (§4.6), decisione di Davide: le fonti nuove in una sezione a parte.** Prima le verifiche: i quattro strumenti segnalati (fantacalcio-mcp, Fantacalcio-PY, FantaLab, Fantagoat) **nessuno è una fonte** — i primi due leggono fantacalcio.it o fantacalciopedia, gli altri due non hanno API e vietano il riuso; i due **Excel** di fantacalcio.it (col login di Davide) hanno lo stesso `Id` per 597 su 597 e numeri identici alle pagine; **football-data.org** dà la Serie A nel piano gratuito, provata con la chiave (380 partite, giornata 6 identica al minuto). Poi il codice: `fanta2_fonti.py`, `fanta2.py`, `blueprints/fantacalcio2.py`, sette template, `scripts/importa_listone2.py`, cinque tabelle `fanta2_*` (listone compreso, per non farsi sovrascrivere dalla prima sezione). Il consiglio non sa la titolarità e lo dice; l'avversario si mostra e non si pesa; la fantamedia prende l'autogol (408/414). `prova_fantacalcio2.py` **57 su 57**, `prova_fantacalcio.py` **245 su 245**, 230 query **0 scoperte**, sweep **0 errori**, altre sei suite a posto. Import vero: 535 in Serie A + 63 ceduti, calendario 380 partite, listone della prima sezione intatto (597). ⬜ Prova a mano in browser (serve il login) |
 | 2026-09-23 | **Decisione di Davide: mettere in regola le fonti del Fantacalcio** alla prossima sessione. Piano in BACKLOG §4.6: listone dal file Excel scaricato a mano, calendario e statistiche da API con chiave, probabili da decidere. Niente codice oggi |
 | 2026-09-23 | **Abilità delle 5 Mega di M-C** riempite dal dump (`scripts/riempi_abilita_vuote.py`, solo liste vuote), confermate da Serebii. **Termini d'uso letti**: fantacalcio.it vieta lo scraping (art. 3), Serebii non ha termini: in §1.5. Davide: niente online per ora, poi solo rete di casa o Railway |
 | 2026-09-23 | **Catalogo non più evidenziato** nella barra strumenti di `/pokemon/`: `btn-secondary` come gli altri, chiesto da Davide |
