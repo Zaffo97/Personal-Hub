@@ -1291,12 +1291,13 @@ sa dal codice, non un piano.
 > fonte per dato**, e nessuna lettura automatica di fantacalcio.it deve restare. Citazioni
 > e contesto in §1.5.
 
-> **Come, deciso da Davide il 24/09/2026: in una sezione nuova, «Fantacalcio 2».** La
-> sezione di oggi **non si tocca**: resta com'è, fonti comprese, per poterci tornare se
-> l'esperimento non convince. Le fonti nuove si provano solo nella 2. ⬜ Da decidere
-> prima di scriverla: se la 2 **condivide** leghe, rose e formazioni con la prima (stesse
-> tabelle) o ha **le sue**; e il nome della route. Quando si sceglie quale tenere, l'altra
-> si spegne: la lista «cosa va toccato» sotto vale per **quel** momento, non per adesso.
+> **Come, deciso da Davide il 24/09/2026: in una sezione nuova, «Fantacalcio 2»**, route
+> `/fantacalcio2`. La sezione di oggi **non si tocca**: resta com'è, fonti comprese, per
+> poterci tornare se l'esperimento non convince. Le fonti nuove si provano solo nella 2.
+> La 2 ha **tabelle sue** per leghe, rose e formazioni (le rose si reincollano in blocco);
+> il **listone** invece è **in comune**, perché si rifà comunque dal file. Quando si
+> sceglie quale tenere, l'altra si spegne: la lista «cosa va toccato» sotto vale per
+> **quel** momento, non per adesso.
 
 ⚠️ **Prima di scrivere codice, verificare** — il piano sotto è fatto di cose ricordate,
 non misurate: copertura, limiti del piano gratuito e termini d'uso di ogni fonte nuova si
@@ -1309,15 +1310,20 @@ leggono sul loro sito, come si è fatto per fantacalcio.it e Serebii.
 | **Statistiche** | scheda del giocatore, consiglio | un'API con piano gratuito (es. **API-Football**), **oppure toglierle** se il consiglio può farne a meno | quanto le usa davvero il consiglio (misurare prima); copertura dei giocatori di Serie A; limiti e termini |
 | **Probabili formazioni** | campo, consiglio | **nessuna fonte gratuita e pulita**: sono contenuto editoriale di tutti (fantacalcio.it, Gazzetta, Sky). Tre strade, da scegliere con Davide: (a) un **link** che apre la pagina nel suo browser; (b) un **incolla**, come per la rosa; (c) lasciarle come sono accettando il rischio — esclusa dalla decisione di oggi | con (a) o (b) il consiglio perde l'aggiornamento automatico: va detto a schermo, non lasciato scoprire |
 
-**Strumenti già esistenti da valutare prima di scriverne di nuovi** (segnalati da Davide il
-23/09/2026, **non ancora guardati**): **fantacalcio-mcp**, il repository **Fantacalcio-PY** su
-GitHub, **FantaLab**; e **Fantagoat**, aggiunto da Davide il 24/09/2026. Per ognuno la prima domanda è **da dove prende i dati**: ⚠️ se a sua volta
-legge le pagine di fantacalcio.it, usarlo **non** mette in regola niente — sposta solo lo
-scraping dentro il codice di un altro, e il divieto dell'art. 3 resta lo stesso. Vanno bene
-se usano una fonte con un permesso (un'API ufficiale, dati con licenza, un accordo); in quel
-caso contano anche la loro licenza (per il codice su GitHub) e i loro termini (per un
-servizio come FantaLab o Fantagoat). Nessuna di queste informazioni è verificata: vanno lette sui loro
-siti, come i termini di fantacalcio.it.
+**Strumenti già esistenti: guardati il 24/09/2026, nessuno è una fonte utilizzabile.** La
+domanda era da dove prendono i dati: se leggono fantacalcio.it (o un altro sito senza
+permesso), usarli sposta solo lo scraping nel codice di un altro.
+
+| Strumento | Cos'è | Da dove prende i dati | Esito |
+|---|---|---|---|
+| **fantacalcio-mcp** = `mcp/fantacalcio/` di `gianmarcocalbi/fantaclaude` (GitHub, ultimo commit 22/09/2026) | server MCP per Claude Code | `apileague.fantacalcio.it`, `leghe.fantacalcio.it`, `www.fantacalcio.it` e `content.fantacalcio.it` (38 URL sul sito principale), il Firebase di Leghe Fantagazzetta, Understat. Credenziali della lega dell'utente | ❌ è fantacalcio.it, in più attraverso l'API interna. E **nessuna licenza** nel repository: il codice non si può nemmeno riusare |
+| **Fantacalcio-PY** = `piopy/fantacalcio-py` (GPL-3.0, ultimo commit 13/09/2026) | tool per l'asta | **scraping** di fantacalciopedia.com (l'URL è **offuscato in base64** in `src/config.py`, e il commento dice «basso per non farsi bannare»), più una fonte di statistiche con login e le pagine di infortunati e rose | ❌ scraping dichiarato |
+| **FantaLab** (FantaLab LTD, Londra) | app per asta e stagione, si dichiara «Partner Ufficiale Fantacalcio» | non lo dicono; probabili e indici sono della redazione SOS Fanta | ❌ nessuna API pubblica né export. I termini (iubenda 96070560) vietano di usare i contenuti oltre il servizio: si usa l'app, non se ne prendono i dati |
+| **Fantagoat** (FANTAGOAT LTD, Londra, n. 17228337) | app con indici proprietari per formazione e asta, si sincronizza con FantaLab | non lo dicono | ❌ stessi termini-tipo (iubenda 23598847): nessuna API, riuso vietato |
+
+Resta quindi il piano della tabella: fonti con un permesso (il file Excel scaricato da Davide,
+un'API con chiave), da verificare una per una. FantaLab e Fantagoat restano utili **come app**
+accanto all'hub, non come fonti.
 
 Cosa va toccato, per non dimenticare niente: `fantacalcio_it.py` (le quattro letture),
 `fanta_import.py` (le due soglie e l'aggiornamento automatico entrando nella sezione, che
