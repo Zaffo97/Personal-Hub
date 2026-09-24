@@ -1310,15 +1310,36 @@ leggono sul loro sito, come si è fatto per fantacalcio.it e Serebii.
 | **Statistiche** | scheda del giocatore, consiglio | un'API con piano gratuito (es. **API-Football**), **oppure toglierle** se il consiglio può farne a meno | quanto le usa davvero il consiglio (misurare prima); copertura dei giocatori di Serie A; limiti e termini |
 | **Probabili formazioni** | campo, consiglio | **nessuna fonte gratuita e pulita**: sono contenuto editoriale di tutti (fantacalcio.it, Gazzetta, Sky). Tre strade, da scegliere con Davide: (a) un **link** che apre la pagina nel suo browser; (b) un **incolla**, come per la rosa; (c) lasciarle come sono accettando il rischio — esclusa dalla decisione di oggi | con (a) o (b) il consiglio perde l'aggiornamento automatico: va detto a schermo, non lasciato scoprire |
 
-**I file Excel, guardati il 24/09/2026 (la pagina, non i file):** ci sono, e sono **due**.
-Il pulsante «Scarica» di `/quotazioni-fantacalcio` punta a `/api/v1/Excel/prices/21/1`, quello
-di `/statistiche-serie-a` a `/api/v1/Excel/stats/21/1`. Tutti e due hanno la classe
-`only-for-logged` e il titolo «Accedi per utilizzare questa funzionalità!»: **servono le
-credenziali di Davide**, quindi li scarica lui, e nessun programma li chiede al sito. Il
-secondo **risolve anche la riga delle statistiche** senza un'API esterna, se ha le colonne
-che servono. ⬜ Da vedere sui file veri: le colonne, e soprattutto se c'è l'**`Id`** del
-giocatore — oggi è la chiave che lega listone, statistiche, probabili e rose (`fanta_players`),
-e senza quello l'incrocio passerebbe dai nomi.
+**I due file Excel, letti il 24/09/2026 — ✅ bastano per listone e statistiche.** Scaricati da
+Davide col suo login (i pulsanti «Scarica» di `/quotazioni-fantacalcio` e `/statistiche-serie-a`
+sono `only-for-logged`): `Quotazioni_Fantacalcio_Stagione_2026_27.xlsx` e
+`Statistiche_Fantacalcio_Stagione_2026_27.xlsx`. Confrontati con `fanta_players` (597 righe,
+lette dalle pagine il 22/09):
+
+- **c'è l'`Id`, ed è lo stesso**: 597 su 597 giocatori del DB si ritrovano per id in tutti e due
+  i file. In più c'è **1** giocatore nuovo (Alaba, Udinese, id 2404), arrivato dopo il 22/09
+- **quotazioni identiche**: QA, QI, FVM e ruolo Classic uguali su tutte le 597 righe. Le sole
+  differenze sono di forma: il ruolo Mantra è scritto `M;C` invece di `m|c` (298 righe) e un nome
+  ha uno spazio in fondo (`'Fini '`, id 6506)
+- **statistiche identiche**: 0 differenze su partite a voto, media voto, fantamedia, gol, gol
+  subiti, rigori parati, assist, ammonizioni, espulsioni. I rigori sono in tre colonne (`Rc`
+  tirati, `R+` segnati, `R-` sbagliati): la stringa di oggi `R+ / Rc` si ricava. In più c'è
+  `Au` (autogol), che oggi non leggiamo
+- la squadra è il nome intero (`Atalanta`); la sigla (`ATA`) e lo slug (`atalanta`) si ricavano
+  1:1: controllato su tutte e 20 le squadre
+- **mancano** tre campi: `slug` del giocatore, `ruolo_mantra_esteso` (lo usa **solo** il tooltip
+  di `fanta_listone.html:216`) e `squadra_slug` (che però si ricava dal nome)
+- il file delle quotazioni ha un foglio **`Ceduti`** con **63** giocatori, **separati** da quelli
+  in rosa. ⚠️ **Nel DB di oggi quei 63 sono tutti `attivo=1`**: la sezione Fantacalcio attuale
+  li mostra come disponibili, perché la pagina li elenca insieme agli altri. Oggi nessuno di loro
+  è in una rosa (contato: 0). Non l'ho corretto: la prima sezione non si tocca, e nella 2 si legge
+  il foglio `Ceduti`
+- ⚠️ **i file non vanno nel repository.** Sono contenuti di fantacalcio.it scaricati col login:
+  metterli su GitHub vorrebbe dire ripubblicarli. Si caricano dalla pagina della Fantacalcio 2,
+  si leggono e basta; se serve una copia, in una cartella esclusa da git
+- per leggerli serve `openpyxl`, che **non è installato**. La prova l'ho fatta con `zipfile` e
+  `xml` della libreria standard, che basta a questi due file. Da decidere quando si scrive
+  l'import
 
 **Strumenti già esistenti: guardati il 24/09/2026, nessuno è una fonte utilizzabile.** La
 domanda era da dove prendono i dati: se leggono fantacalcio.it (o un altro sito senza
