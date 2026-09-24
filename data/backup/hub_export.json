@@ -1633,7 +1633,207 @@
       "ruolo": "a"
     }
   ],
-  "fanta2_leagues": [],
-  "fanta2_roster": [],
+  "fanta2_leagues": [
+    {
+      "id": 1,
+      "user_id": 1,
+      "nome": "La Liga Abajo",
+      "sistema": "classic",
+      "moduli": "3-4-3,3-5-2,4-3-3,4-4-2,4-5-1,5-3-2,5-4-1",
+      "n_panchinari": 7,
+      "mod_difesa": 0,
+      "mod_difesa_portiere": 1,
+      "mod_difesa_soglie": "7:6, 6.5:3, 6:1",
+      "bonus_gol": 3.0,
+      "bonus_assist": 1.0,
+      "malus_amm": -0.5,
+      "malus_esp": -1.0,
+      "malus_gol_subito": -1.0,
+      "bonus_imbattibilita": 1.0,
+      "bonus_rigore_parato": 3.0,
+      "malus_rigore_sbagliato": -3.0,
+      "malus_autogol": -2.0,
+      "modulo_scelto": null,
+      "note": null,
+      "created_at": "2026-09-24 22:24:15"
+    }
+  ],
+  "fanta2_roster": [
+    {
+      "id": 1,
+      "league_id": 1,
+      "player_id": 6966,
+      "prezzo": 37.0,
+      "note": null
+    },
+    {
+      "id": 2,
+      "league_id": 1,
+      "player_id": 6344,
+      "prezzo": 1.0,
+      "note": null
+    },
+    {
+      "id": 3,
+      "league_id": 1,
+      "player_id": 2809,
+      "prezzo": 1.0,
+      "note": null
+    },
+    {
+      "id": 4,
+      "league_id": 1,
+      "player_id": 2788,
+      "prezzo": 36.0,
+      "note": null
+    },
+    {
+      "id": 5,
+      "league_id": 1,
+      "player_id": 7294,
+      "prezzo": 6.0,
+      "note": null
+    },
+    {
+      "id": 6,
+      "league_id": 1,
+      "player_id": 6217,
+      "prezzo": 28.0,
+      "note": null
+    },
+    {
+      "id": 7,
+      "league_id": 1,
+      "player_id": 4807,
+      "prezzo": 13.0,
+      "note": null
+    },
+    {
+      "id": 8,
+      "league_id": 1,
+      "player_id": 6632,
+      "prezzo": 1.0,
+      "note": null
+    },
+    {
+      "id": 9,
+      "league_id": 1,
+      "player_id": 5851,
+      "prezzo": 1.0,
+      "note": null
+    },
+    {
+      "id": 10,
+      "league_id": 1,
+      "player_id": 5877,
+      "prezzo": 6.0,
+      "note": null
+    },
+    {
+      "id": 11,
+      "league_id": 1,
+      "player_id": 4177,
+      "prezzo": 4.0,
+      "note": null
+    },
+    {
+      "id": 12,
+      "league_id": 1,
+      "player_id": 6875,
+      "prezzo": 82.0,
+      "note": null
+    },
+    {
+      "id": 13,
+      "league_id": 1,
+      "player_id": 5946,
+      "prezzo": 1.0,
+      "note": null
+    },
+    {
+      "id": 14,
+      "league_id": 1,
+      "player_id": 4777,
+      "prezzo": 42.0,
+      "note": null
+    },
+    {
+      "id": 15,
+      "league_id": 1,
+      "player_id": 1850,
+      "prezzo": 18.0,
+      "note": null
+    },
+    {
+      "id": 16,
+      "league_id": 1,
+      "player_id": 6783,
+      "prezzo": 1.0,
+      "note": null
+    },
+    {
+      "id": 17,
+      "league_id": 1,
+      "player_id": 4220,
+      "prezzo": 4.0,
+      "note": null
+    },
+    {
+      "id": 18,
+      "league_id": 1,
+      "player_id": 4856,
+      "prezzo": 3.0,
+      "note": null
+    },
+    {
+      "id": 19,
+      "league_id": 1,
+      "player_id": 5680,
+      "prezzo": 1.0,
+      "note": null
+    },
+    {
+      "id": 20,
+      "league_id": 1,
+      "player_id": 6434,
+      "prezzo": 28.0,
+      "note": null
+    },
+    {
+      "id": 21,
+      "league_id": 1,
+      "player_id": 2137,
+      "prezzo": 69.0,
+      "note": null
+    },
+    {
+      "id": 22,
+      "league_id": 1,
+      "player_id": 6752,
+      "prezzo": 50.0,
+      "note": null
+    },
+    {
+      "id": 23,
+      "league_id": 1,
+      "player_id": 7347,
+      "prezzo": 5.0,
+      "note": null
+    },
+    {
+      "id": 24,
+      "league_id": 1,
+      "player_id": 7023,
+      "prezzo": 25.0,
+      "note": null
+    },
+    {
+      "id": 25,
+      "league_id": 1,
+      "player_id": 6646,
+      "prezzo": 30.0,
+      "note": null
+    }
+  ],
   "fanta2_formazione": []
 }

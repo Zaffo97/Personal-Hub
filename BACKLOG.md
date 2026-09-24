@@ -1345,6 +1345,17 @@ difesa** è il valore pieno: senza probabili non c'è la probabilità per cui mo
 
 ⬜ **Resta aperto:**
 
+- ⬜ **Richiesta di Davide del 25/09/2026, per la prossima sessione**: «vorrei come nella prima
+  sezione il campo dove posso inserire i miei giocatori, quindi un consiglio sul modulo, **non
+  voglio segnare titolare, dubbio eccetera**». ⚠️ Da chiarire con lui **prima** di scrivere
+  codice, perché due cose non tornano: (1) il campo col consiglio sotto **c'è già** nella
+  Fantacalcio 2 (`/fantacalcio2/lega/<id>/formazione`, dalla scheda della lega «Schiera la
+  formazione») — può darsi che non l'abbia visto, perché senza una lega con la rosa non ci si
+  arriva; (2) la stessa sera aveva chiesto «mi interessa sapere chi gioca e chi no», e senza
+  leggere le probabili l'unica fonte di quel dato era segnarlo a mano. Le domande da fargli:
+  la pagina «Chi gioca» va **tolta** o resta facoltativa? E il consiglio senza segni va bene
+  così com'è (chi non gioca per il calendario in fondo, poi fantamedia), o vuole un criterio
+  diverso per decidere chi gioca?
 - **Provarla a mano in browser**, e soprattutto **il riquadro delle probabili nel Chrome di
   Davide**. Le pagine sono provate dal test client e dallo sweep (0 errori su 6 pagine per
   lingua); l'elenco delle leghe è stato visto in browser dopo il login di Davide il
