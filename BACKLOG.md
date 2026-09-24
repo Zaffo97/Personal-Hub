@@ -1308,7 +1308,7 @@ leggono sul loro sito, come si è fatto per fantacalcio.it e Serebii.
 | **Listone** (quotazioni, ruoli) | rose, listone sfogliabile, consiglio | **il file Excel che fantacalcio.it offre agli utenti**, scaricato **da Davide** a mano e **caricato** nell'hub: nessun programma legge il sito. Le quotazioni sono le loro, e le due leghe usano quelle: un'altra fonte non darebbe gli stessi numeri | che il file ci sia ancora e da dove si scarica; che abbia gli stessi campi che `importa_listone.py` usa oggi (nome, squadra, ruolo Classic, quotazioni); che i termini permettano di tenerlo sul proprio dispositivo (l'art. 8 parla di salvataggio locale «al solo fine di supportare la fruizione») |
 | **Calendario** (orari: serve al timer, §4.4) | timer della giornata | un'**API ufficiale** con chiave: **football-data.org**, piano gratuito | che copra la Serie A con data **e ora** e i rinvii; limiti di chiamate; termini |
 | **Statistiche** | scheda del giocatore, consiglio | un'API con piano gratuito (es. **API-Football**), **oppure toglierle** se il consiglio può farne a meno | quanto le usa davvero il consiglio (misurare prima); copertura dei giocatori di Serie A; limiti e termini |
-| **Probabili formazioni** | campo, consiglio | **nessuna fonte gratuita e pulita**: sono contenuto editoriale di tutti (fantacalcio.it, Gazzetta, Sky). Tre strade, da scegliere con Davide: (a) un **link** che apre la pagina nel suo browser; (b) un **incolla**, come per la rosa; (c) lasciarle come sono accettando il rischio — esclusa dalla decisione di oggi | con (a) o (b) il consiglio perde l'aggiornamento automatico: va detto a schermo, non lasciato scoprire |
+| **Probabili formazioni** | campo, consiglio | **nessuna fonte gratuita e pulita**: sono contenuto editoriale di tutti (fantacalcio.it, Gazzetta, Sky). ✅ **Scelta di Davide del 24/09/2026: (a), un link** che apre la pagina nel suo browser. Scartate (b) l'incolla e (c) la lettura automatica | con (a) o (b) il consiglio perde l'aggiornamento automatico: va detto a schermo, non lasciato scoprire |
 
 **I due file Excel, letti il 24/09/2026 — ✅ bastano per listone e statistiche.** Scaricati da
 Davide col suo login (i pulsanti «Scarica» di `/quotazioni-fantacalcio` e `/statistiche-serie-a`
@@ -1362,7 +1362,9 @@ lette dalle pagine il 22/09):
   chiave **non va in un repository** → va in un file escluso da git (`.env` o simile);
   **§9.1** chiusa l'iscrizione non si possono più mostrare i dati presi. L'uso non commerciale
   lo dicono **fonti di terzi**, non l'ho letto da loro
-- ⬜ **serve che Davide si registri** (gratis, con la sua email): il conto lo crea lui
+- ✅ **Davide si è registrato il 24/09/2026** e ha la chiave. Va nella variabile d'ambiente
+  `FOOTBALL_DATA_API_KEY`, come `STEAM_API_KEY` (PROJECT_CONTEXT, sezione Steam): niente file
+  nel progetto, niente campo nell'interfaccia
 
 **Strumenti già esistenti: guardati il 24/09/2026, nessuno è una fonte utilizzabile.** La
 domanda era da dove prendono i dati: se leggono fantacalcio.it (o un altro sito senza
