@@ -1310,6 +1310,16 @@ leggono sul loro sito, come si è fatto per fantacalcio.it e Serebii.
 | **Statistiche** | scheda del giocatore, consiglio | un'API con piano gratuito (es. **API-Football**), **oppure toglierle** se il consiglio può farne a meno | quanto le usa davvero il consiglio (misurare prima); copertura dei giocatori di Serie A; limiti e termini |
 | **Probabili formazioni** | campo, consiglio | **nessuna fonte gratuita e pulita**: sono contenuto editoriale di tutti (fantacalcio.it, Gazzetta, Sky). Tre strade, da scegliere con Davide: (a) un **link** che apre la pagina nel suo browser; (b) un **incolla**, come per la rosa; (c) lasciarle come sono accettando il rischio — esclusa dalla decisione di oggi | con (a) o (b) il consiglio perde l'aggiornamento automatico: va detto a schermo, non lasciato scoprire |
 
+**I file Excel, guardati il 24/09/2026 (la pagina, non i file):** ci sono, e sono **due**.
+Il pulsante «Scarica» di `/quotazioni-fantacalcio` punta a `/api/v1/Excel/prices/21/1`, quello
+di `/statistiche-serie-a` a `/api/v1/Excel/stats/21/1`. Tutti e due hanno la classe
+`only-for-logged` e il titolo «Accedi per utilizzare questa funzionalità!»: **servono le
+credenziali di Davide**, quindi li scarica lui, e nessun programma li chiede al sito. Il
+secondo **risolve anche la riga delle statistiche** senza un'API esterna, se ha le colonne
+che servono. ⬜ Da vedere sui file veri: le colonne, e soprattutto se c'è l'**`Id`** del
+giocatore — oggi è la chiave che lega listone, statistiche, probabili e rose (`fanta_players`),
+e senza quello l'incrocio passerebbe dai nomi.
+
 **Strumenti già esistenti: guardati il 24/09/2026, nessuno è una fonte utilizzabile.** La
 domanda era da dove prendono i dati: se leggono fantacalcio.it (o un altro sito senza
 permesso), usarli sposta solo lo scraping nel codice di un altro.
