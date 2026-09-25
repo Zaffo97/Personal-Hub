@@ -551,12 +551,17 @@ def prove(dove):
           st1.get("gol_subiti") == 3 and st1.get("rig_parati") == 0, str(st1))
     esito("⚠️ senza partite a voto le medie non sono 0, sono assenti",
           st33["mv"] is None and st33["fm"] is None and st33["pg"] == 0, str(st33))
-    esito("le probabili mostrano le statistiche accanto alla rosa",
-          testo.count('class="stat-riga"') >= 2 and "GS 3" in testo and "R+ 1" in testo)
+    esito("le probabili mostrano le statistiche accanto alla rosa, coi simboli",
+          testo.count('class="stat-riga"') >= 2 and 'aria-label="Gol subiti"' in testo
+          and 'aria-label="Rigori segnati"' in testo and "R+ 1" not in testo)
+    esito("⚠️ e nessun disegno esce scappato come testo",
+          "&lt;circle" not in testo and "&lt;path" not in testo)
     campo = c.get(f"/fantacalcio/lega/{lid}/formazione").data.decode("utf-8", "replace")
     esito("nel campo arrivano all'elenco da cui si sceglie, non alle caselle",
           '"rig_sbagliati": 1' in campo and "statHtml(d.st)" in campo
           and "statHtml(d.st, true)" not in campo)
+    esito("e i simboli del campo sono gli stessi, passati al JavaScript",
+          "const ICONE" in campo and "Rigori parati" in campo and "&lt;circle" not in campo)
     esito("un altro utente non apre la pagina di una lega non sua",
           b"Lega non trovata" in a.get(f"/fantacalcio/lega/{lid}/chi-gioca",
                                        follow_redirects=True).data)

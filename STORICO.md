@@ -20,6 +20,17 @@ pagina ed esegue `new Function()` su ogni blocco `<script>` **e** su ogni handle
 
 ## 25/09/2026
 
+**I simboli delle statistiche (§4.6)** — su richiesta di Davide, i conteggi (gol, assist,
+cartellini, autogol, rigori segnati/sbagliati, e per il portiere gol subiti e rigori
+parati) sono **simboli** invece che sigle, sul modello della legenda di fantacalcio.it che
+aveva mandato. ⚠️ **Disegnati da noi in SVG** (`_fanta_icone.html`), non copiati dal sito:
+la loro grafica è coperta dai termini. Il nome di ogni simbolo si legge al passaggio. Le
+medie (MV, FM) restano scritte: nella legenda non hanno un simbolo. Una copia sola dei
+disegni, passata anche al JavaScript del campo. Tolto dall'elenco di scelta il vecchio
+«FM» che faceva da doppione (e scriveva «FM 0» per chi non ha mai giocato). Visti resi
+e fotografati: probabili ed elenco di scelta. `prova_fantacalcio.py` **107 su 107**, sweep 0
+errori.
+
 **Le statistiche di stagione nel Fantacalcio (§4.6)** — chieste da Davide: media voto,
 fantamedia, gol, assist, ammonizioni, espulsioni, autogol, rigori segnati e sbagliati, e per
 il portiere gol subiti e rigori parati (`fanta.statistiche()`, tutto dal file delle

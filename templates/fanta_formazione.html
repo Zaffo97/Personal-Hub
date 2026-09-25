@@ -3,6 +3,7 @@
 {# `with context`: l'avviso mette lo stemma accanto ai nomi, e `stemmi` sta nel contesto. #}
 {% from "_fanta_allerta.html" import avviso as allerta_formazione with context %}
 {% from "_fanta_timer.html" import timer %}
+{% from "_fanta_icone.html" import icona %}
 {% block title %}Formazione &ndash; {{ lega.nome }} (Fantacalcio){% endblock %}
 {% block topbar_title %}&#9917; Formazione &mdash; {{ lega.nome }}{% endblock %}
 {% block body_class %}sez-fanta{% endblock %}
@@ -279,22 +280,24 @@ function cambiaModulo(nuovo){
    campo uscivano dalle caselle da 82 px e la panchina passava da ~290 a ~470 px,
    quindi lì non ci sono. Stanno per esteso nella pagina delle probabili.
    ⚠️ La porta inviolata non c'è: il file delle statistiche non la porta. */
-function righeStat(st){
-  if (!st) return [];
+/* I simboli vengono da `_fanta_icone.html`, gli stessi della pagina delle probabili:
+   una copia sola dei disegni. */
+const ICONE = {
+  {% for k in ('gol', 'assist', 'amm', 'esp', 'autogol', 'rig_segnati', 'rig_sbagliati', 'gol_subiti', 'rig_parati') %}
+  {{ k }}: {{ icona(k)|string|tojson }}{% if not loop.last %},{% endif %}
+  {% endfor %}
+};
+function statHtml(st){
+  if (!st) return '';
   const n = v => (v === null || v === undefined) ? '—' : v;
   const d2 = v => (v === null || v === undefined) ? '—' : Number(v).toFixed(2);
-  const fuori = [st.pg ? 'MV ' + d2(st.mv) + ' · FM ' + d2(st.fm) + ' · ' + st.pg + ' pv'
-                       : 'nessuna partita a voto',
-                 'G ' + n(st.gol) + ' · A ' + n(st.assist) + ' · Au ' + n(st.autogol),
-                 'Amm ' + n(st.amm) + ' · Esp ' + n(st.esp) +
-                 ' · R+ ' + n(st.rig_segnati) + ' · R− ' + n(st.rig_sbagliati)];
-  if (st.gol_subiti !== undefined)
-    fuori.push('GS ' + n(st.gol_subiti) + ' · RP ' + n(st.rig_parati));
-  return fuori;
-}
-function statHtml(st){
-  const r = righeStat(st);
-  return r.length ? '<div class="riga-st">' + r.join(' · ') + '</div>' : '';
+  const conto = k => '<span class="st">' + ICONE[k] + n(st[k]) + '</span>';
+  let conti = ['gol', 'assist', 'amm', 'esp', 'autogol', 'rig_segnati', 'rig_sbagliati'];
+  if (st.gol_subiti !== undefined) conti = conti.concat(['gol_subiti', 'rig_parati']);
+  return '<div class="riga-st">' +
+    (st.pg ? 'MV ' + d2(st.mv) + ' · FM ' + d2(st.fm) + ' · ' + st.pg + ' a voto'
+           : 'nessuna partita a voto') +
+    '</div><div class="riga-st">' + conti.map(conto).join('') + '</div>';
 }
 
 function statoDi(id){
@@ -434,8 +437,9 @@ function apriScelta(ruolo, posto){
         '<div class="text-sm font-600">' + stemmaHtml(d.stemma) + d.nome +
           (d.attivo ? '' : ' <span class="badge badge-warning">ceduto</span>') +
         '</div>' +
+        // La fantamedia sta nelle statistiche qui sotto (25/09/2026): qui era un
+        // doppione, e scriveva «FM 0» per chi non ha mai giocato.
         '<div class="text-xs text-muted">' + d.squadra +
-          (d.fm !== null ? ' · FM ' + d.fm : '') +
           (d.stato ? ' · <span class="pallino pal-' + d.stato + '"></span>' + statoDi(id) : '') +
           (gia ? ' · già schierato' : '') +
         '</div>' + statHtml(d.st) + '</span>';

@@ -6,7 +6,12 @@
    ⚠️ La **porta inviolata** non c'e': il file delle statistiche non la porta, e dal
    calendario si saprebbe che la squadra non ha preso gol, non che quel portiere ha
    giocato. Meglio assente che plausibile e falsa.
+   Dal 25/09/2026 i conteggi sono **simboli** (`_fanta_icone.html`) invece che sigle,
+   su richiesta di Davide; le medie restano scritte, perche' un simbolo per «media
+   voto» nel fantacalcio non c'e'. Il nome di ogni simbolo si legge al passaggio.
    Si usa con `{% from "_fanta_statistiche.html" import statistiche %}`. #}
+{% from "_fanta_icone.html" import icona %}
+{% macro _conto(chiave, n) %}<span class="st">{{ icona(chiave) }}{{ n }}</span>{% endmacro %}
 {% macro statistiche(st) -%}
 {%- if st -%}
 <div class="stat-riga">
@@ -15,10 +20,10 @@
   &middot; {{ st.pg }} a voto{% else %}nessuna partita a voto{% endif %}
 </div>
 <div class="stat-riga">
-  G {{ st.gol }} &middot; A {{ st.assist }} &middot; Amm {{ st.amm }} &middot;
-  Esp {{ st.esp }} &middot; Au {{ st.autogol }} &middot; R+ {{ st.rig_segnati }}
-  &middot; R&minus; {{ st.rig_sbagliati }}
-  {%- if st.gol_subiti is defined %} &middot; GS {{ st.gol_subiti }} &middot; RP {{ st.rig_parati }}{% endif %}
+  {{ _conto('gol', st.gol) }}{{ _conto('assist', st.assist) }}{{ _conto('amm', st.amm) }}
+  {{- _conto('esp', st.esp) }}{{ _conto('autogol', st.autogol) }}
+  {{- _conto('rig_segnati', st.rig_segnati) }}{{ _conto('rig_sbagliati', st.rig_sbagliati) }}
+  {%- if st.gol_subiti is defined %}{{ _conto('gol_subiti', st.gol_subiti) }}{{ _conto('rig_parati', st.rig_parati) }}{% endif %}
 </div>
 {%- endif -%}
 {%- endmacro %}

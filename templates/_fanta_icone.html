@@ -1,0 +1,36 @@
+{# I simboli delle statistiche, come li usa il fantacalcio (chiesti da Davide il 25/09/2026).
+
+   ⚠️ **Disegnati qui**, in SVG, e non presi da fantacalcio.it: la legenda del sito e'
+   grafica loro, e i loro termini (art. 3 e 9) vietano di copiarne i contenuti. Il
+   *significato* e' quello di tutti — pallone con la spunta per il gol, cartellino
+   giallo e rosso, la porta per i rigori — il disegno e' nostro.
+   Ogni simbolo porta il suo nome in `<title>`: al passaggio del mouse si legge, e un
+   lettore di schermo lo dice.
+
+   Si usa con `{% from "_fanta_icone.html" import icona %}` e `{{ icona('gol') }}`.
+   Il campo, che le disegna dal JavaScript, se le fa dare da qui con `|tojson`: una
+   copia sola dei disegni. #}
+{% set _PALLONE %}<circle cx="7" cy="7" r="6" fill="#fff" stroke="#111" stroke-width="1"/><path d="M7 4.3l2.3 1.7-.9 2.7H5.6l-.9-2.7z" fill="#111"/><path d="M7 4.3V1.3M9.3 6l2.8-.9M8.4 8.7l1.6 2.4M5.6 8.7L4 11.1M4.7 6l-2.8-.9" stroke="#111" stroke-width=".8"/>{% endset %}
+{% set _SI %}<circle cx="12" cy="12" r="3.7" fill="#16a34a" stroke="#fff" stroke-width=".6"/><path d="M10.3 12l1.2 1.2 2.2-2.3" stroke="#fff" stroke-width="1.2" fill="none" stroke-linecap="round" stroke-linejoin="round"/>{% endset %}
+{% set _NO %}<circle cx="12" cy="12" r="3.7" fill="#dc2626" stroke="#fff" stroke-width=".6"/><path d="M10.7 10.7l2.6 2.6M13.3 10.7l-2.6 2.6" stroke="#fff" stroke-width="1.2" stroke-linecap="round"/>{% endset %}
+{% set _PORTA %}<rect x="1" y="2.5" width="12" height="8.5" rx="1" fill="#16a34a"/><path d="M1 4.6h12M1 6.7h12M1 8.8h12M4 2.5v8.5M7 2.5v8.5M10 2.5v8.5" stroke="#dcfce7" stroke-width=".5"/>{% endset %}
+{% set _GUANTO %}<path d="M9.2 15.2c-1-.4-1.8-1.4-2.3-2.4l-1.2-2.4a.9.9 0 011.5-.9l1 1.2V6.3a.8.8 0 011.6 0v3.2-4.3a.8.8 0 011.6 0v4.2-3.6a.8.8 0 011.6 0v3.8-2.4a.8.8 0 011.6 0V11c0 2.5-1.7 4.6-4 4.4z" fill="#1f2937" stroke="#fff" stroke-width=".6"/>{% endset %}
+{# ⚠️ I pezzi da unire con `~` sono tutti blocchi `set`: con l'autoescape, una stringa
+   letterale unita a un blocco verrebbe scappata, e il disegno uscirebbe come testo. #}
+{% set DISEGNI = {
+  'gol': ('Gol segnati', _PALLONE ~ _SI),
+  'gol_subiti': ('Gol subiti', _PALLONE ~ _NO),
+  'rig_segnati': ('Rigori segnati', _PORTA ~ _SI),
+  'rig_sbagliati': ('Rigori sbagliati', _PORTA ~ _NO),
+  'rig_parati': ('Rigori parati', _PORTA ~ _GUANTO),
+  'amm': ('Ammonizioni', '<rect x="4.2" y="1.8" width="7.2" height="11" rx="1.1" fill="#facc15" stroke="#a16207" stroke-width=".6" transform="rotate(12 7.8 7.3)"/>'),
+  'esp': ('Espulsioni', '<rect x="4.2" y="1.8" width="7.2" height="11" rx="1.1" fill="#ef4444" stroke="#991b1b" stroke-width=".6" transform="rotate(12 7.8 7.3)"/>'),
+  'autogol': ('Autogol', '<circle cx="8" cy="8" r="6.5" fill="#ef4444" stroke="#991b1b" stroke-width="1"/><path d="M8 5.1l2.5 1.8-1 3H6.5l-1-3z" fill="#fff"/><path d="M8 5.1V1.6M10.5 6.9l3.2-1M9.5 9.9l1.8 2.7M6.5 9.9l-1.8 2.7M5.5 6.9l-3.2-1" stroke="#fff" stroke-width=".8"/>'),
+  'assist': ('Assist', '<path d="M1.3 10.2c0-1.2.6-5 1.1-6.2h3.1l1.1 2.6c2.1.8 5.7 1.7 7.3 2.7.9.6.8 2.6-.5 2.6H2.4c-.7 0-1.1-.6-1.1-1.7z" fill="#93c5fd" stroke="#1e3a8a" stroke-width=".8" stroke-linejoin="round"/><path d="M1.4 11.6h13" stroke="#1e3a8a" stroke-width="1.1"/><path d="M6 7.4l1.4-.8M7.3 8l1.4-.8" stroke="#1e3a8a" stroke-width=".6"/>'),
+} %}
+{% macro icona(chiave) -%}
+{%- set d = DISEGNI.get(chiave) -%}
+{%- if d -%}
+<svg class="ico" viewBox="0 0 16 16" width="14" height="14" role="img" aria-label="{{ d[0] }}"><title>{{ d[0] }}</title>{{ d[1]|safe }}</svg>
+{%- endif -%}
+{%- endmacro %}

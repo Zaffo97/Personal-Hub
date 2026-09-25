@@ -142,3 +142,9 @@ body.sez-fanta #ris div:last-child { border-radius: 0 0 14px 14px; }
   vertical-align:-3px;margin-right:.3em;flex:none;
   background:#fff;border-radius:50%;padding:1px;box-sizing:content-box;
 }
+
+/* ── I simboli delle statistiche (25/09/2026, `_fanta_icone.html`) ────────────
+   Fuori da `body.sez-fanta` come lo stemma: sono disegni, non cambiano col tema.
+   `.st` e' un simbolo col suo numero: non si spezzano fra due righe. */
+.ico{width:14px;height:14px;vertical-align:-3px;margin-right:.15em;flex:none}
+.st{white-space:nowrap;margin-right:.55em;display:inline-block}
