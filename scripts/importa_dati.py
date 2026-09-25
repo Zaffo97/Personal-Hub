@@ -92,6 +92,9 @@ ORDINE = [
     # ripristino, altrimenti le rose puntano a giocatori che non ci sono ancora.
     # ⚠️ La formazione **dopo** la rosa: nomina i giocatori che la rosa contiene.
     "fanta_leagues", "fanta_roster", "fanta_formazione",
+    # Stampa 3D: i file **dopo** il progetto che li nomina. I file veri non sono
+    # nell'export: la cartella `data/stampa3d/` va copiata a mano.
+    "stampa_progetti", "stampa_file", "stampa_filamenti",
     # ⚠️ Solo il backup `--completo` ce l'ha (§1.4, 18/09/2026). Con l'export
     # committabile questa riga fa solo comparire `regulations` fra le «tabelle non
     # presenti nell'export», che è la verità — prima non compariva affatto, ed è così

@@ -64,9 +64,12 @@ SORGENTI = [os.path.join(BASE, "blueprints"), BASE]
 # volta al momento giusto invece che un mese dopo. E qui vale doppio — una query
 # scoperta su questa tabella non mostrerebbe una riga di troppo in un elenco, darebbe
 # a qualcuno la sessione di qualcun altro.
+# Stampa 3D, dal 25/09/2026: entrano **insieme alle tabelle**, prima della prima query.
 RADICI = ("games", "teams", "arduino_projects", "pc_builds", "fanta_leagues",
-          "python_progress", "sessioni_ricordate")
-FIGLIE = ("team_members", "pc_components", "fanta_roster", "fanta_formazione")
+          "python_progress", "sessioni_ricordate",
+          "stampa_progetti", "stampa_filamenti")
+FIGLIE = ("team_members", "pc_components", "fanta_roster", "fanta_formazione",
+          "stampa_file")
 # `python_topics` è l'elenco fisso dei 53 argomenti, condiviso di suo: quello che è
 # personale è la spunta, che dal blocco Python vivrà in `python_progress`.
 # `fanta_players` è il **listone**: condiviso come il catalogo Pokémon, nessun
@@ -156,6 +159,20 @@ ECCEZIONI = {
      "obiettivo,valore_usato,valore_usato_data,link_amazon,link_eprice,link_bpm,"
      "link_versus,opendb_id) VALUES(?,?,?,?,?,?,?,?,?,?,?,?,?,?,?)"):
         "stessa build appena verificata: il proprietario e' quello del padre",
+    # ── Stampa 3D (25/09/2026) ──────────────────────────────────────────────
+    ("blueprints/stampa3d.py", "_carica",
+     "INSERT INTO stampa_file(progetto_id,nome,impronta,byte) VALUES(?,?,?,?)"):
+        "il progetto e' stato appena verificato da `stampa3d_save()` (UPDATE filtrato "
+        "col suo rowcount, o INSERT con l'id di chi salva): il file segue il padre",
+    ("blueprints/stampa3d.py", "stampa3d_file_delete",
+     "DELETE FROM stampa_file WHERE id=?"):
+        "l'id viene da `_file()`, che l'ha letto con la join sul progetto filtrata "
+        "per proprietario: se non era tuo, la funzione e' gia' uscita",
+    ("stampa3d.py", "togli_orfani",
+     "SELECT 1 FROM stampa_file WHERE impronta=?"):
+        "deve vedere le righe di **tutti**: il file su disco e' uno per impronta, e "
+        "una copia fra utenti lo condivide. Filtrando, cancellerebbe il file di un "
+        "altro. Legge solo se esiste una riga, non ne mostra nessuna",
     ("blueprints/gaming.py", "steam_importa",
      "UPDATE games SET hours_played=? WHERE id=?"):
         "l'id viene dalla mappa degli appid gia' presenti, costruita con solo_mie(): "

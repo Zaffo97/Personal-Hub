@@ -122,6 +122,7 @@ def create_app():
     from blueprints.pokemon        import bp as pokemon_bp
     from blueprints.api_pokemon    import bp as api_pokemon_bp
     from blueprints.arduino        import bp as arduino_bp
+    from blueprints.stampa3d       import bp as stampa3d_bp
     from blueprints.python_tracker import bp as python_bp
     from blueprints.pcbuilder      import bp as pcbuilder_bp
     from blueprints.admin          import bp as admin_bp
@@ -133,6 +134,7 @@ def create_app():
     app.register_blueprint(pokemon_bp)
     app.register_blueprint(api_pokemon_bp)
     app.register_blueprint(arduino_bp)
+    app.register_blueprint(stampa3d_bp)
     app.register_blueprint(python_bp)
     app.register_blueprint(pcbuilder_bp)
     app.register_blueprint(fantacalcio_bp)

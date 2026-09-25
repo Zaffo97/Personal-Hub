@@ -236,6 +236,9 @@ function tipoVis(tipo){
     {% if 'arduino' in sezioni_permesse %}
     <a href="/arduino" class="nav-item {% if request.endpoint=='arduino' %}active{% endif %}"><em>🔌</em> Arduino</a>
     {% endif %}
+    {% if 'stampa3d' in sezioni_permesse %}
+    <a href="/stampa3d" class="nav-item {% if request.endpoint and request.endpoint.startswith('stampa3d.') %}active{% endif %}"><em>🖨️</em> Stampa 3D</a>
+    {% endif %}
     {% if 'python' in sezioni_permesse %}
     <a href="/python" class="nav-item {% if request.endpoint=='python_tracker' %}active{% endif %}"><em>🐍</em> Python Tracker</a>
     {% endif %}

@@ -111,7 +111,8 @@ Le decisioni che valgono ancora: la sezione Pokémon si finisce prima delle altr
 il collaudo va alla fine, le guide dopo il collaudo, e **mettere l'app online per ultimo**
 («caricare il sito da qualche parte lo voglio tenere come una delle ultime cose»).
 
-1. §4 — le sezioni: **Stampa 3D** (in corso dal 25/09/2026), poi Tinkercad, Python, Log
+1. §4 — le sezioni: **Tinkercad** (la domanda aperta in §4), Python, Log. La Stampa 3D
+   (§4.8) è fatta; il suo resto aspetta la stampante
 2. I residui Pokémon: le due abilità senza effetto (§3), Kingambit e Game8 (§4.3)
 3. §5 — il giro di collaudo, l'inventario del codice morto
 4. §1.6 — le due guide, **dopo** il collaudo
@@ -286,6 +287,7 @@ mancante e **lo si dichiara**. Non si riempie a stima.
 | | Baco | Stato |
 |---|---|---|
 | ⬜ | **Due abilità senza effetto nel motore** | Trovate il 23/09/2026. **Affilama** (Sharpness, di Mega Absol Z) ha `effect: none` e dovrebbe potenziare le mosse **da taglio** — che hanno il flag `slicing`, quindi il motore potrebbe leggerlo. **Aura Guard** (Mega Lucario Z) è nuova e senza descrizione. Tutti e due i valori vanno presi da una fonte, non da memoria |
+| ⬜ | **`prova_importa_dati.py` a 19 su 32, e non per colpa dell'import** | Trovato il 25/09/2026, e c'era già prima della Stampa 3D (stesse 13 fallite sul codice di prima). Nell'export vero l'admin ha il tema `sabbia` (colonna `tema`, 22/09); il DB vergine che la prova costruisce lo ha a `NULL`, quindi l'import vede un **conflitto** su `users` 1 e — giustamente — non scrive niente, e tutte le prove che contano righe scritte cadono. L'import sul DB vero funziona. La cura va nel banco (`db_vergine()`), non nell'import: è la trappola #50 |
 | ⬜ | **`confirm` con lo username non escapato** | `admin_utenti.html:117`: `'Eliminare l’utente {{ u.username }}?'` dentro un handler inline. Uno username con l'apostrofo rompe l'handler, e il `confirm` di un'eliminazione sparisce (vedi la trappola su `{{ nome|e }}`). Le due conferme sopra (righe 92 e 105) usano già `|tojson` |
 
 Tutti gli altri bachi elencati qui fino al 23/09/2026 sono chiusi: vedi `STORICO.md`.
@@ -297,7 +299,7 @@ Tutti gli altri bachi elencati qui fino al 23/09/2026 sono chiusi: vedi `STORICO
 | Sezione | Voce |
 |---|---|
 | 💻 **PC Builder** | 🟨 Wishlist, prezzi, link ai negozi, avvisi, **compatibilità** e **novità del catalogo** fatti il 25/09/2026: vedi §4.7 |
-| 🖨️ **Stampa 3D** | ⬜ Sezione nuova, sul modello di Arduino: richiamo a un sito per disegnare e salvataggio dei progetti |
+| 🖨️ **Stampa 3D** | 🟨 Progetti con link, file allegati e inventario bobine **fatti il 25/09/2026**: vedi §4.8 |
 | 🤖 **Arduino** | ⬜ Richiamo a Tinkercad per disegnare il progetto e verificare i connettori. ⚠️ **Guardato il 25/09/2026**: il campo «Tinkercad URL» e il pulsante che lo apre **ci sono già** (`arduino.html:62`), quindi resta da capire con Davide cosa vuol dire «verificare i connettori» (anteprima incorporata? tabella piedini e collegamenti coi controlli? solo un pulsante «nuovo circuito»?): domanda posta e rimasta aperta. ⬜ **E un baco trovato lì**: `tinkercad_url` finisce in un `href` **senza controllo** — un `javascript:` salvato lì girerebbe al clic. Oggi 0 progetti, quindi nessun danno; la cura è quella di `pc_negozi.link_valido()` (solo http(s) di tinkercad.com) |
 | 🐍 **Python** | ⬜ Spazio per inserire i propri progetti e testarli · ⬜ idee per rendere la sezione più utile |
 | 💾 **Log** | ⬜ Aggiungere una funzione di salvataggio log |
@@ -475,6 +477,40 @@ pulsante. Logica in `pc_catalogo.py`.
   campo `storage_devices` delle schede non è usabile: la B450 Prime Plus vi ha **0** porte SATA
 - **Più GPU, case, alimentatori…**: si controlla il primo e la pagina lo dice. Si sommano solo
   SSD e kit di RAM
+
+### 4.8 🟨 Stampa 3D (25/09/2026)
+
+Chiesta così nel docx: «come quella per Arduino, si riesce a richiamare un sito per
+disegnare? Vorrei salvarmi i progetti». Davide comprerà una **Bambu Lab**, disegnerà da
+**MakerWorld** (anche modificando modelli esistenti) e ha voluto file allegati e un
+inventario delle bobine. Fatto: numeri in `STORICO.md`, logica in `stampa3d.py`, prova
+`prova_stampa3d.py`.
+
+**Le fonti, lette il 25/09/2026**:
+
+| Cosa | Cosa dice | Scelta |
+|---|---|---|
+| MakerWorld | Condizioni d'uso: vietati «robot, spider» e ogni strumento automatico per accedere o copiare. Nessuna API pubblica | link (e la ricerca col nome, formato aperto a mano) |
+| `bambustudio://open?file=` | Carica solo file dai domini di Bambu (elenco dentro lo slicer); su macOS non va | i file si **scaricano** e si aprono col doppio clic |
+| Stampante in rete | Dal firmware di inizio 2025 i programmi esterni solo in «LAN Mode» + «Developer Mode» (MQTT, FTP, camera) | **aspetta la stampante** |
+| Printables | Cloudflare davanti anche alla ricerca | solo link incollati, nessuno costruito |
+
+**⬜ Resta aperto:**
+
+- **Lo stato della stampante** (avanzamento, temperature, bobine dell'AMS) quando la
+  stampante arriva. Da verificare **su quella stampante**, non da documentazione: modello,
+  firmware, e se Davide vuole accendere la Developer Mode (toglie l'autorizzazione di Bambu
+  sulla rete di casa, ed è una scelta sua). Con l'AMS l'inventario potrebbe leggere i
+  grammi invece di scalarli a mano
+- **Un'anteprima 3D** del file nella pagina: servirebbe three.js (circa 600 KB, solo su
+  quella pagina). Il progetto non carica librerie da CDN, quindi andrebbe **scaricata** in
+  `static/`: da chiedere a Davide prima
+- ⚠️ **I file non sono nell'export**: su un PC nuovo la cartella `data/stampa3d/` va
+  copiata a mano, e la guida n. 2 (§1.6) lo deve dire. Senza, le righe dicono «file
+  mancante»
+- **Soglie scelte, non misurate**: 200 MB per file (`MAX_BYTE`), 150 g per «quasi finita»
+  (`SOGLIA_BOBINA_G`), in `stampa3d.py`
+- **La Dashboard** non ha un riquadro della Stampa 3D: non chiesto
 
 ---
 

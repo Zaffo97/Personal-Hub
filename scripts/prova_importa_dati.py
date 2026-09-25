@@ -412,7 +412,8 @@ def app_regge(percorso_db):
             # I prefissi sono quelli dei Blueprint — il PC Builder è `/pcbuilder`,
             # non `/pc`, e un URL inventato darebbe un 404 che somiglia a un guasto.
             pagine = {"/": None, "/gaming/": None, "/pokemon/": None,
-                      "/pcbuilder/": None, "/python/": None, "/arduino/": None}
+                      "/pcbuilder/": None, "/python/": None, "/arduino/": None,
+                      "/stampa3d/": None}
             for via in list(pagine):
                 pagine[via] = client.get(via).status_code
             titolo = json.load(io_json(EXPORT))["games"][0]["title"]

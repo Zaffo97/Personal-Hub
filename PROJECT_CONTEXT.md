@@ -530,6 +530,22 @@ stanno nel blueprint.
 | `/fantacalcio/lega/<id>/chi-gioca` | GET | Le probabili di fantacalcio.it **in un iframe** accanto alla rosa, da leggere (pulsante «Probabili») |
 | `/fantacalcio/lega/<id>/formazione` (+`/salva`) · `/consiglio/applica` | GET/POST | Il campo e il consiglio: prima chi può giocare, poi la fantamedia della lega. `/salva` accetta la formazione **incompleta** (non quella sbagliata) e dice cosa manca; `applica` resta severo |
 
+### Stampa 3D — `blueprints/stampa3d.py` (dal 25/09/2026)
+Sul modello di Arduino, pensata per una Bambu Lab. La logica sta in `stampa3d.py` (radice):
+link ammessi per campo, file su disco per impronta, soglie. **Solo link verso i siti**:
+MakerWorld vieta l'accesso automatico e non ha API, e `bambustudio://open?file=` carica
+solo file dai domini di Bambu, quindi un file allegato si **scarica** e si apre col
+doppio clic. File in `data/stampa3d/<sha256>` (fuori da git e dall'export: dell'export
+viaggiano le righe); il file si toglie dal disco solo quando nessuna riga lo nomina più.
+
+| URL | Metodo | Descrizione |
+|-----|--------|-------------|
+| `/stampa3d/` | GET | Progetti (con i file e i link), bobine, siti da cui partire. Admin: `?utente=` |
+| `/stampa3d/save` | POST multipart | Progetto + file (`.3mf .stl .step .stp .obj`, 200 MB l'uno). Un link o un file rifiutato **si dice** |
+| `/stampa3d/<id>/delete` · `/<id>/scala` | POST | Elimina (e toglie i file orfani) · scala i `grammi` da una bobina dello stesso proprietario e segna «Stampato» |
+| `/stampa3d/file/<id>` (+`/delete`) | GET/POST | Scarica col nome caricato · toglie. «file mancante» se non è su disco |
+| `/stampa3d/bobina/save` · `/<id>/delete` · `/<id>/usa` | POST | L'inventario: sotto 150 g «quasi finita» |
+
 ---
 
 ## 🗄️ Database — Tabelle SQLite
@@ -552,6 +568,9 @@ Tutte create da `init_db()` in `extensions.py`.
 | `pc_builds` | id, name, notes |
 | `pc_components` | id, build_id (FK), category, name, price, notes, **stato** (`posseduto`/`desiderato`/`venduto`, NULL = non indicato), **prezzo_data**, **obiettivo** (soglia), **valore_usato**, **valore_usato_data**, **link_amazon/eprice/bpm/versus** (solo http(s) del dominio giusto), **opendb_id** (il modello nel catalogo OpenDB, `pc_catalogo.py`). ⚠️ Righe **ricreate a ogni salvataggio**: le date passano dal form |
 | `regulations` | id TEXT PK, label, roster_file, moves_file, items_file, created_at |
+| `stampa_progetti` | id, **user_id**, nome, stato, stampante, materiale, **link_modello**/**link_disegno** (solo i siti di `stampa3d.LINK`), grammi, note |
+| `stampa_file` | id, progetto_id (FK CASCADE), nome (quello caricato), **impronta** (sha256 = nome su disco), byte. ⚠️ Più righe possono nominare lo stesso file |
+| `stampa_filamenti` | id, **user_id**, materiale, marca, colore, colore_hex (NULL se nessuno l'ha scelto), peso_totale, peso_rimasto, prezzo, note |
 | `sessioni_ricordate` | id, **user_id**, **impronta** UNIQUE (sha256 del token, mai il token), creata_il, scade_il, usata_il, da (user-agent accorciato) |
 | `fanta_players` | id (**quello di fantacalcio.it**, lo stesso nei due Excel), nome, squadra (nome intero)/_slug, ruolo_classic/_mantra, qi/qa/fvm, statistiche, **autogol**, **ceduto**, attivo, visto_il |
 | `fanta_leagues` | id, **user_id**, nome, moduli, n_panchinari, mod_difesa(+portiere, soglie), nove fra bonus e malus, modulo_scelto, note |
@@ -776,6 +795,7 @@ Di conseguenza tutto ciò che questa tabella dava per "funzionante" non era mai 
 
 | Data | Contenuto |
 |------|-----------|
+| 2026-09-25 | **Stampa 3D, la sezione nuova (§4).** Fonti lette prima: MakerWorld vieta l'accesso automatico e non ha API, `bambustudio://open` accetta solo file dai domini Bambu, lo stato della stampante in rete solo in Developer Mode (da guardare quando c'è la stampante). Quindi link, file allegati da scaricare, inventario bobine. `stampa3d.py`, `blueprints/stampa3d.py`, `stampa3d.html`, tre tabelle `stampa_*`, registrata in `SEZIONI`, sidebar, `TABELLE_UTENTE`/`FIGLIE_DI`, `ETICHETTE`, controlli, sweep, export/import. Indirizzi aperti a mano (Printables dietro Cloudflare: solo link incollati). `prova_stampa3d.py` **38 su 38**, sweep 0 errori, query 0 scoperte, travaso 56/56, giro export→import 3 righe su 3; JS provato in browser (form, conferme con apostrofo, tinta), 375 px senza scorrimento. ⚠️ `prova_importa_dati.py` **19 su 32 anche prima di questo lavoro**: il banco, non l'import (a backlog §3) |
 | 2026-09-25 | **Fantacalcio: avviso sugli stemmi mancanti (§4.6).** `fanta.conto_stemmi()`; messaggio di «Aggiorna calendario» e riga nel riquadro del calendario quando sono meno delle squadre. `prova_fantacalcio.py` **111 su 111**, sweep 0 errori, query 0 scoperte |
 | 2026-09-25 | **Ripristino di un export di prima della fusione del Fantacalcio (§4.6).** `importa_dati.fondi_fantacalcio_vecchio()`: con chiavi `fanta2_*` rifà in memoria la regola di `_unisci_fantacalcio()` prima del piano. Export di `65494ae` convertito = export di `89a3397` riga per riga. `prova_importa_dati.py` **32 su 32** |
 | 2026-09-25 | **PC Builder: Amazon e Keepa dall'ASIN del catalogo, e la ricerca di BPM-Power (§4.7).** `pc_catalogo._asin()` (solo canale `it` di `identifiers.retailer_listings`), `opendb_asin` messo dalla vista, `pc_negozi.link()` lo usa quando manca il link incollato. ASIN aperti a mano su amazon.it: 12 su 12 giusti. BPM senza link: `/it/ricerca?k=`, formato preso da Davide. `prova_pcbuilder.py` **105 su 105**, sweep 0 errori, query 0 scoperte |

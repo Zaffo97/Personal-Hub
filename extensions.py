@@ -510,6 +510,40 @@ def init_db():
         scade_il TEXT NOT NULL,
         usata_il TEXT,
         da TEXT);
+    -- ── Stampa 3D (§4, dal 25/09/2026) ──────────────────────────────────────
+    -- Sul modello di Arduino: il progetto e' un **dato dell'utente**, quindi ogni
+    -- SELECT va filtrata con ambito_utente(). I link si controllano per dominio in
+    -- `stampa3d.py`, come quelli dei negozi del PC Builder.
+    CREATE TABLE IF NOT EXISTS stampa_progetti(
+        id INTEGER PRIMARY KEY,
+        user_id INTEGER REFERENCES users(id),
+        nome TEXT NOT NULL,
+        stato TEXT DEFAULT 'Idea',
+        stampante TEXT, materiale TEXT,
+        link_modello TEXT, link_disegno TEXT,
+        grammi REAL, note TEXT,
+        created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP);
+    -- I file allegati. ⚠️ Il file sta su disco in `data/stampa3d/` col nome della
+    -- sua **impronta** (sha256), non con quello caricato: due righe con lo stesso
+    -- file - una copia fra utenti, lo stesso .3mf in due progetti - puntano allo
+    -- stesso file, e il file si toglie dal disco solo quando nessuna riga lo nomina
+    -- piu'. Il nome caricato resta qui, ed e' quello con cui si riscarica.
+    -- ⚠️ I file **non** sono nell'export (sono binari): una riga ripristinata su un
+    -- PC nuovo senza la cartella dice «file mancante», non finge.
+    CREATE TABLE IF NOT EXISTS stampa_file(
+        id INTEGER PRIMARY KEY,
+        progetto_id INTEGER REFERENCES stampa_progetti(id) ON DELETE CASCADE,
+        nome TEXT NOT NULL, impronta TEXT NOT NULL, byte INTEGER,
+        caricato_il TIMESTAMP DEFAULT CURRENT_TIMESTAMP);
+    -- L'inventario delle bobine. `peso_rimasto` si scala a mano o da un progetto
+    -- stampato (i suoi `grammi`): nessuna stampante lo dice all'hub, oggi.
+    CREATE TABLE IF NOT EXISTS stampa_filamenti(
+        id INTEGER PRIMARY KEY,
+        user_id INTEGER REFERENCES users(id),
+        materiale TEXT, marca TEXT, colore TEXT, colore_hex TEXT,
+        peso_totale REAL DEFAULT 1000, peso_rimasto REAL,
+        prezzo REAL, note TEXT,
+        created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP);
     """)
     # L'admin di un DB nuovo nasce gia' con lo schema forte. Sui DB esistenti
     # questa INSERT non fa nulla (OR IGNORE) e l'hash vecchio viene riscritto al
@@ -936,6 +970,8 @@ TABELLE_UTENTE = {
     "arduino_projects": "passa",
     "pc_builds": "passa",
     "fanta_leagues": "passa",
+    "stampa_progetti": "passa",
+    "stampa_filamenti": "passa",
     "python_progress": "cancella",
     # ⚠️ `cancella` qui non è ordine, è **sicurezza**, e la rete si è fatta trovare
     # subito: questa tabella è nata il 22/09/2026 e `tabelle_senza_regola()` l'ha
@@ -967,6 +1003,9 @@ FIGLIE_DI = {
     "pc_builds": (("pc_components", "build_id"),),
     "fanta_leagues": (("fanta_roster", "league_id"),
                       ("fanta_formazione", "league_id")),
+    # La copia duplica la **riga**, non il file: il file sta su disco col nome della
+    # sua impronta, e due righe che la nominano sono lo stesso file (stampa3d.py).
+    "stampa_progetti": (("stampa_file", "progetto_id"),),
 }
 
 

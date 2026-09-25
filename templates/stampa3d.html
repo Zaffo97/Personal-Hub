@@ -1,0 +1,304 @@
+{% extends "base.html" %}
+{% block title %}Stampa 3D – Hub{% endblock %}
+{% block topbar_title %}&#128424;&#65039; Stampa 3D{% endblock %}
+{% block extra_head %}
+<style>
+.s3-modal{display:none;position:fixed;inset:0;background:rgba(0,0,0,.6);z-index:999;
+  align-items:center;justify-content:center;padding:1rem}
+.s3-modal.open{display:flex}
+.modal-box{background:var(--surface);border:1px solid var(--border);border-radius:var(--radius-xl);
+  width:100%;max-width:720px;max-height:92dvh;display:flex;flex-direction:column;overflow:hidden}
+.modal-header{display:flex;align-items:center;justify-content:space-between;
+  padding:.75rem 1.1rem;border-bottom:1px solid var(--border)}
+.modal-body{flex:1;padding:1rem;overflow-y:auto}
+.modal-footer{padding:.75rem 1.1rem;border-top:1px solid var(--border);display:flex;gap:.6rem;flex-wrap:wrap}
+.s3-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(290px,1fr));gap:.85rem}
+.s3-file{display:flex;align-items:center;gap:.4rem;font-size:.75rem;padding:.2rem 0}
+.s3-file a{color:var(--primary);text-decoration:none;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.s3-colore{width:1.1rem;height:1.1rem;border-radius:50%;border:1px solid var(--border);flex:none}
+.s3-barra{height:6px;border-radius:3px;background:var(--surface-off);overflow:hidden;margin:.45rem 0}
+.s3-barra > div{height:100%;background:var(--primary)}
+.s3-barra.poca > div{background:var(--error, #d9534f)}
+</style>
+{% endblock %}
+{% block content %}
+<div class="page-header">
+  <div class="flex items-center justify-between flex-wrap gap-2">
+    <div><h1>&#128424;&#65039; Stampa 3D</h1>
+      <p class="text-muted text-sm">Progetti, file da stampare e bobine</p></div>
+    <div class="flex gap-2 items-center flex-wrap">
+      {% if e_admin and proprietari %}
+      <label class="text-xs text-muted">Utente:</label>
+      <select class="form-control" style="max-width:200px;font-size:.75rem"
+              onchange="location.href = this.value ? '/stampa3d/?utente=' + this.value : '/stampa3d/'">
+        <option value="">Tutti</option>
+        {% for pr in proprietari %}
+        <option value="{{ pr.id }}"{% if filtro_utente == pr.id %} selected{% endif %}>{{ pr.username }} ({{ pr.quanti }})</option>
+        {% endfor %}
+      </select>
+      {% endif %}
+      <button class="btn btn-primary" onclick="apriProgetto()">+ Nuovo progetto</button>
+    </div>
+  </div>
+  {# I siti da cui si parte. Si aprono e basta: l'hub non li legge (vedi stampa3d.py). #}
+  <div class="flex gap-1 flex-wrap mt-2">
+    <span class="text-xs text-muted" style="align-self:center">Apri:</span>
+    {% for nome, url in partenze %}
+    <a href="{{ url }}" target="_blank" rel="noopener" class="btn btn-secondary btn-sm">&#128279; {{ nome }}</a>
+    {% endfor %}
+  </div>
+</div>
+
+<h2 style="font-size:1rem;margin:0 0 .6rem">Progetti</h2>
+{% if progetti %}
+<div class="s3-grid">
+{% for p in progetti %}
+<div class="card mb-0">
+  <div class="card-header">
+    <div>
+      <div class="card-title">{{ p.nome }}</div>
+      <div class="text-xs text-muted mt-1">{{ [p.stampante, p.materiale]|select|join(' · ') }}{% if p.grammi %} · {{ '%g'|format(p.grammi) }} g{% endif %}</div>
+      {% if e_admin %}<div class="text-xs mt-1" style="color:var(--text-faint)">&#128100; {{ nomi_utenti.get(p.user_id) or 'senza proprietario' }}</div>{% endif %}
+    </div>
+    <span class="badge {% if p.stato=='Stampato' %}badge-success{% elif p.stato=='In stampa' %}badge-warning{% elif p.stato=='Da stampare' %}badge-primary{% elif p.stato=='Fallito' %}badge-error{% else %}badge-neutral{% endif %}">{{ p.stato }}</span>
+  </div>
+  <div style="padding:.75rem 1rem">
+    {% if p.note %}<p class="text-sm text-muted mb-2">{{ p.note[:140] }}{% if p.note|length > 140 %}...{% endif %}</p>{% endif %}
+    {% if p.file %}
+    <div class="mb-2">
+      {% for fl in p.file %}
+      <div class="s3-file">
+        {% if fl.manca %}
+        <span class="text-muted" title="Il file non è su questo PC: i file non sono nell'export">&#9888;&#65039; {{ fl.nome }} — file mancante</span>
+        {% else %}
+        <a href="/stampa3d/file/{{ fl.id }}" title="Scarica e apri con Bambu Studio">&#11015; {{ fl.nome }}</a>
+        <span class="text-muted">{{ fl.misura }}</span>
+        {% endif %}
+        <form method="POST" action="/stampa3d/file/{{ fl.id }}/delete" style="display:inline;margin-left:auto"
+              onsubmit='return confirm({{ ("Togliere il file " ~ fl.nome ~ "?")|tojson }})'>
+          <button class="btn-icon" title="Togli il file">&#10005;</button>
+        </form>
+      </div>
+      {% endfor %}
+    </div>
+    {% endif %}
+    <div class="flex gap-1 flex-wrap">
+      <button class="btn btn-secondary btn-sm" onclick='apriProgetto({{ p|tojson }})'>&#9998; Modifica</button>
+      {% if p.link_modello %}<a href="{{ p.link_modello }}" target="_blank" rel="noopener" class="btn btn-secondary btn-sm">&#128279; Modello</a>{% endif %}
+      {% if p.link_disegno %}<a href="{{ p.link_disegno }}" target="_blank" rel="noopener" class="btn btn-secondary btn-sm">&#128279; Disegno</a>{% endif %}
+      {% if not p.link_modello and p.cerca_mw %}<a href="{{ p.cerca_mw }}" target="_blank" rel="noopener" class="btn btn-secondary btn-sm" title="Cerca il nome del progetto su MakerWorld">&#128269; MakerWorld</a>{% endif %}
+      <form method="POST" action="/stampa3d/{{ p.id }}/delete" style="display:inline"
+            onsubmit='return confirm({{ ("Eliminare " ~ p.nome ~ " e i suoi file?")|tojson }})'>
+        <button class="btn btn-danger btn-sm">&#128465;</button>
+      </form>
+    </div>
+    {% set mie = bobine|selectattr('user_id', 'equalto', p.user_id)|list %}
+    {% if p.grammi and mie and p.stato != 'Stampato' %}
+    <form method="POST" action="/stampa3d/{{ p.id }}/scala" class="flex gap-1 items-center mt-2"
+          onsubmit='return confirm({{ ("Scalare " ~ ("%g"|format(p.grammi)) ~ " g dalla bobina e segnare il progetto come stampato?")|tojson }})'>
+      <select name="bobina_id" class="form-control" style="font-size:.72rem;padding:.2rem .4rem">
+        {% for b in mie %}<option value="{{ b.id }}">{{ [b.materiale, b.colore, b.marca]|select|join(' ') }} ({{ '%g'|format(b.peso_rimasto or 0) }} g)</option>{% endfor %}
+      </select>
+      <button class="btn btn-secondary btn-sm" style="white-space:nowrap">Stampato: &minus;{{ '%g'|format(p.grammi) }} g</button>
+    </form>
+    {% endif %}
+  </div>
+</div>
+{% endfor %}
+</div>
+{% else %}
+<div style="text-align:center;padding:2.5rem 1rem;color:var(--text-muted)">
+  <div style="font-size:3rem;margin-bottom:.75rem">&#128424;&#65039;</div>
+  <h3>Nessun progetto</h3>
+  <p class="text-sm mt-1">Un modello da MakerWorld, un disegno tuo, un pezzo da rifare.</p>
+  <button class="btn btn-primary mt-3" onclick="apriProgetto()">+ Nuovo progetto</button>
+</div>
+{% endif %}
+
+<div class="flex items-center justify-between flex-wrap gap-2" style="margin:1.6rem 0 .6rem">
+  <h2 style="font-size:1rem;margin:0">Bobine</h2>
+  <button class="btn btn-secondary btn-sm" onclick="apriBobina()">+ Nuova bobina</button>
+</div>
+{% if bobine %}
+<div class="s3-grid">
+{% for b in bobine %}
+<div class="card mb-0">
+  <div style="padding:.75rem 1rem">
+    <div class="flex items-center gap-2">
+      <span class="s3-colore" style="background:{{ b.colore_hex or 'transparent' }}"></span>
+      <div style="flex:1">
+        <div class="card-title">{{ [b.materiale, b.colore]|select|join(' ') or 'Bobina' }}</div>
+        <div class="text-xs text-muted">{{ b.marca or '' }}{% if b.prezzo %} · &#8364; {{ '%g'|format(b.prezzo) }}{% endif %}</div>
+        {% if e_admin %}<div class="text-xs" style="color:var(--text-faint)">&#128100; {{ nomi_utenti.get(b.user_id) or 'senza proprietario' }}</div>{% endif %}
+      </div>
+      {% if b.quasi_finita %}<span class="badge badge-error">quasi finita</span>{% endif %}
+    </div>
+    {% set tot = b.peso_totale or 1000 %}
+    <div class="s3-barra{% if b.quasi_finita %} poca{% endif %}"><div style="width:{{ [100, ((b.peso_rimasto or 0) / tot * 100)|round|int]|min }}%"></div></div>
+    <div class="text-xs text-muted mb-2">{{ '%g'|format(b.peso_rimasto or 0) }} g su {{ '%g'|format(tot) }}</div>
+    <div class="flex gap-1 flex-wrap items-center">
+      <form method="POST" action="/stampa3d/bobina/{{ b.id }}/usa" class="flex gap-1 items-center">
+        <input name="grammi" type="number" min="1" step="1" class="form-control" placeholder="g"
+               style="width:4.5rem;font-size:.72rem;padding:.2rem .4rem" required>
+        <button class="btn btn-secondary btn-sm">Usa</button>
+      </form>
+      <button class="btn btn-secondary btn-sm" onclick='apriBobina({{ b|tojson }})'>&#9998;</button>
+      <form method="POST" action="/stampa3d/bobina/{{ b.id }}/delete" style="display:inline"
+            onsubmit="return confirm('Eliminare la bobina?')">
+        <button class="btn btn-danger btn-sm">&#128465;</button>
+      </form>
+    </div>
+  </div>
+</div>
+{% endfor %}
+</div>
+{% else %}
+<p class="text-sm text-muted">Nessuna bobina. Sotto {{ soglia }} g una bobina si segna «quasi finita».</p>
+{% endif %}
+
+<div id="modaleProgetto" class="s3-modal">
+  <div class="modal-box">
+    <div class="modal-header">
+      <span id="titoloProgetto" style="font-weight:700;font-size:.9rem">Nuovo progetto</span>
+      <button class="btn-icon" onclick="chiudi('modaleProgetto')">&#10005;</button>
+    </div>
+    <div class="modal-body">
+      <form method="POST" action="/stampa3d/save" id="formProgetto" enctype="multipart/form-data">
+        <input type="hidden" name="proj_id" id="p_id" value="">
+        <div class="form-row">
+          <div class="form-group"><label>Nome *</label>
+            <input name="nome" id="p_nome" class="form-control" required placeholder="Es. Supporto cuffie"></div>
+          <div class="form-group"><label>Stato</label>
+            <select name="stato" id="p_stato" class="form-control">
+              {% for s in stati %}<option>{{ s }}</option>{% endfor %}
+            </select></div>
+        </div>
+        <div class="form-row">
+          <div class="form-group"><label>Stampante</label>
+            <input name="stampante" id="p_stampante" class="form-control" placeholder="Es. Bambu Lab …"></div>
+          <div class="form-group"><label>Materiale</label>
+            <select name="materiale" id="p_materiale" class="form-control">
+              <option value="">—</option>
+              {% for m in materiali %}<option>{{ m }}</option>{% endfor %}
+            </select></div>
+          <div class="form-group"><label>Grammi</label>
+            <input name="grammi" id="p_grammi" type="number" min="0" step="0.1" class="form-control"
+                   placeholder="dallo slicer"></div>
+        </div>
+        <div class="form-group"><label>Link al modello</label>
+          <input name="link_modello" id="p_modello" class="form-control"
+                 placeholder="https://makerworld.com/it/models/…">
+          <div class="text-xs text-muted mt-1">{{ siti.link_modello[1]|join(', ') }}</div></div>
+        <div class="form-group"><label>Link al disegno</label>
+          <input name="link_disegno" id="p_disegno" class="form-control"
+                 placeholder="https://www.tinkercad.com/things/…">
+          <div class="text-xs text-muted mt-1">{{ siti.link_disegno[1]|join(', ') }}</div></div>
+        <div class="form-group"><label>File da allegare</label>
+          <input name="file" type="file" multiple accept="{{ estensioni }}" class="form-control">
+          <div class="text-xs text-muted mt-1">{{ estensioni|replace(',', ', ') }} · fino a {{ max_mb }} MB l'uno. Si riscaricano e si aprono con Bambu Studio.</div></div>
+        <div class="form-group"><label>Note</label>
+          <textarea name="note" id="p_note" class="form-control" rows="3"
+                    placeholder="Impostazioni, modifiche fatte, cosa non è andato…"></textarea></div>
+      </form>
+    </div>
+    <div class="modal-footer">
+      <button class="btn btn-primary" onclick="inviaProgetto()">&#128190; Salva</button>
+      <button class="btn btn-secondary" onclick="chiudi('modaleProgetto')">Annulla</button>
+    </div>
+  </div>
+</div>
+
+<div id="modaleBobina" class="s3-modal">
+  <div class="modal-box" style="max-width:520px">
+    <div class="modal-header">
+      <span id="titoloBobina" style="font-weight:700;font-size:.9rem">Nuova bobina</span>
+      <button class="btn-icon" onclick="chiudi('modaleBobina')">&#10005;</button>
+    </div>
+    <div class="modal-body">
+      <form method="POST" action="/stampa3d/bobina/save" id="formBobina">
+        <input type="hidden" name="bobina_id" id="b_id" value="">
+        <div class="form-row">
+          <div class="form-group"><label>Materiale</label>
+            <select name="materiale" id="b_materiale" class="form-control">
+              {% for m in materiali %}<option>{{ m }}</option>{% endfor %}
+            </select></div>
+          <div class="form-group"><label>Marca</label>
+            <input name="marca" id="b_marca" class="form-control" placeholder="Es. Bambu Lab"></div>
+        </div>
+        <div class="form-row">
+          <div class="form-group"><label>Colore</label>
+            <input name="colore" id="b_colore" class="form-control" placeholder="Es. Nero opaco"></div>
+          <div class="form-group"><label>Tinta</label>
+            <input name="colore_hex" id="b_hex" type="color" class="form-control" value="#888888" style="height:2.2rem;padding:.15rem"></div>
+        </div>
+        <div class="form-row">
+          <div class="form-group"><label>Peso bobina (g)</label>
+            <input name="peso_totale" id="b_totale" type="number" min="1" step="1" class="form-control" value="1000"></div>
+          <div class="form-group"><label>Rimasto (g)</label>
+            <input name="peso_rimasto" id="b_rimasto" type="number" min="0" step="1" class="form-control" placeholder="piena"></div>
+          <div class="form-group"><label>Prezzo (&#8364;)</label>
+            <input name="prezzo" id="b_prezzo" type="number" min="0" step="0.01" class="form-control"></div>
+        </div>
+        <div class="form-group"><label>Note</label>
+          <input name="note" id="b_note" class="form-control" placeholder="Temperature, dove sta, …"></div>
+      </form>
+    </div>
+    <div class="modal-footer">
+      <button class="btn btn-primary" onclick="inviaBobina()">&#128190; Salva</button>
+      <button class="btn btn-secondary" onclick="chiudi('modaleBobina')">Annulla</button>
+    </div>
+  </div>
+</div>
+
+<script>
+function campo(id, v) { document.getElementById(id).value = (v === null || v === undefined) ? '' : v; }
+function apriProgetto(p) {
+  const f = document.getElementById('formProgetto');
+  f.reset();
+  campo('p_id', p ? p.id : '');
+  document.getElementById('titoloProgetto').textContent = p ? 'Modifica: ' + p.nome : 'Nuovo progetto';
+  if (p) {
+    campo('p_nome', p.nome); campo('p_stato', p.stato); campo('p_stampante', p.stampante);
+    campo('p_materiale', p.materiale); campo('p_grammi', p.grammi);
+    campo('p_modello', p.link_modello); campo('p_disegno', p.link_disegno); campo('p_note', p.note);
+  }
+  document.getElementById('modaleProgetto').classList.add('open');
+}
+// `submit()` salta la validazione del browser: il nome obbligatorio lo controlla
+// `reportValidity()`, altrimenti un progetto senza nome arriverebbe al server.
+function inviaProgetto() {
+  const f = document.getElementById('formProgetto');
+  if (f.reportValidity()) f.submit();
+}
+// ⚠️ Un `<input type="color">` non può essere vuoto: vale sempre un colore. Senza
+// questa spunta ogni bobina salvata senza toccarlo nascerebbe grigia, cioè con una
+// tinta che nessuno ha scelto. Si manda solo se l'hai toccata o se c'era già.
+let tintaScelta = false;
+function apriBobina(b) {
+  document.getElementById('formBobina').reset();
+  campo('b_id', b ? b.id : '');
+  document.getElementById('titoloBobina').textContent = b ? 'Modifica bobina' : 'Nuova bobina';
+  tintaScelta = !!(b && b.colore_hex);
+  if (b) {
+    campo('b_materiale', b.materiale); campo('b_marca', b.marca); campo('b_colore', b.colore);
+    campo('b_hex', b.colore_hex || '#888888'); campo('b_totale', b.peso_totale);
+    campo('b_rimasto', b.peso_rimasto); campo('b_prezzo', b.prezzo); campo('b_note', b.note);
+  }
+  document.getElementById('modaleBobina').classList.add('open');
+}
+document.getElementById('b_hex').addEventListener('input', () => { tintaScelta = true; });
+function inviaBobina() {
+  const f = document.getElementById('formBobina');
+  if (!f.reportValidity()) return;
+  document.getElementById('b_hex').disabled = !tintaScelta;
+  f.submit();
+}
+function chiudi(id) { document.getElementById(id).classList.remove('open'); }
+document.querySelectorAll('.s3-modal').forEach(m => m.addEventListener('click', e => {
+  if (e.target === e.currentTarget) chiudi(m.id);
+}));
+document.addEventListener('keydown', e => {
+  if (e.key === 'Escape') document.querySelectorAll('.s3-modal.open').forEach(m => chiudi(m.id));
+});
+</script>
+{% endblock %}

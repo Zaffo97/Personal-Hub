@@ -1664,5 +1664,8 @@
       "ordine": 11,
       "ruolo": "a"
     }
-  ]
+  ],
+  "stampa_progetti": [],
+  "stampa_file": [],
+  "stampa_filamenti": []
 }

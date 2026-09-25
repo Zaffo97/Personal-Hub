@@ -27,6 +27,10 @@ desktop.ini
 # cache locale delle risposte PokeAPI (rigenerabile)
 data/cache/
 
+# I file allegati ai progetti di Stampa 3D: binari da decine di MB, uno per impronta.
+# Non sono nell'export (che ne porta solo le righe): la cartella va copiata a mano.
+data/stampa3d/
+
 # Il backup `--completo` di scripts/esporta_dati.py: contiene gli hash delle
 # password, come hub.db. Lo script si **rifiuta** gia' di scriverlo dentro una
 # cartella versionata, e quella e' la rete vera; questa e' la seconda, per il

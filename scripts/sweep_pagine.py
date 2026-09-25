@@ -55,6 +55,8 @@ PAGINE = [
     "/pokemon/regulation/ma", "/pokemon/regulation/ma/contenuto",
     "/gaming/", "/gaming/new", "/gaming/1/edit", "/gaming/uscite", "/gaming/steam",
     "/arduino/", "/python/", "/pcbuilder/", "/admin/utenti",
+    # Stampa 3D, dal 25/09/2026, nello stesso commit in cui nasce.
+    "/stampa3d/",
     # Fantacalcio, dal 21/09/2026. La pagina della lega chiede un id come
     # `/pokemon/team/1/edit`: se la lega 1 non c'e' la pagina redirige, e lo sweep
     # lo dice invece di fingere un ok.

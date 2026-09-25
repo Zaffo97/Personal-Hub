@@ -20,6 +20,19 @@ pagina ed esegue `new Function()` su ogni blocco `<script>` **e** su ogni handle
 
 ## 25/09/2026
 
+**Stampa 3D, la sezione nuova (§4.8)** — chiesta nel docx, pensata per una Bambu Lab.
+Prima le fonti: MakerWorld vieta l'accesso automatico e non ha API, `bambustudio://open`
+carica solo dai domini di Bambu, quindi link e file da riscaricare. Progetti (stato,
+stampante, materiale, grammi, link al modello e al disegno controllati per dominio),
+file allegati in `data/stampa3d/` per impronta sha256 (un file per contenuto, tolto solo
+quando nessuna riga lo nomina più: regge copie fra utenti e lo stesso .3mf in due
+progetti), bobine con «Usa» e «Stampato: −N g» dal progetto. Indirizzi aperti a mano:
+ricerca di MakerWorld, MakerLab, Bambu Studio, Tinkercad, Onshape. Registrata in tutti
+gli elenchi nello stesso commit. `prova_stampa3d.py` **38 su 38** (2 fallite al primo
+giro erano il banco: la copia lanciata nei due versi), sweep 0 errori, query 0 scoperte
+(3 dichiarate con la ragione), travaso 56/56, giro export→import 3 righe su 3; JS provato
+in browser e a 375 px.
+
 **PC Builder: la prova nel Chrome di Davide** (§4.7). Quello che dal pannello di Claude non
 si poteva vedere (Keepa dietro l'anti-bot, «eBay venduti» dietro il login) l'ha provato
 Davide sul suo browser: funziona. §4.7 resta aperta solo per le voci rimandate per scelta.

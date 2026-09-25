@@ -94,6 +94,11 @@ TABELLE = [
     # preso il nome della vecchia: le chiavi `fanta2_*` degli export di prima non
     # esistono più.
     "fanta_leagues", "fanta_roster", "fanta_formazione",
+    # Stampa 3D, dal 25/09/2026. ⚠️ Di `stampa_file` viaggiano le **righe** (nome,
+    # impronta, dimensione), non i file: sono binari da decine di MB e stanno in
+    # `data/stampa3d/`, fuori da git. Ripristinando su un PC nuovo senza quella
+    # cartella, la pagina dice «file mancante» per ognuno invece di fingere.
+    "stampa_progetti", "stampa_file", "stampa_filamenti",
 ]
 
 # In più, solo con `--completo`. `regulations` è una **tabella morta** — la scrive solo

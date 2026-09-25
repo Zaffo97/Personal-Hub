@@ -74,6 +74,7 @@ SEZIONI = [
     ("gaming",     "🎮 Gaming",         "/gaming",    ["gaming"]),
     ("pokemon",    "🐉 Pokémon VGC",    "/pokemon",   ["pokemon", "api_pokemon"]),
     ("arduino",    "🔌 Arduino",        "/arduino",   ["arduino"]),
+    ("stampa3d",   "🖨️ Stampa 3D",      "/stampa3d",  ["stampa3d"]),
     ("python",     "🐍 Python Tracker", "/python",    ["python_tracker"]),
     ("pcbuilder",  "🖥️ PC Builder",     "/pcbuilder", ["pcbuilder"]),
     # §4.6: dal 25/09/2026 è quella nata come «Fantacalcio 2», con le fonti in
