@@ -20,6 +20,18 @@ pagina ed esegue `new Function()` su ogni blocco `<script>` **e** su ogni handle
 
 ## 25/09/2026
 
+**Potatura del backlog** — `BACKLOG.md` era tornato a **1310 righe** (la potatura del 13/08
+l'aveva portato a ~370): le voci chiuse erano rimaste scritte per intero accanto al rimando
+allo storico. Ora **496**. Controllato prima di togliere che ogni voce chiusa avesse la sua
+riga qui. I **numeri dei paragrafi restano tutti**, anche delle voci chiuse, perché il codice
+li cita (§4.6 26 volte, §1.4 14, §4.3 14…). Le regole che stavano dentro le voci chiuse sono
+diventate righe delle trappole (import per slug, ripristino, effetti del motore,
+`puo_evolversi`, «un'assenza non è una smentita», id di prova, scelte che sembrano bachi).
+Trovate **tre righe superate**: `salva_moveset()` era data con `indent=2` ma usa `indent=1`
+dal 23/09; il `{% for t in %}` degli editor non c'è più (resta solo in `python.html`); la
+conferma non escapata di `admin_utenti.html` è alla riga 117, non 88 — ed è ancora aperta,
+ora in §3. Il testo di prima: `git show 513c082:BACKLOG.md`.
+
 **I simboli delle statistiche (§4.6)** — su richiesta di Davide, i conteggi (gol, assist,
 cartellini, autogol, rigori segnati/sbagliati, e per il portiere gol subiti e rigori
 parati) sono **simboli** invece che sigle, sul modello della legenda di fantacalcio.it che

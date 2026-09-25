@@ -2,18 +2,21 @@
 
 > **Qui c'è solo ciò che è aperto.** Le voci chiuse stanno in [`STORICO.md`](STORICO.md),
 > una riga per lavoro con la data e i numeri della verifica.
-> Aggiornato: **23/09/2026**. Fonte storica: `Nuove implementazioni.docx` (verde = fatto).
+> Aggiornato: **25/09/2026** (potatura: da 1310 righe; il testo di prima è
+> `git show 513c082:BACKLOG.md`). Fonte storica: `Nuove implementazioni.docx`.
 
-Legenda: ⬜ da fare · 🟨 parziale · ⚠️ trappola nota, da rileggere prima di toccare la zona
+Legenda: ⬜ da fare · 🟨 parziale · ✅ chiuso (resta il titolo, perché il codice cita il
+numero del paragrafo) · ⚠️ trappola nota, da rileggere prima di toccare la zona
 
 **Indice**
 
 1. [Le trappole che valgono ancora](#-le-trappole-che-valgono-ancora) — leggere prima di lavorare
-2. [I blocchi aperti](#1-i-blocchi-aperti-quattro-su-sei)
-3. [I lavori a metà](#2-i-lavori-a-metà)
-4. [Bachi noti](#3-bachi-noti)
-5. [Voci minori, per sezione](#4-voci-minori-per-sezione)
-6. [🏁 Il giro di collaudo finale](#5--il-giro-di-collaudo-finale-va-fatto-per-ultimo)
+2. [L'ordine](#-lordine-aggiornato-il-25092026)
+3. [I blocchi aperti](#1-i-blocchi-aperti)
+4. [I lavori a metà](#2-i-lavori-a-metà)
+5. [Bachi noti](#3-bachi-noti)
+6. [Voci minori, per sezione](#4-voci-minori-per-sezione)
+7. [🏁 Il giro di collaudo finale](#5--il-giro-di-collaudo-finale-va-fatto-per-ultimo)
 
 ---
 
@@ -41,7 +44,7 @@ Non sono storia: sono le cose che questo progetto ha già pagato e che tornano a
 | ⚠️ **Un parametro che vale «vedi tutto» quando lo dimentichi** | Dal 21/09/2026 (il modulo è stato tolto il 25/09/2026 con la sezione vecchia, la regola resta, e `fanta._rose()` la segue). `fanta_import._rose()` nasceva con `ambito=None`, che voleva dire «conta le rose di tutti»: giusto per uno script da riga di comando, che una sessione non ce l'ha — **sbagliato** per il pulsante «Aggiorna», che una sessione ce l'ha, e che così diceva «2 dei giocatori usciti sono in una tua rosa» contando rose altrui. L'ha preso `controlla_proprietario.py`. La regola: quando la stessa funzione la chiamano il web e uno script, il «vedo tutto» **si scrive** (`TUTTE_LE_ROSE`), non si ottiene lasciando fuori un parametro. ⚠️ E lo strumento ha imparato un caso nuovo — una funzione che **riceve** la condizione invece di chiederla a `ambito_utente()` — con un criterio volutamente stretto: il parametro si chiama `ambito` **e** dev'essere letto nel corpo. Un primo tentativo più largo marcava filtrata l'intera funzione, rami senza filtro compresi: la scappatoia esatta che quello strumento esiste per chiudere |
 | ⚠️ **In italiano la virgola è ANCHE il separatore decimale** | Dal 21/09/2026, preso dalla prova al primo giro sulle soglie del modificatore di difesa. `"7,5:8, 6:2"` spezzato sulle virgole dà `7` e `5:8`: una tabella diversa da quella scritta, **senza nessun errore**. Ora le coppie `media:punti` si **cercano** con una regex invece di spezzare la riga, e se dopo averle tolte resta qualcosa che non è un separatore si torna allo standard — meglio un default dichiarato che tre righe su quattro. Vale per qualunque elenco di numeri scritto a mano in questo progetto |
 | ⚠️ **Il valore di partenza di un form non è il DEFAULT della tabella** | Dal 21/09/2026, trovato provando il JS in browser (lo sweep non poteva: era sintatticamente perfetto). Le tendine nuove delle regole precompilavano dai **valori ufficiali**, e le due voci che il regolamento non fissa — porta inviolata e autogol — non essendoci, partivano dal **primo valore della tendina**, cioè `0`. Una lega nuova nasceva con l'autogol che non toglie niente, mentre la tabella ha `DEFAULT -2`. Nessun errore, solo una regola sparita. Ora `VALORE_PARTENZA` è un dizionario **diverso** da `VALORE_UFFICIALE` e i due non si confondono. ⚠️ Fin quando il campo era vuoto il difetto non poteva esistere — era il DB a decidere: **dare un valore iniziale a un campo sposta la decisione dal DB al form**, e da lì in poi i due devono concordare |
-| ⚠️ **`{{ nome|e }}` dentro un handler inline è un `SyntaxError` che aspetta un apostrofo** | Dal 22/09/2026, sul `confirm` che chiede se togliere un giocatore dalla rosa. L'escape HTML rende `N'Dicka` come `N&#39;Dicka`, e il browser **decodifica l'attributo prima** di passare il codice al parser JS: l'handler non compila, il `confirm` sparisce e **il form parte lo stesso**, cioè la conferma di una cosa irreversibile non c'è più. Nessun errore a schermo. E lo **sweep non lo vede finché il dato non ha l'apostrofo**: i nomi con l'apostrofo nel listone sono 2 su 597, e con nessuno dei due in rosa la pagina resa era pulita. La cura è `|tojson` con l'attributo fra **apici singoli** (regge anche le virgolette doppie); lo sweep prende solo ciò che la pagina resa contiene davvero, quindi il caso difficile va **messo nei dati di prova**. ⬜ Lo stesso handler è ancora in `admin_utenti.html:88` con `{{ u.username }}`: uno username con l'apostrofo lo romperebbe uguale |
+| ⚠️ **`{{ nome|e }}` dentro un handler inline è un `SyntaxError` che aspetta un apostrofo** | Dal 22/09/2026, sul `confirm` che chiede se togliere un giocatore dalla rosa. L'escape HTML rende `N'Dicka` come `N&#39;Dicka`, e il browser **decodifica l'attributo prima** di passare il codice al parser JS: l'handler non compila, il `confirm` sparisce e **il form parte lo stesso**, cioè la conferma di una cosa irreversibile non c'è più. Nessun errore a schermo. E lo **sweep non lo vede finché il dato non ha l'apostrofo**: i nomi con l'apostrofo nel listone sono 2 su 597, e con nessuno dei due in rosa la pagina resa era pulita. La cura è `|tojson` con l'attributo fra **apici singoli** (regge anche le virgolette doppie); lo sweep prende solo ciò che la pagina resa contiene davvero, quindi il caso difficile va **messo nei dati di prova**. ⬜ Lo stesso difetto è ancora in `admin_utenti.html:117` con `{{ u.username }}` (§3) |
 | ⚠️ **Lo sweep controlla il JavaScript, non che l'HTML sia ben formato** | Dal 21/09/2026, trovata da Davide cliccando «Fantacalcio» in sidebar e finendo sul PC Builder. Il blocco `{% if 'fantacalcio' … %}` era finito **dentro l'attributo `class`** del link PC Builder, che non veniva mai chiuso: il parser fonde i due `<a>` in uno solo, e resta un `href="/pcbuilder"` con scritto «Fantacalcio». `sweep_pagine.py` era a **0 errori** anche così, perché rende la pagina ed esegue `new Function()` sugli script e sugli handler — un tag mai chiuso non è JavaScript, quindi non lo guarda nessuno. Un link aggiunto a `base.html` va verificato **sulla pagina resa con un parser HTML** (href per href, e `<a>` aperti = chiusi), non a occhio sul template: l'errore si legge male proprio perché il pezzo giusto è tutto lì, solo nel posto sbagliato |
 | ⚠️ **Lo sweep guardava solo le pagine che si aprono con una `GET`** | Dal 21/09/2026, con l'anteprima della rosa incollata. `sweep_pagine.py` scorreva un elenco di URL e faceva `c.get()` su ognuno: una pagina che **esiste solo mandando un form** non era in nessun elenco, quindi lo sweep avrebbe detto «0 errori» senza averla mai resa — ed è una pagina piena di form, tendine e `<script>`, cioè esattamente quello che quello script esiste per controllare. È la stessa forma della trappola sulle tabelle nuove: un elenco scritto a mano che non si accorge di quello che non contiene. Ora c'è `PAGINE_POST` (URL + dati), e i dati di prova contengono di proposito un nome ambiguo e uno inesistente, perché la pagina resa abbia davvero dentro una tendina e una riga «non trovata». La regola: **una pagina nuova si aggiunge all'elenco giusto dei due nello stesso commit in cui nasce** |
 | ⚠️ **Una prova costruita male dice NO a un codice giusto, e costa come un baco** | Dal 21/09/2026, tre volte in un pomeriggio scrivendo le prove del consiglio e della rosa incollata. (1) Due righe incollate identiche messe in un **dizionario per testo** diventavano una: la prova chiedeva due esiti e ne trovava uno. (2) Il «contesi» del consiglio pretendeva un disaccordo fra fascia e punti attesi che coi numeri scelti **non poteva esistere** — serviva fm > 10.8, il banco ne aveva 9.0. (3) La regola del rivale in panchina veniva provata su un banco dove **tutti** i centrocampisti erano in campo, cioè chiedendo un rivale che non c'era. Ogni volta il primo istinto è stato «allora il codice sbaglia», e ogni volta la cura era rifare il banco: il numero che una prova pretende va **contato**, non scelto perché sembra grosso. Il danno è doppio — si perde tempo e, se si «corregge» il codice per far passare la prova, si rompe quello che funzionava |
@@ -51,7 +54,7 @@ Non sono storia: sono le cose che questo progetto ha già pagato e che tornano a
 | ⚠️ **L'eredità è costruita prima che integrazioni e toppe entrino** | Dal 21/09/2026. In `costruisci_moveset()` la forma Gigantamax copia il dizionario della specie: **mutare** una lista condivisa si propaga, **aggiungere un blocco nuovo alla specie no**. Integrando le 25 voci di Regulation M-C è successo esattamente questo: Cinderace, Inteleon, Rillaboom e Toxtricity hanno preso la loro lista `champions` da Bulbapedia, e le loro quattro Gigantamax — che dichiarano `eredita_da` — sono rimaste **senza**, con l'avviso giallo «nessun elenco mosse». Nessun errore. Ora `riallinea_forme_eredi()` gira **dopo** integrazioni e toppe in tutti i percorsi che scrivono il file, e `prova_moveset_main.py` controlla che ogni voce con `eredita_da` abbia davvero la lista della sua base |
 | ⚠️ **Una forma Gigantamax condivide l'oggetto della sua base, non una copia** | Trovata il 21/09/2026. In `costruisci_moveset()` l'eredità è una copia **superficiale**: `voce["champions"]` della Gmax **è lo stesso dizionario** della specie base. Per l'import in blocco è il verso giusto — `eredita_da` dichiara proprio che la lista è quella della base, quindi una toppa applicata a `charizard` arriva anche alla sua Gmax — ma `applica_toppe_champions.py` lavora sul JSON **dal disco**, dove le due liste sono due oggetti separati, e lì la propagazione non c'è. Risultato: il file del 18/09/2026 aveva `Charizard (Gigantamax Form)` **senza** lo *Slash* della 1.2.0 che la sua base aveva, e nessuno se n'è accorto. La rigenerazione del 21/09 le ha riallineate (`champions` 20 699 → 20 700 mosse, una sola voce). La rete: `prova_moveset_main.py` controlla che **ogni** forma con `eredita_da` abbia davvero la lista della sua base |
 | ⚠️ **I dati delle mosse sono quelli di Champions, non di Scarlatto/Violetto** | Dal 18/09/2026, decisione di Davide. Champions **ribilancia** le mosse rispetto ai giochi principali, e il catalogo viene da PokéAPI, cioè da S/V: la sezione «Changes from Scarlet and Violet» della pagina «Pokémon Champions» su Bulbapedia elenca una trentina di differenze. Delle 29 misurabili il catalogo ne aveva **17 già giuste** e 12 no (Slash bp 70→80, Grav Apple 80→90, Crabhammer precisione 90→95, Snap Trap da Erba ad **Acciaio**, …): un numero sbagliato, nessun errore a schermo. Le riallinea `scripts/allinea_dati_mosse_champions.py`. ⚠️ Quella sezione ha in fondo un blocco **commentato** di mosse «that aren't in the game yet» (Gear Grind, Anchor Shot, Hyper Drill, …): quelle **non** vanno scritte. E i **PP** non hanno dove andare — nessuna delle 919 mosse ha quel campo |
-| ⚠️ **Un file di dati si riscrive come lo scrivono gli altri** | Due modi di sporcare un diff, trovati il 18/09/2026 su `pokemon_moves.json` (3 MB). **(1) L'indentazione**: i due scrittori del file usano `indent=1`, uno script nuovo con `indent=2` lo reindenta tutto — **100 000 righe di diff per 33 voci cambiate**, e la modifica vera diventa impossibile da leggere in revisione. ⚠️ `salva_moveset()` in `blueprints/pokemon.py` usa ancora `indent=2`: l'import dal pannello reindenta il file, ed è così da prima, segnalato e non corretto. **(2) L'ordine dei set**: l'hash delle stringhe in Python è randomizzato per processo, quindi iterare un `set` di nomi dà un ordine diverso a ogni giro. Uno script che scrive nell'ordine in cui itera **non è idempotente**, e si vede solo confrontando l'md5 di due giri in **processi separati** — nello stesso processo l'ordine è stabile e la prova passa. Si chiude con `sorted()` e riordinando i dizionari scritti |
+| ⚠️ **Un file di dati si riscrive come lo scrivono gli altri** | Due modi di sporcare un diff, trovati il 18/09/2026 su `pokemon_moves.json` (3 MB). **(1) L'indentazione**: i due scrittori del file usano `indent=1`, uno script nuovo con `indent=2` lo reindenta tutto — **100 000 righe di diff per 33 voci cambiate**, e la modifica vera diventa impossibile da leggere in revisione. ✅ Dal 23/09/2026 anche `salva_moveset()` in `blueprints/pokemon.py` usa `indent=1`. **(2) L'ordine dei set**: l'hash delle stringhe in Python è randomizzato per processo, quindi iterare un `set` di nomi dà un ordine diverso a ogni giro. Uno script che scrive nell'ordine in cui itera **non è idempotente**, e si vede solo confrontando l'md5 di due giri in **processi separati** — nello stesso processo l'ordine è stabile e la prova passa. Si chiude con `sorted()` e riordinando i dizionari scritti |
 | ⚠️ **Il Pokedex mostra le mosse di Champions, e per 1009 voci su 1342 non ne mostra nessuna** | Dal 18/09/2026, decisione di Davide: «voglio solo ciò che imparano in Champions». `pokedex` è passata da `moveset: main` a `champions`, che copre **333 voci** — il roster del gioco. Tutte le altre, Abra e **Amoonguss** compresi, prendono l'avviso giallo «nessun elenco mosse: sono mostrate tutte» e la tendina da 919. **Non è un guasto**, è la risposta onesta: `null` vuol dire «non lo sappiamo», ed è la stessa che prendono le forme inventate. ⚠️ Vale anche per il **caso della regola #8**, che gira proprio su `pokedex` con Amoonguss: l'avviso giallo su Amoonguss è previsto, il danno si calcola lo stesso perché la mossa si scrive a mano (Buio, fisica, BP 100). Chi «aggiusta» quell'avviso rompe una decisione, non un baco |
 | ⚠️ **Ci sono due export, e uno non deve mai entrare in git** | Dal 18/09/2026. `esporta_dati.py` senza opzioni scrive `data/backup/hub_export.json`, che **viene committato** e per questo **non contiene le password**. `--completo --uscita <percorso>` scrive il backup vero, con gli **hash delle password** e `regulations`. Non ha un percorso di default di proposito: pretende `--uscita` e si **rifiuta** di scrivere se risalendo l'albero dalla destinazione trova un `.git`. In `.gitignore` c'è la seconda rete (`*_completo.json`). ⚠️ Chi aggiunge un default «comodo» dentro al repo, o toglie il controllo per far passare una prova, rimette in piedi esattamente il buco per cui `hub.db` non è versionato |
 | **Risoluzione per nome** | Due chiavi diverse possono avere lo stesso `nome_it`/`nome_en`, e il catalogo Pokémon cita le abilità col nome **inglese** mentre le chiavi sono italiane. Ogni confronto per nome va fatto con `risolviChiave()` / `_INDICE`, mai con un match esatto sulla chiave |
@@ -60,7 +63,7 @@ Non sono storia: sono le cose che questo progetto ha già pagato e che tornano a
 | **Le Mega** | La firma «+75 HP» individua le voci convertite **specie per specie, non stat per stat**: su Froslass cinque valori su sei erano convertiti e uno no, e la regola applicata in blocco ha rotto proprio quello. E la conversione può partire da una forma diversa da quella di testa (Zygarde Complete) |
 | **File storici** | `data/pokemon_catalog.json`, `roster_ma.json`, `moves_ma.json`, `items_ma.json`, `abilities.json` sono ancora lì come **fallback**, e `pokemon_catalog.json` contiene le Mega nella vecchia forma convertita. Si dismettono al collaudo finale, non prima |
 | **Scritture concorrenti** | `salva_catalogo()` riscrive il file intero **senza lock**: due salvataggi nello stesso istante non danno errore, l'ultimo vince e l'altro si perde. Rilevante appena l'app va online |
-| **`t` come variabile** | `{% for t in … %}` in `moves_editor.html:97,153` e `regulation_editor.html:215` **ombrerebbe la funzione `t()`** delle traduzioni. Vanno rinominate quando si traducono quei due file |
+| **`t` come variabile** | `{% for t in … %}` **ombra la funzione `t()`** delle traduzioni. Negli editor Pokémon è stato rinominato quando sono stati tradotti; oggi resta solo in `python.html:39`, sezione non tradotta: va rinominato se un giorno la si traduce |
 | **`|tojson` negli attributi** | `|tojson` rende `"pokedex"` **con le doppie**: dentro un attributo delimitato dalle doppie, l'attributo si chiude a metà. Usare gli apici singoli. ⚠️ Trappola già pagata due volte — il 12/08 e di nuovo il 13/08, ripresa dallo sweep entrambe le volte |
 | **Commenti e traduzioni** | `controlla_traduzioni.py` legge il **file grezzo**, commenti Jinja compresi: una chiamata a `t()` citata come esempio dentro un `{# … #}` viene contata fra le stringhe chieste dal codice e chiede una traduzione che non serve a nessuno. Nei commenti si descrive, non si cita la sintassi |
 | ⚠️ **Lo sweep statico non basta** | `new Function()` su script e handler dice che la **sintassi** è valida, **non** che il codice giri. Il 13/08 la tabella dell'editor mosse è rimasta **vuota** con lo sweep a zero errori: `renderTable()` lanciava `tf is not defined` a runtime. Ogni giro di verifica va chiuso **caricando davvero** le pagine e contando le righe che compaiono — 919 mosse, 1343 tag del roster, 397 oggetti, 386 abilità. Una tabella vuota non dà errore a schermo |
@@ -84,256 +87,79 @@ Non sono storia: sono le cose che questo progetto ha già pagato e che tornano a
 | **`user_id` a `NULL`** | Il travaso ad `admin` gira **solo nel giro in cui la colonna nasce**, non a ogni avvio: è voluto, perché un `WHERE user_id IS NULL` permanente intesterebbe all'admin qualunque riga scritta male, in silenzio. Il prezzo: una riga senza proprietario **sparisce dalla vista del suo autore** — ma non è persa e non è invisibile a tutti, perché l'admin filtra `1=1` e la vede, col badge che dice «senza proprietario». È lì che si va a cercarla quando qualcuno dice «il dato è sparito» |
 | ⚠️ **Un campo che manca vale «main»** | La sorgente delle mosse di una regulation e' `moveset` in `data/regulations.json`, e **se manca non e' un errore**: `sorgente_moveset()` ricade su `main`. Fino al 10/09/2026 la creazione non lo scriveva affatto, quindi una regulation copiata da MA — 279 nomi di Champions — leggeva gli elenchi dei giochi principali: **80 mosse su Incineroar invece di 77**, Knock Off compresa, senza un errore da nessuna parte. Ora la creazione lo scrive sempre esplicito e il salvataggio rifiuta un nome che non esiste, ma il fallback resta: **un file scritto a mano senza quel campo dira' `main` e sembrera' giusto** |
 | **Default del DB** | `extensions.py:143` crea la colonna con `regulation_id TEXT DEFAULT 'ma'`. Non è un residuo dei 14 letterali tolti l'11/08: è il default del **DB**, e cambiarlo richiede una migrazione. Oggi non fa danno perché `_team_upsert()` passa sempre un valore esplicito |
+| ⚠️ **L'import di una specie riconosce la voce dallo slug, non dalla chiave** | Dal 21/08/2026 (§1.3). Delle specie di default del dump che mancano al catalogo ce ne sono 4, e ci sono già tutte **sotto un'altra chiave**: confrontare per chiave le importerebbe in doppio. **Le forme non passano dall'import** — stanno annidate in `forms`, e importarle al primo livello farebbe un doppione. E reimportando una specie le sue `forms` vanno **ricopiate**: il dump non le ha e nessun import può ricostruirle. Dal 23/09/2026 anche `build_catalog.py` confronta lo slug |
+| ⚠️ **Il pulsante della `mega_map` completa, non ricalcola** | Dal 10/09/2026 (§1.3). I collegamenti scritti a mano restano, e le Mega la cui base è fuori dal roster **non si collegano da sole**: aggiungere una specie è una scelta di contenuto |
+| ⚠️ **Il ripristino: password fuori, e l'unità è la riga con il suo `id`** | Dal 21/08/2026 (§1.4). Con l'export normale un utente ripristinato nasce con una password casuale che nessuno conosce, e va reimpostata da `/utenti` (lo script lo dice). Con `--completo` le password entrano **solo** per gli utenti nuovi. Non c'è nessuna fusione per titolo o per nome, perché `team_members.team_id`, `pc_components.build_id` e `python_progress.topic_id` puntano a quegli `id`. `regulations` sta in `MAI_SOVRASCRITTE`: la sua `created_at` la scrive `init_db()` al momento, e senza quella regola ogni ripristino su un DB nuovo si fermerebbe su un timestamp |
+| ⚠️ **Un effetto che il motore non conosce non si attiva** | Dal 14/09/2026. Il calcolatore gestisce gli effetti elencati nel docstring di `scripts/assegna_categorie_oggetti.py`, più `pikachu_boost` e `resist_<tipo>`. Un oggetto nuovo con `effect` e `modifier` compare nella tendina, ma finché `calcDamage()` non conosce l'effetto il risultato dice «non si attiva». È voluto: fino al 14/09 un oggetto sconosciuto moltiplicava l'Attacco in silenzio. **Ogni effetto nuovo va scritto anche nel motore**, e provato con un caso calcolato a mano. ⚠️ La tendina mostra le voci con `modifier` **non nullo**, e 0 è un valore: il Palloncino ha `modifier: 0` |
+| ⚠️ **`puo_evolversi` ha tre valori** | Lo scrive `scripts/importa_evoluzioni.py` (1342 voci su 1342), **per forma** e non per specie: Corsola di Galar sì, quella di Kanto no, le Mega mai. **Assente vuol dire «non lo sappiamo»**, e l'Evolcondensa lo dice a schermo, come `moves: null`. L'import dal pannello lo calcola da sé; **una voce aggiunta a mano dall'editor nasce senza**, e va rilanciato lo script. Nelle forme **non si eredita** dalla specie in `api_pokemon.py`: darebbe `true` a tutte le Mega |
+| ⚠️ **Un'assenza da una pagina non è una smentita** | Dal 18/09/2026 (§5.2). La pagina Champions di Gardevoir su Bulbapedia **comincia da «Charm»**: le cinque mosse che il dump ha in più sono esattamente le cinque prima in ordine alfabetico, cioè la testa della lista tagliata. Su Blaziken *U-turn* è un'omissione isolata. Le mosse proprie delle **forme di Rotom** Bulbapedia le mette sulla pagina unica, il dump le separa: non sono errori. Non si sovrascrive PokéAPI con Bulbapedia alla cieca, né il contrario. E anche Game8 sbaglia: «Annihilape lost Pound» è falso, Pound lo impara Politoed |
+| ⚠️ **Un id scelto a tavolino non è una prova di proprietà** | Pagata il 16/08/2026 (§4.1). La cache IGDB vera usa `igdb_release_id` fra **486664 e 954196**; uno script di prova che cancellava «il suo intervallo» 900000-910000 si è portato via **497 righe vere**. Un test che condivide lo stato coi dati veri misura anche quelli: la prova del calendario gira su una **copia** di `hub.db` |
+| ⚠️ **`controlla_proprietario.py` riconosce il filtro in modo volutamente stretto** | Dal 22/09/2026 (§4.5). `nomi_innestati()` torna un nome solo se il segnaposto è un nome e basta: `{cond[0]}`, `{" ".join(...)}` o una condizione passata da un parametro **non** vengono riconosciuti, e quella query finisce fra le **scoperte**. È il verso giusto in cui sbagliare, ma una riscrittura innocua può far comparire una scoperta nuova: prima di dichiararla con un'eccezione, guardare se il filtro c'è davvero. La catena `cond` → `mia` → query si segue solo attraverso assegnazioni a un nome da una f-string |
+| ⚠️ **Scelte che sembrano bachi, e non vanno «corrette»** | **L'hover del tema scuro** (`--primary-h: #9488f7`, bianco sopra a **2.95**, sotto la soglia di 3.0) resta com'è per decisione di Davide del 22/09/2026: `prova_temi.py` lo tiene in `DICHIARATE` e lo ristampa a ogni giro. **Il travaso fra utenti non è rieseguibile**: premuto due volte lascia tutto in doppio, la conferma lo dice coi numeri, e `prova_travaso_utente.py` c'è apposta. **In italiano il calcolatore scrive `Privazione`**, non `Knock Off`: se si vuole l'inglese anche in italiano si cambia in un punto solo, `nomeVis` nel `<head>` di `base.html` |
 
 ---
 
-## 📌 L'ordine deciso il 21/08/2026
+## 📌 L'ordine, aggiornato il 25/09/2026
 
-> **Prima di tutto, dal 23/09/2026 — decisione di Davide: mettere in regola le fonti del
-> Fantacalcio (§4.6).** fantacalcio.it vieta la lettura automatica delle sue pagine; il piano,
-> un dato alla volta, è scritto lì. Si parte **verificando** le fonti nuove, non scrivendo codice.
+> **Adesso: il PC Builder (§4)** — Davide ha delle idee, e viene prima delle altre sezioni.
+> Il Fantacalcio (§4.6) è in piedi: quello che resta sono prove a mano e misure che
+> aspettano un evento (una partita spostata), non codice.
 
-**Mettere l'app online (§1.5) va per ultimo**, per scelta di Davide: «caricare il sito da
-qualche parte lo voglio tenere come una delle ultime cose». I quattro buchi di sicurezza
-che rendevano pericoloso esporla sono comunque **chiusi lo stesso giorno**, quindi la
-voce non è più urgente e non blocca niente — l'hub in casa funziona come sempre.
+Le decisioni che valgono ancora: la sezione Pokémon si finisce prima delle altre (14/09),
+il collaudo va alla fine, le guide dopo il collaudo, e **mettere l'app online per ultimo**
+(«caricare il sito da qualche parte lo voglio tenere come una delle ultime cose»).
 
-L'ordine che ne esce, e che vale finché Davide non lo cambia:
-
-1. ~~§1.3 — le voci collegate che restano (una regulation nuova dall'interfaccia)~~
-   ✅ **chiuso il 10/09/2026**
-2. ~~§2.2 — le 103 abilità da fondere~~ ✅ **chiuso il 10/09/2026**: erano già fuse,
-   e la rimisura l'ha detto. Restava un legame rotto su Mega Meganium
-3. §4 — le sezioni: Stampa 3D, Tinkercad, PC Builder, Python
-
-> **Cambiato il 14/09/2026**: Davide ha scelto di **finire prima la sezione Pokémon**.
-> Quindi vengono anticipate l'assegnazione delle 7 categorie di oggetti vuote (§3) e la
-> verifica del moveset contro Bulbapedia (§5.2). Le sezioni del §4 vengono dopo.
-4. ~~§1.4 — l'export `--completo`~~ ✅ **chiuso del tutto**: il completo il 18/09/2026, e la falla 2 (tema e lingua fuori dal DB) il 22/09/2026
-5. ~~§3 — i bachi noti~~ ✅ **guardati tutti il 10/09/2026**: tre chiusi, uno mezzo,
-   uno che non si riproduce, uno lasciato apposta
-6. §5 — il giro di collaudo, la verifica dei moveset, l'inventario del codice morto
-7. §1.6 — le due guide, che vanno **dopo** il collaudo
-8. §1.5 — l'app online
-
-> **Aggiunta il 10/09/2026, definita il 21/09/2026**: la sezione **Fantacalcio**
-> (§4.2) non è più un segnaposto — le fondamenta dei dati sono in piedi e il resto
-> (formazione, probabili, consiglio) è scritto lì con le sue risposte.
+1. §4 — le sezioni: **PC Builder**, poi Stampa 3D, Tinkercad, Python, Log
+2. I residui Pokémon: le due abilità senza effetto (§3), Kingambit e Game8 (§4.3)
+3. §4.6 — le prove a mano del Fantacalcio
+4. §5 — il giro di collaudo, l'inventario del codice morto
+5. §1.6 — le due guide, **dopo** il collaudo
+6. §1.5 — l'app online
 
 ---
 
-## 1. I blocchi aperti (quattro su sei)
+## 1. I blocchi aperti
 
-Erano sei, aperti il 12/08/2026: **1.2 è chiuso il 17/08/2026** e resta qui solo come riga
-di richiamo, perché la regola che ha lasciato in eredità va letta prima di aggiungere una
-route. Tutti **misurati sul codice, non ipotizzati**. L'ordine consigliato è quello in cui
-sono scritti: 1.1 e 1.2 erano due metà della stessa domanda — *di chi* sono i dati e *chi*
-può cambiarli — e 1.5 dipende da entrambe. **Sono chiuse entrambe**: 1.2 il 17/08/2026
-(36 route), 1.1 il 19/08/2026 (78 query). Restano qui come righe di richiamo, perché
-tutte e due hanno lasciato una regola che va letta prima di scrivere codice nuovo:
-una route nuova sotto `/pokemon/*` nasce **chiusa**, una query nuova sui contenuti nasce
-**scoperta**.
+Sei blocchi aperti il 12/08/2026. **1.1 e 1.2 sono chiusi**, e le regole che hanno lasciato
+sono nelle trappole (una route nuova sotto `/pokemon/*` nasce **chiusa**, una query nuova
+sui contenuti nasce **scoperta**).
 
 ### 1.1 ✅ I dati hanno un proprietario — chiuso il 19/08/2026
 
-**Trovata da Davide provando la web app**: un team Pokémon salvato da un utente **lo
-vedevano tutti**, e lo stesso per giochi, progetti Arduino e build PC. I permessi per
-sezione dicono **quali sezioni** vedi, non **di chi sono i dati** dentro.
+78 query su 78 che sanno di chi parlano. Restano due cose piccole:
 
-Chiuso in un blocco solo: `user_id` sulle quattro tabelle radice, `python_progress` per
-la sezione Python, e **78 query su 78** che ora sanno di chi parlano — 52 filtrate, 26
-dichiarate con la ragione scritta, **0 scoperte**. Numeri e prove in `STORICO.md`.
+- ⬜ **La colonna `python_topics.done` non la legge più nessuno** (fotografia delle spunte
+  dell'admin al 19/08; il progresso vero è in `python_progress`). Toglierla è una
+  migrazione: va con §5.3
+- ⬜ **Il proprietario non si può cambiare da interfaccia** — oggi solo dal DB. Non è stato
+  chiesto
 
-> ⚠️ **La regola che resta, e va letta prima di scrivere una query nuova**: una `SELECT`
-> nuova su `games`, `teams`, `arduino_projects` o `pc_builds` **non filtra da sola**, e
-> mostrare la riga di un altro non dà nessun errore. Si chiede la condizione a
-> `ambito_utente()` (o a `solo_mie()` se si sta **scrivendo**), e si controlla con
-> `python scripts/controlla_proprietario.py`, che esce con 1 se resta una query
-> scoperta. Le eccezioni si dichiarano lì dentro **con il testo della query**: se la
-> query cambia, l'eccezione smette di combaciare, ed è voluto.
-
-**⬜ Cosa resta aperto, ed è piccolo:**
-
-- ⬜ **La colonna `python_topics.done` non la legge più nessuno.** È rimasta nel DB con
-  la fotografia delle spunte dell'admin al 19/08/2026; il progresso vero sta in
-  `python_progress`. Toglierla è una migrazione a sé — va con l'inventario del codice
-  morto (§5.3), non prima
-- ⬜ **Il proprietario non si può cambiare da interfaccia.** Se un giorno serve
-  «passa questo gioco a un altro utente», oggi si fa solo dal DB. Non è stato chiesto
-- ⬜ **I dati condivisi restano condivisi**: catalogo, regulation, mosse, oggetti e
-  abilità non hanno un proprietario e non devono averlo — sono di tutti, e a
-  proteggerli è §1.2, che li ha riservati agli amministratori
+I dati condivisi (catalogo, regulation, mosse, oggetti, abilità) **non** hanno un
+proprietario e non devono averlo: li protegge §1.2.
 
 ### 1.2 ✅ Gli editor Pokémon solo per gli admin — chiuso il 17/08/2026
 
-Chiuso con `APERTE_A_TUTTI` e un `before_request` in `blueprints/pokemon.py`: **30 route
-su 36** ora rispondono solo a un amministratore, le altre 6 sono le pagine d'uso. Numeri e
-prove in `STORICO.md`.
+30 route su 36 solo per un amministratore (`APERTE_A_TUTTI` in `blueprints/pokemon.py`).
+La regola è nelle trappole.
 
-> ⚠️ **Quando si aggiunge una route sotto `/pokemon/*`**: nasce **riservata agli
-> amministratori**. Se deve essere aperta a tutti va scritta in `APERTE_A_TUTTI`, ed è
-> voluto che il verso sia questo — una lista del vietato fallirebbe **aperta** sulla
-> prossima route che qualcuno dimentica, e la dimenticanza non darebbe nessun segnale.
-> Così invece si vede subito, perché la pagina non si apre.
+### 1.3 🟨 Aggiungere dati dalla web app
 
-### 1.3 🟨 Aggiungere dati dalla web app, senza passarmi dal mezzo
+Chiuso tutto quello che era stato chiesto: import di una specie per nome con anteprima
+(21/08), moveset, spunta «aggiungi anche a…», validazione, regulation nuova
+dall'interfaccia (10/09). Le regole che restano sono nelle trappole. Aperto:
 
-Poter importare nuovi Pokémon in `pokedex` **dall'interfaccia**, e lo stesso per oggetti,
-mosse e abilità.
+- ⬜ **Una regulation che non sia basata su Champions o sui giochi principali** non ha una
+  terza sorgente di mosse da scegliere, perché nel dump non c'è (§2.3). È dato, non codice
+- ⬜ **Gli `overrides` del filtro** si scrivono a mano nel JSON, per decisione del
+  14/09/2026: oggi valgono `{}` in tutte le regulation, e un editor si fa quando serviranno
 
-**Metà esiste già**, e va detto prima di progettare il resto:
+### 1.4 ✅ Esportare tutto il DB — chiuso il 22/09/2026
 
-- `/pokemon/catalogo?db=pokemon|moves|abilities|items` ([pokemon.py:712](blueprints/pokemon.py:712))
-  crea, aggiorna, rinomina ed elimina **una voce alla volta**, con archivio e ripristino:
-  `DB_CATALOGO` copre tutti e quattro i database chiesti
-- `/pokemon/regulation/<id>/contenuto` ([pokemon.py:604](blueprints/pokemon.py:604)) sceglie
-  **quali nomi** entrano in una regulation, per **ogni** regulation convertita al filtro
-
-E su `pokedex` i quattro filtri sono `null`, cioè «tutto il catalogo»: un Pokémon aggiunto
-**compare da solo**. In `ma` (279/460/58) e `mb` (308/460/58) gli elenchi sono espliciti,
-quindi lì va spuntato a mano.
-
-**✅ Il primo ostacolo è stato tolto il 21/08/2026, e non era quello che c'era scritto qui.**
-Misurato: una voce aggiunta dall'editor **compariva nel roster** e `/api/pokemon/<nome>`
-rispondeva **404** — nell'elenco c'era, aprendola non esisteva. E cambiando una base stat il
-file diceva 999 mentre l'API continuava a rispondere 115, **senza nessun errore**, fino al
-riavvio dell'app. Causa: `POKEMON_CATALOG` e `_INDICE` in `blueprints/api_pokemon.py` erano
-caricati **una volta sola all'avvio**. Ora seguono l'mtime del file, come `_MOVESET` e
-`_TRADUZIONI`. Numeri e prove in `STORICO.md`, rete in `scripts/prova_catalogo_vivo.py`.
-
-**Cosa manca davvero, in ordine di rischio:**
-
-1. ✅ **Il moveset — chiuso il 21/08/2026.** Una specie importata porta l'elenco `main`
-   e, quando il dump ce l'ha, anche `champions`: sono le regole di Champions chieste da
-   Davide. Dove Champions non conosce la specie l'elenco **non si inventa** e resta
-   l'avviso giallo. ⚠️ E la frase che stava qui — «la tendina esce vuota senza dire
-   perché» — era **sbagliata**. Verificato il 21/08: `mosse_legali()` torna `None`, e sia il
-   team builder sia il calcolatore mostrano **tutte** le mosse della regulation con l'avviso
-   giallo «Nessun elenco mosse per X: sono mostrate tutte». Quindi la seconda metà del
-   requisito — *dichiarare a schermo* — è **già soddisfatta**, ed è la stessa strada delle
-   forme inventate. Resta la prima: **dare le mosse** a una specie nuova quando la fonte
-   esiste. `data/catalog/pokemon_moves.json` non è tra i `DB_CATALOGO`
-   ([pokemon.py:71](blueprints/pokemon.py:71)) e lo scrive solo
-   `scripts/importa_mosse_specie.py`, che legge il dump CSV di PokéAPI
-2. ✅ **L'import — chiuso il 21/08/2026.** Forma scelta da Davide: **si scrive un nome e i
-   dati li pesca il programma**. `pokeapi.py` legge il dump CSV, `/pesca` mostra cosa
-   entrerebbe senza scrivere niente e `/importa` scrive dopo l'anteprima, con
-   `salva_catalogo()` sotto. Pannello in `catalog_editor.html`, solo sotto la linguetta
-   Pokémon. ⚠️ **Oggi non c'è niente di davvero nuovo da importare** — il dump non ha
-   specie di default che al catalogo manchino: è una porta per il futuro, non un
-   riempimento
-3. ✅ **Le regulation non-`pokedex` — chiuso il 21/08/2026**: una spunta «aggiungi anche
-   a…» al salvataggio, scelta di Davide. `pokedex` non compare fra le spunte, ed è voluto:
-   i suoi filtri sono `null` e la voce ci finisce da sola
-4. ✅ **Validazione — chiusa il 21/08/2026**, e con **due esiti diversi** invece di uno:
-   un campo del **tipo sbagliato** viene rifiutato con 400 (`base_stats.hp = "molti"` non
-   darebbe un errore a valle, darebbe **un numero sbagliato** nel calcolatore), un campo
-   **mancante** si salva e si **dichiara** a schermo — serve poter tenere una bozza, e le
-   forme inventate sono nate così. I campi attesi sono contati sul catalogo, non desiderati:
-   sono quelli che oggi hanno **tutte** le voci. ⚠️ `bp` sulle mosse è escluso di proposito
-   (760 su 919: le mosse di stato non hanno potenza)
-5. **Chi può farlo**: ✅ risposto dal 17/08/2026 — è scrittura su dati condivisi, quindi
-   **solo gli amministratori**, e una route nuova lo è già senza fare niente (§1.2). Resta
-   da incrociare con 1.1 solo se un giorno anche i dati condivisi avranno un proprietario
-
-**I punti 1-4 sono chiusi il 21/08/2026**; resta aperta solo la voce collegata qui
-sotto — creare i JSON di una regulation nuova dall'interfaccia. Numeri e prove: numeri
-e prove in `STORICO.md`, rete in `scripts/prova_import_specie.py` (23 su 23).
-
-> ⚠️ **Le tre regole che l'import ha lasciato**, da leggere prima di toccarlo: una voce si
-> riconosce dallo **slug** e non dalla chiave (delle specie di default che mancano al
-> catalogo ce ne sono 4, e ci sono già tutte sotto un'altra chiave); **le forme non
-> passano di lì** — sono annidate in `forms`, e importarle al primo livello farebbe un
-> doppione; e reimportando una specie le sue `forms` vanno **ricopiate**, perché il dump
-> non le ha e nessun import può ricostruirle.
-
-**Voce collegata** (dal docx): ✅ **chiusa il 10/09/2026** — *creare i JSON di una
-regulation nuova dalla web app*. Il pulsante «Nuova Regulation» c'era già; quello che
-mancava erano quattro cose senza le quali la regulation che nasceva da lì non era usabile,
-e tre su quattro **non davano nessun errore**: la sorgente delle mosse non si sceglieva
-(una copia di MA leggeva `main` e su Incineroar dava 80 mosse invece di 77), la pagina
-Regulations mostrava 208/461 su MA e 0 su tutto il resto, la `mega_map` si poteva riempire
-solo da riga di comando, e una regulation vuota rispondeva 404 facendo ricadere lo Speed
-Tier sulla lista statica. Numeri e prove in `STORICO.md`, rete in
-`scripts/prova_regulation_nuova.py` (32 su 32).
-
-> ⚠️ **Le due regole che restano**: la sorgente delle mosse (`moveset` in
-> `regulations.json`) **non ha un valore obbligatorio** — se manca vale `main`, ed è
-> il motivo per cui ora la creazione la scrive sempre esplicita e il salvataggio rifiuta
-> un nome che non esiste. E il pulsante della `mega_map` **completa, non ricalcola**: i
-> collegamenti scritti a mano restano, e le Mega la cui base è fuori dal roster non si
-> collegano da sole, perché aggiungere una specie è una scelta di contenuto.
-
-**⬜ Cosa resta di questa voce, ed è dato, non codice**: una regulation nuova che **non**
-sia basata su Champions o sui giochi principali non ha una terza sorgente di mosse da
-scegliere, perché nel dump non c'è (vedi §2.3). Gli `overrides` del filtro — i campi
-sovrascritti voce per voce — si scrivono a mano nel JSON **per decisione del 14/09/2026**:
-in tutte e tre le regulation valgono `{}`, e un editor si fa quando serviranno.
-
-### 1.4 🟨 Esportare tutto il DB, utenti e personalizzazioni comprese
-
-> Precisazione di Davide: «con esportazione db intendo anche esportare tutto il resto».
-> **Quella parte c'è già.** Contato sul DB vero: 33 giochi, 1 team con 1 membro, 1 build PC
-> con 5 componenti, 53 argomenti Python, 2 utenti, tutto in `data/backup/hub_export.json`.
-
-`scripts/esporta_dati.py` copre **11 tabelle** su 13 (erano 9 su 11 finché il 21/09/2026 non sono entrate `fanta_leagues` e `fanta_roster`; il listone `fanta_players` resta fuori di proposito, si rifà con `importa_listone.py`) (erano scritte 8 finché
-`python_progress` non è entrata nell'elenco il 19/08/2026) e degli utenti esporta tutte
-le colonne tranne `password` — quindi **i permessi per sezione ci sono già**, stanno in
-`users.sections`, che è una colonna e non una tabella a parte. Con `--completo` le
-tabelle sono **10**: si aggiunge `regulations`, e resta fuori solo `game_releases`.
-
-**✅ La falla 2 è chiusa il 21/08/2026: `scripts/importa_dati.py` esiste.** Il ritorno
-c'è, è rieseguibile, ha `--dry-run` e **non sovrascrive niente senza averlo detto
-prima**. 19 prove su 19 in `scripts/prova_importa_dati.py`, ognuna su un DB suo creato
-da `init_db()` in una cartella temporanea. Numeri e prove in `STORICO.md`.
-
-> ⚠️ **Le due regole che restano, e vanno lette prima di usarlo**: le **password non
-> rientrano** (l'export non le contiene di proposito), quindi un utente ripristinato
-> nasce con una password casuale che nessuno conosce e va reimpostata da `/utenti` —
-> lo script lo dice a schermo, ed è il verso giusto. E l'unità del ripristino è **la
-> riga con il suo `id`**: non c'è nessuna fusione per titolo o per nome, perché
-> `team_members.team_id`, `pc_components.build_id` e `python_progress.topic_id`
-> puntano a quegli `id`.
-
-**Delle due falle ne resta una:**
-
-1. ✅ **`regulations` è nel backup dal 18/09/2026.** Non nell'export committabile — lì
-   continua a non esserci — ma in `--completo` sì, e `importa_dati.py` sa rimetterla.
-   Resta una **tabella morta** (la scrive `init_db()`, non la legge nessuno), e proprio
-   per questo è nell'elenco anche dell'import: così con l'export normale compare fra le
-   «tabelle non presenti nell'export» invece di non comparire affatto. ⚠️ La sua
-   `created_at` la scrive `init_db()` **al momento**, quindi due DB creati a secondi di
-   distanza hanno la stessa riga con una data diversa: è in `MAI_SOVRASCRITTE`, altrimenti
-   ogni ripristino su un DB appena inizializzato si fermerebbe su un conflitto — su una
-   tabella morta, per un timestamp — e l'unica uscita sarebbe `--sovrascrivi`
-2. ✅ **Chiusa il 22/09/2026.** Erano il **tema** in `localStorage` e la **lingua** nel
-   cookie `hub_lang`, entrambi per browser: nessun export poteva prenderli. Ora `users`
-   ha le colonne `tema` e `lingua`, e la scelta **segue la persona** — al login il tema
-   entra in sessione (il server lo scrive in `data-theme`, così la pagina nasce del
-   colore giusto invece di lampeggiare) e la lingua viene riscritta nel cookie.
-   ⚠️ Il browser **non sparisce**: la pagina di login un utente non ce l'ha, quindi
-   `localStorage` e il cookie restano la via veloce. E `NULL` vuol dire «non ha mai
-   scelto», non «ha scelto lo scuro». Prove: `scripts/prova_preferenze.py`, 17 su 17,
-   e quella che conta gira su un **secondo test client** — cioè un browser nuovo,
-   senza localStorage e senza cookie, che è l'unico posto dove si vede se la colonna
-   serve a qualcosa
-
-**✅ I due export esistono, dal 18/09/2026.** `esporta_dati.py` è rimasto com'era e
-scrive il file committabile senza password; `--completo --uscita <percorso>` scrive il
-backup vero, con gli hash e `regulations`. Non ha un percorso di default **di proposito**:
-pretende `--uscita` e si **rifiuta** di scrivere se, risalendo l'albero dalla destinazione,
-trova un `.git` — la rete che tiene in piedi la distinzione, perché un default dentro al
-repo verrebbe committato la prima volta che qualcuno fa `git add -A` senza guardare.
-In `.gitignore` c'è una seconda rete (`*_completo.json`) per il file copiato a mano.
-Il ritorno è `importa_dati.py --file <quel percorso>`, che era già pronto: le password
-entrano **solo** per gli utenti nuovi, e quelle già nel DB non si toccano mai. Lo script
-dice **quale dei due export** ha letto, con due messaggi diversi — «rientrati senza
-password» dopo un backup completo sarebbe falso. Fuori anche dal completo resta
-`game_releases`, la cache IGDB da 6007 righe che si rifà col pulsante.
-`scripts/prova_esporta_completo.py`: **21 prove su 21**.
-
-
-Da incrociare con 1.5: online questo export deve girare **da solo sul server**.
+`esporta_dati.py` (11 tabelle su 13, senza password, committato) e `--completo --uscita`
+(con gli hash e `regulations`, mai dentro un repo); il ritorno è `importa_dati.py`. Tema e
+lingua seguono l'utente (colonne `tema` e `lingua` in `users`). Fuori da entrambi, di
+proposito: `fanta_players` (si rifà con `importa_listone.py`) e `game_releases` (la cache
+IGDB, si rifà col pulsante). Le regole del ripristino sono nelle trappole.
 
 ### 1.5 🟨 Mettere l'app online
 
@@ -342,169 +168,81 @@ Da incrociare con 1.5: online questo export deve girare **da solo sul server**.
 > Railway era stato escluso dal vincolo «gratis» (il disco persistente si paga): se torna in
 > gioco, il vincolo va riconfermato con lui, non dato per caduto.
 
-> **I termini d'uso delle fonti, letti il 23/09/2026** — non un parere legale, solo quello
-> che c'è scritto:
-> - **fantacalcio.it** (Fantacalcio S.r.l., Napoli), *Termini e condizioni*, art. 3:
->   vieta di «usare programmi software o altri meccanismi automatici o manuali per copiare
->   o accedere alle pagine della Piattaforma o al loro Contenuto (ivi compresi sistemi atti
->   a effettuare il c.d. scraping)»; art. 9 (non 8: l'8 è la privacy, ricontato il 25/09/2026): a fini personali e non commerciali l'utente può
->   «esclusivamente visualizzare» i contenuti. **La lettura di listone, statistiche,
->   probabili e calendario che fa `fantacalcio_it.py` è quindi contraria ai loro termini**,
->   anche per uso personale. In più il `robots.txt` blocca `/probabiliformazioniseriea`
->   (noi leggiamo la stessa pagina con i trattini). Il rischio pratico per un uso privato a
->   bassa frequenza è basso, ma il divieto è scritto: la decisione su come proseguire è di
->   Davide. ✅ **Deciso il 23/09/2026: si mette in regola**, piano in §4.6. ✅ **Dal
->   25/09/2026 `fantacalcio_it.py` non c'è più**: tolto con la sezione vecchia
-> - **Serebii**: non ha termini d'uso pubblicati, solo la privacy e «All Content is ©
->   Copyright of Serebii.net». Il `robots.txt` non blocca le pagine che leggiamo. Leggerle
->   per uso personale non va contro niente di scritto; **ripubblicarle** sì
-> - **Bulbapedia** (per completezza): testo in CC BY-NC-SA, uso non commerciale con
->   attribuzione; la lettura in formato grezzo è una funzione normale di MediaWiki
-
-Usare la web app dal telefono e da altri PC, **in contemporanea**.
-
-> **I due vincoli, posti da Davide il 12/08/2026:**
-> 1. **I dati degli utenti restano salvati, sempre.** Una soluzione che al riavvio riparte
->    pulita è esclusa a prescindere
-> 2. **Gratis.**
->
-> Insieme **tagliano fuori Railway**, e con lui Render e Fly nella forma gratuita: il disco
-> persistente lì è la parte che si paga.
->
-> ⚠️ Il vincolo 1 va **verificato, non creduto**: qualunque strada si scelga, il collaudo
-> obbligatorio è **salvare qualcosa, riavviare il servizio, ricontrollare che ci sia
-> ancora**. Il filesystem effimero non dà nessun errore: la pagina dice «Salvato» lo stesso.
-
-**Il problema non è quale hosting, è che questa app tiene lo stato in file su disco**:
-**20 punti** in `blueprints/` ed `extensions.py` aprono un file in scrittura mentre l'app
-gira, più `hub.db`. Quanto deve viaggiare, misurato: `data/` pesa 92 MB ma **84 sono
-`data/cache/`**, rigenerabile e già ignorata da git — restano **7,3 MB versionati** più
-`hub.db` (60 KB) e `data/archive/` (3 MB). È poco.
+**I due vincoli, posti da Davide il 12/08/2026**: (1) **i dati degli utenti restano
+salvati, sempre** — una soluzione che al riavvio riparte pulita è esclusa; (2) **gratis**.
+⚠️ Il vincolo 1 va **verificato, non creduto**: salvare qualcosa, riavviare il servizio,
+ricontrollare che ci sia ancora. Il filesystem effimero non dà errore, la pagina dice
+«Salvato» lo stesso.
 
 | | Strada | Esito |
 |---|---|---|
-| 1 | **PythonAnywhere, piano gratuito** | ✅ **la candidata**: filesystem **persistente**, nessun letargo. Limiti: una sola web app, quota CPU giornaliera, **rinnovo a mano ogni tre mesi**, whitelist in uscita (irrilevante: gli import si lanciano da qui) |
-| 2 | Railway / Render / Fly con un volume | ❌ ~5 $/mese. **Esclusa dal vincolo «gratis»**, resta scritta solo per sapere cosa si comprerebbe |
-| 3 | **PC di casa con un tunnel Cloudflare** | 🟨 la riserva. Gratis, e i dati non si spostano di qui. Davanti ci va Cloudflare Access. Il prezzo: **il PC deve restare acceso** |
+| 1 | **PythonAnywhere, piano gratuito** | ✅ la candidata: filesystem persistente, nessun letargo. Limiti: una sola web app, quota CPU giornaliera, **rinnovo a mano ogni tre mesi** |
+| 2 | Railway / Render / Fly con un volume | ❌ ~5 $/mese, esclusa dal vincolo «gratis» (vedi sopra) |
+| 3 | **PC di casa con un tunnel Cloudflare** | 🟨 la riserva: gratis, i dati non si spostano, davanti Cloudflare Access. Il prezzo: il PC resta acceso |
 
-✅ **Le quattro cose da fare prima di esporre qualunque cosa sono chiuse il 21/08/2026.**
-Erano trovate nel codice, non opinabili, e adesso ognuna ha la sua contromisura — 13 prove
-su 13, numeri in `STORICO.md`:
+✅ Le quattro cose da fare prima di esporre qualunque cosa sono chiuse il 21/08/2026
+(debugger solo con `HUB_DEBUG=1`, `SECRET_KEY` in `data/secret_key.txt`, niente
+`admin/admin123` nel login, `requirements.txt` vero, `wsgi.py`). ⚠️ `wsgi.py` va servito con
+**un worker solo** finché le scritture concorrenti sui JSON restano senza lock.
 
-- ✅ **il debugger non si accende più da sé.** `app.py` finiva con `debug=True` su
-  `0.0.0.0`, e il debugger di Werkzeug offre una console Python dentro la pagina d'errore:
-  chiunque arrivasse a quella porta eseguiva codice sulla macchina. Ora serve `HUB_DEBUG=1`,
-  e l'app lo dice a schermo quando parte. L'indirizzo resta `0.0.0.0` **di proposito** — è
-  così che l'hub si apre dal telefono sulla rete di casa, e il pericolo era il debugger, non
-  l'indirizzo; si stringe con `HUB_HOST=127.0.0.1`
-- ✅ **`SECRET_KEY` non ha più un default costante.** Era `"dev-secret-change-me"`, scritta
-  nel codice e quindi su GitHub: chi la legge **si firma da solo un cookie da admin**. Ora
-  `chiave_di_sessione()` prende la variabile d'ambiente `SECRET_KEY`, e in mancanza genera
-  32 byte casuali in `data/secret_key.txt`, che è in `.gitignore`. Generarla a ogni avvio
-  sarebbe stato peggio, non meglio: far cadere le sessioni a ogni riavvio è il fastidio che
-  invita a rimettere una costante
-- ✅ **la pagina di login non stampa più `admin / admin123`**, e al suo posto c'è un avviso
-  in dashboard che vede **solo un amministratore** e **solo finché quella password funziona
-  davvero**. Il seme di `init_db()` resta — un DB nuovo ha bisogno di un modo per entrarci —
-  ma ora chi ce l'ha ancora lo sa, e l'avviso sparisce da sé quando la cambia
-- ✅ **`requirements.txt` dice la verità**: `flask`, `requests` e `werkzeug`, contati sui
-  sorgenti, più il server WSGI a seconda del sistema operativo e `esprima` per lo sweep.
-  Prima era una riga sola, e una guida che dicesse `pip install -r requirements.txt`
-  **mentiva**
-- ✅ **`wsgi.py`** è il punto d'ingresso per un server vero (`wsgi:application`, il nome che
-  waitress, gunicorn e PythonAnywhere si aspettano). Provato servito da un server esterno.
-  ⚠️ **Un worker solo** finché la trappola sulle scritture concorrenti resta aperta
+**⬜ Aperto:**
 
-⬜ **Quello che resta di §1.5, e va deciso da Davide**: quale strada (tabella qui sopra), e
-poi il collaudo obbligatorio del vincolo 1 — salvare, riavviare, ricontrollare. Più i **20
-punti che scrivono file su disco** mentre l'app gira, che sono il vero motivo per cui questa
-app non si sposta da sola: quelli non sono stati toccati.
+- **Quale strada**, e poi il collaudo del vincolo 1
+- **I 20 punti che scrivono file su disco** mentre l'app gira (in `blueprints/` ed
+  `extensions.py`, più `hub.db`): il vero motivo per cui l'app non si sposta da sola. Da
+  spostare: `data/` versionato pesa 7,3 MB, `data/cache/` (84 MB) si rigenera
+- **Le chiavi su Debian** (segnato da Davide il 24/09/2026): un domani l'hub girerà su
+  Debian, e le chiavi non potranno stare in variabili d'ambiente di Windows (`setx`, e il
+  registro che il Fantacalcio legge per `FOOTBALL_DATA_API_KEY`). Oggi dall'ambiente si
+  leggono `SECRET_KEY`, `STEAM_API_KEY`, `STEAM_ID`, `IGDB_CLIENT_ID`, `IGDB_CLIENT_SECRET`,
+  `HUB_DEBUG`, `HUB_HOST`, `HUB_PORT`, `FOOTBALL_DATA_API_KEY` e `FANTA_CARTELLA_DOWNLOAD`
+  (facoltativa). Una strada già usata è quella di `SECRET_KEY`: un file in `data/` escluso
+  da git. Qualunque cosa si scelga **resta fuori dal repository** (i termini di
+  football-data.org lo chiedono, §6.1) e fuori da `hub_export.json`
+- **L'export deve girare da solo sul server**: oggi `esporta_dati.py` lo lancio io a mano,
+  e «persistente» non vuol dire «al sicuro»
+- **Contemporaneità**: SQLite regge; i **JSON scritti a mano no** (trappola sulle scritture
+  concorrenti). Le cache in memoria seguono l'mtime
 
-⬜ **Debian, segnato da Davide il 24/09/2026: un domani l'hub girerà su Debian, e le chiavi
-non potranno stare in variabili d'ambiente di Windows** (`setx`). Serve un'alternativa, da
-pensare. Oggi dall'ambiente si leggono `SECRET_KEY`, `STEAM_API_KEY`, `STEAM_ID`,
-`IGDB_CLIENT_ID`, `IGDB_CLIENT_SECRET`, `HUB_DEBUG`, `HUB_HOST`, `HUB_PORT` e, dalla §4.6,
-`FOOTBALL_DATA_API_KEY` e, dal 25/09/2026, `FANTA_CARTELLA_DOWNLOAD` (facoltativa: dove il
-Fantacalcio cerca gli Excel; senza, la cartella Download del sistema). Una strada già usata nel progetto è quella di `SECRET_KEY`: un file
-in `data/` escluso da git (`data/secret_key.txt`). Qualunque cosa si scelga, **deve restare
-fuori dal repository** (i termini di football-data.org lo chiedono esplicitamente, §6.1) e
-fuori da `hub_export.json`.
+**I termini d'uso delle fonti, letti il 23/09/2026** — non un parere legale:
 
-**Sulla contemporaneità**: SQLite regge un uso come questo senza problemi. I **file JSON
-scritti a mano no** — vedi la trappola sulle scritture concorrenti. Le cache in memoria
-sono sull'mtime — ⚠️ **lo sono da poco**: quella del catalogo in `api_pokemon.py` è stata sistemata il 21/08/2026, e fino a quel giorno questa riga
-diceva il falso.
-
-**E una rete sotto**: «persistente» non vuol dire «al sicuro». Un piano gratuito può
-chiudere o essere sospeso, e oggi `esporta_dati.py` lo lancio io a mano da qui.
+- **fantacalcio.it**, art. 3: vieta programmi o meccanismi automatici per copiare o accedere
+  alle pagine (scraping compreso); art. 9: a fini personali si può solo **visualizzare**.
+  ✅ Dal 25/09/2026 nessun programma dell'hub legge il sito (§4.6). Il riquadro delle
+  probabili sta nell'uso personale **finché lo guarda solo Davide**: mostrato ad altri
+  utenti no
+- **Serebii**: nessun termine pubblicato, «All Content is © Copyright of Serebii.net»;
+  `robots.txt` non blocca le pagine che leggiamo. Leggerle per uso personale va bene,
+  **ripubblicarle** no
+- **Bulbapedia**: testo CC BY-NC-SA, uso non commerciale con attribuzione
 
 ### 1.6 ⬜ Due guide: com'è fatto, e come si riparte da un PC nuovo
 
-**Lo stato di fatto: i documenti non sono zero, sono cinque**, e in parte si contraddicono.
-
-| File | Righe | Cos'è, davvero |
-|---|---|---|
-| `DOCUMENTAZIONE_PersonalHub.md` | 303 | La più vicina alla guida n. 1. **Ferma al 07/08/2026**, «v16.2» |
-| `PROJECT_CONTEXT.md` | 578 | Dettagli tecnici, convenzioni, log delle sessioni. Aggiornato al 13/08/2026 |
-| `STORICO.md` | 431 | Una riga per lavoro chiuso, dal 13/08/2026. Non è una guida: è la memoria |
-| `README.md` | 133 | Stack e struttura. Dice **«v11.1a»** |
-| `README-GitHub.md` | 104 | La vetrina coi badge |
-| `howtouse.txt` | 22 | Appunti a mano. È il germe della guida n. 2 |
-
-> ⚠️ **Quanto è vecchio `DOCUMENTAZIONE_PersonalHub.md`, misurato il 18/09/2026** e non
-> dedotto dalla data in copertina. Non è «un po' indietro»: **dice cose false**, e chi
-> lo legge per capire com'è fatta l'app parte male.
->
-> - alla riga 196 elenca quattro route come «documentate ma mai implementate»:
->   `/api/team/<id>`, `/api/stat_champions`, `/api/regulations`, `/api/regulations/save`.
->   **Tre su quattro esistono** (`/api/team/<int:tid>`, `/pokemon/api/regulations`,
->   `/pokemon/api/regulations/save`, aggiunte l'11/08 e il 19/08). Solo
->   `/api/stat_champions` manca davvero. Contate sulla `url_map`: **79 route** in tutto
-> - alla riga 290 dà come voce più grossa del backlog il «**DB Pokedex completo**», che è
->   stato fatto: il catalogo ha 1025 specie e 1342 voci col roster, e `pokedex` è una
->   regulation vera dall'11/08/2026
-> - la riga 23 descrive i dati come «roster/mosse/oggetti locali JSON» **per regulation**,
->   che è il modello di prima della migrazione al catalogo dell'11/08: oggi i dati stanno
->   in `data/catalog/` e le regulation contengono **solo elenchi di nomi**
->
-> Quando si scriverà la guida n. 1 il punto di partenza è questo file, ma **va riscritto
-> leggendo il codice**, non aggiornato a toppe: una riga vecchia qui costa più di una
-> riga mancante, perché sembra vera.
-
-⚠️ **Due numeri di versione diversi** sullo stesso progetto dicono che il problema non è
-scrivere, è **decidere chi dice cosa** e buttare i doppioni. La guida n. 1 nasce dal fondere
-`DOCUMENTAZIONE_PersonalHub.md` con tutto ciò che è successo dopo il 07/08 — catalogo
-unico, regulation come filtro, Mega alle base, moveset per specie, utenti e permessi,
-switch lingua — che **non è documentato in nessuno dei cinque**.
-
-⚠️ `howtouse.txt` **è già sbagliato**: indica `C:\Progetti_Python\personal-hub`, che non è
-questa cartella, e scrive la password in chiaro. Le sue ultime due righe però sono la
-stessa richiesta di oggi scritta mesi fa: «accesso al di fuori del pc», «accesso senza
-avere il pc acceso».
-
-**⚠️ Cosa la guida n. 2 troverà rotto, e va sistemato prima di scriverla:**
-
-- ✅ **`requirements.txt`** diceva una riga sola: corretto il 21/08/2026, ora `pip install
-  -r requirements.txt` fa davvero quello che dice
-- ✅ **il ripristino dei dati esiste** dal 21/08/2026: `python scripts/importa_dati.py`
-  rimette dentro `hub_export.json` (§1.4). ⚠️ Con un'eccezione che la guida **deve**
-  scrivere: le password non rientrano, quindi su un PC nuovo si entra come `admin` con la
-  password del primo avvio e le altre si reimpostano da `/utenti`
-- `data/cache/` (84 MB) si rigenera, ma va **detto**, altrimenti il primo import sembra
-  bloccato mentre sta scaricando
-- ⚠️ **`admin123` resta il seme di `init_db()`**, ed è giusto — un DB nuovo ha bisogno di un
-  modo per entrarci. Dal 21/08 non è più stampata nella pagina di login, ma sta ancora in
-  `howtouse.txt`: la guida nuova non deve propagarla, e deve dire di cambiarla al primo
-  accesso. Se non lo si fa, lo ricorda l'avviso in dashboard
-
-**Come dovrebbero essere fatte**: la n. 1 è **per Davide fra sei mesi**, non per un
-estraneo — deve spiegare *perché* le cose stanno come stanno (perché il catalogo è unico,
-perché le chiavi non si rinominano, perché la lingua è in un cookie), che è la parte che si
-perde per prima. La n. 2 è una sequenza di comandi **eseguibile alla lettera**, provata su
-una macchina pulita, e la prova finale è la regola #8.
-
-Da fare **dopo** il collaudo (§5): documentare un'app che sta per cambiare significa
+Da fare **dopo** il collaudo (§5): documentare un'app che sta per cambiare vuol dire
 riscrivere la guida due volte.
+
+**I documenti che ci sono, e si contraddicono**: `DOCUMENTAZIONE_PersonalHub.md` (ferma al
+07/08/2026, «v16.2»), `PROJECT_CONTEXT.md`, `README.md` («v11.1a»), `README-GitHub.md` (la
+vetrina), `howtouse.txt` (appunti). Due numeri di versione sullo stesso progetto: il
+problema è **decidere chi dice cosa** e buttare i doppioni.
+
+> ⚠️ **`DOCUMENTAZIONE_PersonalHub.md` dice cose false** (misurato il 18/09/2026): elenca
+> come «mai implementate» tre route che esistono (solo `/api/stat_champions` manca
+> davvero), dà come voce più grossa il «DB Pokedex completo» già fatto, e descrive i dati
+> per regulation come prima della migrazione al catalogo dell'11/08. È il punto di
+> partenza della guida n. 1, ma **va riscritto leggendo il codice**, non aggiornato a toppe.
+
+⚠️ `howtouse.txt` indica una cartella che non è questa e scrive la password in chiaro.
+
+**Cosa la guida n. 2 deve dire**: le password non rientrano dall'export normale (si entra
+come `admin` con la password del primo avvio, le altre da `/utenti`); `data/cache/` si
+rigenera, e il primo import sembra bloccato mentre scarica; `admin123` è il seme di
+`init_db()`, non va propagato e va cambiato al primo accesso.
+
+**Come dovrebbero essere fatte**: la n. 1 è **per Davide fra sei mesi** — deve spiegare
+*perché* (catalogo unico, chiavi che non si rinominano, lingua in un cookie). La n. 2 è
+una sequenza di comandi **eseguibile alla lettera**, provata su una macchina pulita, e
+la prova finale è la regola #8.
 
 ---
 
@@ -512,154 +250,33 @@ riscrivere la guida due volte.
 
 ### 2.1 ✅ Switch lingua — chiuso il 13/08/2026 (Pokémon e Gaming)
 
-Il primo blocco (i **nomi dei dati**) è chiuso l'11/08. Questo è l'**interfaccia**.
-
-**Quanto è grande, contato**: **453** stringhe fisse nelle pagine Pokémon + **~110** nel
-JavaScript. Nell'intero progetto sono 691.
-
-**Come funziona**: `t('frase')` in Jinja e in JS, `tf('frase con {n}', {n: …})` per quelle
-coi numeri. **La chiave del dizionario è la frase italiana stessa**, non un codice tipo
-`btn.salva`: il template resta leggibile e una traduzione mancante ricade sull'italiano,
-che è sempre giusto. Il dizionario è `data/i18n/en.json`, con cache sull'mtime; il JS lo
-riceve in `window.T`. ⚠️ Il prezzo, dichiarato: **cambiare una parola italiana in un
-template stacca la traduzione in silenzio** — per questo esiste
-`python scripts/controlla_traduzioni.py`, che elenca mancanti, vuote e orfane.
-
-✅ **Chiuso: 15 template**, i 12 della sezione Pokémon più `gaming.html`,
-`game_form.html` e `steam_import.html`, e le frasi dei suggerimenti in `gaming.py`.
-Dizionario a **489 chiavi su 489 chieste**.
-
-✅ **Il blocco Pokémon: 12 template su 12.** `pokemon.html` (16),
-`regulation_content.html` (15), `catalog_editor.html` (23) il 12/08; **`calcolatori.html`
-(142) più i 7 moduli `static/js/calcolatori-*.js`, `moves_editor.html` (52), `base.html`,
-`roster_editor.html` (26), `items_editor.html` (43), `abilities_editor.html` (47),
-`regulations_list.html` (33), `regulation_editor.html` (42) e `team_form.html` il 13/08**.
-Il dizionario è a **383 chiavi su 383 chieste**, zero mancanti, zero orfane e zero doppie.
-
-> ⚠️ **Cosa NON si traduce, e il perché è sempre lo stesso**: quello che viene **salvato**
-> non cambia con la lingua. I `value` dei tipi (chiavi di `TYPE_CHART`), le categorie
-> degli oggetti e delle abilità (chiavi del blocco `effect`), le meccaniche (`mega`,
-> `tera`), i datalist di mosse e oggetti (chiavi del catalogo, ed è ciò che finisce nel
-> DB) e **`TERA_TYPES` in `team_form.html`**, le cui `<option>` non hanno un attributo
-> `value`: lì il testo *è* il valore salvato in `mechanic_value`, e tradurlo cambierebbe
-> i dati dei team già salvati.
-
-✅ **`controlla_traduzioni.py` ora trova anche le chiavi doppie.** Non poteva vederle:
-usa `json.load()`, che **tiene l'ultima e butta la prima in silenzio** — correggere la
-traduzione sbagliata non cambierebbe niente a schermo e non si capirebbe perché. Il
-controllo legge il file grezzo. Ne aveva già accumulate **6** (`Aggiungi`, `Archivio`,
-`Rimuovi`, `Es. Earthquake`, `Editor Abilità`, `Il nome è obbligatorio`), tutte con la
-stessa traduzione da entrambe le parti, quindi nessun danno visibile — ma è la classe di
-silenzio per cui quello script esiste.
-
-> ⚠️ **`team_form.html` non era nel censimento delle 453 stringhe** del 12/08: è un buco
-> del conteggio, non una scelta. È il team builder, 345 righe, e sta sotto `/pokemon/*`
-> come le altre. Va tradotto con le altre.
-
-✅ **La shell è tradotta e il pulsante lingua sta su tutte le pagine**, deciso da Davide
-il 13/08/2026. Era la scelta obbligata una volta che si traduce l'interfaccia e non solo
-i nomi dei dati: confinare il pulsante sotto `/pokemon/*` avrebbe lasciato chi mette EN e
-poi va su Gaming **senza un modo per tornare indietro**. Tradotte sidebar, «Esporta
-JSON», «Utenti», «Cambia tema», e `<html lang>` ora segue la lingua attiva.
-
-### ✅ Quali sezioni sono tradotte, e perché non tutte
-
-**Deciso da Davide il 13/08/2026, dopo due ripensamenti: solo Pokémon e Gaming** — sono
-le due che contano anche per gli utenti non amministratori. Arduino, Python, PC Builder,
-Dashboard, login e gestione utenti **restano in italiano**, e non è un lavoro rimasto
-indietro.
-
-⚠️ **Il pulsante e la shell sono la stessa decisione, e si cambiano insieme o per
-niente.** Il pulsante compare **solo dove la sezione è tradotta**, e la **sidebar resta
-in italiano**: la lingua sta in un cookie e vale per tutto il sito, quindi con la shell
-tradotta chi mettesse EN e poi andasse su Arduino si troverebbe una pagina italiana sotto
-un'interfaccia inglese **senza un modo per tornare indietro**.
-
-> Per aggiungere una sezione: si traduce, e poi si aggiunge **un prefisso** a
-> `sezioni_tradotte` in `base.html` — il pulsante compare da solo. È l'unico punto.
-
-✅ **Il plurale `1 team salvati` è chiuso**, e non è servito insegnare i plurali a `tf()`:
-la frase italiana è stata riscritta in una forma che non si flette — `Team salvati: {n}`
-→ `Saved teams: {n}` — che è giusta per qualunque numero in **entrambe** le lingue.
-Gestire singolare/plurale servirà solo se salterà fuori una frase che non si può
-riformulare così.
-
-✅ **`tf()` ora esiste anche in Jinja** (`extensions.py`, registrata nel context processor
-di `app.py`), gemella di quella in `base.html`. Prima c'era **solo nel JS**, ed è il vero
-motivo per cui il plurale era rotto: nei template le frasi coi numeri si spezzavano in
-`{{ n }} {{ t('team salvati') }}`, cioè in due pezzi che nessun dizionario può rimettere
-nell'ordine inglese. Sostituzione a mano e non `str.format()`, perché le frasi contengono
-graffe che non sono segnaposto (i blocchi `effect` mostrati negli editor).
-
-✅ **Gli editor seguono la lingua** dal 13/08/2026: nome tradotto in grande, chiave sotto.
-✅ **Le descrizioni restano in italiano**, per decisione di Davide dello stesso giorno —
-vedi la riga nelle trappole in cima. Dettagli di entrambe in `STORICO.md`.
-
-> ⚠️ Conseguenza già visibile: in italiano il calcolatore scrive **`Privazione`, non
-> `Knock Off`**, e `Cinturanera` invece di `Black Belt`. È quello che la voce chiedeva, ma
-> se per abitudine VGC preferisci l'inglese anche in italiano si cambia in un punto solo
-> (`nomeVis`, ora nel `<head>` di `base.html`).
+Le altre sezioni restano in italiano **per scelta**. Le regole sono nelle trappole;
+`python scripts/controlla_traduzioni.py` trova mancanti, vuote, orfane e doppie.
 
 ### 2.2 ✅ Le abilità da fondere — chiuso il 10/09/2026, erano già fuse
 
-**Rimisurato prima di toccare, ed è il punto della voce**: i numeri scritti qui erano
-quelli di **prima** della fusione dell'11/08, e nessuno li aveva più contati.
+La rete è `python scripts/controlla_abilita.py` (oggi 0 orfani, 0 doppioni, 10 voci
+attive irraggiungibili: le abilità di Champions decise fuori — se il numero cresce, un
+effetto è finito dalla parte sbagliata). ⬜ Il fallback `data/abilities.json` non è
+riallineato (ha ancora `Megasolar` inerte): va con §5.3.
 
-| | Quello che c'era scritto | Misurato il 10/09/2026 |
-|---|---|---|
-| voci totali | 415 | **386** |
-| senza traduzione | 108 | **82** |
-| di quelle, con un effetto | 34 | **10** |
+### 2.3 ⬜ Mosse per regulation — quello che richiede una fonte
 
-Le **10** rimaste con un effetto sono esattamente quelle che Davide aveva deciso di
-lasciare fuori l'11/08 (`Nervosismo`, `Sforzo`, `Tiratore`, `Manto Neve`, `Tempra`,
-`Assorbifuoco`, `Colpo Secco`, `Compressione`, `Vento Misterioso`, `Polifagia`). Delle
-altre 72, **7** sono appese a un Pokémon — anche quelle già decise — e **65** sono
-inerti e non le possiede nessuno: sono le abilità inventate di Champions e i
-placeholder, ed è giusto che non abbiano un nome ufficiale. **Non c'è più niente da
-fondere**, e nei quattro database del catalogo i doppioni di nome sono **zero**.
+Il meccanismo è chiuso; dove manca il dato, manca la **fonte**:
 
-**⚠️ La fusione aveva però lasciato un filo staccato, e l'ha trovato Davide.** Prima
-dell'11/08 c'erano tre voci in gioco: la chiave `Mega Sol`, con l'effetto sole
-permanente; la chiave **`Megasolar`**, inerte, il cui `nome_en` era `Mega Sol` — ed è
-quella che il catalogo Pokémon cita su **Mega Meganium**, perché le abilità le cita
-col nome **inglese**; e `Terra Estrema` (`Desolate Land`), ufficiale e inerte, di
-Primal Groudon. La fusione ha portato l'effetto su `Terra Estrema` — e per Primal
-Groudon **è giusto** — poi il giro sui nomi ha cambiato il `nome_en` di `Megasolar`, e
-da lì il nome scritto su Mega Meganium non ha più risolto su niente: nessuna
-descrizione, nessuna traduzione, nessun effetto, **nessun errore**. Chiuso il
-10/09/2026 con `scripts/ricollega_megasolar.py`, decisioni di Davide: il `nome_en`
-torna `Mega Sol` e la voce riprende il blocco della voce cancellata, copiato
-dall'archivio. Numeri in `STORICO.md`.
+- ⬜ **La differenza fra M-A e M-B**: nel dump c'è un solo version group `champions`, quindi
+  se le due regulation **bandiscono** mosse diverse, quella differenza non è in nessun dato
+  che abbiamo. (MA 492 e MB 494 differiscono per il **roster**, non per un divieto)
+- **Le 9 Mega di Leggende Z-A** (Darkrai, Heatran, Zeraora, Zygarde Complete, le due
+  Magearna, i tre Tatsugiri) restano senza lista, ed è **giusto**: sono reali ma in
+  Champions non ci sono
+- ⬜ **La prossima regulation**: M-C va dal 9 settembre al **2 dicembre 2026**. Se sarà
+  basata su Champions: «crea regulation», «Confronta con le fonti», «Allinea», poi
+  `allinea_mosse_regulation.py`. Se non lo sarà, non avrà un version group nel dump
 
-> ⚠️ **La rete che resta**: `python scripts/controlla_abilita.py` risponde alle tre
-> domande che non danno errore da sole — ogni nome citato da un Pokémon risolve? due
-> chiavi si chiamano uguale? quante voci attive sono irraggiungibili? Oggi dice
-> **312 nomi citati, 0 orfani, 0 doppioni, 50 voci attive di cui 10 irraggiungibili**
-> — e quelle 10 sono le abilità di Champions decise fuori. Se quel numero cresce, un
-> effetto è finito di nuovo dalla parte sbagliata.
-
-**⬜ Cosa resta, ed è piccolo**: il fallback `data/abilities.json` **non** è stato
-riallineato, quindi contiene ancora `Megasolar` inerte e col nome vecchio. Non fa
-danno finché `data/catalog/abilities.json` è leggibile — è lui che vince — ma è la
-stessa «macchina del tempo» che l'11/08 era stata disinnescata. Va con la dismissione
-dei file storici (§5.3), o con una riga di riallineamento se dà fastidio prima.
-
-### 2.3 ⬜ Mosse per regulation — le quattro cose che richiedono una fonte
-
-Il meccanismo è chiuso (calcolatore, team builder, Speed Tier). Manca **il dato**, e le
-quattro cose richiedono **fonti diverse**:
-
-| Cosa manca | Fonte che servirebbe |
-|---|---|
-| **La differenza fra M-A e M-B** | Nel dump c'è **un solo** version group `champions`: se le due regulation **bandiscono** mosse diverse, quella differenza non è in nessun dato che abbiamo. ⚠️ Dal 18/09/2026 i due elenchi **non sono più identici** (MA 492, MB 494), ma la differenza viene dal **roster**, non da un divieto: `No Retreat` e `Topsy-Turvy` sono lì perché le impara una specie che sta solo in MB. Per gli **oggetti** il buco resta intero: MB copia i 58 di MA |
-| **Le 9 forme che il dump conosce e di cui non ha le mosse** | ⚠️ **La riga che stava qui era sbagliata due volte.** Diceva «16 forme inventate, PokéAPI non le conosce»: misurato il 21/09/2026, gli slug di **14 su 16** sono in `pokemon.csv` — PokéAPI le conosce, non ha le loro **mosse**, perché i loro giochi (`legends-za`, `mega-dimension`) nel dump hanno zero righe. E cinque di quelle 14 sono **Mega vere di Regulation M-C** (Absol Z, Garchomp Z, Lucario Z, Golisopod, Baxcalibur), confermate da Serebii e Game8. Le altre — Darkrai, Heatran, Zeraora, Zygarde Complete, Magearna, i tre Tatsugiri — sono Mega di **Leggende Z-A**, reali ma **non ancora in Champions**, quindi è giusto che non abbiano una lista. ✅ **E le due Mega Meowstic sono rientrate il 21/09/2026**: il dump le ha, con 59 e 56 righe di mosse; mancava lo `slug`, e mancava perché la femmina aveva le base stat della forma **non** Mega (466 invece di 566) e il controllo delle sei stat — giusto — bloccava la scrittura. Corretta su tre fonti da `scripts/correggi_mega_meowstic.py`. Erano in MA e in MB, quindi l'avviso giallo si vedeva: ora **nessuna voce di MA o MB è senza elenco mosse**. ✅ **Le 6 Mega di M-C hanno la loro lista dal 21/09/2026**: Bulbapedia non dà un blocco alle Mega, ma **Pokémon Zone** ha una pagina per **ogni** Mega, e confrontate danno **6 su 6** la lista identica a quella della specie. Sono scritte nella sezione `eredita` (vedi le trappole in cima). ⬜ Restano senza lista le **9 Mega di Leggende Z-A** — Darkrai, Heatran, Zeraora, Zygarde Complete, le due Magearna, i tre Tatsugiri — ed è **giusto**: sono reali ma in Champions non ci sono. Più le 2 Mega Meowstic, che non hanno slug |
-| **`Pawmot`** | ✅ **Chiuso il 14/09/2026.** La spiegazione del 12/08 («buco del dump») era sbagliata: Pawmot **è in Champions dalla versione 1.2.0**, che PokéAPI non ha. Ora ha la sua lista, integrata da Bulbapedia (64 mosse). Vedi §5.2 e la trappola delle integrazioni in cima |
-| **Le regulation future** | ✅ **Regulation M-C è in piedi dal 22/09/2026**, e i suoi dati c'erano già dal 21/09: le liste mosse delle 26 voci integrate da Bulbapedia, e il roster confermato **due volte** da Serebii e Game8. Il file era una **copia di MB** creata dal pulsante «crea regulation»; ora ha il suo roster — **339 voci** (MB 308 + 31, perché `Pawmot` c'era già), MB contenuta in MC come vogliono le regulation cumulative — le 6 Mega collegate nella `mega_map` (81 su 81 raggiungibili) e **506 mosse derivate** dal roster (+12: sono le mosse firma delle specie nuove, Pyro Ball e Court Change di Cinderace, Snipe Shot di Inteleon, Octolock di Grapploct…). Scritto da `scripts/completa_mc.py`, rieseguibile. ✅ **Chiuso il 23/09/2026 anche questo**: Serebii elenca gli oggetti aggiunti (M-B 15, M-C 12), ora nei filtri — `regulation_fonti.py`. Il testo di prima: non si sapeva quali **oggetti** M-C aggiungesse, quindi MC tiene i 58 di MA/MB — esattamente come MB li copia da MA senza una fonte. Regulation M-C va dal **9 settembre al 2 dicembre 2026** (Serebii). Se la prossima non sarà basata su Champions non avrà un version group nel dump, e il suo elenco andrà dalla schermata contenuti o da uno script dedicato |
-
-> Il metodo resta quello del roster: dove esiste una fonte la si importa con uno script
-> rieseguibile che **si ferma su ciò che non risolve**; dove non esiste, il dato si lascia
-> mancante e **lo si dichiara**. Non si riempie a stima.
+Il metodo resta quello del roster: dove la fonte esiste si importa con uno script
+rieseguibile che **si ferma su ciò che non risolve**; dove non esiste, il dato si lascia
+mancante e **lo si dichiara**. Non si riempie a stima.
 
 ---
 
@@ -667,643 +284,212 @@ quattro cose richiedono **fonti diverse**:
 
 | | Baco | Stato |
 |---|---|---|
-| ✅ | **`build_catalog.py` avrebbe distrutto il catalogo** | **Chiuso il 10/09/2026.** Leggeva come base i **file storici** (174 voci contro 1026) e riapplicava alle Mega il `+75 HP / +20` che la deconversione dell'11/08 aveva tolto: rieseguirlo avrebbe riscritto `data/catalog/` con quella base, **in silenzio**. Ora la base è `data/catalog/` quando c'è — e lo script **dice da quale file legge** — `MEGA_BONUS` non esiste più, e `scrivi_json()` **rifiuta** un file più povero di quello sul disco. Provato: dry-run reale 1026→1029 specie, 919→920 mosse, 386→387 abilità, 397→398 oggetti, **0 voci curate modificate**; `scripts/prova_build_catalog.py` 9 su 9 |
-| ✅ | **La regex delle traduzioni taglia sull'apostrofo** — **non si riproduce** | Rimisurato il 10/09/2026 **su un file vero**: `t('Nessun team per l\'utente scelto.')` viene estratto **intero**. Il ramo `\\.` dell'alternanza consuma la coppia backslash-apice, e la `replace()` sotto toglie il backslash. La diagnosi del 19/08 è quasi certamente nata da una prova fatta in una shell che si mangia un livello di backslash — la stessa trappola è ricapitata **due volte** mentre si scriveva questa riga. La spiegazione sta ora nel commento sopra la regex, perché il caso non si riapra una terza volta |
-| ✅ | **`scripts/` è fuori dal raggio di `controlla_proprietario.py`** | **Chiuso il 10/09/2026**, ed è rimasto fuori: uno script da riga di comando non ha una sessione, quindi `ambito_utente()` lì non vuol dire niente e lavora su tutto il DB per costruzione. Quello che mancava era **dirlo**: ora è scritto nel docstring e il riassunto conta e **nomina** gli script che toccano una tabella di contenuto (oggi 2: `importa_dati.py` e `prova_importa_dati.py`). Se ne compare uno che non ti aspetti, quello va letto |
-| ✅ | **L'elenco mosse di MA e MB escludeva 159 mosse che Champions permette** | **Chiuso il 18/09/2026, decisione di Davide** («i cataloghi saranno sempre di Champions, quindi la lista mosse sarà sempre quella in relazione alla regulation»). L'elenco non è più un dato curato: lo **deriva** `scripts/allinea_mosse_regulation.py` dall'unione delle mosse del roster, secondo la sorgente `moveset` della regulation. MA 460 → **492**, MB 460 → **494**, e per la prima volta **non sono più identiche** (`No Retreat` e `Topsy-Turvy` arrivano da specie solo di MB). Mosse nascoste: **da 3239 su 17219 a 0** in MA, da 3583 su 19039 a 0 in MB. Numeri e prova del perché le 460 non fossero un elenco di legalità in `STORICO.md`. ⚠️ **Va rilanciato ogni volta che cambia un roster**: un Pokémon aggiunto porta mosse che restano fuori dalla tendina in silenzio |
-| ✅ | **Gli oggetti del calcolatore davano il numero sbagliato** | **Chiuso il 14/09/2026.** La tendina ATK faceva `A × modifier` con qualunque oggetto (Carbonella su una mossa Buio: 85-102 → 102-120; Stolascelta: → 127-150), e la DEF non applicava mai niente. Colpiva MA e MB. Ora ogni effetto ha la sua condizione presa da Bulbapedia, e un oggetto che non si attiva lo dice a schermo. Numeri in `STORICO.md` |
-| ✅ | **Le 7 categorie di oggetti senza nessuna voce** | **Chiuso il 14/09/2026, decisioni di Davide.** Le 7 vuote erano i gruppi delle due tendine Item del calcolatore, e `other` erano esattamente gli oggetti senza `effect`: dare una categoria voleva dire dare un effetto. **88 oggetti** assegnati con `scripts/assegna_categorie_oggetti.py`, ogni valore preso da Bulbapedia; `other` passa da 339 a 251, e 12 effetti nuovi sono scritti nel motore. Riguarda solo `pokedex`: MA e MB restano sui loro 58. Gli oggetti delle leggende (Adamasfera, Splendisfera, Grigiosfera, Cuorugiada, maschere di Ogerpon) stanno in `conditional`, confermato da Davide. Numeri in `STORICO.md` |
-| ⚠️ | **Un effetto che il motore non conosce non si attiva** | Il calcolatore gestisce **gli effetti elencati nel docstring di `scripts/assegna_categorie_oggetti.py`**, più `pikachu_boost` e `resist_<tipo>`. Un oggetto nuovo con un `effect` e un `modifier` compare nella tendina, ma finché `calcDamage()` non conosce l'effetto il risultato dice «non si attiva». È voluto: fino al 14/09 un oggetto sconosciuto moltiplicava l'Attacco in silenzio. Quindi **ogni effetto nuovo va scritto anche nel motore**, e provato con un caso calcolato a mano. ⚠️ La tendina mostra le voci con `modifier` **non nullo**, e 0 è un valore: il Palloncino ha `modifier: 0` |
-| ⚠️ | **`puo_evolversi` ha tre valori** | Lo scrive `scripts/importa_evoluzioni.py` su **1342 voci su 1342**, per forma e non per specie: Corsola di Galar sì, quella di Kanto no, le Mega mai. **Assente vuol dire «non lo sappiamo»**, e l'Evolcondensa lo dice a schermo («evoluzione non nota»), come `moves: null`. ✅ **Dal 21/09/2026 sono 1342 su 1342**: le ultime due, le Mega Meowstic, hanno preso lo slug e con lui l'esito. L'import dal pannello lo calcola da sé (`pokeapi.evoluzioni()`); **una voce aggiunta a mano dall'editor invece nasce senza**, e va rilanciato lo script. Nelle forme **non si eredita** dalla specie in `api_pokemon.py`: ereditarlo darebbe `true` a tutte le Mega |
-| ✅ | **L'hover del tema scuro sotto soglia: resta com'è, deciso da Davide il 22/09/2026** | Trovato il 22/09/2026 scrivendo `scripts/prova_temi.py`, e **non corretto** perché è il colore principale dell'hub e la decisione è di Davide, non mia. `.btn-primary:hover` usa `--primary-h: #9488f7`, e il bianco sopra dà **2.95** — sotto il pavimento di 3.0, cioè illeggibile anche per un testo grande. Gli altri tre temi stanno fra 3.48 e 8.04. ⚠️ Due cose lo rendono meno grave di come suona: è uno stato **transitorio** (col mouse sopra), e da fermo lo stesso pulsante sta a 3.99. Il tema scuro è così **da sempre** — l'hover schiarisce invece di scurire, ed è la scelta di disegno di tutta la palette. Chiuderlo vuol dire scurire `--primary-h` verso #6a5ce0 circa, e accettare che l'hover diventi più scuro del pulsante fermo. La misura resta dichiarata in `DICHIARATE` dentro `prova_temi.py`, che la **ristampa a ogni esecuzione**: non è più una voce aperta, è una scelta, e va riletta solo se un giorno si rifà la palette |
-| ✅ | **Limiti dichiarati degli oggetti nel calcolatore** | **Chiusi il 23/09/2026.** Guantone (toglie il contatto), Plessimetro (campo «Uso n.», tetto ×2) e i quattro semi (+1 grado col loro terreno) sono nel motore; Metalpolvere e gemme **non erano bachi** — un Ditto caricato è per forza non trasformato, e un calcolo singolo è il primo colpo. Numeri in `STORICO.md` |
-| ⬜ | **Due abilità senza effetto nel motore** | Trovate il 23/09/2026 riempiendo le abilità delle Mega di M-C. **Affilama** (Sharpness, di Mega Absol Z) ha `effect: none`, e dovrebbe potenziare le mosse **da taglio** — che da oggi hanno il flag `slicing`, quindi il motore potrebbe leggerlo. **Aura Guard** (Mega Lucario Z) è nuova e senza descrizione: l'effetto va cercato su una fonte prima di scriverlo. Il valore di Affilama va preso da Bulbapedia, non da memoria |
-| ✅ | **I flag delle mosse di Gen 8-9** | **Chiuso il 23/09/2026, decisione di Davide**: integrati da Bulbapedia con `scripts/integra_flag_mosse.py`. Il dump ha i flag di 748 mosse ma nessuna di Gen 8+: **95** mosse del catalogo, **84** completate (28 prendono `contact`, 3 prendono `punch` — Rage Fist, Jet Punch, Headlong Rush), 11 già complete. Solo aggiunte. Numeri in `STORICO.md` |
-| ✅ | **23 flag sbagliati che venivano da `moves_ma.json`** | **Tolti il 23/09/2026, decisione di Davide**, con `scripts/togli_flag_sbagliati.py`: `contact` da 19 mosse vecchie (Stone Edge, Rock Tomb, Seed Bomb, Bulk Up…) e da Aqua Cutter, Gigaton Hammer, Mountain Gale; `punch` da Storm Throw. La prova si ricontrolla a ogni giro (dump, o infobox di Bulbapedia per le Gen 9), e lo script si ferma se ne manca una. Numeri in `STORICO.md` |
+| ⬜ | **Due abilità senza effetto nel motore** | Trovate il 23/09/2026. **Affilama** (Sharpness, di Mega Absol Z) ha `effect: none` e dovrebbe potenziare le mosse **da taglio** — che hanno il flag `slicing`, quindi il motore potrebbe leggerlo. **Aura Guard** (Mega Lucario Z) è nuova e senza descrizione. Tutti e due i valori vanno presi da una fonte, non da memoria |
+| ⬜ | **`confirm` con lo username non escapato** | `admin_utenti.html:117`: `'Eliminare l’utente {{ u.username }}?'` dentro un handler inline. Uno username con l'apostrofo rompe l'handler, e il `confirm` di un'eliminazione sparisce (vedi la trappola su `{{ nome|e }}`). Le due conferme sopra (righe 92 e 105) usano già `|tojson` |
+
+Tutti gli altri bachi elencati qui fino al 23/09/2026 sono chiusi: vedi `STORICO.md`.
+
+---
 
 ## 4. Voci minori, per sezione
 
 | Sezione | Voce |
 |---|---|
-| 💾 **Log** | ⬜ Aggiungere una funzione di salvataggio log |
+| 💻 **PC Builder** | ⬜ Wishlist Amazon o altri · ⬜ prezzo componente · ⬜ percentuale di compatibilità fra i pezzi (valutare UserBenchmark) · ⬜ gestire l'uscita di nuovi pezzi nel tempo · **Davide ha altre idee, 25/09/2026** |
 | 🖨️ **Stampa 3D** | ⬜ Sezione nuova, sul modello di Arduino: richiamo a un sito per disegnare e salvataggio dei progetti |
 | 🤖 **Arduino** | ⬜ Richiamo a Tinkercad per disegnare il progetto e verificare i connettori |
-| 💻 **PC Builder** | ⬜ Wishlist Amazon o altri · ⬜ prezzo componente · ⬜ percentuale di compatibilità fra i pezzi (valutare UserBenchmark) · ⬜ gestire l'uscita di nuovi pezzi nel tempo |
 | 🐍 **Python** | ⬜ Spazio per inserire i propri progetti e testarli · ⬜ idee per rendere la sezione più utile |
-| ⚽ **Fantacalcio** | ✅ **Fatta, dal 21/09/2026**, e allargata il 22/09: listone **sfogliabile con la scheda di ogni giocatore**, leghe con regole strutturate, rose (una per volta, **incollate in blocco** o **svuotate per reparto**), **probabili formazioni**, **campo per schierare** col **consiglio sotto**, e il **timer** che dice entro quando (vedi §4.2). Restano i ruoli Mantra, che sono nel DB e non li legge nessuno, e quello che il timer dà per buono (§4.4) |
+| 💾 **Log** | ⬜ Aggiungere una funzione di salvataggio log |
+| 🎨 **Grafica** | ⬜ `form-select` è usata da **4 tendine** (selettore di sezione in `arduino.html`, `gaming.html`, `pcbuilder.html`, `pokemon.html`) e non è definita da nessuna parte · ⬜ rivedere **lo scorrimento di sezioni e sottosezioni** (richiesta del 22/09/2026). ⚠️ Solo il Fantacalcio ha il `<form>` che avvolge header e footer della modale; in `arduino.html` e `pcbuilder.html` il form sta dentro `.modal-body` e lo scroll funziona, quindi la cura del Fantacalcio non va copiata a tappeto |
 
-### 4.1 🟨 Gaming — il calendario delle uscite (chiesto il 13/08, costruito il 16/08/2026)
+### 4.1 🟨 Gaming — il calendario delle uscite
 
-> ⚠️ **Trappola pagata il 16/08/2026**: la cache vera usa `igdb_release_id`
-> fra **486664 e 954196**. Uno script di prova che cancellava «il mio intervallo»
-> 900000-910000 si è portato via **497 righe vere**. Non è grave — la cache si rifà col
-> pulsante — ma la regola vale in generale: **un id scelto a tavolino non è una prova di
-> proprietà**, un campo che scrive solo il test sì. E un test che condivide lo stato con
-> i dati veri misura anche quelli: la prova gira ora su una **copia** di `hub.db`.
+Chiuso il 16-17/08/2026 (IGDB, piattaforme 4.1a, ricerca 4.1b, attesa 4.1c): vedi
+`STORICO.md`. Il tetto delle 300 righe resta di proposito (senza, 3,3 MB e 4224 immagini).
 
-**Chiesto**: nella sezione Gaming una **barra o un calendario con le prossime uscite**,
-di **tutte le piattaforme** e non solo Steam, sul modello di quello di Opera GX.
+- ⬜ **La cache va aggiornata una volta** perché il dato dell'attesa entri: fino ad allora il
+  filtro è spento e la pagina lo dice. È un'azione di Davide
+- ⬜ **La striscia in cima a `/gaming`** mostra le 6 uscite più vicine senza guardare
+  l'attesa: se dà fastidio, `filtra_per_attesa` è già scritta
+- ⬜ **Le soglie dell'attesa sono due numeri fissi** (2 e 10), scelti sui conti del 17/08:
+  se in cache entrasse molto altro vanno rimisurate
 
-✅ **Le decisioni sono prese e la metà lettura è chiusa e verificata** (dettagli in
-`STORICO.md`). **Fonte scelta: IGDB.** Il backlog dava RAWG come «più semplice da
-attaccare»: il 16/08/2026 RAWG rispondeva **522 da Cloudflare su API *e* sito**, tre
-tentativi, mentre dalla stessa macchina Steam rispondeva normalmente e IGDB dava un 401
-regolare con l'istruzione sugli header. Scrivere il client di un servizio irraggiungibile
-avrebbe significato non poterlo provare. Opera GX / GX Corner **non è stata cercata**: la
-domanda «esiste una API» resta aperta e ormai è accademica, la fonte è decisa.
+### 4.2 ✅ Fantacalcio, la sezione di prima — tolta il 25/09/2026
 
-Le due decisioni che il backlog lasciava in sospeso: le **piattaforme sono un filtro
-nell'URL** (`?platform=`) e non una preferenza salvata — le preferenze per utente nel DB
-non esistono, vedi §1.4 falla 3, e i filtri di Gaming viaggiano già tutti nella
-querystring; la **cache la aggiorni tu da un pulsante**, come ogni altro import qui, e
-l'aggiornamento automatico resta agganciato a §1.5, che è l'unico contesto in cui ha senso.
+Sostituita da quella che è nata come «Fantacalcio 2» (§4.6). Il testo lungo è in
+`git show 85f8c03:BACKLOG.md`, §4.2.
 
-✅ **L'import è stato eseguito il 16/08 e funziona**: **6827 uscite** in cache, 4280
-giochi distinti su 29 piattaforme. Le domande che erano aperte hanno tutte una risposta
-misurata: **zero righe su 6827 con precisione «ignota»**, cioè il campo della precisione
-è stato letto per tutte (la doppia lettura `category` / `date_format` regge); 0 righe
-senza piattaforma e 0 senza URL IGDB; 196 su 6827 senza copertina (2,9%, sono giochi che
-su IGDB una copertina non ce l'hanno).
+### 4.3 🟨 Le richieste di Davide del 22/09/2026 «per il futuro»
 
-✅ **Le uscite multipiattaforma si fondono** (chiesto da Davide il 16/08): un gioco che
-esce lo stesso giorno su più piattaforme è **una riga sola**. Nei soli prossimi 90 giorni
-la fusione unisce **454 gruppi** — *Vampire Survivors: Legacy of the Bloodmoon* passa da
-9 righe a 1. Si fonde in **lettura** e **dopo il filtro**, mai in scrittura.
+Fatte: il pulsante che aggiorna il Pokédex, quello che confronta una regulation con le
+fonti, gli sprite, i quattro temi, «resta collegato», il travaso fra utenti (vedi
+`STORICO.md`). Aperto:
 
-✅ **4.1a è chiuso il 17/08/2026** — in cache entrano solo PC, PS5, Xbox Series, Switch e
-Switch 2 e i VR; le console vecchie (PS4, Xbox One, 360, Vita, Wii) le ha escluse Davide
-lo stesso giorno. −1373 righe su 7327, e solo 45 giochi persi. Numeri e prove in
-`STORICO.md`; la trappola dell'elenco che fallisce chiuso è in cima a questo file.
-
-✅ **4.1b è chiuso il 17/08/2026** — la ricerca per titolo è nella riga dei filtri, viaggia
-come `?q=` e filtra **in SQL prima del tetto**, quindi trova anche ciò che il tetto taglia.
-In più dice quante uscite col titolo cercato cadono **fuori dal periodo scelto**, che era
-la trappola rimasta: il periodo è un filtro esplicito, ma con una ricerca attiva un
-«nessun risultato» sarebbe stato letto come «non c'è». Numeri e prove in `STORICO.md`.
-
-✅ **4.1c è chiuso il 17/08/2026** — filtro «quanto è atteso» su `hypes`, con la finestra
-di default che passa da 11 giorni a **tre mesi** di calendario. Numeri e prove in
-`STORICO.md`.
-
-**Il tetto delle 300 righe resta, ed è giusto che resti**: senza, la pagina pesava
-**3,3 MB con 4224 immagini**. Quello che è cambiato è **quanto calendario ci sta dentro**:
-con «quelle un po' attese» le 300 righe coprono **tre mesi** invece di undici giorni, e
-sulla finestra di default le voci che passano i filtri sono **317** — il tetto sfiora
-appena. Le tre leve sono ora l'attesa, la piattaforma e la ricerca; il periodo da solo
-non basta mai, e l'avviso a schermo lo dice.
-
-**⬜ Cosa resta, ed è piccolo:**
-
-- ⬜ **La cache va aggiornata una volta** perché il dato dell'attesa entri: fino ad allora
-  il filtro è spento e la pagina lo dice. È un'azione di Davide, non un lavoro
-- ⬜ **La striscia in cima a `/gaming`** mostra ancora le **6 uscite più vicine**, senza
-  guardare l'attesa: è un assaggio e va bene così, ma se dà fastidio vedere lì un gioco
-  che non conosce nessuno si applica la stessa soglia (`filtra_per_attesa` è già scritta)
-- ⬜ **Le soglie sono due numeri fissi** (2 e 10) scelti sui conti del 17/08. Se in cache
-  entrasse molto altro andrebbero rimisurate, non ritoccate a occhio
-
-
-### 4.2 ✅ Fantacalcio, la sezione di prima — **tolta il 25/09/2026**
-
-Aperta il 21/09/2026 leggendo le pagine di fantacalcio.it, sostituita dalla sezione nata
-come «Fantacalcio 2» (§4.6) e tolta per decisione di Davide il 25/09/2026. Il testo lungo —
-le fonti misurate, la ricerca sul consiglio per titolarità, i bachi del 21-22/09 — è in
-`git show 85f8c03:BACKLOG.md`, §4.2; una riga per lavoro in `STORICO.md`.
-
-**Le decisioni di Davide di quei giorni che valgono ancora** per la sezione di oggi:
-due leghe, tutte e due **Classic** (il Mantra non serve); regole **in colonne**, gol +3
-per tutti; **una formazione per lega**, che si sovrascrive (quindi niente storico, e non
-si potrà misurare se il consiglio consigliava bene); copiare una formazione nell'altra lega
-non serve; chi esce dalla rosa esce anche dal campo. (L'avversario «non interessa» del
-22/09 è **superato** dal 24/09: si mostra e non si pesa, §4.6.)
-
-**⬜ Due voci aperte lì che non sono del Fantacalcio**, e restano:
-
-- `form-select` è usata da **4 tendine** — il selettore di sezione in `arduino.html`,
-  `gaming.html`, `pcbuilder.html` e `pokemon.html` — e lì non è definita da nessuna parte.
-  Si fa quando si tocca la grafica di quelle sezioni
-- la richiesta di Davide del 22/09/2026 di **rivedere lo scorrimento di sezioni e
-  sottosezioni** in generale. ⚠️ Solo il Fantacalcio ha il `<form>` che avvolge header e
-  footer della modale (corretto lì con `display:flex;flex-direction:column`): in
-  `arduino.html` e `pcbuilder.html` il form sta dentro `.modal-body` e lo scroll funziona,
-  quindi la cura non va copiata a tappeto
-
-### 4.3 ⬜ Le richieste di Davide del 22/09/2026 «per il futuro»
-
-Dettate il 22/09/2026 insieme alle quattro che sono state fatte subito (listone
-sfogliabile, svuota rosa, timer e consiglio sotto il campo: chiuse, vedi
-`STORICO.md`). Queste restano aperte, **nelle parole con cui sono state chieste**,
-perché nessuna è stata ancora misurata: sotto ogni voce c'è solo quello che già si
-sa dal codice, non un piano.
-
-**Sezione Pokémon**
-
-- ✅ **Un pulsante che aggiorni da solo tutto il Pokédex** — **fatto il 23/09/2026**, numeri in `STORICO.md`: card «Aggiorna tutto dalla fonte» in Catalogo → Pokémon, logica in `pokedex_aggiorna.py`; entra solo il nuovo, le differenze si mostrano. La richiesta era: quando la fonte cambia,
-  Pokémon nuovi, statistiche, oggetti, mosse e abilità. C'è già il pezzo di sotto —
-  `pokeapi.py` legge e `scripts/build_catalog.py` scrive — e c'è già il precedente
-  giusto nel Fantacalcio: la logica in un modulo solo (`fanta_import.py`), gli
-  script e il web che la chiamano, e un rifiuto **dichiarato** davanti ai numeri che
-  sono il sintomo di una fonte letta male. ⚠️ Qui però il catalogo è **curato a
-  mano** in molti punti (nomi italiani, forme, toppe): un aggiornamento automatico
-  che sovrascrive tutto cancellerebbe quel lavoro senza dare errore. La domanda da
-  rispondere prima di scrivere una riga è **quali colonne la fonte comanda e quali
-  no**, e la regola d'oro dei dati vale sempre: si scrive con `salva_catalogo()` e
-  `_save_abilities()`, che fanno la copia di sicurezza.
-
-  **Misurato il 23/09/2026, e la domanda cambia forma.**
-  - **Il catalogo e il dump oggi coincidono quasi del tutto**: su 1342 voci (specie e
-    forme, tutte con uno slug nel dump) **1318** hanno stat, tipi e abilità identici.
-    Le **24** che differiscono sono le curate: abilità diverse su 23 (quasi tutte Mega di
-    Champions, più Samurott, Goodra, Decidueye e Avalugg di Hisui e Palafin), tipi su 3
-    (Mega Clefable, Meganium, Feraligatr), stat su 1 (Mega Floette). Un aggiornamento
-    che «riallinea» le voci esistenti toccherebbe **solo quelle 24**, cioè esattamente
-    il lavoro da non perdere.
-  - **Quello che il dump porterebbe oggi di nuovo è quasi niente**: dry-run di
-    `build_catalog.py` → +3 specie, +1 mossa, +1 abilità, +1 oggetto. E il dump è **fermo**
-    (§5.2: Champions fino a M-B, ultimo commit del 21/07/2026).
-  - ⚠️ **E le +3 specie sono tre doppioni.** Sono `aegislash-shield`, `morpeko-full-belly`
-    e `palafin-zero`, che nel catalogo ci sono già come `aegislash-shield-forme`,
-    `morpeko-full-belly-mode` e `palafin-zero-form`. `build_catalog.py` confronta chiave e
-    nome, **non lo slug**, quindi lanciato davvero li scriverebbe, e il suo riassunto
-    direbbe «voci curate modificate: 0» — vero, e fuorviante. Il pannello `/pesca` questa
-    porta l'ha chiusa il 10/09 (STORICO, «doppione sotto un'altra chiave»), lo script no.
-    Non corretto: va deciso insieme al pulsante, che ci starebbe sopra.
-  - ✅ **Riempite il 23/09/2026, decisione di Davide** (`scripts/riempi_abilita_vuote.py`, confermate da Serebii «Mega Abilities»). Era: 5 Mega di M-C — Absol Z,
-    Garchomp Z, Lucario Z, Golisopod, Baxcalibur — hanno `abilities: []` nel catalogo, e
-    il dump di oggi le ha (Sharpness, Levitate, **Aura Guard**, Tough Claws, Thermal
-    Exchange). Non è una scelta curata, è un buco: ma la regola approvata è «si mostra,
-    non si applica», quindi è rimasto. Aura Guard, l'abilità di Mega Lucario Z, è entrata
-    nel catalogo col pulsante, senza `effect`.
-  - Quindi il pezzo che manca non è «sovrascrivere dalla fonte», è **accorgersi quando la
-    fonte cambia**: le voci nuove entrano (come fa già `build_catalog.py`, una volta
-    chiusa la porta dei doppioni), e le differenze sulle voci esistenti si **mostrano**
-    per una decisione, non si applicano.
-- ✅ **Un pulsante per creare una regulation nuova senza inserire i dati a mano** — **fatto il 23/09/2026**: «Confronta con le fonti» nella pagina della regulation, logica in `regulation_fonti.py`, guscio `scripts/confronta_regulation.py`. Il primo uso ha corretto MA, MB e MC (numeri in `STORICO.md`). Per una regulation nuova: «crea regulation» (copia della precedente), poi «Confronta» e «Allinea». ⬜ Restano: **Kingambit** in M-C, che Serebii dà e Bulbapedia no (resta nel roster, il confronto lo ristampa); **Game8** come terzo voto, non ancora letto. La richiesta era:
-  con una **fonte affidabile da cui confrontare i dati**. Il guscio c'è dal
-  10/09/2026 (§1.3, la regulation nuova dall'interfaccia): quello che manca è la
-  fonte. ⚠️ È la stessa domanda di §2.3 e §5.2 — un roster e un moveset non si
-  inventano, e finché la fonte non è decisa questa voce non è pronta.
-
-  **Fonti decise da Davide il 23/09/2026**: Serebii e Game8, come per M-C, più
-  Bulbapedia. **Misurato lo stesso giorno, senza scrivere niente:**
-  - **Bulbapedia** ha una pagina per regulation («Regulation Set M-A/M-B/M-C»), con il
-    roster **completo** in righe `{{CPCard|numero|nome|ig=-Forma}}`: 272, 310 e 344
-    schede, Mega comprese. **Serebii** ha `pokemonchampions/rankedbattle/regulationm-c.shtml`
-    con **solo le aggiunte** («Newly Useable Pokémon», icone `NNN-suffisso`) e — la parte
-    che nessun'altra fonte dava — **«Newly Added Items»**.
-  - **Le due fonti concordano specie per specie**: M-A 186 e 186, M-B 208 e 208, zero
-    differenze; in M-C l'unica è **Kingambit**, che Serebii ha e Bulbapedia no.
-  - **E insieme dicono che i nostri roster hanno errori.** In M-B mancano **nove
-    specie** che entrambe le fonti danno: Annihilape, Gholdengo, Grimmsnarl, Houndstone,
-    Mawile (con la Mega), Musharna, Overqwil, Qwilfish, Vileplume. **Pawmot** è nel nostro
-    MA e MB, mentre Serebii lo mette fra i **nuovi di M-C** e Bulbapedia non lo ha prima.
-    **Hisuian Arcanine** è in tutte e tre per Bulbapedia, in nessuna delle nostre.
-    Squawkabilly: Bulbapedia elenca 4 piumaggi, noi 1. Da noi e non da loro, **per
-    convenzione nostra**: le forme di battaglia (Aegislash Spada, Castform, Morpeko,
-    Palafin Eroe), Maushold da tre, Mega Meowstic femmina. Nomi da mappare: Gourgeist
-    «Jumbo» è il nostro «Super», Vivillon «Fancy» è Vivillon.
-  - **Gli oggetti hanno una fonte**, e il buco dichiarato di §2.3 si chiude: M-B aggiunge
-    **15** oggetti (Wide Lens, Muscle Band, Wise Glasses, Expert Belt, Light Clay, **Life
-    Orb**, Zoom Lens, **Metronome**, Iron Ball, le quattro rocce, Shed Shell, Big Root) e
-    M-C **12** (Leek, Rocky Helmet, Air Balloon, Red Card, Binding Band, Eject Button,
-    Normal Gem, Terrain Extender, i quattro semi). Nessuno è fra i 58 di MA. Oggi MB e MC
-    copiano i 58, quindi **con MB scelta il calcolatore non offre Life Orb**.
-  - ✅ **Applicato il 23/09/2026**, decisione di Davide («procedi così»): vedi sopra e
-    `STORICO.md`. ⬜ Game8 resta da leggere, come terzo voto su Kingambit.
-  - Il pulsante, quindi, è il confronto qui sopra reso ripetibile: legge le due fonti,
-    le risolve sul catalogo (numero + forma → slug del dump), **mostra** accordi e
-    disaccordi, e scrive solo dopo una conferma. Il primo uso sarebbe correggere MA, MB e
-    MC stesse — ma quello cambia dati curati, e va deciso da Davide.
-- ✅ **Gli sprite mancanti** — chiusi il 22/09/2026: da **333 URL rotti a 0**, numeri
-  in `STORICO.md`. ⚠️ Il rimando «sta anche in §3» era **stale**: in §3 non c'era
-  niente sugli sprite.
-  ✅ **E la seconda metà è chiusa lo stesso giorno**: le **114 URL su 57 voci** che
-  mostrano l'immagine di un'altra voce non sono un buco — sono forme che pokemondb
-  non copre (i Totem di Alola, le andature di Koraidon e Miraidon) o Mega
-  **inventate**, che uno sprite non ce l'avranno mai — ma ora **lo dicono**:
-  `/api/pokemon` risponde `sprite_ripiego_di`, e i calcolatori mettono «altra forma»
-  accanto all'immagine, con la frase intera nel tooltip. ⚠️ La scritta è corta
-  **perché deve esserlo**: il contenitore dello sprite ha `height:70px` fisso ed è in
-  riga, quindi una frase lunga si spezzava in tre righe addosso al disegno.
-  ✅ **E l'elenco team e il team builder lo dicono dal 23/09/2026**, nel `title`
-  (a 58 px una scritta sarebbe rumore). Il nodo era che lì lo sprite viene dal DB:
-  ora `sprite_ripiego_di(nome)` è un globale di Jinja in `api_pokemon.py`, che
-  risponde per **nome** e non per URL — lo stesso URL è giusto per Raticate di Alola
-  e un ripiego per il suo Totem. Numeri in `STORICO.md`.
-
-**Altro**
-
-- ⬜ **Proteggere l'accesso al GitHub** «per non farmi rubare il lavoro». Davide ha
-  chiesto di farlo subito **se è veloce**: la parte veloce è verificare che il repo
-  sia privato e che i segreti non siano dentro — `controlla_esposizione.py` dice già
-  che né `hub.db` né la chiave di sessione sono versionati, e l'export senza
-  password è di proposito. ⚠️ Quello che **non** è veloce è il resto: 2FA, chiavi di
-  firma, chi ha accesso. Da fare guardando insieme le impostazioni del repo, non da
-  qui.
-- ✅ **Altri colori per il tema** — fatti il 22/09/2026, numeri in `STORICO.md`. Da
-  due a **quattro**: Scuro e Chiaro restano, più **Oceano** (scuro freddo, accento
-  ciano) e **Sabbia** (chiaro caldo, accento terracotta). L'interruttore è diventato
-  un **menu**, perché con quattro temi un toggle non vuol dire più niente.
-  ✅ **E la falla 2 di §1.4 è chiusa il 22/09/2026**: `users` ha ora le colonne `tema`
-  e `lingua`. Il browser resta la via veloce — `localStorage` e il cookie servono
-  ancora alla pagina di login, dove un utente non c'è — ma la verità **segue la
-  persona**: al login il tema entra in sessione (e il server lo scrive in
-  `data-theme`, quindi niente lampo scuro) e la lingua viene riscritta nel cookie,
-  che è quello che `lingua_attiva()` legge a ogni pagina. ⚠️ `NULL` vuol dire «non ha
-  mai scelto», che è diverso da «ha scelto lo scuro».
-- ✅ **Ricordare utente e password** — fatto il 22/09/2026, numeri in `STORICO.md`.
-  La spunta al login dice «Resta collegato su questo dispositivo per 30 giorni»,
-  perché è quello che fa: la password non esce mai da `users`, nel cookie va un
-  numero casuale da 32 byte e nel DB ne resta solo l'impronta. ⚠️ Al posto del
-  «cookie firmato» che stava scritto qui c'è una **riga in tabella**: una firma si
-  verifica ma non si **revoca**, e la richiesta diceva «con scadenza e con la
-  possibilità di revocarla». Revoche: il logout toglie questo dispositivo, il cambio
-  password e il pulsante in Utenti li tolgono tutti.
-- ✅ **Un pulsante in Utenti per copiare tutti i dati in un altro utente** — fatto il
-  22/09/2026, numeri in `STORICO.md`. Le due decisioni che il codice non poteva
-  dedurre le ha prese Davide: **aggiunge** (non sostituisce, non si perde niente) e
-  le **spunte di Python non si copiano**. ⚠️ Quello che resta da sapere, perché è una
-  scelta e non un difetto: il pulsante **non è rieseguibile** — premuto due volte
-  lascia tutto in doppio, e la conferma lo dice coi numeri prima di premere. Renderlo
-  rieseguibile vorrebbe dire riconoscere «questa riga c'è già» dai **contenuti**,
-  cioè fondere per titolo, che è la scorciatoia che `importa_dati.py` rifiuta per
-  iscritto. C'è una prova apposta (`prova_travaso_utente.py`, §7) perché nessuno la
-  «corregga» credendola un baco.
-
-### 4.6 🟨 Le fonti del Fantacalcio in regola — **dal 25/09/2026 è l'unica sezione**
-
-> Decisione di Davide del 23/09/2026: «voglio evitare problemi». I *Termini e condizioni*
-> di fantacalcio.it (art. 3) vietano di leggere le pagine con un programma, scraping
-> compreso, anche per uso personale; l'art. 9 permette solo di **visualizzare** i
-> contenuti. Citazioni e contesto in §1.5.
-
-> **Com'è andata.** Il 24/09/2026 Davide ha fatto provare le fonti nuove in una sezione a
-> parte, «Fantacalcio 2», con tabelle sue (`fanta2_*`), lasciando la vecchia com'era. Il
-> **25/09/2026 ha scelto la 2**: la vecchia è stata tolta per intero e la 2 ne ha preso
-> nome, route (`/fantacalcio`), slug di permesso, file e tabelle (`fanta_*`). La lega
-> «Triplete», che c'era solo nella vecchia, è stata portata con la sua rosa. La fusione nel
-> DB la fa `extensions._unisci_fantacalcio()` in `init_db()`, una volta sola, con la copia
-> in `data/archive/hub_pre-unione-fantacalcio.db`. Numeri in `STORICO.md`.
-
-**Cosa c'è** — `fanta_fonti.py` (legge), `fanta.py` (logica), `blueprints/fantacalcio.py`,
-sette template (`fantacalcio.html`, `fanta_*.html`, `_fanta_consiglio.html`,
-`_fanta_allerta.html`; `_fanta_timer.html` e `static/css/fantacalcio.css` c'erano già),
-`scripts/importa_listone.py` e `scripts/prova_fantacalcio.py` (**88 su 88** dal 25/09/2026).
-Le fonti:
-
-| Dato | Fonte | Come arriva |
-|---|---|---|
-| **Listone e statistiche** | i due Excel di fantacalcio.it | Davide li scarica **col suo login**; l'hub li trova nei download — entrando nella sezione o col pulsante «Leggi i download» — li importa e li cancella (o si caricano dalla pagina, o con `importa_listone.py`). Letti in memoria, **mai salvati**: non devono finire nel repository |
-| **Calendario e classifica** | football-data.org, piano gratuito | con la chiave, da solo entrando se la copia ha più di un giorno, o con «Aggiorna ora» |
-| **Probabili** | nessuna | un **link** e un riquadro che le apre nel browser di Davide (strada «a») |
-
-**Le probabili** — pagina `/fantacalcio/lega/<id>/chi-gioca` (pulsante «👀 Probabili»): le
-probabili di fantacalcio.it **in un riquadro** a sinistra (le carica il browser, nessun
-programma le legge) e la rosa a destra, **da leggere**. Le scelte titolare / in dubbio /
-non gioca sono state tolte il 25/09/2026 su richiesta di Davide, e con loro, lo stesso
-giorno, la tabella `fanta2_titolari`. ⚠️ Il riquadro nel pannello browser di Claude è
-rimasto **bianco** (è il pannello che non lo carica, non il sito): **va provato nel Chrome
-di Davide**; se resta bianco c'è «Apri in una scheda».
-
-Il **consiglio** mette in fondo chi **di sicuro non gioca** (ceduto, squadra senza partita,
-partita rinviata: lo dice il calendario), poi ordina per **fantamedia della lega**, che
-comprende anche l'**autogol** (408 su 414 esatti coi valori standard). La titolarità **non la
-sa**, e lo dice in pagina. L'**avversario** — posizione in classifica, gol fatti e subiti —
-si **mostra e non si pesa** (decisione di Davide del 24/09/2026). Il **modificatore di
-difesa** è il valore pieno: senza probabili non c'è la probabilità per cui moltiplicarlo.
-
-✅ **I termini e gli Excel, chiuso da Davide il 25/09/2026**: la lettura dei termini fatta
-quel giorno (art. 3, «elaborare» i Contenuti senza autorizzazione scritta; art. 9.3, la
-copia solo «su un disco (tuttavia non su un server)») diceva che gli Excel importati non
-erano puliti come credevamo, e proponeva di chiedere un permesso scritto a Fantacalcio S.r.l.
-**Davide ha deciso che per gli Excel l'autorizzazione scritta non gli serve.** Resta vero,
-ed è scritto perché non si riscopra: il riquadro delle probabili sta nell'uso personale
-dell'art. 9.3 **finché lo guarda solo Davide**; mostrato ad altri utenti no. Il testo
-completo della lettura è in `git show b61fa8e:BACKLOG.md`, §4.6.
-
-⬜ **Resta aperto:**
-
-- ⚠️ **Gli Excel dai download, su Debian** (25/09/2026). La cartella la trova da sola anche
-  su Linux (`XDG_DOWNLOAD_DIR`, quindi «Scaricati» su un Debian in italiano), ma **funziona
-  solo se il browser che scarica e l'hub stanno sulla stessa macchina**. Se l'hub diventa un
-  server e scarichi dal PC o dal telefono, i file finiscono sul dispositivo, non sul server:
-  serve una cartella condivisa (es. Samba) come cartella di download del browser, indicata
-  all'hub con `FANTA_CARTELLA_DOWNLOAD`; altrimenti resta il caricamento dalla pagina.
-- **Provarla a mano in browser**, e soprattutto **il riquadro delle probabili nel Chrome di
-  Davide**. Le pagine sono provate dal test client e dallo sweep (0 errori); la Dashboard
-  col riquadro nuovo è stata vista col test client il 25/09/2026 (giornata 6, due leghe),
-  non in browser: serve il login.
-- **La formazione di «La Liga Abajo» va rifatta**: quella salvata nella sezione vecchia (25
-  righe) **non è stata portata**, per decisione di Davide. È nella copia
-  `data/archive/hub_pre-unione-fantacalcio.db` e nella storia git dell'export.
-- ⚠️ **Un export di prima del 25/09/2026 non si ripristina più così com'è.** Ha le chiavi
-  `fanta_*` della sezione vecchia **e** le `fanta2_*`: cosa farebbe `importa_dati.py` **non
-  l'ho provato** — nel migliore dei casi le leghe vecchie nelle tabelle nuove e le `fanta2_*`
-  scartate. Un DB di prima invece va bene, provato:
-  la fusione lo sistema entrando. Per un ripristino da un export vecchio, prima si fa
-  girare quel DB, non l'export.
-- **Il ritardo del calendario gratuito** («Schedules delayed»): non misurato, serve una
-  partita spostata da veder arrivare.
-- **La chiave su Debian**: oggi `FOOTBALL_DATA_API_KEY` si legge dall'ambiente e, su
-  Windows, dal registro dell'utente (così `setx` basta senza riavviare l'hub da un terminale
-  nuovo). Su Debian il registro non c'è: è la voce di §1.5.
-- ⬜ **La porta inviolata del portiere** (chiesta da Davide il 25/09/2026 con le altre
-  statistiche) **non c'è**: il file delle statistiche non la porta. Dal calendario si
-  saprebbe solo che la **squadra** non ha preso gol, non che quel portiere ha giocato —
-  sarebbe un numero plausibile e falso per ogni secondo portiere. Serve una fonte con le
-  presenze partita per partita; finché non c'è, resta fuori, e la pagina non la finge.
-- **Gli stemmi** (25/09/2026) vengono dalla classifica di football-data.org: se un giorno
-  l'API smettesse di dare `crest`, o cambiasse CDN, le pagine tornerebbero ai soli nomi
-  **senza dirlo**. Non è un baco, è da sapere. E vanno visti **sul campo pieno**: nessuna
-  lega aveva una formazione salvata, quindi lì li ha provati solo lo sweep (il JavaScript
-  compila), non l'occhio.
-
-Le verifiche fatte prima di scrivere il codice, il 24/09/2026 — restano qui perché sono
-la ragione di ogni scelta sopra:
-
-| Dato | Chi lo usa oggi | Fonte nuova proposta | Da verificare |
-|---|---|---|---|
-| **Listone** (quotazioni, ruoli) | rose, listone sfogliabile, consiglio | **il file Excel che fantacalcio.it offre agli utenti**, scaricato **da Davide** a mano e **caricato** nell'hub: nessun programma legge il sito. Le quotazioni sono le loro, e le due leghe usano quelle: un'altra fonte non darebbe gli stessi numeri | che il file ci sia ancora e da dove si scarica; che abbia gli stessi campi che `importa_listone.py` usa oggi (nome, squadra, ruolo Classic, quotazioni); che i termini permettano di tenerlo sul proprio dispositivo (l'art. 9 parla di salvataggio locale «al solo fine di supportare la fruizione») |
-| **Calendario** (orari: serve al timer, §4.4) | timer della giornata | un'**API ufficiale** con chiave: **football-data.org**, piano gratuito | che copra la Serie A con data **e ora** e i rinvii; limiti di chiamate; termini |
-| **Statistiche** | scheda del giocatore, consiglio | un'API con piano gratuito (es. **API-Football**), **oppure toglierle** se il consiglio può farne a meno | quanto le usa davvero il consiglio (misurare prima); copertura dei giocatori di Serie A; limiti e termini |
-| **Probabili formazioni** | campo, consiglio | **nessuna fonte gratuita e pulita**: sono contenuto editoriale di tutti (fantacalcio.it, Gazzetta, Sky). ✅ **Scelta di Davide del 24/09/2026: (a), un link** che apre la pagina nel suo browser. Scartate (b) l'incolla e (c) la lettura automatica | con (a) o (b) il consiglio perde l'aggiornamento automatico: va detto a schermo, non lasciato scoprire |
-
-**I due file Excel, letti il 24/09/2026 — ✅ bastano per listone e statistiche.** Scaricati da
-Davide col suo login (i pulsanti «Scarica» di `/quotazioni-fantacalcio` e `/statistiche-serie-a`
-sono `only-for-logged`): `Quotazioni_Fantacalcio_Stagione_2026_27.xlsx` e
-`Statistiche_Fantacalcio_Stagione_2026_27.xlsx`. Confrontati con `fanta_players` (597 righe,
-lette dalle pagine il 22/09):
-
-- **c'è l'`Id`, ed è lo stesso**: 597 su 597 giocatori del DB si ritrovano per id in tutti e due
-  i file. In più c'è **1** giocatore nuovo (Alaba, Udinese, id 2404), arrivato dopo il 22/09
-- **quotazioni identiche**: QA, QI, FVM e ruolo Classic uguali su tutte le 597 righe. Le sole
-  differenze sono di forma: il ruolo Mantra è scritto `M;C` invece di `m|c` (298 righe) e un nome
-  ha uno spazio in fondo (`'Fini '`, id 6506)
-- **statistiche identiche**: 0 differenze su partite a voto, media voto, fantamedia, gol, gol
-  subiti, rigori parati, assist, ammonizioni, espulsioni. I rigori sono in tre colonne (`Rc`
-  tirati, `R+` segnati, `R-` sbagliati): la stringa di oggi `R+ / Rc` si ricava. In più c'è
-  `Au` (autogol), che oggi non leggiamo
-- la squadra è il nome intero (`Atalanta`); la sigla (`ATA`) e lo slug (`atalanta`) si ricavano
-  1:1: controllato su tutte e 20 le squadre
-- **mancano** tre campi: `slug` del giocatore, `ruolo_mantra_esteso` (lo usa **solo** il tooltip
-  di `fanta_listone.html:216`) e `squadra_slug` (che però si ricava dal nome)
-- il file delle quotazioni ha un foglio **`Ceduti`** con **63** giocatori, **separati** da quelli
-  in rosa. ⚠️ **Nel DB di oggi quei 63 sono tutti `attivo=1`**: la sezione Fantacalcio attuale
-  li mostra come disponibili, perché la pagina li elenca insieme agli altri. Oggi nessuno di loro
-  è in una rosa (contato: 0). Non l'ho corretto: la prima sezione non si toccava, e nella 2 si
-  legge il foglio `Ceduti`. (Chiuso da solo il 25/09/2026: quel listone non c'è più.)
-- ⚠️ **i file non vanno nel repository.** Sono contenuti di fantacalcio.it scaricati col login:
-  metterli su GitHub vorrebbe dire ripubblicarli. Si caricano dalla pagina del Fantacalcio,
-  si leggono e basta; se serve una copia, in una cartella esclusa da git
-- `openpyxl` **non è installato**, e non è servito: `fanta_fonti.leggi_xlsx()` legge i due
-  file con `zipfile` e `xml` della libreria standard
-
-**football-data.org per il calendario, letto il 24/09/2026 (sito e documentazione, non l'API):**
-
-- ✅ la **Serie A è nel piano gratuito** (pagina *Coverage*, «free. Forever»): 12 competizioni,
-  **10 chiamate al minuto**, serve una chiave. Senza chiave si leggono solo l'elenco delle
-  aree e delle competizioni, quindi **le partite non le ho potute vedere**
-- ✅ ogni partita ha `utcDate` (ISO 8601, in UTC: va portata all'ora italiana), `matchday` e
-  uno `status` fra `SCHEDULED`, `TIMED`, `IN_PLAY`, `PAUSED`, `FINISHED`, `SUSPENDED`,
-  **`POSTPONED`**, `CANCELLED`, `AWARDED`. Il rinvio quindi si vede. ⚠️ `SCHEDULED` vuol dire
-  data **approssimativa**: diventa `TIMED` solo quando c'è **data e ora esatte**. Il timer
-  (§4.4) deve fidarsi solo di `TIMED`, altrimenti dà una scadenza inventata
-- ✅ **provata con la chiave il 24/09/2026**: `competitions/SA/matches` dà **380 partite**,
-  10 per giornata; giornate 1-5 `FINISHED`, **6-12 `TIMED`** (70 partite con data e ora
-  esatte), **dalla 13 alla 38 `SCHEDULED`** (260, data approssimativa). Il filtro
-  `?matchday=6` **funziona** anche se la pagina sulle partite non lo documenta
-- ✅ **la giornata 6 coincide con fantacalcio.it**: 10 partite su 10, stesso orario al minuto,
-  confrontate con `fanta_calendario` (letto il 24/09 alle 19:38). Le squadre si legano col
-  `shortName`, due con un ritocco: `Como 1907` → `como`, `Venezia FC` → `venezia`
-- ⚠️ «**Schedules delayed**» resta **non misurato**: servirebbe un orario spostato da vedere
-  arrivare. `lastUpdated` della giornata 6 è `2026-09-24T00:20:33Z`. Da riguardare alla prima
-  partita spostata o rinviata
-- ⚠️ `utcDate` è in UTC, e su Windows `zoneinfo` **non trovava `Europe/Rome`** senza il
-  pacchetto `tzdata` (provato: `ZoneInfoNotFoundError`). ✅ `fanta_fonti.ora_italiana()` usa
-  `zoneinfo` se c'è e altrimenti la **regola dell'ora legale europea** (ultima domenica di
-  marzo e di ottobre, alle 01:00 UTC): nessuna dipendenza in più, provata sui due cambi
-- termini, letti nella pagina di registrazione: **§7.1** chiede di scrivere
-  «Football data provided by the Football-Data.org API» nella pagina che li usa; **§6.1** la
-  chiave **non va in un repository** → va in un file escluso da git (`.env` o simile);
-  **§9.1** chiusa l'iscrizione non si possono più mostrare i dati presi. L'uso non commerciale
-  lo dicono **fonti di terzi**, non l'ho letto da loro
-- ✅ **Davide si è registrato il 24/09/2026** e ha la chiave, nella variabile d'ambiente
-  `FOOTBALL_DATA_API_KEY` (`setx`), come `STEAM_API_KEY`: niente file nel progetto, niente
-  campo nell'interfaccia
-
-**Strumenti già esistenti: guardati il 24/09/2026, nessuno è una fonte utilizzabile.** La
-domanda era da dove prendono i dati: se leggono fantacalcio.it (o un altro sito senza
-permesso), usarli sposta solo lo scraping nel codice di un altro.
-
-| Strumento | Cos'è | Da dove prende i dati | Esito |
-|---|---|---|---|
-| **fantacalcio-mcp** = `mcp/fantacalcio/` di `gianmarcocalbi/fantaclaude` (GitHub, ultimo commit 22/09/2026) | server MCP per Claude Code | `apileague.fantacalcio.it`, `leghe.fantacalcio.it`, `www.fantacalcio.it` e `content.fantacalcio.it` (38 URL sul sito principale), il Firebase di Leghe Fantagazzetta, Understat. Credenziali della lega dell'utente | ❌ è fantacalcio.it, in più attraverso l'API interna. E **nessuna licenza** nel repository: il codice non si può nemmeno riusare |
-| **Fantacalcio-PY** = `piopy/fantacalcio-py` (GPL-3.0, ultimo commit 13/09/2026) | tool per l'asta | **scraping** di fantacalciopedia.com (l'URL è **offuscato in base64** in `src/config.py`, e il commento dice «basso per non farsi bannare»), più una fonte di statistiche con login e le pagine di infortunati e rose | ❌ scraping dichiarato |
-| **FantaLab** (FantaLab LTD, Londra) | app per asta e stagione, si dichiara «Partner Ufficiale Fantacalcio» | non lo dicono; probabili e indici sono della redazione SOS Fanta | ❌ nessuna API pubblica né export. I termini (iubenda 96070560) vietano di usare i contenuti oltre il servizio: si usa l'app, non se ne prendono i dati |
-| **Fantagoat** (FANTAGOAT LTD, Londra, n. 17228337) | app con indici proprietari per formazione e asta, si sincronizza con FantaLab | non lo dicono | ❌ stessi termini-tipo (iubenda 23598847): nessuna API, riuso vietato |
-
-Resta quindi il piano della tabella: fonti con un permesso (il file Excel scaricato da Davide,
-un'API con chiave), da verificare una per una. FantaLab e Fantagoat restano utili **come app**
-accanto all'hub, non come fonti.
-
+- ⬜ **Kingambit in M-C**: Serebii lo dà, Bulbapedia no. Resta nel roster, e «Confronta» lo
+  ristampa. **Game8** come terzo voto non è ancora stato letto
+- ⬜ **Proteggere l'accesso al GitHub** «per non farmi rubare il lavoro». La parte veloce è
+  già vera: `controlla_esposizione.py` dice che né `hub.db` né la chiave di sessione sono
+  versionati, e l'export è senza password. Il resto — repo privato, 2FA, chiavi di firma,
+  chi ha accesso — va fatto **guardando insieme le impostazioni del repo**, non da qui
 
 ### 4.4 ⚠️ Quello che il timer della giornata dà per buono
 
-Aperto il 22/09/2026 col timer stesso, **riscritto il 25/09/2026** quando la sezione
-vecchia (che leggeva calendario e probabili dalle pagine) è stata tolta. Non è un baco:
-è quello che può smettere di funzionare senza dare errore.
+Non è un baco: è quello che può smettere di funzionare senza dare errore.
 
 - La scadenza è `fanta.scadenza()`: la prima partita della giornata corrente con l'**ora
   esatta** (`TIMED`, o già cominciata). La giornata è `fanta.giornata_corrente()`, la prima
-  con una partita ancora da giocare, **rinviate escluse**. Se la giornata non ha nessuna
-  partita con l'ora esatta, il timer **dichiara di non saperla**, e le partite senza ora le
-  conta in `senza_ora`. La Dashboard usa la stessa funzione e non richiama l'API.
-- ⚠️ «Un giorno» (`fanta.VECCHIO_CALENDARIO`) è una soglia scelta, non misurata; e il
-  ritardo del piano gratuito di football-data.org («Schedules delayed») non è misurato
-  (§4.6).
+  con una partita ancora da giocare, **rinviate escluse**. Se nessuna partita ha l'ora
+  esatta, il timer **dichiara di non saperla** e conta le altre in `senza_ora`. La
+  Dashboard usa la stessa funzione e non richiama l'API.
+- ⚠️ `SCHEDULED` su football-data.org vuol dire data **approssimativa**: fidarsi solo di
+  `TIMED`, altrimenti è una scadenza inventata.
+- ⚠️ «Un giorno» (`fanta.VECCHIO_CALENDARIO`) è una soglia scelta, non misurata; il ritardo
+  del piano gratuito («Schedules delayed») non è misurato (§4.6).
 
 ### 4.5 ✅ Il punto cieco di `controlla_proprietario.py` — chiuso il 22/09/2026
 
-Trovato e chiuso lo stesso giorno, insieme al travaso di §4.3 che l'aveva fatto
-guardare. Cosa faceva e cosa fa ora sta in `STORICO.md`; qui resta solo la parte
-che serve a **chi tocca ancora quello script**:
+Quello che serve a chi tocca lo script è nelle trappole.
 
-⚠️ Il riconoscimento è **volutamente stretto**. `nomi_innestati()` torna un nome solo
-quando il segnaposto è un nome e basta: `{cond[0]}`, `{" ".join(...)}` o una
-condizione che passa per un parametro di funzione **non** vengono riconosciuti, e
-quella query finisce fra le **scoperte**. È il verso giusto in cui sbagliare, ma vuol
-dire che una riscrittura innocua di un punto di chiamata può far comparire una
-scoperta nuova: prima di dichiararla con un'eccezione, guardare se il filtro c'è
-davvero. La catena `cond` → `mia` → query si segue a punto fisso, ma **solo**
-attraverso assegnazioni a un nome da una f-string.
+### 4.6 🟨 Il Fantacalcio con le fonti in regola — dal 25/09/2026 è l'unica sezione
 
+> Decisione di Davide del 23/09/2026: «voglio evitare problemi». Provata come «Fantacalcio
+> 2» il 24/09 accanto alla vecchia, scelta il 25/09: la vecchia è tolta e la 2 ne ha preso
+> nome, route (`/fantacalcio`), permesso, file e tabelle (`fanta_*`). La fusione del DB la fa
+> `extensions._unisci_fantacalcio()` in `init_db()`, una volta sola, con la copia in
+> `data/archive/hub_pre-unione-fantacalcio.db`. Il testo lungo delle verifiche del 24/09 è in
+> `git show 513c082:BACKLOG.md`, §4.6.
+
+**Le decisioni di Davide che valgono** (21-25/09/2026): due leghe, tutte e due **Classic**
+(il Mantra non serve); regole **in colonne**, gol +3 per tutti; **una formazione per lega**,
+che si sovrascrive (niente storico, quindi non si può misurare se il consiglio consigliava
+bene); chi esce dalla rosa esce anche dal campo; l'avversario **si mostra e non si pesa**;
+le probabili sono **un link**, niente scelte titolare/dubbio; per gli Excel
+**l'autorizzazione scritta non serve**.
+
+**Cosa c'è** — `fanta_fonti.py` (legge), `fanta.py` (logica), `blueprints/fantacalcio.py`, i
+template `fantacalcio.html` e `fanta_*.html`, `scripts/importa_listone.py` e
+`scripts/prova_fantacalcio.py`.
+
+| Dato | Fonte | Come arriva |
+|---|---|---|
+| **Listone e statistiche** | i due Excel di fantacalcio.it | Davide li scarica **col suo login**; l'hub li trova nei download (entrando o con «Leggi i download»), li importa e li cancella — o dalla pagina, o con `importa_listone.py`. Letti in memoria, **mai salvati** e mai nel repository |
+| **Calendario e classifica** | football-data.org, piano gratuito | con la chiave, da solo se la copia ha più di un giorno, o con «Aggiorna ora» |
+| **Probabili** | nessuna | un **link** e un riquadro che le apre nel browser di Davide |
+
+Il **consiglio** mette in fondo chi **di sicuro non gioca** (ceduto, squadra senza partita,
+rinviata), poi ordina per **fantamedia della lega**, autogol compreso. La titolarità **non
+la sa**, e lo dice. Il **modificatore di difesa** è il valore pieno.
+
+**⬜ Resta aperto:**
+
+- **Provarla a mano in browser**, e soprattutto **il riquadro delle probabili nel Chrome di
+  Davide**: nel pannello browser di Claude è rimasto bianco (è il pannello, non il sito); se
+  resta bianco c'è «Apri in una scheda». La Dashboard col riquadro nuovo l'ha vista solo il
+  test client
+- **Gli stemmi vanno visti sul campo pieno**: nessuna lega aveva una formazione salvata. E
+  vengono da `crest` di football-data.org: se l'API smettesse di darlo, le pagine
+  tornerebbero ai soli nomi **senza dirlo**
+- **La formazione di «La Liga Abajo» va rifatta**: non è stata portata, per decisione di
+  Davide. È in `data/archive/hub_pre-unione-fantacalcio.db` e nella storia git dell'export
+- **La porta inviolata del portiere non c'è**: il file delle statistiche non la porta, e dal
+  calendario si saprebbe solo che la **squadra** non ha preso gol — un numero plausibile e
+  falso per ogni secondo portiere. Serve una fonte con le presenze partita per partita
+- **Il ritardo del calendario gratuito** («Schedules delayed»): serve una partita spostata
+  da veder arrivare
+- **I ruoli Mantra** sono nel DB e non li legge nessuno (le leghe sono Classic)
+- ⚠️ **Un export di prima del 25/09/2026 non si ripristina così com'è**: ha le chiavi
+  `fanta_*` della sezione vecchia **e** le `fanta2_*`, e cosa farebbe `importa_dati.py`
+  **non è provato**. Un DB di prima invece va bene, provato: la fusione lo sistema entrando.
+  Per un export vecchio, prima si fa girare quel DB
+- ⚠️ **Gli Excel dai download, su Debian**: la cartella la trova anche su Linux
+  (`XDG_DOWNLOAD_DIR`), ma solo se browser e hub stanno **sulla stessa macchina**. Se l'hub
+  diventa un server, serve una cartella condivisa (es. Samba) indicata con
+  `FANTA_CARTELLA_DOWNLOAD`, altrimenti resta il caricamento dalla pagina. La chiave su
+  Debian è la voce di §1.5
+
+**Da sapere sulle fonti** (verificato il 24/09/2026):
+
+- **Gli Excel**: l'`Id` è lo stesso del listone letto prima (597 su 597), quotazioni e
+  statistiche identiche. Il file delle quotazioni ha un foglio **`Ceduti`** separato. Il
+  ruolo Mantra è scritto `M;C`. `openpyxl` non serve: `fanta_fonti.leggi_xlsx()` usa
+  `zipfile` e `xml`
+- **football-data.org**: Serie A nel piano gratuito, **10 chiamate al minuto**, `utcDate` in
+  UTC. `fanta_fonti.ora_italiana()` usa `zoneinfo` se c'è, altrimenti la regola dell'ora
+  legale europea (su Windows senza `tzdata` `Europe/Rome` non si trova). Le squadre si legano
+  col `shortName`, con due ritocchi: `Como 1907` → `como`, `Venezia FC` → `venezia`. I
+  termini: **§7.1** chiede la scritta «Football data provided by the Football-Data.org API»
+  nella pagina, **§6.1** la chiave fuori da ogni repository, **§9.1** chiusa l'iscrizione non
+  si possono più mostrare i dati presi
+- **Gli strumenti già esistenti non sono fonti utilizzabili**: fantacalcio-mcp legge
+  fantacalcio.it e la sua API interna (e non ha licenza); Fantacalcio-PY fa scraping
+  dichiarato di fantacalciopedia.com; FantaLab e Fantagoat non hanno API e ne vietano il
+  riuso. Restano utili **come app** accanto all'hub
 
 ---
 
 ## 5. 🏁 Il giro di collaudo finale (va fatto **per ultimo**)
 
-**Questa voce si chiude dopo tutte le altre.** Sono tre lavori che si fanno insieme, e
-vanno alla fine per lo stesso motivo: qui i bachi peggiori non hanno mai dato errore — il
-PC Builder inerte per settimane per un apice di troppo, il Ripristina che sovrascriveva
-senza chiedere, lo Speed Tier che ricadeva su una lista statica — e un lavoro fatto dopo
-può rimetterli in piedi.
+**Questa voce si chiude dopo tutte le altre.** Qui i bachi peggiori non hanno mai dato
+errore — il PC Builder inerte per settimane per un apice di troppo, il Ripristina che
+sovrascriveva senza chiedere, lo Speed Tier che ricadeva su una lista statica — e un
+lavoro fatto dopo può rimetterli in piedi.
 
-⚠️ **Prima di iniziare**: `graphify-out/` è una fotografia, non uno specchio. Va rifatto
-(`/graphify . --update`) **obbligatoriamente** prima di 5.2 e 5.3, che sono i due lavori in
-cui il grafo deve essere completo. ✅ **Rifatto il 21/09/2026** dopo i quattro blocchi della
-giornata: 1029 → **1321 nodi** e 2005 → **2291 archi**, 221 comunità, 35 file riestratti
-(31 di codice via AST, 4 documenti via subagent). Salute del grafo: nessun arco
-penzolante, mancante o collassato.
+⚠️ **Prima di iniziare**: `graphify-out/` va rifatto (`/graphify . --update`)
+**obbligatoriamente** prima di 5.1 e 5.3. L'ultimo giro è del 21/09/2026 (1321 nodi, 2291
+archi), e da allora è cambiato molto (M-C, il Fantacalcio intero).
 
 ### 5.1 ⬜ Il giro completo della web app
 
-Ogni sezione, ogni pagina, **ogni campo e ogni funzione**. Non un controllo a campione
-sulle cose toccate di recente: tutto, comprese le parti che nessuno guarda da mesi.
+Ogni sezione, ogni pagina, **ogni campo e ogni funzione** — non un campione sulle cose
+toccate di recente.
 
 - **ogni campo di ogni form**: vuoto, valore limite, valore assurdo, caratteri strani —
   apostrofi e accenti sono la classe di bug che ha ucciso il Ripristina
 - **ogni pulsante e ogni azione**: creazione, modifica, eliminazione, ripristino, import,
   export — e la conferma dove deve esserci
 - **le due lingue** su tutte le pagine Pokémon
-- **tutte le regulation**, non solo `ma`: `pokedex` e `mb` sono quelle dove sono usciti i
-  bachi degli endpoint
+- **tutte le regulation**, non solo `ma`: `pokedex`, `mb` e `mc`
 - **il calcolatore in tutti e quattro i tab**, con la regola #8 come pietra di paragone
-- lo **sweep** su ogni blocco `<script>` e ogni handler inline
-- le sezioni non-Pokémon, che ricevono meno attenzione: Gaming, Arduino, PC Builder, Python
+- lo **sweep** su ogni blocco `<script>` e ogni handler inline, **e** le pagine caricate
+  davvero, contando le righe che compaiono
+- le sezioni che ricevono meno attenzione: Gaming, Arduino, PC Builder, Python, Fantacalcio
 
 L'esito va scritto qui con i numeri: quante pagine, quanti campi, quante anomalie e quali.
 Le anomalie fuori scope si segnalano, non si correggono al volo.
 
 ### 5.2 🟨 Le mosse assegnate sono davvero quelle giuste?
 
-> **La lista `champions` è confrontata dal 14/09/2026** con `scripts/verifica_moveset.py`
-> (numeri in `STORICO.md`). Il risultato cambia la domanda: **il dump non è sbagliato, è
-> fermo.** PokéAPI ha Champions fino a Regulation M-B (ultimo commit del file: 21/07/2026),
-> e Bulbapedia è già alla **versione 1.2.0**. La cache locale è identica al dump pubblicato,
-> quindi riscaricarlo non cambia niente.
->
-> **✅ Le decisioni sono prese il 18/09/2026, e le liste sono allineate alla 1.2.0.**
->
-> La fonte che ha sciolto tutto **non** è la pagina learnset: è la **nota ufficiale di
-> aggiornamento della 1.2.0** (9 settembre 2026), citata in «Pokémon Champions#Version
-> history» su Bulbapedia. È una **lista chiusa** dei cambi di mossa, e dice:
-> Politoed non può più usare *Pound*, Archaludon né *Mirror Coat* né *Metal Burst*,
-> *Slash* «can now be used», e i PP di *Wish* e *Strength Sap* passano da 12 a 8.
->
-> 1. ✅ **Pawmot integrato il 14/09/2026** da Bulbapedia (64 mosse). Le altre **25 voci
->    arrivate con la 1.2.0** restano senza lista, e ora si sa **cosa sono**: la nota dice
->    «Pokémon and held items have been added for **Regulation Set M-C**». Nessuna è in un
->    roster. Si integrano una alla volta con
->    `python scripts/integra_moveset_bulbapedia.py --voci <chiave>`
-> 2. ✅ **Applicate**: *Slash* a **29 voci**, le tre rimozioni di Politoed e Archaludon,
->    *Psychic Fangs* al posto di *Psychic* su Ariados, e le quattro mosse che mancavano a
->    Mawile e Houndstone. Le scrive `scripts/applica_toppe_champions.py`, che **non ha un
->    elenco di nomi dentro**: ricostruisce il confronto con Bulbapedia e si ferma su ogni
->    differenza che non sia in `DECISIONI` o in `IGNORATE`. I PP non si applicano: il
->    catalogo non ha quel campo
-> 3. ✅ **Gardevoir e Blaziken: il dump aveva ragione, e non era un sospetto.** La pagina
->    Champions di Gardevoir è alfabetica e **comincia da «Charm»**: le cinque mosse che il
->    dump ha in più — *Alluring Voice, Aura Sphere, Body Slam, Calm Mind, Charge Beam* —
->    sono **esattamente** le cinque che vengono prima di Charm. È la testa della lista
->    tagliata via. Su Blaziken *U-turn* è un'omissione isolata (la lista va da Acrobatics a
->    Will-O-Wisp senza buchi, la mossa non è fra le perse, e compare su 48 delle 232 pagine).
->    Nessuna delle due è nel changelog della 1.2.0. **Non si tocca niente**, ed è la regola
->    che resta: *un'assenza da una pagina non è una smentita*
-> 4. ✅ **Morpeko (Hangry Mode) — chiuso il 21/09/2026**, cercando una terza fonte come
->    ha chiesto Davide. Nel dump la Hangry aveva **5 mosse in meno** della Full Belly
->    (60 contro 65: Assurance, Payback, Rising Voltage, Round, Snore) e tutte e due le
->    forme sono in MA e MB. Bulbapedia ha un blocco unico e quindi non diceva niente;
->    **Serebii** e **Game8** danno anche loro una lista unica per le due forme, con
->    dentro tutte e cinque le mosse, e dicono esplicitamente che l'unica cosa che dipende
->    dalla forma è il **tipo di Aura Wheel**. Regge anche la misura interna: delle 24
->    forme che in Champions avevano una lista diversa dalla specie, **23 avevano mosse
->    proprie** — la Hangry era l'unica ad averne solo in meno e nessuna sua — e in `main`
->    le due forme erano già identiche (67 e 67). Scritta come toppa in `TOPPE_A_MANO`,
->    con le due fonti e la data. Ora 65 e 65, zero differenze
->
-> Le differenze delle **forme di Rotom** non sono errori: Bulbapedia mette le mosse proprie
-> di ogni forma (Overheat, Hydro Pump, …) sulla pagina unica di Rotom, il dump le separa.
+La lista `champions` è confrontata con Bulbapedia dal 14/09/2026 e allineata alla 1.2.0 il
+18/09 (Serebii e Game8 come seconda fonte dal 21/09); la lista `main` è curata dal 21/09
+(`VG_FUORI_SERIE`). Numeri in `STORICO.md`, regole nelle trappole.
 
-Il moveset importato il 12/08 non è mai stato confrontato con una fonte indipendente:
-viene tutto dal dump di PokéAPI, e finora l'unica verifica è stata **interna** — i nomi
-risolvono, i conti tornano, Incineroar perde Knock Off. Questo dice che il meccanismo
-funziona, **non** che gli elenchi siano corretti.
-
-**Fonte: [Bulbapedia](https://bulbapedia.bulbagarden.net/)**, indicata da Davide come la più
-attendibile e già usata con profitto (ha confermato `Mirror Herb` → «Foglia carbone» come
-seconda fonte indipendente).
-
-In ordine di rischio:
-
-- ✅ **la lista `champions` per prima** (14/09/2026, vedi sopra): è la più giovane e la meno vista (19 810 righe su 319
-  voci), e nessuno ha mai controllato che quel version group sia completo. Se lì manca
-  qualcosa, su M-A e M-B una mossa legale sparisce dalla tendina **senza dire niente**.
-  ⚠️ **Dal 21/09/2026 ha anche una seconda fonte**, cercata su richiesta di Davide:
-  Game8 e Serebii. Il conto: dei **10 cambi di roster di Regulation M-B** che Game8
-  elenca, il dump li ha **tutti e 10 giusti** (Swampert ha *Wave Crash*, Gholdengo non ha
-  *Thunder Wave*, Metagross non ha *Heavy Slam* né *Knock Off*, …), e dei **27 dati di
-  mossa** confrontabili ne combaciavano **26**. L'unico scarto era *Growth*, che in
-  Champions è di tipo **Erba** — Bulbapedia non lo cita, quindi il 18/09 era rimasto
-  Normale. Corretto. ⚠️ Game8 sbaglia invece su una riga, e vale la pena saperlo: dice
-  «Annihilape lost Pound», ma **Annihilape non impara Pound in nessun gioco** (né Mankey
-  né Primeape), mentre **Politoed sì**, a livello 1. La nota di Bulbapedia su Politoed
-  regge, e la nostra toppa era giusta
-- ✅ **i metodi: il dump non gonfia le MT** (18/09/2026). Scaricato `machines.csv` dallo stesso
-  dump e confrontate, gioco per gioco, le mosse insegnate da `machine` col catalogo MT
-  del gioco: **23 version group su 24 coincidono esatti** — 55 in Rosso/Blu, 57 in
-  Oro/Argento, 100 in Diamante/Perla, 105 in X/Y, 107 in ORAS, 200 in Spada/Scudo,
-  **229 in Scarlatto/Violetto** coi DLC. L'unico scarto è **BDSP**, dove `machines.csv` ne
-  dichiara 17 contro 100 usate: è un buco di quel file di PokéAPI, che noi non leggiamo,
-  non un gonfiaggio dei moveset. Il 65,5% di `machine` è la proporzione vera
-- ✅ **la lista `main` è stata curata il 21/09/2026**, ed era stata trovata il 18/09 col
-  campione su generazioni diverse, senza bisogno di una seconda fonte: per **77 voci**
-  l'ultimo gioco in cui comparivano era **Leggende Arceus** (58) o **Let's Go** (19), due
-  giochi col sistema di mosse ridotto — Abra aveva **una** mossa, `Teleport`, invece delle
-  49 di Brillante Diamante. Il difetto non era «Leggende Arceus dà poche mosse»: era che un
-  gioco fuori serie **vince perché è più recente**. Ora `VG_FUORI_SERIE` in `pokeapi.py`
-  tiene fuori `colosseum`, `xd`, `lets-go-*`, `legends-arceus` — più `legends-za` e
-  `mega-dimension`, che oggi sono **vuoti** ma hanno order 30 e 31, cioè **sopra**
-  Scarlatto/Violetto. Misurato: **74 voci** cambiano gioco, `main` passa da 68 030 a
-  **70 755 mosse** (+2725), zero voci restano su Leggende Arceus, e le sole due rimaste su
-  un gioco fuori serie sono **Partner Pikachu e Partner Eevee**, che in nessun altro gioco
-  esistono — prese lo stesso, e il rapporto dell'import le **nomina** come ripiego. Perdono
-  mosse solo Silcoon e Cascoon (3 → 1), e quell'1 è onesto: in Brillante Diamante imparano
-  davvero solo *Rafforzatore*. Prova: `scripts/prova_moveset_main.py` (19 su 19)
-- ⬜ **il campione di `main` contro Bulbapedia** resta da fare **solo se** `main` tornerà in
-  uso: oggi non lo legge nessuno, e le pagine learnset per generazione hanno una
-  struttura diversa da quelle di Champions, quindi il lavoro andrebbe rifatto lo stesso
-
-Metodo: uno script rieseguibile che scarica, che **si ferma su ciò che non risolve**, e che
-dove le due fonti non concordano **lo segnala e basta**. Non si sovrascrive PokéAPI con
-Bulbapedia alla cieca: nessuna delle due è sempre giusta, e la lezione è già stata pagata.
+- ⬜ **Il campione di `main` contro Bulbapedia** si fa **solo se** `main` tornerà in uso:
+  oggi non lo legge nessuna regulation, e le pagine learnset per generazione hanno una
+  struttura diversa da quelle di Champions
 
 ### 5.3 ⬜ L'inventario di cosa non serve più
 
-Un censimento di tutto il progetto per capire cosa si può togliere. Va fatto alla fine
-perché finché i lavori sono in corso, un file che oggi sembra morto può servire domani.
+Va fatto alla fine: finché i lavori sono in corso, un file che oggi sembra morto può servire
+domani.
 
-- **template** — chi li renderizza? Vanno cercati anche i blocchi Jinja, gli `{% include %}`
-  e i `{% block %}` che nessuno estende più
+- **template** — chi li renderizza? Anche blocchi Jinja, `{% include %}` e `{% block %}` che
+  nessuno estende più
 - **`static/js/` e `static/css/`** — chi li carica, e **quali funzioni non chiama nessuno**
-  (qui sono già state trovate `MEGA_DATA`, `PKMN_DB`, `calc_stat_champions()` e una
-  `switchTab` duplicata: la classe esiste)
+  (già trovate `MEGA_DATA`, `PKMN_DB`, `calc_stat_champions()` e una `switchTab` duplicata:
+  la classe esiste)
 - **route Python** non raggiunte da nessun `url_for()`, link o `fetch()`
 - **funzioni e helper** nei blueprint, in `data.py` e in `extensions.py` mai importati
-- **gli script di `scripts/`** — quali sono una-tantum già consumati (`build_catalog.py`,
-  gli `importa_*` ed `esporta_dati.py` restano perché rieseguibili)
-- ✅ **il blocco `main` di `pokemon_moves.json` NON è codice morto**, e la domanda è
-  chiusa il 21/09/2026 da una decisione di Davide: «la base dati di tutti i pokemon, le
-  mosse, oggetti e abilità deve comunque esserci per poter costruire facilmente una nuova
-  regulation in futuro». Delle tre strade — sistemarlo, toglierlo dalla tendina, lasciarlo
-  dichiarato — è stata presa la prima, l'unica che tiene insieme le due cose: **1293 voci**
-  e 1,7 MB dei 3 restano nel file, `sorgenti_moveset()` continua a offrirlo, e adesso è
-  **giusto** invece che rotto (vedi §5.2). ⚠️ Quindi qui non si tocca: chi farà
-  l'inventario lo troverà non letto da nessuna regulation, e non è una prova che sia morto
-- **i file di dati storici**, la voce più concreta — vedi la trappola in cima. Da dismettere
-  **solo** a verifica finita, cioè qui
-- **la tabella `regulations` nel DB** (vedi §1.4, falla 1) e ogni altra colonna che nessuna
-  query legge più
+- **gli script di `scripts/`** una tantum già consumati (`build_catalog.py`, gli `importa_*`
+  ed `esporta_dati.py` restano perché rieseguibili)
+- **i file di dati storici** — vedi la trappola in cima — compreso `data/abilities.json`,
+  che ha ancora `Megasolar` inerte (§2.2)
+- **la tabella `regulations` nel DB** (la scrive `init_db()`, non la legge nessuno), la
+  colonna `python_topics.done` (§1.1) e ogni altra colonna che nessuna query legge più
 - **immagini e asset** in `static/` non referenziati
+- ✅ **il blocco `main` di `pokemon_moves.json` NON è codice morto**: decisione di Davide del
+  21/09/2026 («la base dati di tutti i pokemon… deve comunque esserci per poter costruire
+  facilmente una nuova regulation»). Chi farà l'inventario lo troverà non letto da nessuna
+  regulation, e **non è una prova che sia morto**
 
 Il metodo: **prima si misura, poi si propone.** Per ogni candidato serve la prova che non è
 usato, e la rimozione si fa in un blocco suo, dopo il via libera di Davide — non insieme al

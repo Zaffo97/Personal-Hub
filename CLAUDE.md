@@ -5,7 +5,7 @@ regole che valgono sempre. Il *cosa* fare sta in `BACKLOG.md`, il *com'è fatto*
 `PROJECT_CONTEXT.md`, e quello che è **già stato fatto** in `STORICO.md`.
 
 > ⚠️ **Leggi `BACKLOG.md`, non `STORICO.md`.** Dal 13/08/2026 sono due file: nel backlog
-> c'è **solo ciò che è aperto** (~370 righe), più le trappole note che vanno rilette prima
+> c'è **solo ciò che è aperto** (~500 righe dopo la potatura del 25/09/2026), più le trappole note che vanno rilette prima
 > di toccare una zona. Lo storico è una riga per lavoro chiuso, con la data e i numeri:
 > si apre **solo** per rispondere a «questo l'avevamo già fatto, e com'è andata?», non
 > all'inizio di una sessione.
