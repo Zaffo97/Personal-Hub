@@ -111,7 +111,7 @@ Le decisioni che valgono ancora: la sezione Pokémon si finisce prima delle altr
 il collaudo va alla fine, le guide dopo il collaudo, e **mettere l'app online per ultimo**
 («caricare il sito da qualche parte lo voglio tenere come una delle ultime cose»).
 
-1. §4 — le sezioni: **Log**. Stampa 3D (§4.8), Arduino (§4.9) e Python (§4.10) sono
+1. §4 — le sezioni: **Log** (prima la domanda: cosa intende Davide per «log», §4). Stampa 3D (§4.8), Arduino (§4.9) e Python (§4.10) sono
    fatte; restano le prove nel Chrome di Davide (Arduino: rimandata da lui il 25/09) e ciò
    che aspetta la stampante
 2. I residui Pokémon: le due abilità senza effetto (§3), Kingambit e Game8 (§4.3)
@@ -308,7 +308,7 @@ Tutti gli altri bachi elencati qui fino al 23/09/2026 sono chiusi: vedi `STORICO
 | 🖨️ **Stampa 3D** | 🟨 Progetti con link, file allegati e inventario bobine **fatti il 25/09/2026**: vedi §4.8 |
 | 🤖 **Arduino** | 🟨 Anteprima di Tinkercad e Wokwi, «nuovo circuito» e tabella dei piedini coi controlli **fatti il 25/09/2026**, e il baco del `href` senza controllo chiuso: vedi §4.9 |
 | 🐍 **Python** | 🟨 Progetti con file (scritti, caricati, da GitHub), esecuzione nel browser e sul PC, note per argomento e frammenti **fatti il 25/09/2026**: vedi §4.10 |
-| 💾 **Log** | ⬜ Aggiungere una funzione di salvataggio log |
+| 💾 **Log** | ⬜ Aggiungere una funzione di salvataggio log. ⚠️ **Domanda posta il 25/09/2026 e rimandata da Davide alla prossima sessione**: cosa vuol dire «log»? Tre letture proposte — (1) i **log dell'hub** (errori, avvii, accessi, import fatti), (2) un **diario** di Davide (note datate), (3) **salvare su file** quello che oggi va solo in console. Si riparte da qui, non da un'ipotesi |
 | 🎨 **Grafica** | ⬜ `form-select` è usata da **4 tendine** (selettore di sezione in `arduino.html`, `gaming.html`, `pcbuilder.html`, `pokemon.html`) e non è definita da nessuna parte · ⬜ rivedere **lo scorrimento di sezioni e sottosezioni** (richiesta del 22/09/2026). ⚠️ Solo il Fantacalcio ha il `<form>` che avvolge header e footer della modale; in `arduino.html` e `pcbuilder.html` il form sta dentro `.modal-body` e lo scroll funziona, quindi la cura del Fantacalcio non va copiata a tappeto |
 
 ### 4.1 🟨 Gaming — il calendario delle uscite
