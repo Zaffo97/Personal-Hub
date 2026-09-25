@@ -271,6 +271,22 @@ def carica_listone():
     return _torna()
 
 
+@bp.route("/listone/dai-download", methods=["POST"])
+@login_required
+def listone_dai_download():
+    """«Leggi i download»: lo stesso controllo che si fa entrando, a comando, per
+    subito dopo aver scaricato. Un POST, perché importa e cancella."""
+    db = get_db()
+    messaggi = _listone_dai_download(db)
+    db.close()
+    if not messaggi:
+        messaggi = [(f"Nessun Excel di fantacalcio.it in {F.cartella_download()}.",
+                     "info")]
+    for testo, categoria in messaggi:
+        flash(testo, categoria)
+    return _torna()
+
+
 def _messaggi_import(r, da=""):
     """I messaggi di un import del listone, dal form o dai download."""
     if not r["ok"]:

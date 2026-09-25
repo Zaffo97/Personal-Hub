@@ -650,7 +650,20 @@ def prove(dove):
           "Listone non caricato dai download" in pagina and c_e(Q) and c_e(S))
     os.remove(os.path.join(scaricati, Q))
     os.remove(os.path.join(scaricati, S))
-    esito("la pagina dice dove guarda", scaricati in pagina)
+    esito("la pagina dice dove guarda, e ha il pulsante",
+          scaricati in pagina and "Leggi i download" in pagina)
+    r = c.post("/fantacalcio2/listone/dai-download", follow_redirects=True)
+    esito("il pulsante, a cartella vuota: lo dice",
+          "Nessun Excel di fantacalcio.it" in r.data.decode("utf-8", "replace"))
+    metti(Q, file_quotazioni(meno))
+    metti(S, file_statistiche(meno))
+    r = c.post("/fantacalcio2/listone/dai-download", follow_redirects=True)
+    db = extensions.get_db()
+    riga = db.execute("SELECT attivo FROM fanta2_players WHERE id=15").fetchone()
+    db.close()
+    esito("⚠️ il pulsante importa (Dif Cinque di nuovo spento) e cancella",
+          "Listone caricato dai download" in r.data.decode("utf-8", "replace")
+          and riga["attivo"] == 0 and not c_e(Q) and not c_e(S))
 
     casa = os.path.join(dove, "casa")
     os.makedirs(os.path.join(casa, ".config"))

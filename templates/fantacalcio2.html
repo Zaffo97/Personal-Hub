@@ -70,6 +70,14 @@
     {% else %}
       <span class="text-muted">Il listone non è ancora stato caricato.</span>
     {% endif %}
+    {# Il modo normale, dal 25/09/2026: scarichi i due file e premi qui. #}
+    <form method="post" action="{{ url_for('fantacalcio2.listone_dai_download') }}"
+          class="mt-2">
+      <button class="btn btn-primary btn-sm" type="submit">&#128229; Leggi i download</button>
+      <span class="text-xs text-muted">importa i due Excel da
+        <code>{{ cartella_download }}</code> e poi li cancella</span>
+    </form>
+    <div class="text-xs text-muted mt-2">Oppure scegli i file a mano:</div>
     {# Un POST multipart: i file restano in memoria il tempo di leggerli, non si
        salvano da nessuna parte. #}
     <form method="post" action="{{ url_for('fantacalcio2.carica_listone') }}"
@@ -90,9 +98,9 @@
       L'ordine non conta: quale sia quale lo capisco dalle colonne. I file vengono
       letti e non salvati. Conviene ricaricarli dopo ogni giornata, per le
       statistiche, e dopo ogni sessione di mercato.
-      <br><strong>Non serve caricarli a mano</strong>: se li scarichi in
-      <code>{{ cartella_download }}</code>, entrando qui li importo da solo e poi li
-      cancello. La cartella si cambia con la variabile <code>FANTA2_CARTELLA_DOWNLOAD</code>.
+      <br><strong>Non serve sceglierli a mano</strong>: scaricali e premi
+      <strong>Leggi i download</strong> (lo faccio da solo anche entrando in questa pagina).
+      La cartella si cambia con la variabile <code>FANTA2_CARTELLA_DOWNLOAD</code>.
     </div>
   </div>
 </div>

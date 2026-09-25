@@ -29,7 +29,8 @@ Windows o `XDG_DOWNLOAD_DIR` su Linux («Scaricati»). ⚠️ Isolati `prova_fan
 `sweep_pagine.py` su una cartella temporanea: sui download veri avrebbero cancellato gli Excel
 di Davide. In più `_allerta()` riceve la lega già verificata invece di rileggerla (la query
 aggiunta per la formazione incompleta era **scoperta** per `controlla_proprietario.py`).
-`prova_fantacalcio2.py` **85 su 85** (9 nuove), `prova_fantacalcio.py` **245 su 245**, sweep
+Più il pulsante **«Leggi i download»** (`/listone/dai-download`), chiesto da Davide per
+subito dopo aver scaricato. `prova_fantacalcio2.py` **87 su 87** (11 nuove), `prova_fantacalcio.py` **245 su 245**, sweep
 0 errori, query 0 scoperte.
 
 **Termini di fantacalcio.it letti per intero** (versione «Settembre 2026») — nessuna clausola

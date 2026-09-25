@@ -1318,7 +1318,7 @@ sa dal codice, non un piano.
 
 | Dato | Fonte | Come arriva |
 |---|---|---|
-| **Listone e statistiche** | i due Excel di fantacalcio.it | Davide li scarica **col suo login**; dal 25/09/2026 **entrando nella sezione l'hub li trova nei download, li importa e li cancella** (o si caricano dalla pagina, o con `importa_listone2.py`). Letti in memoria, **mai salvati**: sono contenuti presi con un account, e non devono finire nel repository |
+| **Listone e statistiche** | i due Excel di fantacalcio.it | Davide li scarica **col suo login**; dal 25/09/2026 **l'hub li trova nei download — entrando nella sezione o col pulsante «Leggi i download» — li importa e li cancella** (o si caricano dalla pagina, o con `importa_listone2.py`). Letti in memoria, **mai salvati**: sono contenuti presi con un account, e non devono finire nel repository |
 | **Calendario e classifica** | football-data.org, piano gratuito | con la chiave, da solo entrando se la copia ha più di un giorno, o con «Aggiorna ora» |
 | **Probabili** | nessuna | un **link** che le apre nel browser di Davide (strada «a») |
 
