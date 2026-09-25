@@ -95,7 +95,7 @@ Non sono storia: sono le cose che questo progetto ha già pagato e che tornano a
 | ⚠️ **Un'assenza da una pagina non è una smentita** | Dal 18/09/2026 (§5.2). La pagina Champions di Gardevoir su Bulbapedia **comincia da «Charm»**: le cinque mosse che il dump ha in più sono esattamente le cinque prima in ordine alfabetico, cioè la testa della lista tagliata. Su Blaziken *U-turn* è un'omissione isolata. Le mosse proprie delle **forme di Rotom** Bulbapedia le mette sulla pagina unica, il dump le separa: non sono errori. Non si sovrascrive PokéAPI con Bulbapedia alla cieca, né il contrario. E anche Game8 sbaglia: «Annihilape lost Pound» è falso, Pound lo impara Politoed |
 | ⚠️ **Un id scelto a tavolino non è una prova di proprietà** | Pagata il 16/08/2026 (§4.1). La cache IGDB vera usa `igdb_release_id` fra **486664 e 954196**; uno script di prova che cancellava «il suo intervallo» 900000-910000 si è portato via **497 righe vere**. Un test che condivide lo stato coi dati veri misura anche quelli: la prova del calendario gira su una **copia** di `hub.db` |
 | ⚠️ **`controlla_proprietario.py` riconosce il filtro in modo volutamente stretto** | Dal 22/09/2026 (§4.5). `nomi_innestati()` torna un nome solo se il segnaposto è un nome e basta: `{cond[0]}`, `{" ".join(...)}` o una condizione passata da un parametro **non** vengono riconosciuti, e quella query finisce fra le **scoperte**. È il verso giusto in cui sbagliare, ma una riscrittura innocua può far comparire una scoperta nuova: prima di dichiararla con un'eccezione, guardare se il filtro c'è davvero. La catena `cond` → `mia` → query si segue solo attraverso assegnazioni a un nome da una f-string |
-| ⚠️ **Un indirizzo che un sito dichiara non è un indirizzo che funziona** | Dal 25/09/2026, sul PC Builder. Versus dichiara nella pagina (dati strutturati `SearchAction`) la ricerca `versus.com/it/search?q={query}`: aperta, **ignora la query** e mostra i risultati di un'altra ricerca. Un link costruito su quella dichiarazione avrebbe aperto sempre la pagina sbagliata, senza nessun errore. Ogni formato di link verso un sito esterno va **aperto e guardato** prima di scriverlo nel codice; quelli verificati e quello che non si è potuto vedere (la ricerca di BPM-Power) sono scritti in cima a `pc_negozi.py` |
+| ⚠️ **Un indirizzo che un sito dichiara non è un indirizzo che funziona** | Dal 25/09/2026, sul PC Builder. Versus dichiara nella pagina (dati strutturati `SearchAction`) la ricerca `versus.com/it/search?q={query}`: aperta, **ignora la query** e mostra i risultati di un'altra ricerca. Un link costruito su quella dichiarazione avrebbe aperto sempre la pagina sbagliata, senza nessun errore. Ogni formato di link verso un sito esterno va **aperto e guardato** prima di scriverlo nel codice; quelli verificati sono scritti in cima a `pc_negozi.py` (la ricerca di BPM-Power, che Cloudflare nasconde a Claude, l'ha presa Davide da una ricerca vera) |
 | ⚠️ **Scelte che sembrano bachi, e non vanno «corrette»** | **L'hover del tema scuro** (`--primary-h: #9488f7`, bianco sopra a **2.95**, sotto la soglia di 3.0) resta com'è per decisione di Davide del 22/09/2026: `prova_temi.py` lo tiene in `DICHIARATE` e lo ristampa a ogni giro. **Il travaso fra utenti non è rieseguibile**: premuto due volte lascia tutto in doppio, la conferma lo dice coi numeri, e `prova_travaso_utente.py` c'è apposta. **In italiano il calcolatore scrive `Privazione`**, non `Knock Off`: se si vuole l'inglese anche in italiano si cambia in un punto solo, `nomeVis` nel `<head>` di `base.html` |
 
 ---
@@ -103,7 +103,7 @@ Non sono storia: sono le cose che questo progetto ha già pagato e che tornano a
 ## 📌 L'ordine, aggiornato il 25/09/2026
 
 > **Il PC Builder (§4.7)** è fatto (25/09/2026), controlli e novità del catalogo compresi:
-> restano la scheda madre vera di Davide, le prove nel suo Chrome e le voci aperte lì.
+> restano le prove nel Chrome di Davide e le voci aperte lì.
 > Il Fantacalcio (§4.6) è in piedi e provato a mano da Davide (25/09/2026): resta solo una
 > misura che aspetta un evento (una partita spostata), non codice.
 
@@ -445,12 +445,6 @@ riquadro «Da guardare» all'apertura. Logica in `pc_negozi.py`, prova `prova_pc
   4070 Ti di Davide `B0BNWFM7MZ`, `verified: true`). Per un pezzo collegato al catalogo l'hub
   potrebbe dare Keepa e la pagina Amazon esatta senza link incollato. Non misurato quanti
   pezzi ce l'hanno, non fatto: fuori da quello che è stato chiesto
-- **La ricerca di BPM-Power**: il formato non si è potuto vedere, quindi senza un link incollato
-  si apre la **home**, e il link lo dice. Il 25/09 Davide ha passato
-  `bpm-power.com/it/online/componenti-pc/schede-video/scheda-nvidia-gigabyte-gigabyte-b2277634`:
-  è una **pagina prodotto**, non una ricerca (va bene nel campo «Link BPM-Power» di un pezzo).
-  Per la ricerca serve l'indirizzo che compare dopo aver scritto qualcosa nella casella di
-  ricerca del sito
 - **`GIORNI_PROMEMORIA = 14`** è una soglia scelta, non misurata: si cambia in un punto solo,
   in `pc_negozi.py`
 - **L'intervallo di prezzo degli usati da eBay** (API Browse, con account sviluppatore gratuito
@@ -474,12 +468,6 @@ pulsante. Logica in `pc_catalogo.py`.
 
 **⬜ Della compatibilità resta:**
 
-- ⚠️ **La scheda madre di Davide è quasi certamente sbagliata.** Il 25/09 Davide ha collegato
-  i quattro pezzi (CPU, 4070 Ti, scheda, RAM, tutti posseduti; la Radeon integrata tolta), e
-  i controlli danno **2 no su 5**: il 7800X3D è **AM5 / DDR5**, la scheda collegata «Asus B450
-  PRIME B450-PLUS» è **AM4 / DDR4**. Un 7800X3D su una B450 non si monta: il modello vero va
-  letto sulla scheda o nel BIOS (il DxDiag non lo riporta) e ricollegato. Non toccato: è un dato
-  di Davide
 - **Quello che il catalogo non sa**, ed è dichiarato a schermo: l'altezza massima del
   dissipatore c'è solo per **1 case su 3** (36%), l'altezza dei dissipatori per il 70%;
   **LGA 1151** dà «da verificare» (due generazioni incompatibili sullo stesso socket), e su

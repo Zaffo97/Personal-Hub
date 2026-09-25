@@ -20,6 +20,12 @@ pagina ed esegue `new Function()` su ogni blocco `<script>` **e** su ogni handle
 
 ## 25/09/2026
 
+**PC Builder: la ricerca di BPM-Power, e la build vera sistemata** (§4.7). Il formato
+`/it/ricerca?k=` l'ha preso Davide da una ricerca vera (a Claude Cloudflare non la mostra): il
+link senza pagina incollata ora cerca per nome invece di aprire la home. Davide ha sistemato
+la scheda madre (ASUS PRIME B650-PLUS): sulla build vera **5 controlli su 5, 100%**.
+`prova_pcbuilder.py` 100 su 100, sweep 0 errori.
+
 **PC Builder: connettori della GPU, slot M.2, più kit di RAM e le novità del catalogo (§4.7)**
 — chiesto da Davide. Prima misurato il dump: **uno zero nei connettori non è un dato** (855
 alimentatori su 3297 senza connettori PCIe, 275 da 750 W in su; 1005 GPU su 3862 senza, 697

@@ -6,7 +6,7 @@
       "display_name": "Admin",
       "role": "admin",
       "sections": null,
-      "tema": null,
+      "tema": "sabbia",
       "lingua": null
     },
     {
@@ -1054,7 +1054,7 @@
       "id": 3,
       "build_id": 1,
       "category": "Motherboard",
-      "name": "ASUS B450 Prime",
+      "name": "ASUS B650 Plus",
       "price": 0.0,
       "notes": "",
       "stato": "posseduto",
@@ -1066,7 +1066,7 @@
       "link_eprice": null,
       "link_bpm": null,
       "link_versus": null,
-      "opendb_id": "04184871-5e90-4548-86b3-8cdfbe1b9e0c"
+      "opendb_id": "bef4372e-fe51-43c0-800a-d85a825388e2"
     },
     {
       "id": 4,

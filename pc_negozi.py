@@ -14,14 +14,14 @@ Deciso da Davide il 25/09/2026, dopo aver letto le fonti (BACKLOG §4, PC Builde
 Quindi qui si costruiscono **indirizzi**, e il prezzo lo scrive Davide. L'hub sa solo
 quello che gli viene scritto: quando e a quanto. Gli avvisi si basano su quello.
 
-⚠️ Tre formati verificati a mano il 25/09/2026, e uno no:
+⚠️ Formati verificati a mano il 25/09/2026:
 - ricerca ePrice `/sa/?qs=` (la pagina `/search/` del `robots.txt` è un'altra cosa)
 - Versus `/it/<pezzo-a>-vs-<pezzo-b>`: l'ordine lo sistema da solo; **la ricerca
   `/it/search?q=` che la pagina dichiara NON funziona** — ignora la query e mostra
   un'altra ricerca. Per questo non c'è: sarebbe un link che apre la pagina sbagliata
 - Keepa `#!product/8-<ASIN>`: 8 è amazon.it nell'enumerazione dei domini di Keepa
-- ❌ la ricerca di **BPM-Power** non si è potuta vedere (Cloudflare): il link senza
-  indirizzo incollato apre la **home**, e lo dice
+- ricerca BPM-Power `/it/ricerca?k=`: dal pannello di Claude non si vede (Cloudflare), l'ha
+  presa Davide da una ricerca vera nel suo browser (`/it/ricerca?k=rtx+5090`)
 """
 import re
 from datetime import date, datetime
@@ -120,9 +120,7 @@ def link(comp):
     if comp.get("link_bpm"):
         aggiungi("BPM", comp["link_bpm"], "la pagina del prodotto")
     else:
-        aggiungi("BPM", "https://www.bpm-power.com/",
-                 "apre la home: il formato della ricerca non è verificato. "
-                 "Incolla la pagina del prodotto")
+        aggiungi("BPM", f"https://www.bpm-power.com/it/ricerca?k={q}", "ricerca per nome")
     aggiungi("eBay", f"https://www.ebay.it/sch/i.html?_nkw={q}",
              "annunci in vendita adesso")
     aggiungi("eBay venduti", f"https://www.ebay.it/sch/i.html?_nkw={q}&LH_Sold=1&LH_Complete=1",

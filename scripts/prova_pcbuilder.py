@@ -87,8 +87,9 @@ def prove_modulo():
     esito("senza link incollati: niente Keepa", "Keepa" not in etich, ", ".join(etich))
     esito("   eBay venduti ha i due filtri",
           any("LH_Sold=1&LH_Complete=1" in l["url"] for l in senza))
-    esito("   BPM apre la home e lo dice", any(l["etichetta"] == "BPM" and
-          l["url"] == "https://www.bpm-power.com/" and "home" in l["nota"] for l in senza))
+    esito("   BPM cerca per nome, nel formato preso da una ricerca vera",
+          any(l["etichetta"] == "BPM" and
+              l["url"] == "https://www.bpm-power.com/it/ricerca?k=RTX+3070" for l in senza))
     esito("   nessun link usa la ricerca di Versus che non funziona",
           not any("versus.com/it/search" in l["url"] for l in senza))
     con = N.link({"name": "RTX 3070", "link_amazon": "https://www.amazon.it/x/dp/B0D6W8L5YM"})
