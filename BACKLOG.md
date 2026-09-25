@@ -102,8 +102,8 @@ Non sono storia: sono le cose che questo progetto ha già pagato e che tornano a
 
 ## 📌 L'ordine, aggiornato il 25/09/2026
 
-> **Il PC Builder (§4.7)** è fatto (25/09/2026), controlli e novità del catalogo compresi:
-> restano le prove nel Chrome di Davide e le voci aperte lì.
+> **Il PC Builder (§4.7)** è fatto e provato da Davide nel suo Chrome (25/09/2026): restano
+> solo voci rimandate per scelta (API eBay, notifiche vere) e i limiti dichiarati del catalogo.
 > Il Fantacalcio (§4.6) è in piedi e provato a mano da Davide (25/09/2026): resta solo una
 > misura che aspetta un evento (una partita spostata), non codice.
 
@@ -111,7 +111,7 @@ Le decisioni che valgono ancora: la sezione Pokémon si finisce prima delle altr
 il collaudo va alla fine, le guide dopo il collaudo, e **mettere l'app online per ultimo**
 («caricare il sito da qualche parte lo voglio tenere come una delle ultime cose»).
 
-1. §4 — le sezioni: **PC Builder** (§4.7, il resto), poi Stampa 3D, Tinkercad, Python, Log
+1. §4 — le sezioni: **Stampa 3D** (in corso dal 25/09/2026), poi Tinkercad, Python, Log
 2. I residui Pokémon: le due abilità senza effetto (§3), Kingambit e Game8 (§4.3)
 3. §5 — il giro di collaudo, l'inventario del codice morto
 4. §1.6 — le due guide, **dopo** il collaudo
@@ -433,15 +433,8 @@ riquadro «Da guardare» all'apertura. Logica in `pc_negozi.py`, prova `prova_pc
 
 **⬜ Resta aperto:**
 
-- **Provarlo nel Chrome di Davide**: il link «eBay venduti» nel pannello di Claude rimanda al
-  login (serve essere collegati a eBay), e **Keepa** lì mostra un controllo anti-bot (riprovato
-  il 25/09 con l'ASIN della 4070 Ti, `keepa.com/#!product/8-B0BNWFM7MZ`: ancora anti-bot). Il
-  dominio 8 = amazon.it è confermato da due fonti, ma la pagina non l'ho vista aprirsi. La
-  prova: incollare in un pezzo la sua pagina amazon.it (con `/dp/`), salvare, cliccare
-  «Keepa». L'avviso di prezzo si imposta **dentro Keepa** (account gratuito, «Traccia
-  prodotto»), non nell'hub: l'API di Keepa costa 49 €/mese. Dal 25/09 i pezzi collegati al
-  catalogo hanno Keepa anche senza link incollato (ASIN da OpenDB): sulla build di Davide
-  CPU, GPU e scheda madre, quindi la prova si fa cliccando «Keepa» e basta
+- ⚠️ **L'avviso di prezzo si imposta dentro Keepa** (account gratuito, «Traccia prodotto»),
+  non nell'hub: l'API di Keepa costa 49 €/mese
 - ⚠️ **L'ASIN di OpenDB è copiato su tutti i 15 canali Amazon** (12 118 pezzi per ognuno, tutti
   `verified`): non è la prova che il prodotto esista su amazon.it. Aperti a mano **12 su 12
   giusti**, ma è un campione. Se un link Amazon «dal catalogo» apre il prodotto sbagliato o

@@ -20,6 +20,10 @@ pagina ed esegue `new Function()` su ogni blocco `<script>` **e** su ogni handle
 
 ## 25/09/2026
 
+**PC Builder: la prova nel Chrome di Davide** (§4.7). Quello che dal pannello di Claude non
+si poteva vedere (Keepa dietro l'anti-bot, «eBay venduti» dietro il login) l'ha provato
+Davide sul suo browser: funziona. §4.7 resta aperta solo per le voci rimandate per scelta.
+
 **PC Builder: Amazon e Keepa dal catalogo, senza incollare il link** (§4.7). OpenDB ha
 l'ASIN di amazon.it per 12 118 pezzi su 26 209 (83% delle CPU, 47% delle GPU, 32% degli
 alimentatori), ma **uguale su tutti i 15 canali** e tutto `verified`: copiato, non
