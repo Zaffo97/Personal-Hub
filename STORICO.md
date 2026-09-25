@@ -20,6 +20,26 @@ pagina ed esegue `new Function()` su ogni blocco `<script>` **e** su ogni handle
 
 ## 25/09/2026
 
+**PC Builder: wishlist, prezzi datati, link ai negozi e avvisi (§4.7)** — chiesto da Davide.
+Prima le fonti, lette una per una: Amazon vieta robot e data mining e apre l'API solo agli
+affiliati con 10 vendite; BPM-Power sta dietro la verifica anti-bot di Cloudflare; eBay dà
+gratis solo gli annunci attivi; Versus vieta il riuso e non ha API. Scelta di Davide: **solo
+link**, eBay API rimandata, avvisi affidati a Keepa ed eBay più un riquadro nell'hub
+all'apertura (soglia raggiunta, prezzo da ricontrollare). `pc_negozi.py` nuovo, nove colonne
+su `pc_components`, route «ricontrollato», totale senza i venduti anche in Dashboard. Formati
+dei link **aperti uno per uno**: la ricerca che Versus dichiara nella pagina **non funziona**
+(ignora la query), quindi non si usa; quella di BPM-Power non si è potuta vedere e il link apre
+la home dicendolo. Due difetti evitati per costruzione: `pcbuilder_save()` ricrea i pezzi a
+ogni salvataggio, quindi le date dei prezzi passano dal form (senza, il promemoria non
+scatterebbe mai); e le liste del form sfasate ora si **rifiutano** invece di lasciar fare a
+`zip()`. I link incollati passano solo se http(s) e del negozio giusto (`javascript:` finirebbe
+in un `href`). `prova_pcbuilder.py` **37 su 37**; importa 28/28, esporta 21/21, travaso 56/56,
+preferenze 17/17, sweep 0 errori, `controlla_proprietario.py` 0 scoperte (aggiornato il testo
+dell'eccezione sull'`INSERT`). Provato in browser su una **copia** del DB con un utente di
+prova: salvataggio, link rifiutato, «Modifica» che ricarica anche date e link, promemoria e
+«Ricontrollato». A larghezza telefono la tabella era **tagliata** dall'`overflow:hidden` della
+card (515 px in 348): ora scorre.
+
 **Potatura del backlog** — `BACKLOG.md` era tornato a **1310 righe** (la potatura del 13/08
 l'aveva portato a ~370): le voci chiuse erano rimaste scritte per intero accanto al rimando
 allo storico. Ora **496**. Controllato prima di togliere che ogni voce chiusa avesse la sua

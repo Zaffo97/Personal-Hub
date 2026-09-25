@@ -152,7 +152,9 @@ ECCEZIONI = {
         "i pezzi seguono la build, e la build e' stata appena verificata: se non e' di "
         "chi salva, la funzione e' gia' uscita prima di arrivare qui",
     ("blueprints/pcbuilder.py", "pcbuilder_save",
-     "INSERT INTO pc_components(build_id,category,name,price,notes) VALUES(?,?,?,?,?)"):
+     "INSERT INTO pc_components(build_id,category,name,price,notes,stato,prezzo_data,"
+     "obiettivo,valore_usato,valore_usato_data,link_amazon,link_eprice,link_bpm,"
+     "link_versus) VALUES(?,?,?,?,?,?,?,?,?,?,?,?,?,?)"):
         "stessa build appena verificata: il proprietario e' quello del padre",
     ("blueprints/gaming.py", "steam_importa",
      "UPDATE games SET hours_played=? WHERE id=?"):

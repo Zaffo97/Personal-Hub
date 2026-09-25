@@ -550,7 +550,7 @@ Tutte create da `init_db()` in `extensions.py`.
 | `arduino_projects` | id, name, board, status, tinkercad_url, code, description |
 | `python_topics` | id, category, name, done |
 | `pc_builds` | id, name, notes |
-| `pc_components` | id, build_id (FK), category, name, price, notes |
+| `pc_components` | id, build_id (FK), category, name, price, notes, **stato** (`posseduto`/`desiderato`/`venduto`, NULL = non indicato), **prezzo_data**, **obiettivo** (soglia), **valore_usato**, **valore_usato_data**, **link_amazon/eprice/bpm/versus** (solo http(s) del dominio giusto). ⚠️ Righe **ricreate a ogni salvataggio**: le date passano dal form |
 | `regulations` | id TEXT PK, label, roster_file, moves_file, items_file, created_at |
 | `sessioni_ricordate` | id, **user_id**, **impronta** UNIQUE (sha256 del token, mai il token), creata_il, scade_il, usata_il, da (user-agent accorciato) |
 | `fanta_players` | id (**quello di fantacalcio.it**, lo stesso nei due Excel), nome, squadra (nome intero)/_slug, ruolo_classic/_mantra, qi/qa/fvm, statistiche, **autogol**, **ceduto**, attivo, visto_il |
@@ -738,7 +738,7 @@ Usare `SLUG_OVERRIDES` da `data.py` per tutte le forme speciali (regionali, Roto
 | Sprite Mega e forme regionali | ✅ | 296/300 nomi risolti, **0 immagini rotte** |
 | Arduino Projects | ✅ | |
 | Python Tracker | ✅ | |
-| PC Builder + DxDiag import | ✅ | Il 500 trovato l'11/08/2026 (`sqlite3.Row` passata a `\|tojson` con una build salvata) è chiuso lo stesso giorno: la vista costruisce `dict(b)`. Modale Modifica provato in browser |
+| PC Builder + DxDiag import | ✅ | Il 500 trovato l'11/08/2026 (`sqlite3.Row` passata a `\|tojson` con una build salvata) è chiuso lo stesso giorno: la vista costruisce `dict(b)`. Modale Modifica provato in browser. Dal 25/09/2026 stato per pezzo, prezzi datati, soglie, link ai negozi e avvisi all'apertura (`pc_negozi.py`, solo link: nessuna lettura dei negozi) |
 | Switch lingua IT ⇄ EN | ✅ | Chiuso il 13/08/2026. **Nomi dei dati** bilingui al 100% (11/08) e **interfaccia** di Pokémon e Gaming tradotta: 15 template, dizionario `data/i18n/en.json` a **510 chiavi**. Il pulsante compare solo dove la sezione è tradotta — `sezioni_tradotte` in `base.html` |
 | Sezioni **non** tradotte | 🚩 | Arduino, Python, PC Builder, Dashboard, login, utenti **e la sidebar**: in italiano **per scelta**, non per lavoro rimasto indietro. Idem le **descrizioni** dei dati. Vedi le trappole in `BACKLOG.md` prima di "sistemarle" |
 | Utenti e permessi per sezione | ✅ | `/admin/utenti`, controllo in un `before_request` su `request.blueprint`. Password in scrypt |
@@ -776,6 +776,7 @@ Di conseguenza tutto ciò che questa tabella dava per "funzionante" non era mai 
 
 | Data | Contenuto |
 |------|-----------|
+| 2026-09-25 | **PC Builder: wishlist, prezzi datati, link ai negozi e avvisi (§4).** Fonti verificate prima (Amazon vieta robot e data mining, BPM-Power dietro Cloudflare, eBay venduti chiusi ai nuovi sviluppatori, Versus vieta il riuso): per scelta di Davide **solo link**, niente lettura automatica. Nuovo `pc_negozi.py` (link Amazon/Keepa/ePrice/BPM/eBay/eBay venduti/Versus, confronto Versus posseduto vs desiderato, controllo dei link incollati, `avvisi()`); nove colonne su `pc_components`; route `/pcbuilder/componente/<id>/ricontrollato`; totale senza i venduti anche in Dashboard. ⚠️ La ricerca di Versus (`/it/search?q=`) che la pagina dichiara **non funziona**: non si usa. `prova_pcbuilder.py` **37 su 37**, importa 28/28, esporta 21/21, travaso 56/56, sweep 0 errori, query 0 scoperte; provata in browser su una copia del DB, anche a larghezza telefono (la tabella ora scorre invece di essere tagliata) |
 | 2026-09-25 | **I simboli delle statistiche (§4.6).** `_fanta_icone.html`, macro `icona(chiave)`: SVG disegnati da noi (non la grafica di fantacalcio.it), col nome in `<title>`; il campo li riceve con `|tojson` in `ICONE`. `prova_fantacalcio.py` 107/107 |
 | 2026-09-25 | **Le statistiche di stagione nel Fantacalcio (§4.6).** `fanta.statistiche()` (MV, FM, G, A, Amm, Esp, Au, R+, R−; il portiere anche GS e RP), nella pagina delle probabili (macro `_fanta_statistiche.html`) e nell'elenco di scelta del campo. Provate anche nelle caselle del campo e in panchina: non ci stavano, tolte come previsto da Davide. Porta inviolata assente: il file non la porta. `prova_fantacalcio.py` 105/105 |
 | 2026-09-25 | **Gli stemmi delle squadre nel Fantacalcio (§4.6).** Accanto a ogni giocatore, all'avversario e nel timer (Dashboard compresa). Dal `crest` della classifica di football-data.org, 20 su 20; si salva solo l'indirizzo in `fanta_classifica.stemma`, l'immagine la carica il browser. Macro `_fanta_stemma.html`, mappa `stemmi` dal context processor del blueprint. `prova_fantacalcio.py` 100/100 |

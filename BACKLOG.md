@@ -95,13 +95,15 @@ Non sono storia: sono le cose che questo progetto ha già pagato e che tornano a
 | ⚠️ **Un'assenza da una pagina non è una smentita** | Dal 18/09/2026 (§5.2). La pagina Champions di Gardevoir su Bulbapedia **comincia da «Charm»**: le cinque mosse che il dump ha in più sono esattamente le cinque prima in ordine alfabetico, cioè la testa della lista tagliata. Su Blaziken *U-turn* è un'omissione isolata. Le mosse proprie delle **forme di Rotom** Bulbapedia le mette sulla pagina unica, il dump le separa: non sono errori. Non si sovrascrive PokéAPI con Bulbapedia alla cieca, né il contrario. E anche Game8 sbaglia: «Annihilape lost Pound» è falso, Pound lo impara Politoed |
 | ⚠️ **Un id scelto a tavolino non è una prova di proprietà** | Pagata il 16/08/2026 (§4.1). La cache IGDB vera usa `igdb_release_id` fra **486664 e 954196**; uno script di prova che cancellava «il suo intervallo» 900000-910000 si è portato via **497 righe vere**. Un test che condivide lo stato coi dati veri misura anche quelli: la prova del calendario gira su una **copia** di `hub.db` |
 | ⚠️ **`controlla_proprietario.py` riconosce il filtro in modo volutamente stretto** | Dal 22/09/2026 (§4.5). `nomi_innestati()` torna un nome solo se il segnaposto è un nome e basta: `{cond[0]}`, `{" ".join(...)}` o una condizione passata da un parametro **non** vengono riconosciuti, e quella query finisce fra le **scoperte**. È il verso giusto in cui sbagliare, ma una riscrittura innocua può far comparire una scoperta nuova: prima di dichiararla con un'eccezione, guardare se il filtro c'è davvero. La catena `cond` → `mia` → query si segue solo attraverso assegnazioni a un nome da una f-string |
+| ⚠️ **Un indirizzo che un sito dichiara non è un indirizzo che funziona** | Dal 25/09/2026, sul PC Builder. Versus dichiara nella pagina (dati strutturati `SearchAction`) la ricerca `versus.com/it/search?q={query}`: aperta, **ignora la query** e mostra i risultati di un'altra ricerca. Un link costruito su quella dichiarazione avrebbe aperto sempre la pagina sbagliata, senza nessun errore. Ogni formato di link verso un sito esterno va **aperto e guardato** prima di scriverlo nel codice; quelli verificati e quello che non si è potuto vedere (la ricerca di BPM-Power) sono scritti in cima a `pc_negozi.py` |
 | ⚠️ **Scelte che sembrano bachi, e non vanno «corrette»** | **L'hover del tema scuro** (`--primary-h: #9488f7`, bianco sopra a **2.95**, sotto la soglia di 3.0) resta com'è per decisione di Davide del 22/09/2026: `prova_temi.py` lo tiene in `DICHIARATE` e lo ristampa a ogni giro. **Il travaso fra utenti non è rieseguibile**: premuto due volte lascia tutto in doppio, la conferma lo dice coi numeri, e `prova_travaso_utente.py` c'è apposta. **In italiano il calcolatore scrive `Privazione`**, non `Knock Off`: se si vuole l'inglese anche in italiano si cambia in un punto solo, `nomeVis` nel `<head>` di `base.html` |
 
 ---
 
 ## 📌 L'ordine, aggiornato il 25/09/2026
 
-> **Adesso: il PC Builder (§4)** — Davide ha delle idee, e viene prima delle altre sezioni.
+> **Il PC Builder (§4.7)** ha la sua prima parte dal 25/09/2026: restano le prove nel
+> Chrome di Davide e le voci aperte lì.
 > Il Fantacalcio (§4.6) è in piedi: quello che resta sono prove a mano e misure che
 > aspettano un evento (una partita spostata), non codice.
 
@@ -109,7 +111,7 @@ Le decisioni che valgono ancora: la sezione Pokémon si finisce prima delle altr
 il collaudo va alla fine, le guide dopo il collaudo, e **mettere l'app online per ultimo**
 («caricare il sito da qualche parte lo voglio tenere come una delle ultime cose»).
 
-1. §4 — le sezioni: **PC Builder**, poi Stampa 3D, Tinkercad, Python, Log
+1. §4 — le sezioni: **PC Builder** (§4.7, il resto), poi Stampa 3D, Tinkercad, Python, Log
 2. I residui Pokémon: le due abilità senza effetto (§3), Kingambit e Game8 (§4.3)
 3. §4.6 — le prove a mano del Fantacalcio
 4. §5 — il giro di collaudo, l'inventario del codice morto
@@ -295,7 +297,7 @@ Tutti gli altri bachi elencati qui fino al 23/09/2026 sono chiusi: vedi `STORICO
 
 | Sezione | Voce |
 |---|---|
-| 💻 **PC Builder** | ⬜ Wishlist Amazon o altri · ⬜ prezzo componente · ⬜ percentuale di compatibilità fra i pezzi (valutare UserBenchmark) · ⬜ gestire l'uscita di nuovi pezzi nel tempo · **Davide ha altre idee, 25/09/2026** |
+| 💻 **PC Builder** | 🟨 Wishlist, prezzi, link ai negozi e avvisi **fatti il 25/09/2026**: vedi §4.7 · ⬜ percentuale di compatibilità fra i pezzi (valutare UserBenchmark) · ⬜ gestire l'uscita di nuovi pezzi nel tempo |
 | 🖨️ **Stampa 3D** | ⬜ Sezione nuova, sul modello di Arduino: richiamo a un sito per disegnare e salvataggio dei progetti |
 | 🤖 **Arduino** | ⬜ Richiamo a Tinkercad per disegnare il progetto e verificare i connettori |
 | 🐍 **Python** | ⬜ Spazio per inserire i propri progetti e testarli · ⬜ idee per rendere la sezione più utile |
@@ -424,6 +426,44 @@ la sa**, e lo dice. Il **modificatore di difesa** è il valore pieno.
   fantacalcio.it e la sua API interna (e non ha licenza); Fantacalcio-PY fa scraping
   dichiarato di fantacalciopedia.com; FantaLab e Fantagoat non hanno API e ne vietano il
   riuso. Restano utili **come app** accanto all'hub
+
+### 4.7 🟨 PC Builder — wishlist, prezzi e link ai negozi (25/09/2026)
+
+Chiesto da Davide: il prezzo su Amazon, ePrice, BPM-Power; i prezzi di eBay per capire quando
+conviene vendere i pezzi attuali; il confronto su Versus; un avviso quando cambia un pezzo in
+wishlist. **Fatto il 25/09/2026**, numeri in `STORICO.md`: stato per componente (posseduto,
+desiderato, venduto), prezzo con la **data** in cui l'hai scritto, soglia, valore da usato,
+link ai negozi, confronto Versus fra posseduto e desiderato della stessa categoria, e il
+riquadro «Da guardare» all'apertura. Logica in `pc_negozi.py`, prova `prova_pcbuilder.py`.
+
+**Le fonti, lette il 25/09/2026** — il motivo per cui l'hub costruisce link e non legge prezzi:
+
+| Fonte | Cosa dice | Scelta di Davide |
+|---|---|---|
+| Amazon | Condizioni d'uso: vietati «data mining, robot o simili strumenti» senza consenso scritto. L'API (Creators API, dal maggio 2026 al posto della PA-API) solo per affiliati con 10 vendite in 30 giorni. Keepa API da 49 €/mese | link |
+| ePrice | Il contratto di vendita non ne parla; `robots.txt` permette le pagine prodotto, vieta `/search/`. Feed su Awin, per affiliati | link (la lettura della pagina prodotto era possibile, scartata) |
+| BPM-Power | verifica anti-bot di Cloudflare: non si aggira | link |
+| eBay | API Browse gratis, ma **solo annunci attivi**; i venduti (Marketplace Insights) chiusi ai nuovi. La licenza vuole dati vecchi al massimo 6 ore e vieta, senza permesso, il prezzo medio di vendita **di una categoria** | link (attivi e venduti). L'API **rimandata** |
+| Versus | vieta di copiare o riusare i contenuti; nessuna API, solo affiliazioni | link |
+
+**⬜ Resta aperto:**
+
+- **Provarlo nel Chrome di Davide**: il link «eBay venduti» nel pannello di Claude rimanda al
+  login (serve essere collegati a eBay), e **Keepa** lì mostra un controllo anti-bot — il
+  dominio 8 = amazon.it è confermato da due fonti, ma la pagina non l'ho vista aprirsi
+- **La ricerca di BPM-Power**: il formato non si è potuto vedere, quindi senza un link incollato
+  si apre la **home**, e il link lo dice. Se Davide fa una ricerca e mi passa l'indirizzo, il
+  link diventa una ricerca vera
+- ⚠️ **I pezzi salvati prima del 25/09 non hanno uno stato** (`NULL`, «non indicato»): gli
+  avvisi li ignorano finché non si segna posseduto o desiderato. La build vera di Davide ha 5
+  componenti, tutti così
+- **`GIORNI_PROMEMORIA = 14`** è una soglia scelta, non misurata: si cambia in un punto solo,
+  in `pc_negozi.py`
+- **L'intervallo di prezzo degli usati da eBay** (API Browse, con account sviluppatore gratuito
+  e chiave fuori dal repo): rimandato da Davide, «prima solo i link»
+- **Notifiche vere** (email, telefono, a PC spento): per Amazon le fa Keepa, per eBay le
+  ricerche salvate. L'hub avvisa solo quando lo apri
+- **Compatibilità fra pezzi** e **uscita di pezzi nuovi**: le due voci vecchie, non toccate
 
 ---
 

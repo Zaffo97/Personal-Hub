@@ -1,16 +1,30 @@
 import re
+from datetime import date
 from flask import Blueprint, render_template, request, redirect, url_for, flash, jsonify
 from extensions import (get_db, login_required, _i, _f,
                         ambito_utente, utente_id, e_admin)
 from data import PC_CATEGORIES
+import pc_negozi
 
 bp = Blueprint("pcbuilder", __name__, url_prefix="/pcbuilder")
+
+
+def _numero(v):
+    """Un prezzo facoltativo: `None` se il campo è vuoto o non è un numero.
+
+    Non `_f()`, che ripiega su 0: una soglia a 0 vorrebbe dire «avvisami quando è
+    gratis», e un valore da usato a 0 «non vale niente» — tutti e due falsi."""
+    try:
+        n = float(str(v).replace(",", "."))
+    except (TypeError, ValueError):
+        return None
+    return n if n > 0 else None
 
 
 @bp.route("/")
 @login_required
 def pcbuilder():
-    db = get_db(); builds = []
+    db = get_db(); builds = []; mie = []
     # L'admin vede le build di tutti, con scritto di chi sono e la tendina
     # `?utente=` per isolarne una; gli altri vedono le proprie.
     di = _i(request.args.get("utente")) or None
@@ -23,8 +37,21 @@ def pcbuilder():
         # "Modifica", e una sqlite3.Row non è serializzabile — con una build
         # salvata la pagina rispondeva 500. Stesso motivo per cui pokemon()
         # costruisce teams_json con dict().
-        builds.append({"data": dict(b), "components": [dict(c) for c in comps],
-                        "total": sum(c["price"] for c in comps)})
+        componenti = [dict(c) for c in comps]
+        link = {c["id"]: pc_negozi.link(c) for c in componenti}
+        # Il totale è quello che la build costa o è costata: un pezzo venduto non c'è più.
+        # Stessa regola della Dashboard.
+        attivi = [c for c in componenti if c.get("stato") != "venduto"]
+        builds.append({"data": dict(b), "components": componenti, "link": link,
+                        "confronti": pc_negozi.confronti(componenti),
+                        "total": sum(c["price"] or 0 for c in attivi),
+                        "da_comprare": sum(c["price"] or 0 for c in attivi
+                                           if c.get("stato") == "desiderato")})
+        # Gli avvisi sono di chi guarda: l'admin che vede tutte le build non deve
+        # sentirsi dire che la wishlist di un altro è da ricontrollare.
+        if b["user_id"] == utente_id():
+            mie += [{**c, "build": b["name"], "link_negozi": link[c["id"]]}
+                    for c in componenti]
     nomi_utenti = {r["id"]: r["username"] for r in
                    db.execute("SELECT id, username FROM users")} if e_admin() else {}
     proprietari = []
@@ -36,13 +63,32 @@ def pcbuilder():
     db.close()
     return render_template("pcbuilder.html", builds=builds, categories=PC_CATEGORIES,
                            proprietari=proprietari, filtro_utente=di,
-                           nomi_utenti=nomi_utenti)
+                           nomi_utenti=nomi_utenti, avvisi=pc_negozi.avvisi(mie),
+                           stati=pc_negozi.STATI,
+                           giorni_promemoria=pc_negozi.GIORNI_PROMEMORIA)
+
+
+# I campi di una riga componente, nell'ordine in cui il form li manda. Tutti devono
+# arrivare lo stesso numero di volte: `zip()` taglierebbe in silenzio alla lista più
+# corta, e i pezzi in fondo sparirebbero senza errore.
+CAMPI_RIGA = ("comp_cat", "comp_name", "comp_price", "comp_notes", "comp_stato",
+              "comp_obiettivo", "comp_usato", "comp_price_prev", "comp_price_date",
+              "comp_usato_prev", "comp_usato_date", "comp_link_amazon",
+              "comp_link_eprice", "comp_link_bpm", "comp_link_versus")
 
 
 @bp.route("/save", methods=["POST"])
 @login_required
 def pcbuilder_save():
-    f = request.form; bid = _i(f.get("build_id", 0)); db = get_db()
+    f = request.form; bid = _i(f.get("build_id", 0))
+    colonne = {k: f.getlist(k) for k in CAMPI_RIGA}
+    if len({len(v) for v in colonne.values()}) > 1:
+        # Si esce **prima** di toccare il DB: con le liste sfasate un pezzo prenderebbe
+        # il prezzo o il link di un altro.
+        flash("Componenti non salvati: il modulo è arrivato incompleto. Ricarica la pagina.",
+              "error")
+        return redirect(url_for("pcbuilder.pcbuilder"))
+    db = get_db()
     if bid:
         cond, par = ambito_utente()
         cur = db.execute(f"UPDATE pc_builds SET name=?,notes=? WHERE id=? AND {cond}",
@@ -58,15 +104,63 @@ def pcbuilder_save():
                           utente_id()))
         bid = cur.lastrowid
     db.execute("DELETE FROM pc_components WHERE build_id=?", (bid,))
-    for cat, name, price, note in zip(
-        f.getlist("comp_cat"), f.getlist("comp_name"),
-        f.getlist("comp_price"), f.getlist("comp_notes")
-    ):
-        if name.strip():
-            db.execute("INSERT INTO pc_components(build_id,category,name,price,notes)"
-                       " VALUES(?,?,?,?,?)", (bid, cat, name, _f(price), note))
+    oggi = date.today(); scartati = []
+    for riga in zip(*(colonne[k] for k in CAMPI_RIGA)):
+        r = dict(zip(CAMPI_RIGA, riga))
+        name = r["comp_name"]
+        if not name.strip():
+            continue
+        prezzo, usato = _f(r["comp_price"]), _numero(r["comp_usato"])
+        stato = r["comp_stato"] if r["comp_stato"] in pc_negozi.STATI else None
+        link = {}
+        for campo in pc_negozi.NEGOZI:
+            grezzo = r["comp_" + campo].strip()
+            link[campo] = pc_negozi.link_valido(campo, grezzo)
+            if grezzo and not link[campo]:
+                scartati.append(f"{name.strip()} ({pc_negozi.NEGOZI[campo][0]})")
+        # ⚠️ Le date dei prezzi passano dal form: questa funzione ricrea i pezzi a ogni
+        # salvataggio, e senza la data di prima il promemoria non scatterebbe mai.
+        db.execute(
+            "INSERT INTO pc_components(build_id,category,name,price,notes,stato,prezzo_data,"
+            "obiettivo,valore_usato,valore_usato_data,link_amazon,link_eprice,link_bpm,"
+            "link_versus) VALUES(?,?,?,?,?,?,?,?,?,?,?,?,?,?)",
+            (bid, r["comp_cat"], name, prezzo, r["comp_notes"], stato,
+             pc_negozi.data_valore(prezzo, _numero(r["comp_price_prev"]),
+                                   r["comp_price_date"], oggi),
+             _numero(r["comp_obiettivo"]), usato,
+             pc_negozi.data_valore(usato, _numero(r["comp_usato_prev"]),
+                                   r["comp_usato_date"], oggi),
+             link["link_amazon"], link["link_eprice"], link["link_bpm"],
+             link["link_versus"]))
     db.commit(); db.close()
-    flash("Build salvata", "success"); return redirect(url_for("pcbuilder.pcbuilder"))
+    flash("Build salvata", "success")
+    if scartati:
+        # Detto, non taciuto: un link che sparisce senza spiegazione sembra un baco.
+        flash("Link non salvati perché non sono del negozio giusto o non cominciano per "
+              "http(s): " + ", ".join(scartati), "error")
+    return redirect(url_for("pcbuilder.pcbuilder"))
+
+
+@bp.route("/componente/<int:cid>/ricontrollato", methods=["POST"])
+@login_required
+def pcbuilder_ricontrollato(cid):
+    """«L'ho ricontrollato, il prezzo è ancora quello»: sposta la data a oggi senza
+    cambiare il valore. Senza questo, un prezzo stabile resterebbe nel promemoria finché
+    non lo si riscrive diverso."""
+    db = get_db()
+    cond, par = ambito_utente()
+    oggi = date.today().isoformat()
+    cur = db.execute(
+        "UPDATE pc_components SET "
+        "prezzo_data = CASE WHEN stato='desiderato' AND price>0 THEN ? ELSE prezzo_data END, "
+        "valore_usato_data = CASE WHEN stato='posseduto' AND valore_usato>0 THEN ? "
+        "ELSE valore_usato_data END "
+        f"WHERE id=? AND build_id IN (SELECT id FROM pc_builds WHERE {cond})",
+        (oggi, oggi, cid) + tuple(par))
+    db.commit(); db.close()
+    flash("Segnato come ricontrollato oggi" if cur.rowcount else "Non trovato",
+          "success" if cur.rowcount else "error")
+    return redirect(url_for("pcbuilder.pcbuilder"))
 
 
 @bp.route("/<int:bid>/delete", methods=["POST"])

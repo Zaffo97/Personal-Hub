@@ -89,8 +89,10 @@ def dashboard():
     # Qui la tabella ha un alias, quindi la condizione va chiesta con quello: `user_id`
     # nudo, in una join, non direbbe di quale delle due tabelle si parla.
     cond_b, par_b = ambito_utente("b.user_id")
+    # Un pezzo venduto non conta nel totale: stessa regola della pagina del PC Builder.
     pc_builds = db.execute(f"""
-        SELECT b.id, b.name, COALESCE(SUM(c.price), 0) AS total
+        SELECT b.id, b.name,
+               COALESCE(SUM(CASE WHEN c.stato='venduto' THEN 0 ELSE c.price END), 0) AS total
         FROM pc_builds b LEFT JOIN pc_components c ON c.build_id=b.id
         WHERE {cond_b}
         GROUP BY b.id ORDER BY b.created_at DESC LIMIT 4""",

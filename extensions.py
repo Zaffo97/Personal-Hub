@@ -725,6 +725,21 @@ def init_db():
     except Exception:
         pass
 
+    # PC Builder, dal 25/09/2026: stato del pezzo, prezzi scritti a mano con la loro
+    # data, soglia per l'avviso e indirizzi incollati dei negozi (`pc_negozi.py`).
+    # Solo ALTER, come le colonne di `games`: gira anche sui DB nuovi, subito dopo la
+    # CREATE TABLE, quindi l'elenco sta in un posto solo. `stato` NULL vuol dire «non
+    # indicato» — le righe di prima — e non «posseduto»: gli avvisi le ignorano.
+    for col, tipo in [("stato", "TEXT"), ("prezzo_data", "TEXT"), ("obiettivo", "REAL"),
+                      ("valore_usato", "REAL"), ("valore_usato_data", "TEXT"),
+                      ("link_amazon", "TEXT"), ("link_eprice", "TEXT"),
+                      ("link_bpm", "TEXT"), ("link_versus", "TEXT")]:
+        try:
+            db.execute(f"ALTER TABLE pc_components ADD COLUMN {col} {tipo}")
+            db.commit()
+        except Exception:
+            pass
+
     db.commit()
     db.close()
 
