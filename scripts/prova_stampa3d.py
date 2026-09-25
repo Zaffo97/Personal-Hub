@@ -17,6 +17,7 @@ Quello che queste prove devono tenere fermo sono i difetti che non darebbero err
 """
 import argparse
 import io
+import json
 import os
 import re
 import shutil
@@ -86,6 +87,40 @@ def prove_modulo(dove):
           == ("500 B", "2 KB", "1,5 MB"))
 
 
+def prove_anteprima():
+    """three.js sta in static/vendor e si raggiunge per nome, dall'importmap della pagina.
+    Un file che manca lì non dà nessun errore finché qualcuno non preme «Anteprima»:
+    qui si controlla che ogni nome porti a un file vero."""
+    import stampa3d as S
+    print("\n== 10. l'anteprima 3D: i file di three.js ci sono tutti ==")
+    esito("STL, 3MF e OBJ hanno l'anteprima, STEP no",
+          S.ha_anteprima("a.STL") and S.ha_anteprima("b.3mf") and S.ha_anteprima("c.obj")
+          and not S.ha_anteprima("d.step"))
+    tpl = open(os.path.join(RADICE, "templates", "stampa3d.html"), encoding="utf-8").read()
+    mappa = json.loads(re.search(r'<script type="importmap">(.*?)</script>', tpl, re.S).group(1))["imports"]
+    def su_disco(url):
+        return os.path.join(RADICE, *url.lstrip("/").split("/"))
+    esito("il `three` dell'importmap esiste", os.path.isfile(su_disco(mappa["three"])), mappa["three"])
+    js = open(os.path.join(RADICE, "static", "js", "stampa3d-anteprima.js"), encoding="utf-8").read()
+    addons = re.findall(r"import\('three/addons/([^']+)'\)", js)
+    mancanti = [a for a in addons if not os.path.isfile(su_disco(mappa["three/addons/"] + a))]
+    esito(f"i {len(addons)} addon chiesti dal modulo esistono", addons and not mancanti, str(mancanti))
+    # E gli import **dentro** i file di three.js: relativi, o `three` per nome.
+    vendor = os.path.dirname(os.path.dirname(su_disco(mappa["three"])))
+    rotti = []
+    for cartella, _, nomi in os.walk(vendor):
+        for n in nomi:
+            if not n.endswith(".js"):
+                continue
+            testo = open(os.path.join(cartella, n), encoding="utf-8").read()
+            for rif in re.findall(r"^\s*(?:import|export)[^;]*?from\s*'([^']+)'", testo, re.M):
+                if rif == "three":
+                    continue
+                if not os.path.isfile(os.path.normpath(os.path.join(cartella, rif))):
+                    rotti.append(f"{n} -> {rif}")
+    esito("ogni import relativo dentro static/vendor porta a un file", not rotti, str(rotti))
+
+
 def prove_web(dove):
     import extensions
     import stampa3d as S
@@ -149,6 +184,7 @@ def prove_web(dove):
         print("\n== 5. la pagina resa ==")
         pagina = c.get("/stampa3d/").get_data(as_text=True)
         esito("il progetto e il file compaiono", "supporto.3mf" in pagina and "Supporto dell" in pagina)
+        esito("   col pulsante dell'anteprima", 'title="Anteprima 3D"' in pagina)
         esito("   con la ricerca di MakerWorld, visto che il modello non c'è",
               "makerworld.com/it/search/models?keyword=" in pagina)
         try:
@@ -255,6 +291,7 @@ def main():
     try:
         prove_modulo(dove)
         prove_web(dove)
+        prove_anteprima()
     finally:
         if args.tieni:
             print(f"\ncartella tenuta: {dove}")

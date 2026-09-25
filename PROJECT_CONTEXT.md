@@ -543,7 +543,7 @@ viaggiano le righe); il file si toglie dal disco solo quando nessuna riga lo nom
 | `/stampa3d/` | GET | Progetti (con i file e i link), bobine, siti da cui partire. Admin: `?utente=` |
 | `/stampa3d/save` | POST multipart | Progetto + file (`.3mf .stl .step .stp .obj`, 200 MB l'uno). Un link o un file rifiutato **si dice** |
 | `/stampa3d/<id>/delete` · `/<id>/scala` | POST | Elimina (e toglie i file orfani) · scala i `grammi` da una bobina dello stesso proprietario e segna «Stampato» |
-| `/stampa3d/file/<id>` (+`/delete`) | GET/POST | Scarica col nome caricato · toglie. «file mancante» se non è su disco |
+| `/stampa3d/file/<id>` (+`/delete`) | GET/POST | Scarica col nome caricato · toglie. «file mancante» se non è su disco. È anche la sorgente dell'**anteprima 3D** (`static/js/stampa3d-anteprima.js`: three.js 0.186.1 da `static/vendor/`, caricato al primo clic via importmap; STL/3MF/OBJ, misure in mm) |
 | `/stampa3d/bobina/save` · `/<id>/delete` · `/<id>/usa` | POST | L'inventario: sotto 150 g «quasi finita» |
 
 ---
@@ -795,6 +795,7 @@ Di conseguenza tutto ciò che questa tabella dava per "funzionante" non era mai 
 
 | Data | Contenuto |
 |------|-----------|
+| 2026-09-25 | **Stampa 3D: anteprima 3D (§4.8).** three.js 0.186.1 in `static/vendor/three-0.186.1/` (8 file, MIT, dal pacchetto npm), `static/js/stampa3d-anteprima.js` (modulo, import dinamici al primo clic), importmap e modale in `stampa3d.html`, `stampa3d.ANTEPRIMA`/`ha_anteprima()`. Unità del 3MF applicata a mano, normali STL ricalcolate. Provata in browser su cinque file con misure note; `prova_stampa3d.py` **43 su 43**, sweep 0 errori |
 | 2026-09-25 | **Stampa 3D, la sezione nuova (§4).** Fonti lette prima: MakerWorld vieta l'accesso automatico e non ha API, `bambustudio://open` accetta solo file dai domini Bambu, lo stato della stampante in rete solo in Developer Mode (da guardare quando c'è la stampante). Quindi link, file allegati da scaricare, inventario bobine. `stampa3d.py`, `blueprints/stampa3d.py`, `stampa3d.html`, tre tabelle `stampa_*`, registrata in `SEZIONI`, sidebar, `TABELLE_UTENTE`/`FIGLIE_DI`, `ETICHETTE`, controlli, sweep, export/import. Indirizzi aperti a mano (Printables dietro Cloudflare: solo link incollati). `prova_stampa3d.py` **38 su 38**, sweep 0 errori, query 0 scoperte, travaso 56/56, giro export→import 3 righe su 3; JS provato in browser (form, conferme con apostrofo, tinta), 375 px senza scorrimento. ⚠️ `prova_importa_dati.py` **19 su 32 anche prima di questo lavoro**: il banco, non l'import (a backlog §3) |
 | 2026-09-25 | **Fantacalcio: avviso sugli stemmi mancanti (§4.6).** `fanta.conto_stemmi()`; messaggio di «Aggiorna calendario» e riga nel riquadro del calendario quando sono meno delle squadre. `prova_fantacalcio.py` **111 su 111**, sweep 0 errori, query 0 scoperte |
 | 2026-09-25 | **Ripristino di un export di prima della fusione del Fantacalcio (§4.6).** `importa_dati.fondi_fantacalcio_vecchio()`: con chiavi `fanta2_*` rifà in memoria la regola di `_unisci_fantacalcio()` prima del piano. Export di `65494ae` convertito = export di `89a3397` riga per riga. `prova_importa_dati.py` **32 su 32** |

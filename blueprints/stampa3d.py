@@ -36,6 +36,7 @@ def stampa3d():
         d = dict(r)
         d["misura"] = S.misura(d["byte"])
         d["manca"] = not S.esiste(d["impronta"])
+        d["anteprima"] = S.ha_anteprima(d["nome"])
         file_per.setdefault(d["progetto_id"], []).append(d)
     for p in progetti:
         p["file"] = file_per.get(p["id"], [])

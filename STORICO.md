@@ -20,6 +20,17 @@ pagina ed esegue `new Function()` su ogni blocco `<script>` **e** su ogni handle
 
 ## 25/09/2026
 
+**Stampa 3D: l'anteprima 3D dei file (§4.8)** — chiesta da Davide. three.js 0.186.1 (MIT)
+dal pacchetto npm ufficiale (sha1 verificato), solo gli 8 file che servono in
+`static/vendor/` (2,3 MB), caricati **al primo clic** con un importmap: la pagina non pesa
+un byte in più. STL, 3MF e OBJ; STEP no (niente pulsante). Provato in browser su file con
+misure note: STL 20×30×10, 3MF con sotto-modello alla Bambu 40×20×5, 3MF in pollici
+**25,4** mm (il lettore legge l'unità e non la applica: la applica il modulo), OBJ, 3MF
+rotto con l'errore a schermo; la scena si smonta alla chiusura (0 canvas), niente errori
+in console, a 375 px la tela si adatta. Preso per strada: uno STL con le normali a zero
+usciva **nero** — ora si ricalcolano sempre. `prova_stampa3d.py` **43 su 43** (§10:
+importmap, addon e import relativi portano a file veri), sweep 0 errori.
+
 **Stampa 3D, la sezione nuova (§4.8)** — chiesta nel docx, pensata per una Bambu Lab.
 Prima le fonti: MakerWorld vieta l'accesso automatico e non ha API, `bambustudio://open`
 carica solo dai domini di Bambu, quindi link e file da riscaricare. Progetti (stato,

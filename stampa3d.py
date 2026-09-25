@@ -48,6 +48,9 @@ PARTENZE = [
 
 # I formati che Bambu Studio apre. Un file di un altro tipo si rifiuta **dicendolo**.
 ESTENSIONI = (".3mf", ".stl", ".step", ".stp", ".obj")
+# Quelli che l'anteprima 3D sa leggere (three.js). STEP no: servirebbe OpenCascade in
+# WebAssembly, decine di MB. Vedi static/js/stampa3d-anteprima.js.
+ANTEPRIMA = (".3mf", ".stl", ".obj")
 # ⚠️ Una soglia **scelta**, non misurata: un .3mf di MakerWorld con più piatti sta
 # di solito sotto qualche decina di MB. Si cambia qui.
 MAX_BYTE = 200 * 1024 * 1024
@@ -82,6 +85,10 @@ def cerca_makerworld(nome):
 
 def estensione_ammessa(nome):
     return os.path.splitext(nome or "")[1].lower() in ESTENSIONI
+
+
+def ha_anteprima(nome):
+    return os.path.splitext(nome or "")[1].lower() in ANTEPRIMA
 
 
 def percorso(impronta):

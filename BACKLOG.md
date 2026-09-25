@@ -502,9 +502,13 @@ inventario delle bobine. Fatto: numeri in `STORICO.md`, logica in `stampa3d.py`,
   firmware, e se Davide vuole accendere la Developer Mode (toglie l'autorizzazione di Bambu
   sulla rete di casa, ed è una scelta sua). Con l'AMS l'inventario potrebbe leggere i
   grammi invece di scalarli a mano
-- **Un'anteprima 3D** del file nella pagina: servirebbe three.js (circa 600 KB, solo su
-  quella pagina). Il progetto non carica librerie da CDN, quindi andrebbe **scaricata** in
-  `static/`: da chiedere a Davide prima
+- ✅ **L'anteprima 3D** è fatta (25/09/2026, `STORICO.md`). ⬜ Resta da provarla con **un
+  .3mf vero di MakerWorld o di Bambu Studio**: la struttura (sotto-modelli in
+  `3D/Objects/`) è stata provata su un file costruito a imitazione, non su uno vero. Se un
+  file vero non si apre, il messaggio a schermo dice perché. ⚠️ three.js è **fissato** alla
+  0.186.1 in `static/vendor/three-0.186.1/`: aggiornarlo vuol dire cambiare la cartella
+  **e** l'importmap in `stampa3d.html`, e `prova_stampa3d.py` §10 controlla che ogni
+  nome porti a un file
 - ⚠️ **I file non sono nell'export**: su un PC nuovo la cartella `data/stampa3d/` va
   copiata a mano, e la guida n. 2 (§1.6) lo deve dire. Senza, le righe dicono «file
   mancante»
