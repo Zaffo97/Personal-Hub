@@ -336,6 +336,15 @@ Tutti gli altri bachi elencati qui fino al 23/09/2026 sono chiusi: vedi `STORICO
 Chiuso il 16-17/08/2026 (IGDB, piattaforme 4.1a, ricerca 4.1b, attesa 4.1c): vedi
 `STORICO.md`. Il tetto delle 300 righe resta di proposito (senza, 3,3 MB e 4224 immagini).
 
+- ⬜ **Lo stato «crackato / non crackato» di un gioco** (richiesta di Davide del 25/09/2026,
+  fonte indicata: CrackWatch). ⚠️ **La fonte indicata non c'è più**: il 25/09/2026
+  `crackwatch.com` non si risolve nemmeno (curl: host non trovato), e le ricerche lo danno
+  chiuso. Esistono siti che ne hanno preso il posto — **gamestatus.info**, **crackwatcher.com**,
+  **predb.ovh** (i gruppi di release) — **nessuno ancora verificato**: prima di scrivere
+  codice, per ognuno termini d'uso, `robots.txt`, se ha un'API, e se il dato è affidabile
+  (il metodo di §4.7). Da escludere a priori le fonti che sono **siti di download**: l'hub
+  mostra uno stato, non manda a scaricare. Da chiedere a Davide quale fonte, e dove va il
+  dato (una colonna sul gioco, un badge nella libreria, un filtro)
 - ⬜ **La cache va aggiornata una volta** perché il dato dell'attesa entri: fino ad allora il
   filtro è spento e la pagina lo dice. È un'azione di Davide
 - ⬜ **La striscia in cima a `/gaming`** mostra le 6 uscite più vicine senza guardare
