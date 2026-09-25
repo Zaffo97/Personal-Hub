@@ -1029,7 +1029,8 @@
       "link_amazon": null,
       "link_eprice": null,
       "link_bpm": null,
-      "link_versus": null
+      "link_versus": null,
+      "opendb_id": "4dcfffec-423b-4052-8aca-db6c0f84bb43"
     },
     {
       "id": 2,
@@ -1046,7 +1047,8 @@
       "link_amazon": null,
       "link_eprice": null,
       "link_bpm": null,
-      "link_versus": null
+      "link_versus": null,
+      "opendb_id": "cea6bd89-e4be-4ae4-9da0-7448a9cf4b35"
     },
     {
       "id": 3,
@@ -1063,7 +1065,8 @@
       "link_amazon": null,
       "link_eprice": null,
       "link_bpm": null,
-      "link_versus": null
+      "link_versus": null,
+      "opendb_id": null
     },
     {
       "id": 4,
@@ -1080,7 +1083,8 @@
       "link_amazon": null,
       "link_eprice": null,
       "link_bpm": null,
-      "link_versus": null
+      "link_versus": null,
+      "opendb_id": null
     },
     {
       "id": 5,
@@ -1097,7 +1101,8 @@
       "link_amazon": null,
       "link_eprice": null,
       "link_bpm": null,
-      "link_versus": null
+      "link_versus": null,
+      "opendb_id": null
     }
   ],
   "python_progress": [],

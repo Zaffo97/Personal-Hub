@@ -228,6 +228,53 @@ def prove_catalogo(dove):
     esito("due GPU possedute: si dice, e si controlla la prima", k["doppi"] == ["GPU"])
 
 
+# Le righe che contano di un DxDiag vero, quello del PC di Davide del 25/09/2026, senza
+# nome e ID della macchina. Ci sono i tre casi che il parser di prima sbagliava: la scheda
+# madre che non c'è (solo il segnaposto ASUS), la grafica integrata del 7800X3D, e il
+# nome della CPU con i core e la frequenza attaccati.
+DXDIAG_VERO = """------------------
+System Information
+------------------
+         Operating System: Windows 11 Pro 64-bit (10.0, Build 26200)
+      System Manufacturer: ASUS
+             System Model: System Product Name
+                     BIOS: 1616 (type: UEFI)
+                Processor: AMD Ryzen 7 7800X3D 8-Core Processor            (16 CPUs), ~4.2GHz
+                   Memory: 32768MB RAM
+      Available OS Memory: 31888MB RAM
+---------------
+Display Devices
+---------------
+           Card name: Microsoft Remote Display Adapter
+        Manufacturer: Microsoft
+      Display Memory: 27937 MB
+           Card name: NVIDIA GeForce RTX 4070 Ti
+        Manufacturer: NVIDIA
+      Display Memory: Unknown
+           Card name: AMD Radeon(TM) Graphics
+        Manufacturer: Advanced Micro Devices, Inc.
+      Display Memory: 16429 MB
+"""
+
+
+def prove_dxdiag():
+    from blueprints.pcbuilder import _parse_dxdiag, _pulisci_cpu
+    print("\n== 13. l'import DxDiag ==")
+    comp, note = _parse_dxdiag(DXDIAG_VERO)
+    per = {c["category"]: [x["name"] for x in comp if x["category"] == c["category"]] for c in comp}
+    esito("la CPU col nome pulito, che il catalogo trova", per.get("CPU") == ["AMD Ryzen 7 7800X3D"], str(per.get("CPU")))
+    esito("la RAM in GB, non «32768MB RAM»", per.get("RAM") == ["32 GB"], str(per.get("RAM")))
+    esito("una GPU sola: la 4070 Ti", per.get("GPU") == ["NVIDIA GeForce RTX 4070 Ti"], str(per.get("GPU")))
+    esito("NESSUNA scheda madre inventata da «System Product Name»", "Motherboard" not in per)
+    esito("   e le note dicono perché, e cosa è stato scartato",
+          any("non la riporta" in n and "ASUS" in n for n in note)
+          and any("AMD Radeon(TM) Graphics" in n for n in note), " | ".join(note))
+    esito("la CPU Intel si pulisce allo stesso modo",
+          _pulisci_cpu("Intel(R) Core(TM) i7-9700K CPU @ 3.60GHz (8 CPUs), ~3.6GHz") == "Intel Core i7-9700K")
+    esito("una scheda video vera che si chiama «Radeon» NON è scartata",
+          _parse_dxdiag("Card name: AMD Radeon RX 7900 XTX\n")[0][0]["name"] == "AMD Radeon RX 7900 XTX")
+
+
 def prove_web(dove):
     import extensions
     extensions.DB = os.path.join(dove, "prova.db")
@@ -354,6 +401,10 @@ def prove_web(dove):
         testo = c.post("/pcbuilder/catalogo/aggiorna", follow_redirects=True).get_data(as_text=True)
         esito("aggiornamento riuscito: lo dice coi numeri", "Catalogo aggiornato: 2 CPU" in testo)
 
+        r = c.post("/pcbuilder/import_dxdiag", data={"dxdiag_text": DXDIAG_VERO}).get_json()
+        esito("la route dell'import manda anche le note",
+              r["ok"] and len(r["components"]) == 3 and len(r["note"]) == 2)
+
         print("\n== 9. la Dashboard ==")
         c.post("/pcbuilder/save", data=form("Il mio PC", [
             riga("GPU", "Nvidia GeForce RTX 3070", "499", "venduto"),
@@ -379,6 +430,7 @@ def main():
     try:
         prove_modulo()
         prove_catalogo(dove)
+        prove_dxdiag()
         prove_web(dove)
     finally:
         if args.tieni:

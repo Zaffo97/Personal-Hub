@@ -235,11 +235,41 @@ def import_dxdiag():
     content = request.form.get("dxdiag_text", "")
     if not content:
         return jsonify({"ok": False, "error": "Nessun contenuto"})
-    return jsonify({"ok": True, "components": _parse_dxdiag(content)})
+    componenti, note = _parse_dxdiag(content)
+    return jsonify({"ok": True, "components": componenti, "note": note})
+
+
+# La grafica integrata nella CPU, riconosciuta dal nome: nel DxDiag non c'è un campo che
+# la distingua con certezza (misurato il 25/09/2026 sul PC di Davide: la 4070 Ti e la
+# Radeon del 7800X3D sono tutte e due «Full Device»). ⚠️ È un elenco di nomi, quindi una
+# grafica integrata con un nome nuovo passa come GPU: per questo il modale **mostra** cosa
+# è stato scartato, e una scartata a torto si rimette a mano.
+GRAFICA_INTEGRATA = re.compile(
+    r"^(AMD Radeon\(TM\)( Vega \d+)? Graphics|AMD Radeon Graphics"
+    r"|Intel\(R\) (UHD|HD|Iris\(R\) Xe|Iris\(R\) Plus|Iris\(R\)) Graphics.*)$", re.I)
+
+
+def _pulisci_cpu(nome):
+    """`AMD Ryzen 7 7800X3D 8-Core Processor   (16 CPUs), ~4.2GHz` → `AMD Ryzen 7 7800X3D`.
+
+    Il nome pulito è quello che la ricerca nel catalogo trova: con «8-Core Processor» e
+    «(16 CPUs)» dentro, tutte le parole non le ha nessun pezzo."""
+    n = re.sub(r"\(\d+ CPUs\).*$", "", nome)          # «(16 CPUs), ~4.2GHz»
+    n = re.sub(r"\s+CPU\s*@.*$", "", n)                # Intel: «CPU @ 3.60GHz»
+    n = re.sub(r"\s+\d+-Core Processor\s*$", "", n.strip(), flags=re.I)
+    n = re.sub(r"\((R|TM)\)", "", n, flags=re.I)
+    return re.sub(r"\s+", " ", n).strip()
 
 
 def _parse_dxdiag(text):
-    results = []; lines = text.splitlines()
+    """I pezzi che un DxDiag.txt dice davvero, più le note su quello che non dice.
+
+    ⚠️ **Il DxDiag non riporta la scheda madre.** Ha `System Manufacturer` e `System Model`,
+    che sono il **sistema**: su un PC assemblato ASUS lascia il segnaposto «System Product
+    Name», su un PC di marca c'è il modello del computer. Fino al 25/09/2026 quel campo
+    diventava una «Motherboard», ed è così che la build di Davide aveva una scheda madre
+    chiamata «System Product Name»."""
+    results = []; note = []; lines = text.splitlines()
 
     def find(pats):
         for p in pats:
@@ -252,9 +282,17 @@ def _parse_dxdiag(text):
         return None
 
     cpu = find([r"Processor[^:]*:\s*(.+)", r"CPU[^:]*:\s*(.+)"])
-    if cpu: results.append({"category": "CPU", "name": cpu[:120], "price": 0, "notes": ""})
-    ram = find([r"Memory:\s*(.+)", r"Available OS RAM[^:]*:\s*(.+)"])
-    if ram: results.append({"category": "RAM", "name": ram[:80], "price": 0, "notes": ""})
+    if cpu:
+        results.append({"category": "CPU", "name": _pulisci_cpu(cpu)[:120], "price": 0,
+                        "notes": ""})
+    # `^\s*Memory:` e non `Memory:`: «Available OS Memory» e «Display Memory» contengono
+    # la stessa parola.
+    ram = find([r"^\s*Memory:\s*(.+)"])
+    if ram:
+        m = re.match(r"(\d+)\s*MB RAM", ram, re.I)
+        nome = f"{int(m.group(1)) // 1024} GB" if m else ram[:80]
+        results.append({"category": "RAM", "name": nome, "price": 0,
+                        "notes": "dal DxDiag: tipo e modello non indicati"})
     seen_gpu = set()
     for line in lines:
         m = re.match(r"\s*Card name[^:]*:\s*(.+)", line, re.I)
@@ -262,11 +300,19 @@ def _parse_dxdiag(text):
             g = m.group(1).strip()
             if any(x in g.lower() for x in ["n/a", "not available", "unknown", "microsoft", "basic"]):
                 continue
+            if GRAFICA_INTEGRATA.match(g):
+                if g not in seen_gpu:
+                    seen_gpu.add(g)
+                    note.append(f"Scartata «{g}»: è la grafica integrata nella CPU, non una "
+                                "scheda video. Se è l'unica che hai, aggiungila a mano.")
+                continue
             if g not in seen_gpu and len(g) > 4:
                 seen_gpu.add(g)
                 results.append({"category": "GPU", "name": g[:120], "price": 0, "notes": ""})
-            if len(seen_gpu) >= 2:
+            if sum(1 for r in results if r["category"] == "GPU") >= 2:
                 break
-    mb = find([r"Motherboard[^:]*:\s*(.+)", r"System Model[^:]*:\s*(.+)"])
-    if mb: results.append({"category": "Motherboard", "name": mb[:120], "price": 0, "notes": ""})
-    return results
+    produttore = find([r"System Manufacturer[^:]*:\s*(.+)"])
+    note.append("Scheda madre: il DxDiag non la riporta" +
+                (f" (dice solo il produttore del sistema, {produttore})" if produttore else "") +
+                ". Aggiungila a mano, col modello scritto sulla scheda o nel BIOS.")
+    return results, note

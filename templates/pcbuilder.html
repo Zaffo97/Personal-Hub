@@ -433,6 +433,9 @@ function parseDx() {
         + '<span style="flex:1;margin:0 .5rem;font-size:.8rem;font-weight:600">' + c.name + '</span>'
         + '</div>').join('');
     }
+    // Quello che il DxDiag non dice, o che è stato scartato: detto, non taciuto.
+    el.innerHTML += (d.note || []).map(n =>
+      '<p class="text-xs text-muted" style="margin:.35rem 0 0">&#9432; ' + escHtml(n) + '</p>').join('');
     document.getElementById('dxResult').style.display = 'block';
     document.getElementById('useDxBtn').style.display = dxComponents.length ? 'inline-flex' : 'none';
   });

@@ -20,6 +20,20 @@ pagina ed esegue `new Function()` su ogni blocco `<script>` **e** su ogni handle
 
 ## 25/09/2026
 
+**PC Builder: l'import DxDiag che salvava nomi che non sono pezzi** — deciso da Davide dopo
+averlo trovato provando la compatibilità. Verificato su un DxDiag **vero**, generato sul suo PC
+(`dxdiag /t`, 100 KB): il modello della scheda madre **non c'è** — solo `System Manufacturer:
+ASUS` e `System Model: System Product Name`, che è il modello del *sistema*. Quindi la cura non
+era leggere un altro campo ma **smettere di spacciarlo per una scheda madre**, e dirlo in una
+nota. La CPU si pulisce (`AMD Ryzen 7 7800X3D 8-Core Processor (16 CPUs), ~4.2GHz` →
+`AMD Ryzen 7 7800X3D`, che il catalogo trova), la RAM diventa `32 GB`, la Radeon integrata del
+7800X3D si **scarta dicendolo** (nessun campo la distingue: sono tutte e due «Full Device»,
+quindi la si riconosce dal nome, e una scheda vera come «AMD Radeon RX 7900 XTX» passa).
+File intero: CPU, RAM e 4070 Ti, più due note. `prova_pcbuilder.py` **69 su 69** (8 nuove, con
+le righe del DxDiag vero senza nome e ID della macchina), sweep 0 errori; modale provato in
+browser. ⚠️ Avevo scritto a Davide che DxDiag avesse il campo della scheda madre: **era falso**,
+ed è venuto fuori guardando il file prima di scrivere codice.
+
 **PC Builder: la compatibilità fra i pezzi (§4.7)** — la voce del backlog diceva «valutare
 UserBenchmark»: letti i termini, ne vieta ogni uso senza permesso; PCPartPicker non ha API.
 La fonte è **BuildCores OpenDB** (GitHub, ODC-By 1.0, aggiornato il giorno stesso): misurata

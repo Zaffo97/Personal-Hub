@@ -287,7 +287,6 @@ mancante e **lo si dichiara**. Non si riempie a stima.
 | | Baco | Stato |
 |---|---|---|
 | ⬜ | **Due abilità senza effetto nel motore** | Trovate il 23/09/2026. **Affilama** (Sharpness, di Mega Absol Z) ha `effect: none` e dovrebbe potenziare le mosse **da taglio** — che hanno il flag `slicing`, quindi il motore potrebbe leggerlo. **Aura Guard** (Mega Lucario Z) è nuova e senza descrizione. Tutti e due i valori vanno presi da una fonte, non da memoria |
-| ⬜ | **L'import DxDiag salva nomi che non sono pezzi** | Trovato il 25/09/2026 provando la compatibilità sulla build vera: la scheda madre è registrata come **«System Product Name»** (il segnaposto che ASUS lascia nel campo `System Model`, che `_parse_dxdiag()` legge quando manca `Motherboard`), la RAM come **«32768MB RAM»**, e la grafica **integrata** del 7800X3D («AMD Radeon(TM) Graphics») come seconda GPU — il filtro scarta solo `microsoft`/`basic`. Nessun errore: i nomi sembrano dati. Non corretto, fuori scope. Con la compatibilità conta di più, perché la ricerca nel catalogo parte da quel nome |
 | ⬜ | **`confirm` con lo username non escapato** | `admin_utenti.html:117`: `'Eliminare l’utente {{ u.username }}?'` dentro un handler inline. Uno username con l'apostrofo rompe l'handler, e il `confirm` di un'eliminazione sparisce (vedi la trappola su `{{ nome|e }}`). Le due conferme sopra (righe 92 e 105) usano già `|tojson` |
 
 Tutti gli altri bachi elencati qui fino al 23/09/2026 sono chiusi: vedi `STORICO.md`.
@@ -478,8 +477,12 @@ pulsante. Logica in `pc_catalogo.py`.
 
 **⬜ Della compatibilità resta:**
 
-- ⚠️ **Collegare i 5 pezzi veri di Davide**: nessuno è collegato, e con i nomi di DxDiag la
-  ricerca non basta (vedi il baco in §3). Il catalogo va scaricato una prima volta col pulsante
+- ⚠️ **Collegare i pezzi veri di Davide**: nessuno è collegato, e il catalogo va scaricato
+  una prima volta col pulsante. I nomi salvati **prima** del 25/09 restano quelli vecchi
+  («System Product Name», «32768MB RAM», la Radeon integrata come GPU): l'import corretto vale
+  per i DxDiag nuovi, i pezzi già salvati si sistemano a mano o reimportando
+- **Il modello della scheda madre il DxDiag non lo ha** (verificato sul PC di Davide: solo
+  `System Manufacturer: ASUS` e il segnaposto «System Product Name»). Va scritto a mano
 - **Quello che il catalogo non sa**, ed è dichiarato a schermo: l'altezza massima del
   dissipatore c'è solo per **1 case su 3** (36%), l'altezza dei dissipatori per il 70%;
   **LGA 1151** dà «da verificare» (due generazioni incompatibili sullo stesso socket), e su
