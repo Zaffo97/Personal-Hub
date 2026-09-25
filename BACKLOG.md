@@ -1322,12 +1322,13 @@ sa dal codice, non un piano.
 | **Calendario e classifica** | football-data.org, piano gratuito | con la chiave, da solo entrando se la copia ha più di un giorno, o con «Aggiorna ora» |
 | **Probabili** | nessuna | un **link** che le apre nel browser di Davide (strada «a») |
 
-**Chi gioca, dal 25/09/2026** — la domanda di Davide era «mi interessa sapere chi gioca e
-chi no». Scelta sua: la titolarità la **segna lui**, nella pagina `/lega/<id>/chi-gioca`, con
-le probabili di fantacalcio.it **in un riquadro** a sinistra (le carica il suo browser, nessun
-programma le legge) e la rosa a destra con tre stati — titolare, in dubbio, non gioca — che si
-salvano a ogni clic. Una riga per utente, giornata e giocatore (`fanta2_titolari`): vale per
-tutte le sue leghe e la giornata dopo riparte da vuoto. ⚠️ Il riquadro: fantacalcio.it il
+**Le probabili, dal 25/09/2026** — pagina `/lega/<id>/chi-gioca` (pulsante «👀 Probabili»
+nella lega e nel campo): le probabili di fantacalcio.it **in un riquadro** a sinistra (le
+carica il suo browser, nessun programma le legge) e la rosa a destra, **da leggere**. Il
+mattino del 25/09 c'erano anche tre stati da segnare per giocatore (titolare, in dubbio, non
+gioca); **tolti lo stesso giorno su richiesta di Davide** («non mi interessa segnarlo, basta
+che visualizzo le probabili»). La tabella `fanta2_titolari` **resta nel DB**, non più letta né
+scritta: toglierla vorrebbe dire cancellare le righe già segnate, e non l'ha chiesto. ⚠️ Il riquadro: fantacalcio.it il
 24/09 non mandava né `X-Frame-Options` né una CSP che lo vietasse, ma nel pannello browser di
 Claude è rimasto **bianco** (nessuna richiesta partita: è il pannello che non lo carica, non
 il sito). **Va provato nel Chrome di Davide**; se resta bianco c'è «Apri in una scheda». I
@@ -1335,11 +1336,10 @@ termini, letti **per intero** il 25/09/2026, non parlano di iframe né di link: 
 aperta sui termini qui sotto.
 
 Il **consiglio** mette in fondo chi **di sicuro non gioca** (ceduto, squadra senza partita,
-partita rinviata, o segnato «non gioca»), poi ordina per **tua scelta** — titolare, in dubbio,
-non segnato: una scelta di lettura, dichiarata in pagina — e dentro ogni gruppo per
-**fantamedia della lega**, che ora comprende anche l'**autogol** (408 su 414 esatti coi valori
-standard, erano 407). L'avviso sulla formazione segnala i titolari che hai segnato «non gioca»
-o «in dubbio». L'**avversario** — posizione in classifica, gol fatti e subiti —
+partita rinviata: lo dice il calendario), poi ordina per **fantamedia della lega**, che
+comprende anche l'**autogol** (408 su 414 esatti coi valori standard). La titolarità **non la
+sa**, e lo dice in pagina. L'avviso sulla formazione segnala i titolari che non giocano per il
+calendario e cosa manca. L'**avversario** — posizione in classifica, gol fatti e subiti —
 si **mostra e non si pesa**: decisione di Davide del 24/09/2026, e ⚠️ **supera** quella del
 22/09 («l'avversario non interessa», che valeva per la prima sezione). Il **modificatore di
 difesa** è il valore pieno: senza probabili non c'è la probabilità per cui moltiplicarlo.
@@ -1348,7 +1348,7 @@ difesa** è il valore pieno: senza probabili non c'è la probabilità per cui mo
 
 - ✅ **Chiarito con Davide il 25/09/2026**: il campo col consiglio sul modulo c'era già e va
   bene così; la **titolarità la guarda lui** sulla pagina di fantacalcio.it. La pagina «Chi
-  gioca» resta, e i segni sono **facoltativi**.
+  gioca» resta, e i segni sono **facoltativi** — poi tolti del tutto nel pomeriggio.
 - ✅ **Formazione salvabile anche incompleta** — fatta il 25/09/2026, vedi `STORICO.md`.
   Nella 2 il campo usa `fanta2.controlla_formazione_larga()`; la prima sezione resta severa.
 - ⚠️ ⬜ **I termini di fantacalcio.it letti per intero il 25/09/2026 (versione «Settembre
@@ -1388,10 +1388,11 @@ difesa** è il valore pieno: senza probabili non c'è la probabilità per cui mo
   Davide**. Le pagine sono provate dal test client e dallo sweep (0 errori su 6 pagine per
   lingua); l'elenco delle leghe è stato visto in browser dopo il login di Davide il
   25/09/2026, le altre pagine aspettano una lega con la rosa.
-- ⬜ **La copia dei dati fra utenti non dice che le scelte di «Chi gioca» restano fuori.**
-  `fanta2_titolari` è `cancella` come le spunte di Python, quindi non si copia — giusto — ma il
-  messaggio di `admin.utenti_copia` nomina solo Python. Trovato il 25/09/2026, non corretto
-  (fuori scope, e le scelte valgono una settimana).
+- ⬜ **`fanta2_titolari` è una tabella morta dal 25/09/2026** (le scelte di «Chi gioca»
+  tolte). Resta perché ha righe dentro; la citano ancora `init_db()`, `TABELLE_UTENTE`
+  (`cancella`), `admin.py` e l'elenco degli esclusi di `esporta_dati.py`. Da togliere tutta
+  insieme **solo se Davide dice di sì**, con le righe che contiene. (La voce di prima, sul
+  messaggio della copia fra utenti che non la nominava, decade con lei.)
 - **Il ritardo del calendario gratuito** («Schedules delayed»): non misurato, serve una
   partita spostata da veder arrivare.
 - **La chiave su Debian**: oggi `FOOTBALL_DATA_API_KEY` si legge dall'ambiente e, su

@@ -20,6 +20,15 @@ pagina ed esegue `new Function()` su ogni blocco `<script>` **e** su ogni handle
 
 ## 25/09/2026
 
+**Fantacalcio 2 ripulita (§4.6)** — su richiesta di Davide: «Aggiorna calendario» accanto a
+«Leggi i download»; via il riquadro delle probabili dalla pagina principale (restano il pulsante
+in alto e «👀 Probabili» dentro la lega); **via le scelte titolare / in dubbio / non gioca**
+aggiunte la notte prima — la pagina delle probabili resta, da leggere, e consiglio e avviso
+tornano a guardare solo il calendario. `fanta2_titolari` resta nel DB, non usata.
+`prova_fantacalcio2.py` **80 su 80** (le 16 prove sulle scelte sostituite da 8 sulla pagina
+pulita), `prova_fantacalcio.py` **245 su 245**, sweep 0 errori, query 0 scoperte. Visto sul DB
+vero: l'hub di Davide ha importato e cancellato i due Excel alle 10:11 (598 giocatori).
+
 **Fantacalcio 2: gli Excel presi dai download (§4.6)** — richiesta di Davide: scarica lui i due
 file, l'hub li trova entrando nella sezione, li importa e li cancella (anche le copie « (1)»);
 il dato resta nel DB fino al download dopo. Solo `.xlsx` con «fantacalcio» nel nome, quale sia

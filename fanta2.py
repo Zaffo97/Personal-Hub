@@ -11,11 +11,12 @@ rifiuta, con `ok=False` e il motivo scritto.
 
 ⚠️ **Cosa cambia rispetto alla prima sezione**, e va detto a schermo, non scoperto:
 
-- **niente probabili lette da un programma.** La titolarità la **segna Davide**
-  (pagina «Chi gioca», dal 25/09/2026) guardando le probabili in un riquadro; chi non
-  ha segnato resta «non so». Il consiglio ordina: prima chi può giocare (il
-  calendario dice se la squadra gioca e se il giocatore è ceduto), poi la tua scelta,
-  poi la **fantamedia rifatta con le regole della lega**;
+- **niente probabili lette da un programma.** Davide le **guarda** (pagina «Chi
+  gioca», un riquadro accanto alla rosa) e la titolarità la decide lui schierando: il
+  consiglio non la sa. Dal 25/09/2026 non si **segna** più niente — i tre stati
+  titolare / in dubbio / non gioca sono stati tolti su sua richiesta. Il consiglio
+  ordina: prima chi può giocare (il calendario dice se la squadra gioca e se il
+  giocatore è ceduto), poi la **fantamedia rifatta con le regole della lega**;
 - **l'avversario si mostra e non si pesa** (decisione di Davide del 24/09/2026):
   nessuno pubblica quanto valga un avversario facile rispetto alla fantamedia, e un
   peso scelto qui sarebbe un numero inventato;
@@ -352,55 +353,34 @@ def fantamedia_lega(g, regole):
         {"voce": "autogol", "quanti": autogol, "valore": float(valore), "punti": punti}]
 
 
-# ── Chi gioca: lo segna Davide ────────────────────────────────────────────────
-# Decisione di Davide del 25/09/2026: la titolarità la **segna lui**, guardando le
-# probabili nel riquadro accanto, con tre stati per giocatore. Nessun programma legge
-# le probabili: il dato che entra è la sua scelta.
-# La chiave è il valore in `fanta2_titolari.stato`; l'etichetta è per lo schermo.
-SCELTE = {"titolare": "titolare", "dubbio": "in dubbio", "fuori": "non gioca"}
-# ⚠️ L'ordine in cui il consiglio le mette **è una scelta di lettura**, dichiarata in
-# pagina: prima chi hai segnato titolare, poi chi è in dubbio, poi chi **non hai
-# segnato** — che non si sa — e per ultimi quelli che non giocano. «In dubbio» sta
-# davanti a «non segnato» perché è uno che hai guardato e che può giocare; un non
-# segnato può essere chiunque.
-ORDINE_SCELTE = {"titolare": 0, "dubbio": 1, None: 2}
+def valuta_rosa(rosa, partite, tabella, regole, calendario_c_e):
+    """Una riga per giocatore: fantamedia della lega e la sua partita.
 
-
-def valuta_rosa(rosa, partite, tabella, regole, calendario_c_e, scelte=None):
-    """Una riga per giocatore: fantamedia della lega, la sua partita e la tua scelta.
-
-    `scelte` è `{player_id: stato}` della giornata, come la legge il blueprint.
-    `escluso` è la domanda che conta per il consiglio: **di sicuro non gioca** —
-    perché lo dice il calendario (ceduto, squadra ferma, partita rinviata) o perché
-    l'hai segnato «non gioca».
+    `escluso` è la domanda che conta per il consiglio: **di sicuro non gioca**, perché
+    lo dice il calendario (ceduto, squadra ferma, partita rinviata).
     """
-    scelte = scelte or {}
     fuori = []
     for g in rosa:
         fm, pezzi = fantamedia_lega(g, regole)
         partita = partita_di(g, partite, tabella, calendario_c_e)
-        scelta = scelte.get(g["id"])
         fuori.append({
             "g": g, "fm": fm, "pezzi": pezzi,
             "partite": g.get("partite_a_voto") or 0,
             "fidata": (g.get("partite_a_voto") or 0) >= MINIMO_PARTITE_FIDATO,
             "partita": partita, "gioca": partita.get("gioca"),
-            "scelta": scelta,
-            "escluso": partita.get("gioca") is False or scelta == "fuori",
+            "escluso": partita.get("gioca") is False,
         })
     return fuori
 
 
 def _chiave(v):
-    """L'ordine dentro un reparto: prima chi **può** giocare, poi la tua scelta, poi
-    la fantamedia.
+    """L'ordine dentro un reparto: prima chi **può** giocare, poi la fantamedia.
 
     ⚠️ Chi non ha fantamedia (nessuna partita a voto) va **dopo** chi ce l'ha, non
     in mezzo con zero: zero vorrebbe dire «ha giocato male», e non è quello che si
     sa. A parità, più partite a voto, poi il nome — per non lasciar decidere a caso.
     """
     return (v["escluso"],
-            ORDINE_SCELTE.get(v.get("scelta"), 2),
             v["fm"] is None,
             -(v["fm"] or 0),
             -(v["partite"] or 0),
@@ -446,9 +426,9 @@ def modificatore(titolari, regole):
 def consiglia_formazione(valutazioni, modulo, n_panchinari=7, regole=None):
     """L'undici e la panchina per **un** modulo, in ordine di fantamedia.
 
-    - `forzati`: titolari che **non giocano** (per il calendario o perché li hai
-      segnati così) ma servono a riempire il reparto — con due portieri di cui uno
-      ceduto e l'altro fuori, un portiere lo schieri lo stesso. La pagina lo dichiara;
+    - `forzati`: titolari che **non giocano** ma servono a riempire il reparto — con
+      due portieri di cui uno ceduto e l'altro senza partita, un portiere lo schieri
+      lo stesso. La pagina lo dichiara;
     - la panchina segue la stessa regola della prima sezione: al massimo quanti ne
       gioca il modulo per ruolo (un secondo portiere di riserva non entra mai), e
       quello che avanza rientra solo se restano posti.
@@ -478,9 +458,7 @@ def consiglia_formazione(valutazioni, modulo, n_panchinari=7, regole=None):
             "totale": None if somma is None else round(somma + (mod or {}).get("punti", 0), 2),
             "senza_fm": len([v for v in titolari if v["fm"] is None]),
             "forzati": [v for v in titolari if v["escluso"]],
-            # In dubbio, o mai segnati: titolari su cui **non sai** se giocano.
-            "incerti": [v for v in titolari if v.get("scelta") != "titolare"
-                        and not v["escluso"]]}
+            "incerti": [v for v in titolari if v["gioca"] is None]}
 
 
 def consiglia_moduli(valutazioni, moduli, n_panchinari=7, regole=None):
@@ -498,40 +476,35 @@ def controlla_schierati(schierati, valutazioni, nomi, in_rosa):
     """Cosa non torna nella formazione salvata. Stessa forma della prima sezione.
 
     - `fuori`: titolari che **non giocano** — ceduti, squadra senza partita, partita
-      rinviata (lo dice il calendario), o segnati da te «non gioca»;
-    - `incerti`: titolari che hai segnato **in dubbio**;
-    - `occasioni`: panchinari che hai segnato **titolari**, quando nello stesso ruolo
-      c'è un titolare fuori o in dubbio. Solo in quel caso: «in panchina c'è uno più
-      bravo» non è un guaio, è la tua scelta;
+      rinviata. È un fatto del calendario, non un'opinione di una redazione;
+    - `occasioni`: panchinari che giocano con una fantamedia più alta di un titolare
+      dello stesso ruolo **che non gioca**. Solo in quel caso: «in panchina c'è uno
+      più bravo» non è un guaio, è la tua scelta;
     - `spariti`: schierati ma non più in rosa (la rete, come nella prima sezione).
+
+    `incerti` resta vuoto e c'è solo perché il riquadro abbia la stessa forma: qui
+    non c'è una percentuale che possa mettere in dubbio un titolare (dal 25/09/2026
+    non ci sono più nemmeno i «in dubbio» segnati a mano).
     """
     per_id = {v["g"]["id"]: v for v in valutazioni}
-    fuori, incerti, occasioni, spariti = [], [], [], []
+    fuori, occasioni, spariti = [], [], []
     for pid, riga in (schierati or {}).items():
         voce = {"id": pid, "nome": nomi.get(pid, "?"), "perche": None}
         if pid not in in_rosa:
             spariti.append(voce)
             continue
         v = per_id.get(pid)
-        if not v or not riga.get("titolare"):
-            continue
-        if v["escluso"]:
-            voce["perche"] = (v["partita"].get("perche")
-                              if v["gioca"] is False else "segnato «non gioca»")
+        if v and riga.get("titolare") and v["escluso"]:
+            voce["perche"] = v["partita"].get("perche")
             fuori.append(voce)
-        elif v.get("scelta") == "dubbio":
-            voce["perche"] = "segnato in dubbio"
-            incerti.append(voce)
-    ruoli_scoperti = {per_id[x["id"]]["g"].get("ruolo_classic")
-                      for x in fuori + incerti if x["id"] in per_id}
+    ruoli_scoperti = {per_id[x["id"]]["g"].get("ruolo_classic") for x in fuori
+                      if x["id"] in per_id}
     for pid, riga in (schierati or {}).items():
         v = per_id.get(pid)
         if (v and not riga.get("titolare") and not v["escluso"]
-                and v.get("scelta") == "titolare"
                 and v["g"].get("ruolo_classic") in ruoli_scoperti):
             occasioni.append({"id": pid, "nome": nomi.get(pid, "?"), "fm": v["fm"]})
-    return {"fuori": sorted(fuori, key=lambda x: x["nome"]),
-            "incerti": sorted(incerti, key=lambda x: x["nome"]),
+    return {"fuori": sorted(fuori, key=lambda x: x["nome"]), "incerti": [],
             "occasioni": sorted(occasioni, key=lambda x: -(x["fm"] or 0)),
             "spariti": sorted(spariti, key=lambda x: x["nome"])}
 

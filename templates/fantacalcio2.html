@@ -54,9 +54,10 @@
 </div>
 
 {# ── Le fonti della Fantacalcio 2 ─────────────────────────────────────────────
-   Tre riquadri come nella prima sezione, ma nessuno legge fantacalcio.it: il
-   listone lo **carichi tu** dai due Excel, il calendario viene da
-   football-data.org, le probabili si aprono nel tuo browser. #}
+   Nessuno legge fantacalcio.it: il listone lo **carichi tu** dai due Excel, il
+   calendario viene da football-data.org. Le probabili non hanno un riquadro qui
+   (tolto il 25/09/2026, su richiesta di Davide): c'è il pulsante in alto, e dentro
+   ogni lega la pagina che le mostra accanto alla rosa. #}
 <div class="card mb-3">
   <div class="card-header">
     <div class="card-title">Il listone</div>
@@ -70,13 +71,20 @@
     {% else %}
       <span class="text-muted">Il listone non è ancora stato caricato.</span>
     {% endif %}
-    {# Il modo normale, dal 25/09/2026: scarichi i due file e premi qui. #}
-    <form method="post" action="{{ url_for('fantacalcio2.listone_dai_download') }}"
-          class="mt-2">
-      <button class="btn btn-primary btn-sm" type="submit">&#128229; Leggi i download</button>
-      <span class="text-xs text-muted">importa i due Excel da
-        <code>{{ cartella_download }}</code> e poi li cancella</span>
-    </form>
+    {# Il modo normale, dal 25/09/2026: scarichi i due file e premi qui. Accanto
+       l'aggiornamento del calendario, chiesto da Davide lo stesso giorno: stanno
+       vicini perché sono le due cose da rifare spesso. #}
+    <div class="flex gap-2 flex-wrap items-center mt-2">
+      <form method="post" action="{{ url_for('fantacalcio2.listone_dai_download') }}">
+        <button class="btn btn-primary btn-sm" type="submit">&#128229; Leggi i download</button>
+      </form>
+      <form method="post" action="{{ url_for('fantacalcio2.aggiorna_calendario') }}">
+        <input type="hidden" name="torna_a" value="/fantacalcio2/">
+        <button class="btn btn-primary btn-sm" type="submit">&#8635; Aggiorna calendario</button>
+      </form>
+      <span class="text-xs text-muted">i due Excel da <code>{{ cartella_download }}</code>
+        (poi li cancello) &middot; partite e classifica da football-data.org</span>
+    </div>
     <div class="text-xs text-muted mt-2">Oppure scegli i file a mano:</div>
     {# Un POST multipart: i file restano in memoria il tempo di leggerli, non si
        salvano da nessuna parte. #}
@@ -107,24 +115,7 @@
 
 <div class="card mb-3">
   <div class="card-header">
-    <div class="card-title">Le probabili formazioni</div>
-    <a class="btn btn-secondary btn-sm" href="{{ link_probabili }}" target="_blank"
-       rel="noopener">Apri su fantacalcio.it &#8599;</a>
-  </div>
-  <div style="padding:.75rem 1rem" class="text-xs text-muted">
-    In questa sezione le probabili <strong>non vengono lette</strong>: la pagina si
-    apre nel tuo browser. Per questo il consiglio non sa chi è titolare e ordina i
-    giocatori solo per fantamedia: la titolarità la controlli tu.
-  </div>
-</div>
-
-<div class="card mb-3">
-  <div class="card-header">
     <div class="card-title">Il calendario</div>
-    <form method="post" action="{{ url_for('fantacalcio2.aggiorna_calendario') }}">
-      <input type="hidden" name="torna_a" value="/fantacalcio2/">
-      <button class="btn btn-secondary btn-sm" type="submit">&#8635; Aggiorna ora</button>
-    </form>
   </div>
   <div style="padding:.75rem 1rem">
     {% if not chiave %}
@@ -141,7 +132,8 @@
       La scadenza è il fischio d'inizio della <strong>prima</strong> partita della
       giornata con l'orario definitivo. Si aggiorna da solo quando la copia supera
       il giorno. Il piano gratuito di football-data.org dichiara il calendario
-      «in ritardo»: dopo un rinvio, conviene premere <strong>Aggiorna ora</strong>.
+      «in ritardo»: dopo un rinvio, conviene premere <strong>Aggiorna calendario</strong>
+      (nel riquadro del listone).
       <br><em>{{ attribuzione }}</em>
     </div>
   </div>

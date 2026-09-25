@@ -1,26 +1,27 @@
 {% extends "base.html" %}
 {#
-  Chi gioca — Fantacalcio 2 (§4.6), decisione di Davide del 25/09/2026.
+  Le probabili accanto alla rosa — Fantacalcio 2 (§4.6).
 
   A sinistra le probabili di fantacalcio.it **in un riquadro**: è il browser di chi
-  guarda a caricarle e mostrarle, nessun programma le legge. A destra la rosa, con
-  tre stati per giocatore che si salvano a ogni clic. Il consiglio li usa.
+  guarda a caricarle e mostrarle, nessun programma le legge. A destra la rosa, da
+  **leggere**: con la partita di ognuno, per confrontarla a colpo d'occhio.
+
+  Dal 25/09/2026, su richiesta di Davide, qui **non si segna più niente**: i tre stati
+  titolare / in dubbio / non gioca sono stati tolti («basta che visualizzo le
+  probabili»). La titolarità la decide lui, schierando.
 
   ⚠️ Il riquadro può restare bianco: un sito può rifiutare di farsi incorniciare (il
   24/09/2026 fantacalcio.it non mandava né `X-Frame-Options` né una CSP che lo
   vietasse, ma può cambiare), o il browser può bloccarlo. Da qui non si può sapere,
   quindi la pagina lo dice e mette il link per aprirla a parte.
-
-  ⚠️ Le scelte valgono **per la giornata**, e per tutte le tue leghe: un giocatore
-  titolare lo è in ognuna.
 #}
-{% block title %}Chi gioca &ndash; {{ lega.nome }} (Fantacalcio 2){% endblock %}
-{% block topbar_title %}&#9917; Chi gioca &mdash; {{ lega.nome }}{% endblock %}
+{% block title %}Probabili &ndash; {{ lega.nome }} (Fantacalcio 2){% endblock %}
+{% block topbar_title %}&#9917; Probabili &mdash; {{ lega.nome }}{% endblock %}
 {% block body_class %}sez-fanta{% endblock %}
 {% block extra_head %}
 <link rel="stylesheet" href="{{ url_for('static', filename='css/fantacalcio.css') }}">
 <style>
-.affiancati{display:grid;grid-template-columns:minmax(0,1.35fr) minmax(320px,1fr);
+.affiancati{display:grid;grid-template-columns:minmax(0,1.35fr) minmax(280px,1fr);
   gap:.9rem;align-items:start}
 @media (max-width:1000px){.affiancati{grid-template-columns:1fr}}
 .riquadro{width:100%;height:calc(100dvh - var(--topbar) - 9rem);min-height:420px;
@@ -40,29 +41,17 @@
   border-radius:50%;font-size:.58rem;font-weight:700;color:#fff;flex-shrink:0}
 .ruolo-p{background:#d97706}.ruolo-d{background:#2563eb}
 .ruolo-c{background:#16a34a}.ruolo-a{background:#dc2626}
-/* I tre stati: un interruttore a segmenti. Il colore dice lo stato anche a colpo
-   d'occhio, la parola lo dice a chi non distingue i colori. */
-.stati{display:inline-flex;border:1px solid var(--border);border-radius:20px;overflow:hidden;
-  flex-shrink:0}
-.stati button{font-size:.64rem;font-weight:700;padding:.22rem .5rem;border:0;cursor:pointer;
-  background:transparent;color:var(--text-muted)}
-.stati button + button{border-left:1px solid var(--border)}
-.stati button:hover{background:var(--surface-off)}
-.stati button.su[data-stato="titolare"]{background:rgba(22,163,74,.2);color:#16a34a}
-.stati button.su[data-stato="dubbio"]{background:rgba(217,119,6,.2);color:#d97706}
-.stati button.su[data-stato="fuori"]{background:rgba(220,38,38,.18);color:#dc2626}
-.errore{color:var(--error);font-size:.66rem}
 </style>
 {% endblock %}
 {% block content %}
 <div class="page-header">
   <div class="flex items-center justify-between flex-wrap gap-2">
     <div>
-      <h1>&#128064; Chi gioca</h1>
+      <h1>&#128064; Probabili formazioni</h1>
       <p class="text-muted text-sm">
         {{ lega.nome }} &middot;
         {% if giornata %}giornata {{ giornata }}{% else %}calendario non importato{% endif %}
-        &middot; guardi le probabili a sinistra e segni la rosa a destra
+        &middot; le probabili a sinistra, la tua rosa a destra
       </p>
     </div>
     <div class="flex gap-2">
@@ -72,12 +61,6 @@
   </div>
 </div>
 
-{% if not giornata %}
-<div class="card"><div class="card-body text-sm text-muted">
-  Il calendario non è stato importato, quindi non so di quale giornata parliamo e le
-  scelte non si possono salvare. Aggiornalo dalla pagina della Fantacalcio 2.
-</div></div>
-{% else %}
 <div class="affiancati">
   <div class="card mb-0">
     <div class="card-header">
@@ -96,7 +79,6 @@
   <div class="card mb-0 lista">
     <div class="card-header">
       <div class="card-title">La tua rosa</div>
-      <span class="text-xs text-muted" id="conto"></span>
     </div>
     {% for r in ordine %}
       {% for v in per_ruolo[r] %}
@@ -109,71 +91,17 @@
             {{ v.g.squadra or '—' }}
             {% if p.gioca %}&middot; vs {{ p.avversario }} ({{ 'casa' if p.in_casa else 'fuori' }})
             {% elif p.gioca is sameas false %}&middot; <strong>{{ p.perche }}</strong>{% endif %}
-            <span class="errore"></span>
           </div>
         </div>
-        {# Chi non gioca per il calendario non si segna: la risposta c'è già, e un
-           «titolare» su un ceduto sarebbe una scelta che il consiglio ignorerebbe. #}
-        {% if v.gioca is sameas false %}
-          <span class="text-xs text-muted">non gioca</span>
-        {% else %}
-        <div class="stati" data-pid="{{ v.g.id }}">
-          {% for chiave, etichetta in scelte.items() %}
-          <button type="button" data-stato="{{ chiave }}"
-                  class="{% if v.scelta == chiave %}su{% endif %}">{{ etichetta }}</button>
-          {% endfor %}
-        </div>
-        {% endif %}
       </div>
       {% endfor %}
     {% endfor %}
     {% if not per_ruolo.p and not per_ruolo.d and not per_ruolo.c and not per_ruolo.a %}
     <div class="card-body text-sm text-muted">La rosa di questa lega è vuota.</div>
     {% endif %}
-    <div class="text-xs text-muted" style="padding:.5rem .8rem">
-      Si salva a ogni clic; un secondo clic sullo stesso stato lo toglie. Le scelte
-      valgono per la <strong>giornata {{ giornata }}</strong> e per tutte le tue leghe:
-      la giornata dopo si riparte da capo. <em>{{ attribuzione }}</em>
-    </div>
+    {% if calendario_c_e %}
+    <div class="text-xs text-muted" style="padding:.5rem .8rem"><em>{{ attribuzione }}</em></div>
+    {% endif %}
   </div>
 </div>
-
-<script>
-/* Un clic = una scelta salvata. ⚠️ Il pulsante si accende **dopo** la risposta del
-   server, non prima: accenderlo subito farebbe vedere salvata una scelta che magari
-   non lo è, ed è il fallback silenzioso che qui non si vuole. */
-(function(){
-  var GIORNATA = {{ giornata|tojson }};
-  var URL = {{ url_for('fantacalcio2.segna')|tojson }};
-  function conta(){
-    var fatti = document.querySelectorAll('.stati button.su').length;
-    var tutti = document.querySelectorAll('.stati').length;
-    document.getElementById('conto').textContent = fatti + ' segnati su ' + tutti;
-  }
-  document.querySelectorAll('.stati').forEach(function(gruppo){
-    gruppo.addEventListener('click', function(e){
-      var b = e.target.closest('button');
-      if (!b) return;
-      var riga = gruppo.closest('.riga');
-      var errore = riga.querySelector('.errore');
-      var nuovo = b.classList.contains('su') ? '' : b.dataset.stato;
-      var dati = new URLSearchParams({player_id: gruppo.dataset.pid,
-                                      giornata: GIORNATA, stato: nuovo});
-      errore.textContent = '';
-      fetch(URL, {method: 'POST', body: dati})
-        .then(function(r){ return r.json().then(function(j){ return {ok: r.ok, j: j}; }); })
-        .then(function(x){
-          if (!x.ok) { errore.textContent = ' · ' + (x.j.errore || 'non salvato'); return; }
-          gruppo.querySelectorAll('button').forEach(function(y){
-            y.classList.toggle('su', y.dataset.stato === x.j.stato);
-          });
-          conta();
-        })
-        .catch(function(){ errore.textContent = ' · non salvato, riprova'; });
-    });
-  });
-  conta();
-})();
-</script>
-{% endif %}
 {% endblock %}

@@ -608,10 +608,6 @@ ECCEZIONI = {
     ('fanta2.py', 'scadenza',
      'SELECT * FROM fanta2_calendario WHERE giornata=? ORDER BY inizio'):
         "il fischio d'inizio della giornata: dato condiviso, uguale per tutte le leghe",
-    ('blueprints/fantacalcio2.py', 'segna',
-     'SELECT 1 FROM fanta2_players WHERE id=?'):
-        "controlla che il giocatore esista nel listone condiviso prima di salvare la "
-        "scelta; la scelta stessa si scrive con l'user_id di chi clicca",
     ('fanta2.py', 'classifica',
      'SELECT * FROM fanta2_classifica ORDER BY posizione'):
         'la classifica della Serie A: dato condiviso',
