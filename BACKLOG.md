@@ -194,6 +194,26 @@ ricontrollare che ci sia ancora. Il filesystem effimero non dà errore, la pagin
 - **I 20 punti che scrivono file su disco** mentre l'app gira (in `blueprints/` ed
   `extensions.py`, più `hub.db`): il vero motivo per cui l'app non si sposta da sola. Da
   spostare: `data/` versionato pesa 7,3 MB, `data/cache/` (84 MB) si rigenera
+- ⚠️ **L'hub girerà su Debian / Proxmox** (segnato da Davide il 25/09/2026: «tutto quello
+  che è definito per Windows dovrà cambiare»; i percorsi non sono ancora decisi). Quello
+  che il codice ha di Windows, **contato il 25/09/2026** con una ricerca su `winreg`,
+  `taskkill`, `os.name == "nt"`, `sys.platform`, `USERPROFILE`, PowerShell:
+  - `fanta_fonti.py`: la cartella Download dal **registro** (`winreg`) — il ramo Linux c'è
+    già (`XDG_DOWNLOAD_DIR`) — e `FOOTBALL_DATA_API_KEY` riletta dal registro perché la scrive
+    `setx`: su Linux vale solo la variabile d'ambiente (vedi la voce sulle chiavi, sotto)
+  - `python_esegui.py`: `taskkill` e `CREATE_NEW_PROCESS_GROUP` per chiudere l'albero dei
+    processi; il ramo Linux (`start_new_session` + `killpg`) è scritto ma **mai provato**, e
+    `AMBIENTE_PASSA` elenca variabili di Windows (`SYSTEMROOT`, `WINDIR`, `USERPROFILE`)
+  - `scripts/controlla_esposizione.py` sceglie già `gunicorn` fuori da Windows (`waitress` qui)
+  - `scripts/prova_python.py`: il controllo dei processi figli vivi c'è **solo** su Windows
+    (PowerShell): su Linux va scritto (`ps`/`pgrep`), o la prova passa senza guardare
+  - fuori dal codice: `.claude/launch.json` lancia `python` (su Debian di solito `python3`),
+    i comandi nei documenti sono scritti per Windows, `howtouse.txt` indica un'altra
+    cartella (§1.6). E su Linux i **nomi dei file distinguono le maiuscole**: un template o
+    un file di dati chiamato con la maiuscola sbagliata qui funziona e lì no — da controllare
+    col giro di collaudo
+  - i percorsi del progetto usano `os.path.join` e la radice ricavata da `__file__`: non
+    dovrebbero cambiare, ma **va provato** sulla macchina vera, non dedotto
 - **Le chiavi su Debian** (segnato da Davide il 24/09/2026): un domani l'hub girerà su
   Debian, e le chiavi non potranno stare in variabili d'ambiente di Windows (`setx`, e il
   registro che il Fantacalcio legge per `FOOTBALL_DATA_API_KEY`). Oggi dall'ambiente si
