@@ -67,9 +67,10 @@ SORGENTI = [os.path.join(BASE, "blueprints"), BASE]
 # Stampa 3D, dal 25/09/2026: entrano **insieme alle tabelle**, prima della prima query.
 RADICI = ("games", "teams", "arduino_projects", "pc_builds", "fanta_leagues",
           "python_progress", "sessioni_ricordate",
-          "stampa_progetti", "stampa_filamenti")
+          "stampa_progetti", "stampa_filamenti",
+          "python_progetti", "python_note", "python_frammenti")
 FIGLIE = ("team_members", "pc_components", "fanta_roster", "fanta_formazione",
-          "stampa_file")
+          "stampa_file", "python_file")
 # `python_topics` è l'elenco fisso dei 53 argomenti, condiviso di suo: quello che è
 # personale è la spunta, che dal blocco Python vivrà in `python_progress`.
 # `fanta_players` è il **listone**: condiviso come il catalogo Pokémon, nessun
@@ -159,6 +160,27 @@ ECCEZIONI = {
      "obiettivo,valore_usato,valore_usato_data,link_amazon,link_eprice,link_bpm,"
      "link_versus,opendb_id) VALUES(?,?,?,?,?,?,?,?,?,?,?,?,?,?,?)"):
         "stessa build appena verificata: il proprietario e' quello del padre",
+    # ── Python: i file dei progetti (25/09/2026) ────────────────────────────
+    # Stessa forma di `pc_components`: i file seguono il progetto, e ogni route che
+    # arriva a queste funzioni ha già letto il progetto con `_progetto()`, filtrato.
+    ("blueprints/python_tracker.py", "_file_di",
+     "SELECT nome, contenuto FROM python_file WHERE progetto_id=? ORDER BY nome"):
+        "chi la chiama ha già verificato il progetto con _progetto() (ambito_utente): "
+        "se non è tuo, la route è già uscita",
+    ("blueprints/python_tracker.py", "_scrivi_file",
+     "DELETE FROM python_file WHERE progetto_id=?"):
+        "i file seguono il progetto, verificato dal chiamante (UPDATE filtrato col suo "
+        "rowcount in progetto_salva, _progetto() in _aggiungi, INSERT proprio in progetto_nuovo)",
+    ("blueprints/python_tracker.py", "_scrivi_file",
+     "DELETE FROM python_file WHERE progetto_id=? AND nome=?"):
+        "stesso progetto già verificato: si tolgono i file che il caricamento sostituisce",
+    ("blueprints/python_tracker.py", "_scrivi_file",
+     "INSERT INTO python_file(progetto_id, nome, contenuto) VALUES(?,?,?)"):
+        "stesso progetto già verificato: il proprietario è quello del padre",
+    ("blueprints/python_tracker.py", "nota_salva",
+     "SELECT 1 FROM python_topics WHERE id=?"):
+        "controlla solo che l'argomento **esista**: l'elenco è condiviso, e la nota che "
+        "segue è scritta con l'id di chi la scrive",
     # ── Stampa 3D (25/09/2026) ──────────────────────────────────────────────
     ("blueprints/stampa3d.py", "_carica",
      "INSERT INTO stampa_file(progetto_id,nome,impronta,byte) VALUES(?,?,?,?)"):

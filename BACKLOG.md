@@ -111,9 +111,9 @@ Le decisioni che valgono ancora: la sezione Pokémon si finisce prima delle altr
 il collaudo va alla fine, le guide dopo il collaudo, e **mettere l'app online per ultimo**
 («caricare il sito da qualche parte lo voglio tenere come una delle ultime cose»).
 
-1. §4 — le sezioni: **Python**, poi Log. Stampa 3D (§4.8) e Arduino con Tinkercad e
-   Wokwi (§4.9) sono fatte; restano le loro prove nel Chrome di Davide e ciò che aspetta
-   la stampante
+1. §4 — le sezioni: **Log**. Stampa 3D (§4.8), Arduino (§4.9) e Python (§4.10) sono
+   fatte; restano le prove nel Chrome di Davide (Arduino: rimandata da lui il 25/09) e ciò
+   che aspetta la stampante
 2. I residui Pokémon: le due abilità senza effetto (§3), Kingambit e Game8 (§4.3)
 3. §5 — il giro di collaudo, l'inventario del codice morto
 4. §1.6 — le due guide, **dopo** il collaudo
@@ -202,6 +202,11 @@ ricontrollare che ci sia ancora. Il filesystem effimero non dà errore, la pagin
   (facoltativa). Una strada già usata è quella di `SECRET_KEY`: un file in `data/` escluso
   da git. Qualunque cosa si scelga **resta fuori dal repository** (i termini di
   football-data.org lo chiedono, §6.1) e fuori da `hub_export.json`
+- ⚠️ **L'esecuzione di codice sul PC** (sezione Python, §4.10): chi è amministratore esegue
+  codice Python col Python e i permessi dell'hub, e quel codice può leggere `hub.db`, la
+  chiave di sessione, tutto il disco. In casa è quello che Davide ha chiesto; **online no**:
+  prima di esporre l'hub, `HUB_ESEGUI_CODICE=0` o un ripensamento (un container, un utente
+  del sistema senza permessi). Nel browser (Pyodide) il problema non c'è
 - **L'export deve girare da solo sul server**: oggi `esporta_dati.py` lo lancio io a mano,
   e «persistente» non vuol dire «al sicuro»
 - **Contemporaneità**: SQLite regge; i **JSON scritti a mano no** (trappola sulle scritture
@@ -237,7 +242,9 @@ problema è **decidere chi dice cosa** e buttare i doppioni.
 
 ⚠️ `howtouse.txt` indica una cartella che non è questa e scrive la password in chiaro.
 
-**Cosa la guida n. 2 deve dire**: le password non rientrano dall'export normale (si entra
+**Cosa la guida n. 2 deve dire**: Pyodide non è in git e si scarica con
+`python scripts/scarica_pyodide.py` (senza, «Esegui nel browser» non c'è); i file della
+Stampa 3D (`data/stampa3d/`) vanno copiati a mano; le password non rientrano dall'export normale (si entra
 come `admin` con la password del primo avvio, le altre da `/utenti`); `data/cache/` si
 rigenera, e il primo import sembra bloccato mentre scarica; `admin123` è il seme di
 `init_db()`, non va propagato e va cambiato al primo accesso.
@@ -300,7 +307,7 @@ Tutti gli altri bachi elencati qui fino al 23/09/2026 sono chiusi: vedi `STORICO
 | 💻 **PC Builder** | 🟨 Wishlist, prezzi, link ai negozi, avvisi, **compatibilità** e **novità del catalogo** fatti il 25/09/2026: vedi §4.7 |
 | 🖨️ **Stampa 3D** | 🟨 Progetti con link, file allegati e inventario bobine **fatti il 25/09/2026**: vedi §4.8 |
 | 🤖 **Arduino** | 🟨 Anteprima di Tinkercad e Wokwi, «nuovo circuito» e tabella dei piedini coi controlli **fatti il 25/09/2026**, e il baco del `href` senza controllo chiuso: vedi §4.9 |
-| 🐍 **Python** | ⬜ Spazio per inserire i propri progetti e testarli · ⬜ idee per rendere la sezione più utile |
+| 🐍 **Python** | 🟨 Progetti con file (scritti, caricati, da GitHub), esecuzione nel browser e sul PC, note per argomento e frammenti **fatti il 25/09/2026**: vedi §4.10 |
 | 💾 **Log** | ⬜ Aggiungere una funzione di salvataggio log |
 | 🎨 **Grafica** | ⬜ `form-select` è usata da **4 tendine** (selettore di sezione in `arduino.html`, `gaming.html`, `pcbuilder.html`, `pokemon.html`) e non è definita da nessuna parte · ⬜ rivedere **lo scorrimento di sezioni e sottosezioni** (richiesta del 22/09/2026). ⚠️ Solo il Fantacalcio ha il `<form>` che avvolge header e footer della modale; in `arduino.html` e `pcbuilder.html` il form sta dentro `.modal-body` e lo scroll funziona, quindi la cura del Fantacalcio non va copiata a tappeto |
 
@@ -557,6 +564,36 @@ fonte: sarebbe rimasto senza segnali in silenzio.
   `/projects/new/scheda-che-non-esiste` ha il titolo «New Arduino Uno Project». I quattro
   indirizzi di `WOKWI_NUOVO` sono stati aperti uno per uno (titolo e `diagram.json`): uno
   nuovo va aperto allo stesso modo, non indovinato
+
+---
+
+### 4.10 🟨 Python: progetti, esecuzione, note e frammenti (25/09/2026)
+
+Nel docx: «uno spazio dove inserire tutti i miei progetti e testarli» e «pensare a cosa
+posso integrare per renderlo più figo». Scelte di Davide: file **scritti, caricati e da
+GitHub**; il codice gira **sul PC dell'hub** e, comodo, **anche nel browser**; delle idee
+proposte, le **note per argomento**, la **prova al volo** e i **frammenti** (non il legame
+progetto↔argomenti). Numeri in `STORICO.md`, prova `prova_python.py`.
+
+| Pezzo | Dove |
+|---|---|
+| Esecuzione sul PC (solo admin, 30 s, output tagliato, niente variabili d'ambiente dell'hub, albero dei processi chiuso) | `python_esegui.py`, route `/python/esegui` |
+| Esecuzione nel browser (Pyodide 314.0.7 in un Web Worker, pacchetti dal CDN al primo import) | `static/js/python-worker.js`, `python-esegui.js`, `scripts/scarica_pyodide.py` |
+| File: caricamento, zip, GitHub (API `zipball`, repository pubblici, 60 richieste/ora) | `python_sorgenti.py` |
+| Il pannello «Esegui» uguale ovunque | `templates/_python_esegui.html` |
+
+**⬜ Resta aperto:**
+
+- ⚠️ **Online l'esecuzione sul PC va spenta** (`HUB_ESEGUI_CODICE=0`): vedi §1.5
+- **Nel browser non c'è tutto**: niente file del PC, niente finestre (tkinter), la rete solo
+  verso chi la permette; i pacchetti che Pyodide non ha non si installano. Per quello c'è il PC
+- **Il tempo massimo (30 s) e i limiti** (200 000 caratteri di output, 50 file, 3 MB per
+  progetto) sono scelti, non misurati: `python_esegui.py` e `python_sorgenti.py`
+- **GitHub importa il ramo predefinito** e solo repository pubblici; non si **spinge** niente
+  su GitHub (sarebbe un token da custodire: non chiesto)
+- **Il legame progetto↔argomenti** (idea «a»): proposto, non scelto
+- **L'editor è un `<textarea>`**: niente colori della sintassi né completamento. Un editor
+  vero (CodeMirror) sarebbe un'altra libreria in `static/vendor/`
 
 ---
 

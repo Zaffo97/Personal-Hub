@@ -95,6 +95,8 @@ ORDINE = [
     # Stampa 3D: i file **dopo** il progetto che li nomina. I file veri non sono
     # nell'export: la cartella `data/stampa3d/` va copiata a mano.
     "stampa_progetti", "stampa_file", "stampa_filamenti",
+    # Python: i file dopo il progetto, le note dopo `python_topics` (che sta sopra).
+    "python_progetti", "python_file", "python_note", "python_frammenti",
     # ⚠️ Solo il backup `--completo` ce l'ha (§1.4, 18/09/2026). Con l'export
     # committabile questa riga fa solo comparire `regulations` fra le «tabelle non
     # presenti nell'export», che è la verità — prima non compariva affatto, ed è così
@@ -504,15 +506,17 @@ def main():
 
     storti = argomenti_disallineati(db, dati)
     if storti:
-        progresso = len(dati.get("python_progress") or [])
+        # ⚠️ Dal 25/09/2026 anche le **note** puntano a `topic_id`: con gli id storti
+        # finirebbero sull'argomento sbagliato esattamente come le spunte.
+        progresso = len(dati.get("python_progress") or []) + len(dati.get("python_note") or [])
         print(f"\n⚠️  {len(storti)} argomenti Python hanno lo stesso id ma nome diverso:")
         for topic_id, nel_db, nell_export in storti[:5]:
             print(f"      id {topic_id}: DB «{nel_db}» ≠ export «{nell_export}»")
         if len(storti) > 5:
             print(f"      … e altri {len(storti) - 5}")
         if progresso:
-            print(f"\n    INTERROTTO: ci sono {progresso} spunte da importare, e")
-            print("    `python_progress.topic_id` punta a questi id. Importarle ora")
+            print(f"\n    INTERROTTO: ci sono {progresso} spunte o note da importare, e")
+            print("    `topic_id` punta a questi id. Importarle ora")
             print("    le metterebbe sugli argomenti sbagliati senza nessun errore.")
             print("    L'elenco lo semina `init_db()` da PYTHON_TOPICS: o si riallinea")
             print("    quello all'export, o le spunte vanno rifatte a mano.")

@@ -530,6 +530,25 @@ stanno nel blueprint.
 | `/fantacalcio/lega/<id>/chi-gioca` | GET | Le probabili di fantacalcio.it **in un iframe** accanto alla rosa, da leggere (pulsante «Probabili») |
 | `/fantacalcio/lega/<id>/formazione` (+`/salva`) · `/consiglio/applica` | GET/POST | Il campo e il consiglio: prima chi può giocare, poi la fantamedia della lega. `/salva` accetta la formazione **incompleta** (non quella sbagliata) e dice cosa manca; `applica` resta severo |
 
+### Python — `blueprints/python_tracker.py`
+Tre linguette: **Progetti**, **Argomenti** (i 53 di W3Schools con spunta e nota) e
+**Frammenti**. Il codice si esegue **nel browser** (Pyodide in un Web Worker,
+`static/js/python-worker.js`; Pyodide non è in git: `scripts/scarica_pyodide.py`) o **sul PC**
+(`python_esegui.py`, solo admin, spegnibile con `HUB_ESEGUI_CODICE=0`). I file si leggono da
+caricamento, zip o GitHub in `python_sorgenti.py`. BACKLOG §4.10.
+
+| URL | Metodo | Descrizione |
+|-----|--------|-------------|
+| `/python/` | GET | Le tre linguette (`#progetti`, `#argomenti`, `#frammenti`) |
+| `/python/toggle/<tid>` | POST | La spunta di un argomento |
+| `/python/esegui` | POST JSON | Esegue sul PC: **403** a chi non è admin |
+| `/python/progetto/nuovo` · `/<id>` | POST · GET | Crea (con un `main.py`) · l'editor del progetto |
+| `/python/progetto/<id>/salva` | POST JSON | Dati e **tutti** i file in una volta; un nome cattivo = 400 e niente salvato |
+| `/python/progetto/<id>/carica` · `/github` | POST | Aggiunge o sostituisce file (zip compresi) · importa il ramo predefinito |
+| `/python/progetto/<id>/zip` · `/elimina` | GET · POST | Scarica tutto · elimina |
+| `/python/nota/<tid>` | POST JSON | La nota di un argomento (vuota = tolta) |
+| `/python/frammento/salva` · `/<id>/elimina` | POST | I frammenti, tag minuscoli senza doppioni |
+
 ### Arduino — `blueprints/arduino.py`
 Progetti con link a **Tinkercad** e **Wokwi**, anteprima incorporata (Tinkercad da
 `/embed/<id>`, solo circuiti pubblici; Wokwi da `/projects/<id>`), pulsanti «nuovo
@@ -579,6 +598,10 @@ Tutte create da `init_db()` in `extensions.py`.
 | `team_members` | id, team_id (FK → teams CASCADE), slot, pokemon, mega_stone, nature, ability, held_item, tera_type, move1-4, ev_hp/atk/def/spa/spd/spe, sprite_url |
 | `arduino_projects` | id, name, board, status, tinkercad_url, **wokwi_url** (solo http(s) dei due siti, `arduino_circuito.link_valido()`), code, description, **wokwi_diagramma** (il `diagram.json` incollato, intero: la tabella dei piedini si ricalcola a ogni apertura) |
 | `python_topics` | id, category, name, done |
+| `python_progetti` | id, **user_id**, nome, stato, descrizione, github_url, principale (il file da eseguire), stdin |
+| `python_file` | id, progetto_id (FK CASCADE), nome (anche `cartella/file.py`), **contenuto** (testo: i file stanno nel DB e quindi nell'export) |
+| `python_note` | id, **user_id**, topic_id, testo, codice — una per argomento **nel codice**, non con un UNIQUE (vedi `init_db`) |
+| `python_frammenti` | id, **user_id**, titolo, tag (`a, b`), codice, note |
 | `pc_builds` | id, name, notes |
 | `pc_components` | id, build_id (FK), category, name, price, notes, **stato** (`posseduto`/`desiderato`/`venduto`, NULL = non indicato), **prezzo_data**, **obiettivo** (soglia), **valore_usato**, **valore_usato_data**, **link_amazon/eprice/bpm/versus** (solo http(s) del dominio giusto), **opendb_id** (il modello nel catalogo OpenDB, `pc_catalogo.py`). ⚠️ Righe **ricreate a ogni salvataggio**: le date passano dal form |
 | `regulations` | id TEXT PK, label, roster_file, moves_file, items_file, created_at |
@@ -809,6 +832,7 @@ Di conseguenza tutto ciò che questa tabella dava per "funzionante" non era mai 
 
 | Data | Contenuto |
 |------|-----------|
+| 2026-09-25 | **Python: progetti, esecuzione, note e frammenti (§4.10).** `python_esegui.py`, `python_sorgenti.py`, `scripts/scarica_pyodide.py` (Pyodide 314.0.7, sha256 controllato, fuori da git), `static/js/python-worker.js` e `python-esegui.js`, `_python_esegui.html`, `python_progetto.html`, `python.html` a linguette; quattro tabelle `python_*` in tutti gli elenchi (utenti, figlie, controlli, export/import, sweep); l'import si ferma anche con **note** su argomenti disallineati. `prova_python.py` **50 su 50**, ripristino 35/35, travaso 58/58, sweep 0, query 0 scoperte. In browser: Pyodide in 2,5 s, numpy dal CDN, ciclo infinito fermato a 30 s con la pagina viva; preso e corretto il secondo «Esegui» che si rompeva sulla cartella `/progetto` |
 | 2026-09-25 | **Arduino: Tinkercad, Wokwi e la tabella dei piedini (§4.9).** `arduino_circuito.py` (nuovo), `scripts/importa_piedini_wokwi.py` → `data/arduino_piedini.json` (5 schede, 43 componenti, dalle fonti con controlli incrociati), colonne `wokwi_url` e `wokwi_diagramma`, route e template riscritti per anteprime, «nuovo circuito» e piedini. Chiuso il `href` senza controllo di `tinkercad_url`. `prova_arduino.py` **50 su 50** (2 difetti presi al primo giro: `3.3V` letto come piedino 3, scheda sconosciuta non nominata), sweep 0 errori, query 0 scoperte; provata in browser su un banco (finestre, form, 375 px). Gli iframe si provano nel Chrome di Davide |
 | 2026-09-25 | **Due bachi di §3.** Conferma di eliminazione utente con `|tojson` (prova col nome `d'amico "bis"`: travaso **58/58**). Ripristino su PC nuovo fermo sul tema dell'admin: `DA_COMPLETARE` in `importa_dati.py` (vuoto nel DB → si completa dall'export; valore diverso → conflitto), `piano_tabella()` torna un sesto elemento. `prova_importa_dati.py` **34/34** (era 19/32), completo 21/21, sweep 0 errori |
 | 2026-09-25 | **Stampa 3D: anteprima 3D (§4.8).** three.js 0.186.1 in `static/vendor/three-0.186.1/` (8 file, MIT, dal pacchetto npm), `static/js/stampa3d-anteprima.js` (modulo, import dinamici al primo clic), importmap e modale in `stampa3d.html`, `stampa3d.ANTEPRIMA`/`ha_anteprima()`. Unità del 3MF applicata a mano, normali STL ricalcolate. Provata in browser su cinque file con misure note; `prova_stampa3d.py` **43 su 43**, sweep 0 errori |

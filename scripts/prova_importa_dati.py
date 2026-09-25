@@ -248,6 +248,16 @@ def prove(dove):
           rc == 1 and "INTERROTTO" in out and "id 7" in out)
     esito("argomenti riordinati -> nessuna spunta è finita sull'argomento sbagliato",
           conta(topics, "python_progress") == 0)
+    # Dal 25/09/2026 anche le note puntano a `topic_id`: stessa rete, senza spunte.
+    con_note = os.path.join(dove, "export_con_note.json")
+    falso = dict(export, python_progress=[],
+                 python_note=[{"id": 1, "user_id": 1, "topic_id": 7, "testo": "x", "codice": "",
+                               "aggiornato_il": "2026-09-25 20:00:00"}])
+    with open(con_note, "w", encoding="utf-8") as f:
+        json.dump(falso, f, ensure_ascii=False)
+    rc, out = gira(topics, file=con_note)
+    esito("argomenti riordinati + una nota da importare (niente spunte) -> si ferma",
+          rc == 1 and "INTERROTTO" in out and conta(topics, "python_note") == 0)
 
     # Senza spunte la rete lascia passare — ma un argomento rinominato **è** un
     # conflitto, quindi si ferma comunque, un passo dopo. Sono due reti distinte.

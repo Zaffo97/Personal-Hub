@@ -31,6 +31,10 @@ data/cache/
 # Non sono nell'export (che ne porta solo le righe): la cartella va copiata a mano.
 data/stampa3d/
 
+# Pyodide (Python nel browser, sezione Python): circa 13 MB, si scarica una volta per PC
+# con `python scripts/scarica_pyodide.py`. three.js invece è versionato: 2 MB.
+static/vendor/pyodide-*/
+
 # Il backup `--completo` di scripts/esporta_dati.py: contiene gli hash delle
 # password, come hub.db. Lo script si **rifiuta** gia' di scriverlo dentro una
 # cartella versionata, e quella e' la rete vera; questa e' la seconda, per il

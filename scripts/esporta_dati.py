@@ -99,6 +99,10 @@ TABELLE = [
     # `data/stampa3d/`, fuori da git. Ripristinando su un PC nuovo senza quella
     # cartella, la pagina dice «file mancante» per ognuno invece di fingere.
     "stampa_progetti", "stampa_file", "stampa_filamenti",
+    # Python, dal 25/09/2026. Qui i file **ci sono** (testo nel DB, non su disco): un
+    # ripristino riporta i progetti interi. Le note nominano `python_topics`, che è
+    # più in alto nell'elenco.
+    "python_progetti", "python_file", "python_note", "python_frammenti",
 ]
 
 # In più, solo con `--completo`. `regulations` è una **tabella morta** — la scrive solo

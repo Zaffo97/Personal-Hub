@@ -57,6 +57,9 @@ PAGINE = [
     "/arduino/", "/python/", "/pcbuilder/", "/admin/utenti",
     # Stampa 3D, dal 25/09/2026, nello stesso commit in cui nasce.
     "/stampa3d/",
+    # Il progetto Python chiede un id come la lega: se il progetto 1 non c'è, la pagina
+    # redirige e lo sweep lo dice (dal 25/09/2026).
+    "/python/progetto/1",
     # Fantacalcio, dal 21/09/2026. La pagina della lega chiede un id come
     # `/pokemon/team/1/edit`: se la lega 1 non c'e' la pagina redirige, e lo sweep
     # lo dice invece di fingere un ok.

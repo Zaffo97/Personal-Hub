@@ -537,6 +537,39 @@ def init_db():
         caricato_il TIMESTAMP DEFAULT CURRENT_TIMESTAMP);
     -- L'inventario delle bobine. `peso_rimasto` si scala a mano o da un progetto
     -- stampato (i suoi `grammi`): nessuna stampante lo dice all'hub, oggi.
+    -- ── Python: progetti, note e frammenti (dal 25/09/2026) ─────────────────
+    -- I file stanno **nel DB come testo**, non su disco come quelli della Stampa 3D:
+    -- sono sorgenti (pochi KB), e così finiscono nell'export e hanno una copia su
+    -- GitHub. L'esecuzione li scrive in una cartella temporanea (python_esegui.py) o
+    -- nel filesystem di Pyodide, mai accanto all'hub.
+    CREATE TABLE IF NOT EXISTS python_progetti(
+        id INTEGER PRIMARY KEY,
+        user_id INTEGER REFERENCES users(id),
+        nome TEXT NOT NULL,
+        stato TEXT DEFAULT 'Idea',
+        descrizione TEXT, github_url TEXT,
+        principale TEXT DEFAULT 'main.py', stdin TEXT,
+        created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP);
+    CREATE TABLE IF NOT EXISTS python_file(
+        id INTEGER PRIMARY KEY,
+        progetto_id INTEGER REFERENCES python_progetti(id) ON DELETE CASCADE,
+        nome TEXT NOT NULL, contenuto TEXT,
+        aggiornato_il TIMESTAMP DEFAULT CURRENT_TIMESTAMP);
+    -- Una nota per argomento e utente. ⚠️ Niente UNIQUE(user_id, topic_id), di
+    -- proposito: la copia fra utenti (admin) duplica le righe, e un vincolo farebbe
+    -- fallire l'intera copia se il destinatario ha già una nota sullo stesso
+    -- argomento. L'unicità la tiene il codice (si aggiorna la più recente).
+    CREATE TABLE IF NOT EXISTS python_note(
+        id INTEGER PRIMARY KEY,
+        user_id INTEGER REFERENCES users(id),
+        topic_id INTEGER REFERENCES python_topics(id),
+        testo TEXT, codice TEXT,
+        aggiornato_il TIMESTAMP DEFAULT CURRENT_TIMESTAMP);
+    CREATE TABLE IF NOT EXISTS python_frammenti(
+        id INTEGER PRIMARY KEY,
+        user_id INTEGER REFERENCES users(id),
+        titolo TEXT NOT NULL, tag TEXT, codice TEXT, note TEXT,
+        created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP);
     CREATE TABLE IF NOT EXISTS stampa_filamenti(
         id INTEGER PRIMARY KEY,
         user_id INTEGER REFERENCES users(id),
@@ -983,6 +1016,11 @@ TABELLE_UTENTE = {
     "fanta_leagues": "passa",
     "stampa_progetti": "passa",
     "stampa_filamenti": "passa",
+    # Python, dal 25/09/2026: progetti, note e frammenti sono **contenuto** scritto da
+    # chi li ha, come i progetti Arduino — non stato personale come le spunte.
+    "python_progetti": "passa",
+    "python_note": "passa",
+    "python_frammenti": "passa",
     "python_progress": "cancella",
     # ⚠️ `cancella` qui non è ordine, è **sicurezza**, e la rete si è fatta trovare
     # subito: questa tabella è nata il 22/09/2026 e `tabelle_senza_regola()` l'ha
@@ -1017,6 +1055,7 @@ FIGLIE_DI = {
     # La copia duplica la **riga**, non il file: il file sta su disco col nome della
     # sua impronta, e due righe che la nominano sono lo stesso file (stampa3d.py).
     "stampa_progetti": (("stampa_file", "progetto_id"),),
+    "python_progetti": (("python_file", "progetto_id"),),
 }
 
 

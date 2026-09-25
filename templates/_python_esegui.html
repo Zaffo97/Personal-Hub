@@ -1,0 +1,30 @@
+{# Il pannello «Esegui» della sezione Python: lo collega PyEsegui.collega() in
+   static/js/python-esegui.js. `esecuzione` viene da _esecuzione() nel blueprint:
+   il browser solo se Pyodide è scaricato, il PC solo per un amministratore. #}
+{% macro pannello(esecuzione, test=False, stdin=True) %}
+<div class="py-pannello">
+  {% if stdin %}
+  <details class="mb-2"><summary class="text-xs text-muted" style="cursor:pointer">Input (quello che legge <code>input()</code>, una riga per volta)</summary>
+    <textarea data-stdin class="form-control py-editor mt-1" rows="2" style="font-size:.75rem"></textarea>
+  </details>
+  {% endif %}
+  <div class="flex gap-1 flex-wrap items-center">
+    {% if esecuzione.browser %}
+    <button type="button" class="btn btn-primary btn-sm" data-esegui="browser">&#9654; Esegui nel browser</button>
+    {% if test %}<button type="button" class="btn btn-secondary btn-sm" data-esegui="browser" data-test>&#129514; Test nel browser</button>{% endif %}
+    {% endif %}
+    {% if esecuzione.pc %}
+    <button type="button" class="btn btn-{{ 'secondary' if esecuzione.browser else 'primary' }} btn-sm" data-esegui="pc">&#128421;&#65039; Esegui sul PC</button>
+    {% if test %}<button type="button" class="btn btn-secondary btn-sm" data-esegui="pc" data-test>&#129514; Test sul PC</button>{% endif %}
+    {% endif %}
+    <span class="text-xs text-muted">massimo {{ esecuzione.tempo }} s</span>
+  </div>
+  {% if not esecuzione.browser %}
+  <p class="text-xs text-muted mt-1">Nel browser no: manca Pyodide. Si scarica una volta con <code>python scripts/scarica_pyodide.py</code>.</p>
+  {% endif %}
+  {% if not esecuzione.browser and not esecuzione.pc %}
+  <p class="text-xs mt-1" style="color:var(--warning)">Nessun modo di eseguire da qui: sul PC può solo un amministratore.</p>
+  {% endif %}
+  <pre data-uscita hidden class="py-uscita"></pre>
+</div>
+{% endmacro %}

@@ -20,6 +20,18 @@ pagina ed esegue `new Function()` su ogni blocco `<script>` **e** su ogni handle
 
 ## 25/09/2026
 
+**Python: progetti, esecuzione nel browser e sul PC, note e frammenti (§4.10)** — dal docx,
+con le scelte di Davide (file scritti/caricati/da GitHub, PC + browser, idee b-c-d).
+Pyodide 314.0.7 dal pacchetto ufficiale (sha256 di GitHub), 12,9 MB fuori da git; i
+pacchetti extra dal CDN al primo import (numpy provato). Sul PC: solo admin, 30 s, niente
+chiavi dell'hub nel figlio (provato con `FOOTBALL_DATA_API_KEY`), albero dei processi
+chiuso (0 figli vivi), output tagliato, `..` rifiutato. GitHub dall'API `zipball` (cartella
+in cima tolta, 404 = inesistente o privato). Nel browser, al secondo «Esegui» la cartella
+`/progetto` non si cancellava perché era la corrente: ora una cartella nuova per giro, e
+un file tolto non resta importabile (provato: 1 test → 0 test). `prova_python.py` **50 su
+50**, ripristino **35/35** (la rete sugli argomenti disallineati ora conta anche le note),
+travaso 58/58, completo 21/21, sweep 0, query 0 scoperte; 375 px senza scorrimento.
+
 **Arduino: Tinkercad, Wokwi e la tabella dei piedini (§4.9)** — la voce del docx
 «verificare i connettori». Prima le fonti e gli indirizzi, aperti uno per uno: Tinkercad
 si incorpora solo da `/embed/` (le altre pagine `SAMEORIGIN`), i quattro modelli Wokwi

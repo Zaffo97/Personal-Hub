@@ -1,0 +1,208 @@
+{% extends "base.html" %}
+{% from "_python_esegui.html" import pannello %}
+{% block title %}{{ p.nome }} – Python – Hub{% endblock %}
+{% block topbar_title %}&#128013; {{ p.nome }}{% endblock %}
+{% block extra_head %}
+<style>
+.pp-griglia{display:grid;grid-template-columns:220px 1fr;gap:.85rem;align-items:start}
+@media (max-width:760px){.pp-griglia{grid-template-columns:1fr}}
+.pp-file{display:flex;align-items:center;gap:.3rem;padding:.3rem .5rem;border-radius:var(--radius-sm);
+  cursor:pointer;font-family:"JetBrains Mono",monospace;font-size:.74rem;word-break:break-all}
+.pp-file:hover{background:var(--surface-off)}
+.pp-file.attivo{background:var(--primary-dim);color:var(--primary);font-weight:600}
+.pp-file .principale{font-size:.65rem;color:var(--text-faint)}
+textarea.py-editor{font-family:"JetBrains Mono",monospace;font-size:.78rem;line-height:1.55;tab-size:4;
+  white-space:pre;overflow-wrap:normal;overflow-x:auto}
+#editor{min-height:52dvh;resize:vertical}
+.py-uscita{background:var(--surface-off);border-radius:var(--radius-sm);padding:.6rem .75rem;margin-top:.6rem;
+  font-family:"JetBrains Mono",monospace;font-size:.74rem;max-height:40dvh;overflow:auto;white-space:pre-wrap}
+</style>
+{% endblock %}
+{% block content %}
+<div class="page-header">
+  <div class="flex items-center justify-between flex-wrap gap-2">
+    <div>
+      <a href="/python/#progetti" class="text-xs text-muted">&larr; Progetti</a>
+      <h1 style="margin-top:.2rem">&#128013; <span id="titolo">{{ p.nome }}</span></h1>
+    </div>
+    <div class="flex gap-1 flex-wrap items-center">
+      <span id="stato-salva" class="text-xs text-muted"></span>
+      <button class="btn btn-primary" id="salva">&#128190; Salva</button>
+      <a class="btn btn-secondary" href="/python/progetto/{{ p.id }}/zip">&#11015; Scarica zip</a>
+      <form method="POST" action="/python/progetto/{{ p.id }}/elimina" style="display:inline"
+            onsubmit='return confirm({{ ("Eliminare il progetto " ~ p.nome ~ " e tutti i suoi file?")|tojson }})'>
+        <button class="btn btn-danger">&#128465;</button>
+      </form>
+    </div>
+  </div>
+</div>
+
+<div class="card">
+  <div style="padding:.75rem 1rem">
+    <div class="form-row">
+      <div class="form-group"><label>Nome</label><input id="m_nome" class="form-control" value="{{ p.nome }}"></div>
+      <div class="form-group"><label>Stato</label>
+        <select id="m_stato" class="form-control">{% for s in stati %}<option{% if s == p.stato %} selected{% endif %}>{{ s }}</option>{% endfor %}</select></div>
+      <div class="form-group"><label>File da eseguire</label><select id="m_principale" class="form-control"></select></div>
+    </div>
+    <div class="form-group"><label>Descrizione</label>
+      <textarea id="m_descrizione" class="form-control" rows="2">{{ p.descrizione or '' }}</textarea></div>
+    <div class="form-row" style="align-items:end">
+      <div class="form-group" style="flex:2"><label>Repository GitHub</label>
+        <input id="m_github" class="form-control" value="{{ p.github_url or '' }}" placeholder="https://github.com/proprietario/repo"></div>
+      <div class="form-group flex gap-1 flex-wrap">
+        {% if github %}
+        <a class="btn btn-secondary btn-sm" href="{{ p.github_url }}" target="_blank" rel="noopener">&#128279; GitHub</a>
+        <form method="POST" action="/python/progetto/{{ p.id }}/github" style="display:inline"
+              onsubmit="return confermaImport()">
+          <button class="btn btn-secondary btn-sm">&#11015; Importa da GitHub</button>
+        </form>
+        {% endif %}
+      </div>
+    </div>
+    {% if github %}<p class="text-xs text-muted" style="margin-top:-.4rem">Importa il ramo predefinito di un repository <strong>pubblico</strong>: i file con lo stesso nome si sostituiscono, gli altri si aggiungono. Salva prima le modifiche.</p>{% endif %}
+  </div>
+</div>
+
+<div class="pp-griglia">
+  <div class="card mb-0">
+    <div style="padding:.6rem">
+      <div id="elenco-file"></div>
+      <div class="flex gap-1 flex-wrap mt-2">
+        <button class="btn btn-secondary btn-sm" id="nuovo-file">+ File</button>
+        <button class="btn btn-secondary btn-sm" id="rinomina-file">&#9998;</button>
+        <button class="btn btn-secondary btn-sm" id="togli-file">&#128465;</button>
+      </div>
+      <form method="POST" action="/python/progetto/{{ p.id }}/carica" enctype="multipart/form-data" class="mt-2"
+            onsubmit="return confermaImport()">
+        <input type="file" name="file" multiple accept=".py,.zip,.txt,.md,.json,.csv,.toml,.cfg,.ini,.yaml,.yml"
+               class="form-control" style="font-size:.7rem" required>
+        <button class="btn btn-secondary btn-sm mt-1">&#11014; Carica</button>
+        <div class="text-xs text-muted mt-1">.py, testo, o uno .zip</div>
+      </form>
+    </div>
+  </div>
+  <div class="card mb-0">
+    <div style="padding:.6rem .75rem">
+      <div class="text-xs text-muted mb-1" id="nome-aperto"></div>
+      <textarea id="editor" class="form-control py-editor" spellcheck="false"></textarea>
+      <div id="pannello" class="mt-2">{{ pannello(esecuzione, test=True) }}</div>
+    </div>
+  </div>
+</div>
+
+<script type="application/json" id="dati-file">{{ file|tojson }}</script>
+<script src="/static/js/python-esegui.js"></script>
+<script>
+const FILE = JSON.parse(document.getElementById('dati-file').textContent);
+let aperto = null, modificato = false;
+const principaleIniziale = {{ p.principale|tojson }};
+const stdinIniziale = {{ (p.stdin or '')|tojson }};
+const ed = document.getElementById('editor');
+
+function segna(v) {
+  modificato = v;
+  document.getElementById('stato-salva').textContent = v ? '● modifiche non salvate' : '';
+}
+function disegna() {
+  const el = document.getElementById('elenco-file');
+  el.textContent = '';
+  const princ = document.getElementById('m_principale');
+  const scelto = princ.value || principaleIniziale;
+  princ.textContent = '';
+  Object.keys(FILE).sort().forEach(n => {
+    const d = document.createElement('div');
+    d.className = 'pp-file' + (n === aperto ? ' attivo' : '');
+    d.textContent = n;
+    d.onclick = () => apri(n);
+    el.appendChild(d);
+    if (n.endsWith('.py')) {
+      const o = document.createElement('option');
+      o.textContent = n; o.value = n;
+      princ.appendChild(o);
+    }
+  });
+  if ([...princ.options].some(o => o.value === scelto)) princ.value = scelto;
+}
+function apri(n) {
+  if (aperto !== null) FILE[aperto] = ed.value;
+  aperto = n;
+  ed.value = n === null ? '' : FILE[n];
+  ed.disabled = n === null;
+  document.getElementById('nome-aperto').textContent = n || 'Nessun file';
+  disegna();
+}
+ed.addEventListener('input', () => { if (aperto !== null) { FILE[aperto] = ed.value; segna(true); } });
+['m_nome', 'm_stato', 'm_principale', 'm_descrizione', 'm_github'].forEach(id =>
+  document.getElementById(id).addEventListener('input', () => segna(true)));
+
+function chiediNome(proposta) {
+  const n = (prompt('Nome del file (es. utils.py o pacchetto/modulo.py)', proposta || '') || '').trim();
+  if (!n) return null;
+  if (!/^[\w.\- ]+(\/[\w.\- ]+)*$/.test(n) || n.split('/').some(p => p === '.' || p === '..')) {
+    alert('Nome non valido: lettere, numeri, . - _ e / per le cartelle.'); return null;
+  }
+  if (n in FILE) { alert('Esiste già un file con questo nome.'); return null; }
+  return n;
+}
+document.getElementById('nuovo-file').onclick = () => {
+  const n = chiediNome('nuovo.py'); if (!n) return;
+  if (aperto !== null) FILE[aperto] = ed.value;
+  FILE[n] = ''; segna(true); apri(n);
+};
+document.getElementById('rinomina-file').onclick = () => {
+  if (aperto === null) return;
+  const n = chiediNome(aperto); if (!n) return;
+  FILE[n] = ed.value; delete FILE[aperto]; aperto = null; segna(true); apri(n);
+};
+document.getElementById('togli-file').onclick = () => {
+  if (aperto === null || !confirm('Togliere ' + aperto + '? (diventa definitivo quando salvi)')) return;
+  delete FILE[aperto]; aperto = null; segna(true);
+  const resto = Object.keys(FILE).sort();
+  apri(resto.length ? resto[0] : null);
+};
+
+async function salva() {
+  if (aperto !== null) FILE[aperto] = ed.value;
+  const stdin = document.querySelector('#pannello [data-stdin]');
+  const corpo = { nome: document.getElementById('m_nome').value, stato: document.getElementById('m_stato').value,
+                  principale: document.getElementById('m_principale').value,
+                  descrizione: document.getElementById('m_descrizione').value,
+                  github_url: document.getElementById('m_github').value,
+                  stdin: stdin ? stdin.value : '', file: FILE };
+  const s = document.getElementById('stato-salva');
+  s.textContent = 'Salvo…';
+  try {
+    const r = await fetch('/python/progetto/{{ p.id }}/salva', { method: 'POST',
+      headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(corpo) });
+    const d = await r.json();
+    if (!r.ok || d.errore) { s.textContent = '⚠ ' + (d.errore || 'HTTP ' + r.status); s.style.color = 'var(--error)'; return false; }
+    segna(false);
+    s.style.color = '';
+    s.textContent = d.avvisi && d.avvisi.length ? '⚠ salvato, ma: ' + d.avvisi.join('; ') : '✓ salvato';
+    document.getElementById('titolo').textContent = corpo.nome;
+    return true;
+  } catch (e) {
+    s.textContent = '⚠ rete: ' + e.message; s.style.color = 'var(--error)'; return false;
+  }
+}
+document.getElementById('salva').onclick = salva;
+document.addEventListener('keydown', e => {
+  if ((e.ctrlKey || e.metaKey) && e.key === 's') { e.preventDefault(); salva(); }
+});
+// Import e caricamento ricaricano la pagina: con modifiche aperte si perderebbero.
+function confermaImport() {
+  return !modificato || confirm('Ci sono modifiche non salvate, e andrebbero perse. Continuare?');
+}
+window.addEventListener('beforeunload', e => { if (modificato) { e.preventDefault(); e.returnValue = ''; } });
+
+const stdinEl = document.querySelector('#pannello [data-stdin]');
+if (stdinEl) { stdinEl.value = stdinIniziale; stdinEl.addEventListener('input', () => segna(true)); }
+disegna();
+apri(principaleIniziale in FILE ? principaleIniziale : (Object.keys(FILE).sort()[0] || null));
+PyEsegui.collega(document.getElementById('pannello'), () => {
+  if (aperto !== null) FILE[aperto] = ed.value;
+  return { file: Object.assign({}, FILE), principale: document.getElementById('m_principale').value };
+});
+</script>
+{% endblock %}

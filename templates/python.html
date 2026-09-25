@@ -1,6 +1,37 @@
 {% extends "base.html" %}
+{% from "_python_esegui.html" import pannello %}
 {% block title %}Python Tracker – Hub{% endblock %}
 {% block topbar_title %}&#128013; Python Tracker{% endblock %}
+{% block extra_head %}
+<style>
+.py-tab{display:flex;gap:.35rem;margin-bottom:1rem;flex-wrap:wrap}
+.py-tab button{border:1px solid var(--border);background:var(--surface);color:var(--text-muted);
+  border-radius:var(--radius-sm);padding:.35rem .8rem;font-size:.8rem;cursor:pointer}
+.py-tab button.attiva{background:var(--primary-dim);color:var(--primary);border-color:var(--primary);font-weight:600}
+.py-modal{display:none;position:fixed;inset:0;background:rgba(0,0,0,.6);z-index:999;
+  align-items:center;justify-content:center;padding:1rem}
+.py-modal.open{display:flex}
+.modal-box{background:var(--surface);border:1px solid var(--border);border-radius:var(--radius-xl);
+  width:100%;max-width:820px;max-height:92dvh;display:flex;flex-direction:column;overflow:hidden}
+.modal-header{display:flex;align-items:center;justify-content:space-between;
+  padding:.75rem 1.1rem;border-bottom:1px solid var(--border)}
+.modal-body{flex:1;padding:1rem;overflow-y:auto}
+.modal-footer{padding:.75rem 1.1rem;border-top:1px solid var(--border);display:flex;gap:.6rem;flex-wrap:wrap;align-items:center}
+textarea.py-editor{font-family:"JetBrains Mono",monospace;font-size:.76rem;line-height:1.55;tab-size:4;
+  white-space:pre;overflow-wrap:normal;overflow-x:auto}
+.py-uscita{background:var(--surface-off);border-radius:var(--radius-sm);padding:.6rem .75rem;margin-top:.6rem;
+  font-family:"JetBrains Mono",monospace;font-size:.74rem;max-height:35dvh;overflow:auto;white-space:pre-wrap}
+.py-griglia{display:grid;grid-template-columns:repeat(auto-fill,minmax(290px,1fr));gap:.85rem}
+.fr-codice{background:var(--surface-off);border-radius:var(--radius-sm);padding:.45rem .65rem;
+  font-family:"JetBrains Mono",monospace;font-size:.7rem;color:var(--text-muted);white-space:pre;
+  overflow:hidden;max-height:7.5em;margin:.5rem 0}
+.fr-tag{display:inline-block;font-size:.66rem;padding:.05rem .45rem;border-radius:999px;margin:.1rem .15rem 0 0;
+  background:var(--surface-off);color:var(--text-muted);cursor:pointer;border:1px solid var(--border)}
+.fr-tag.attivo{background:var(--primary-dim);color:var(--primary);border-color:var(--primary)}
+.nota-btn{margin-left:auto;background:none;border:0;cursor:pointer;font-size:.85rem;opacity:.45;padding:0 .2rem}
+.nota-btn.piena{opacity:1}
+</style>
+{% endblock %}
 {% block content %}
 <div class="page-header">
   <div class="flex items-center justify-between flex-wrap gap-2">
@@ -17,6 +48,46 @@
   </div>
 </div>
 
+<div class="py-tab" role="tablist">
+  <button type="button" data-tab="progetti">&#128193; Progetti ({{ progetti|length }})</button>
+  <button type="button" data-tab="argomenti">&#128218; Argomenti</button>
+  <button type="button" data-tab="frammenti">&#129513; Frammenti ({{ frammenti|length }})</button>
+</div>
+
+{# ── Progetti ─────────────────────────────────────────────────────────── #}
+<section id="tab-progetti" hidden>
+  <form method="POST" action="/python/progetto/nuovo" class="flex gap-2 mb-3 flex-wrap">
+    <input name="nome" class="form-control" style="max-width:320px" placeholder="Nome del nuovo progetto" required>
+    <button class="btn btn-primary">+ Nuovo progetto</button>
+  </form>
+  {% if progetti %}
+  <div class="py-griglia">
+    {% for p in progetti %}
+    <a href="/python/progetto/{{ p.id }}" class="card mb-0" style="text-decoration:none;color:inherit">
+      <div class="card-header">
+        <div>
+          <div class="card-title">{{ p.nome }}</div>
+          <div class="text-xs text-muted mt-1">{{ p.quanti }} file · esegue <code>{{ p.principale }}</code></div>
+          {% if nomi_utenti %}<div class="text-xs mt-1" style="color:var(--text-faint)">&#128100; {{ nomi_utenti.get(p.user_id) or 'senza proprietario' }}</div>{% endif %}
+        </div>
+        <span class="badge {% if p.stato=='Funziona' %}badge-success{% elif p.stato=='In corso' %}badge-warning{% elif p.stato=='Archiviato' %}badge-neutral{% else %}badge-primary{% endif %}">{{ p.stato }}</span>
+      </div>
+      {% if p.descrizione or p.github_url %}
+      <div style="padding:.6rem 1rem" class="text-sm text-muted">
+        {{ (p.descrizione or '')[:140] }}
+        {% if p.github_url %}<div class="text-xs mt-1">&#128279; GitHub</div>{% endif %}
+      </div>
+      {% endif %}
+    </a>
+    {% endfor %}
+  </div>
+  {% else %}
+  <p class="text-sm text-muted">Nessun progetto. Un progetto è una cartella di file: li scrivi qui, li carichi (.py o .zip) o li importi da GitHub, e li esegui.</p>
+  {% endif %}
+</section>
+
+{# ── Argomenti ────────────────────────────────────────────────────────── #}
+<section id="tab-argomenti" hidden>
 {% for cat, topics in by_cat.items() %}
 {% set cat_done = topics|selectattr('done','eq',1)|list|length %}
 <div class="card">
@@ -48,14 +119,111 @@
         <span class="text-sm {% if t.done %}font-600{% endif %}" style="{% if t.done %}color:var(--success){% endif %}">
           {{ t.name }}
         </span>
-        {% if t.done %}<span style="margin-left:auto;font-size:.8rem">&#10003;</span>{% endif %}
+        {% if t.done %}<span style="font-size:.8rem">&#10003;</span>{% endif %}
+        {# Il pulsante sta dentro la <label>: `type=button` e preventDefault, altrimenti
+           il clic spunterebbe l'argomento (o manderebbe il form). #}
+        <button type="button" class="nota-btn{% if t.id in note %} piena{% endif %}"
+                title="Note e prova al volo" onclick='event.preventDefault(); apriNota({{ t.id }}, {{ t.name|tojson }})'>&#128221;</button>
       </label>
     </form>
     {% endfor %}
   </div>
 </div>
 {% endfor %}
+</section>
 
+{# ── Frammenti ────────────────────────────────────────────────────────── #}
+<section id="tab-frammenti" hidden>
+  <div class="flex gap-2 mb-2 flex-wrap items-center">
+    <input id="cerca" class="form-control" style="max-width:320px" placeholder="Cerca per titolo, tag o codice">
+    <button class="btn btn-primary" type="button" onclick="apriFrammento()">+ Nuovo frammento</button>
+  </div>
+  <div id="tag-filtro" class="mb-3"></div>
+  {% if frammenti %}
+  <div class="py-griglia" id="elenco-frammenti">
+    {% for f in frammenti %}
+    <div class="card mb-0 frammento" data-id="{{ f.id }}"
+         data-tag="{{ f.tag or '' }}"
+         data-cerca="{{ (f.titolo ~ ' ' ~ (f.tag or '') ~ ' ' ~ (f.codice or '') ~ ' ' ~ (f.note or ''))|lower }}">
+      <div style="padding:.7rem 1rem">
+        <div class="card-title">{{ f.titolo }}</div>
+        {% if nomi_utenti %}<div class="text-xs" style="color:var(--text-faint)">&#128100; {{ nomi_utenti.get(f.user_id) or 'senza proprietario' }}</div>{% endif %}
+        <div>{% for tg in (f.tag or '').split(', ') if tg %}<span class="fr-tag" data-filtra="{{ tg }}">{{ tg }}</span>{% endfor %}</div>
+        <div class="fr-codice">{{ f.codice }}</div>
+        {% if f.note %}<p class="text-xs text-muted mb-2">{{ f.note[:140] }}</p>{% endif %}
+        <div class="flex gap-1 flex-wrap">
+          <button type="button" class="btn btn-secondary btn-sm" onclick="apriFrammento({{ f.id }})">&#9654; Apri</button>
+          <button type="button" class="btn btn-secondary btn-sm" onclick="copia({{ f.id }}, this)">&#128203; Copia</button>
+          <form method="POST" action="/python/frammento/{{ f.id }}/elimina" style="display:inline"
+                onsubmit='return confirm({{ ("Eliminare il frammento " ~ f.titolo ~ "?")|tojson }})'>
+            <button class="btn btn-danger btn-sm">&#128465;</button>
+          </form>
+        </div>
+      </div>
+    </div>
+    {% endfor %}
+  </div>
+  <p id="nessun-frammento" class="text-sm text-muted" hidden>Nessun frammento corrisponde.</p>
+  {% else %}
+  <p class="text-sm text-muted">Nessun frammento. Un frammento è un pezzo di codice da tenere a portata di mano: con i tag per ritrovarlo, e si esegue come i progetti.</p>
+  {% endif %}
+</section>
+
+{# ── La nota di un argomento ──────────────────────────────────────────── #}
+<div id="modaleNota" class="py-modal">
+  <div class="modal-box">
+    <div class="modal-header">
+      <span id="titoloNota" style="font-weight:700;font-size:.9rem"></span>
+      <button class="btn-icon" onclick="chiudi('modaleNota')">&#10005;</button>
+    </div>
+    <div class="modal-body">
+      <div class="form-group"><label>Note</label>
+        <textarea id="n_testo" class="form-control" rows="3" placeholder="Cosa ricordarsi di questo argomento"></textarea></div>
+      <div class="form-group"><label>Prova al volo</label>
+        <textarea id="n_codice" class="form-control py-editor" rows="10" spellcheck="false" placeholder="# scrivi e premi Esegui"></textarea></div>
+      <div id="pannelloNota">{{ pannello(esecuzione) }}</div>
+    </div>
+    <div class="modal-footer">
+      <button class="btn btn-primary" onclick="salvaNota()">&#128190; Salva nota</button>
+      <button class="btn btn-secondary" onclick="chiudi('modaleNota')">Chiudi</button>
+      <span id="statoNota" class="text-xs text-muted"></span>
+    </div>
+  </div>
+</div>
+
+{# ── Un frammento ─────────────────────────────────────────────────────── #}
+<div id="modaleFrammento" class="py-modal">
+  <div class="modal-box">
+    <div class="modal-header">
+      <span id="titoloFrammento" style="font-weight:700;font-size:.9rem">Nuovo frammento</span>
+      <button class="btn-icon" onclick="chiudi('modaleFrammento')">&#10005;</button>
+    </div>
+    <div class="modal-body">
+      <form method="POST" action="/python/frammento/salva" id="formFrammento">
+        <input type="hidden" name="frammento_id" id="f_id">
+        <div class="form-row">
+          <div class="form-group" style="flex:2"><label>Titolo *</label>
+            <input name="titolo" id="f_titolo" class="form-control" required placeholder="Es. leggere un CSV in un dizionario"></div>
+          <div class="form-group"><label>Tag</label>
+            <input name="tag" id="f_tag" class="form-control" placeholder="csv, file, dizionari"></div>
+        </div>
+        <div class="form-group"><label>Codice</label>
+          <textarea name="codice" id="f_codice" class="form-control py-editor" rows="12" spellcheck="false"></textarea></div>
+        <div class="form-group"><label>Note</label>
+          <input name="note" id="f_note" class="form-control" placeholder="Quando usarlo, da dove viene"></div>
+      </form>
+      <div id="pannelloFrammento">{{ pannello(esecuzione) }}</div>
+    </div>
+    <div class="modal-footer">
+      <button class="btn btn-primary" onclick="salvaFrammento()">&#128190; Salva</button>
+      <button class="btn btn-secondary" onclick="chiudi('modaleFrammento')">Annulla</button>
+    </div>
+  </div>
+</div>
+
+<script type="application/json" id="dati-note">{{ note|tojson }}</script>
+<script type="application/json" id="dati-frammenti">{{ frammenti|tojson }}</script>
+<script src="/static/js/python-esegui.js"></script>
 <script>
 function toggleCat(id) {
   const el = document.getElementById(id);
@@ -69,5 +237,115 @@ function toggleCat(id) {
     arr.style.transform = 'rotate(-90deg)';
   }
 }
+
+// Le linguette: quella scelta resta nell'indirizzo (#progetti, #argomenti, #frammenti),
+// così dopo un salvataggio si torna dove si era.
+function mostraTab(nome) {
+  if (!['progetti', 'argomenti', 'frammenti'].includes(nome)) nome = 'progetti';
+  document.querySelectorAll('.py-tab button').forEach(b => b.classList.toggle('attiva', b.dataset.tab === nome));
+  ['progetti', 'argomenti', 'frammenti'].forEach(t => { document.getElementById('tab-' + t).hidden = t !== nome; });
+  history.replaceState(null, '', '#' + nome);
+}
+document.querySelectorAll('.py-tab button').forEach(b => b.addEventListener('click', () => mostraTab(b.dataset.tab)));
+mostraTab(location.hash.slice(1));
+
+function apri(id) { document.getElementById(id).classList.add('open'); }
+function chiudi(id) { document.getElementById(id).classList.remove('open'); }
+document.querySelectorAll('.py-modal').forEach(m => m.addEventListener('click', e => {
+  if (e.target === e.currentTarget) chiudi(m.id);
+}));
+// Esc dentro un editor serve a uscire dal Tab (python-esegui.js), non a chiudere.
+document.addEventListener('keydown', e => {
+  if (e.key === 'Escape' && !(e.target.classList && e.target.classList.contains('py-editor')))
+    document.querySelectorAll('.py-modal.open').forEach(m => chiudi(m.id));
+});
+
+// ── Note ──
+const NOTE = JSON.parse(document.getElementById('dati-note').textContent);
+let notaAperta = null;
+function apriNota(tid, nome) {
+  notaAperta = tid;
+  const n = NOTE[tid] || { testo: '', codice: '' };
+  document.getElementById('titoloNota').textContent = '📝 ' + nome;
+  document.getElementById('n_testo').value = n.testo;
+  document.getElementById('n_codice').value = n.codice;
+  document.getElementById('statoNota').textContent = '';
+  const pre = document.querySelector('#pannelloNota [data-uscita]');
+  pre.hidden = true; pre.textContent = '';
+  apri('modaleNota');
+}
+async function salvaNota() {
+  const corpo = { testo: document.getElementById('n_testo').value, codice: document.getElementById('n_codice').value };
+  const s = document.getElementById('statoNota');
+  try {
+    const r = await fetch('/python/nota/' + notaAperta, { method: 'POST',
+      headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(corpo) });
+    const d = await r.json();
+    if (!r.ok || d.errore) { s.textContent = '⚠ ' + (d.errore || 'HTTP ' + r.status); return; }
+    NOTE[notaAperta] = corpo;
+    const vuota = !corpo.testo.trim() && !corpo.codice.trim();
+    document.querySelectorAll('.nota-btn').forEach(b => {
+      if (b.getAttribute('onclick').includes('apriNota(' + notaAperta + ',')) b.classList.toggle('piena', !vuota);
+    });
+    s.textContent = vuota ? '✓ nota tolta' : '✓ salvata';
+  } catch (e) { s.textContent = '⚠ rete: ' + e.message; }
+}
+PyEsegui.collega(document.getElementById('pannelloNota'),
+                 () => ({ file: { 'prova.py': document.getElementById('n_codice').value }, principale: 'prova.py' }));
+
+// ── Frammenti ──
+const FRAMMENTI = Object.fromEntries(JSON.parse(document.getElementById('dati-frammenti').textContent).map(f => [f.id, f]));
+function apriFrammento(id) {
+  const f = FRAMMENTI[id] || {};
+  document.getElementById('formFrammento').reset();
+  document.getElementById('f_id').value = f.id || '';
+  document.getElementById('f_titolo').value = f.titolo || '';
+  document.getElementById('f_tag').value = f.tag || '';
+  document.getElementById('f_codice').value = f.codice || '';
+  document.getElementById('f_note').value = f.note || '';
+  document.getElementById('titoloFrammento').textContent = f.id ? f.titolo : 'Nuovo frammento';
+  const pre = document.querySelector('#pannelloFrammento [data-uscita]');
+  pre.hidden = true; pre.textContent = '';
+  apri('modaleFrammento');
+}
+function salvaFrammento() {
+  const f = document.getElementById('formFrammento');
+  if (f.reportValidity()) f.submit();
+}
+PyEsegui.collega(document.getElementById('pannelloFrammento'),
+                 () => ({ file: { 'frammento.py': document.getElementById('f_codice').value }, principale: 'frammento.py' }));
+async function copia(id, b) {
+  try { await navigator.clipboard.writeText(FRAMMENTI[id].codice || ''); b.textContent = '✓ Copiato'; }
+  catch (e) { b.textContent = '⚠ Non copiato'; }
+  setTimeout(() => { b.textContent = '📋 Copia'; }, 1500);
+}
+// La ricerca e i tag: filtrano le schede già nella pagina, niente richieste.
+let tagScelto = '';
+function filtra() {
+  const q = (document.getElementById('cerca').value || '').toLowerCase().trim();
+  let visibili = 0;
+  document.querySelectorAll('.frammento').forEach(c => {
+    const ok = (!q || c.dataset.cerca.includes(q)) &&
+               (!tagScelto || c.dataset.tag.split(', ').includes(tagScelto));
+    c.hidden = !ok; if (ok) visibili++;
+  });
+  const vuoto = document.getElementById('nessun-frammento');
+  if (vuoto) vuoto.hidden = visibili > 0;
+  document.querySelectorAll('[data-filtra]').forEach(t => t.classList.toggle('attivo', t.dataset.filtra === tagScelto));
+}
+document.getElementById('cerca').addEventListener('input', filtra);
+const tutti = [...new Set(Object.values(FRAMMENTI).flatMap(f => (f.tag || '').split(', ').filter(Boolean)))].sort();
+const barra = document.getElementById('tag-filtro');
+tutti.forEach(t => {
+  const s = document.createElement('span');
+  s.className = 'fr-tag'; s.dataset.filtra = t; s.textContent = t;
+  barra.appendChild(s);
+});
+document.addEventListener('click', e => {
+  const t = e.target.closest && e.target.closest('[data-filtra]');
+  if (!t) return;
+  tagScelto = tagScelto === t.dataset.filtra ? '' : t.dataset.filtra;
+  filtra();
+});
 </script>
 {% endblock %}
