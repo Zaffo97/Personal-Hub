@@ -104,12 +104,21 @@ def link(comp):
     def aggiungi(etichetta, url, nota=""):
         fuori.append({"etichetta": etichetta, "url": url, "nota": nota})
 
+    # Senza link incollato, l'ASIN del modello collegato al catalogo (`opendb_asin`, messo
+    # dalla vista): il link incollato vince sempre, è quello che Davide ha guardato.
     if comp.get("link_amazon"):
         aggiungi("Amazon", comp["link_amazon"], "la pagina del prodotto")
         a = asin(comp["link_amazon"])
         if a:
             aggiungi("Keepa", f"https://keepa.com/#!product/8-{a}",
                      "storico del prezzo su Amazon, e da lì l'avviso via email")
+    elif comp.get("opendb_asin"):
+        a = comp["opendb_asin"]
+        aggiungi("Amazon", f"https://www.amazon.it/dp/{a}",
+                 "la pagina del modello collegato, dal catalogo OpenDB: se non è quello "
+                 "giusto, incolla la pagina vera")
+        aggiungi("Keepa", f"https://keepa.com/#!product/8-{a}",
+                 "storico del prezzo su Amazon del modello collegato, e da lì l'avviso via email")
     else:
         aggiungi("Amazon", f"https://www.amazon.it/s?k={q}",
                  "ricerca per nome: incolla la pagina del prodotto per avere anche Keepa")

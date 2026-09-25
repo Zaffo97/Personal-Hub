@@ -439,12 +439,14 @@ riquadro «Da guardare» all'apertura. Logica in `pc_negozi.py`, prova `prova_pc
   dominio 8 = amazon.it è confermato da due fonti, ma la pagina non l'ho vista aprirsi. La
   prova: incollare in un pezzo la sua pagina amazon.it (con `/dp/`), salvare, cliccare
   «Keepa». L'avviso di prezzo si imposta **dentro Keepa** (account gratuito, «Traccia
-  prodotto»), non nell'hub: l'API di Keepa costa 49 €/mese
-- ⬜ **Da decidere: il link Keepa senza incollare niente.** OpenDB ha l'**ASIN di amazon.it**
-  di molti pezzi (`identifiers.retailer_listings`, `source: amazon`, `channel: it`; per la
-  4070 Ti di Davide `B0BNWFM7MZ`, `verified: true`). Per un pezzo collegato al catalogo l'hub
-  potrebbe dare Keepa e la pagina Amazon esatta senza link incollato. Non misurato quanti
-  pezzi ce l'hanno, non fatto: fuori da quello che è stato chiesto
+  prodotto»), non nell'hub: l'API di Keepa costa 49 €/mese. Dal 25/09 i pezzi collegati al
+  catalogo hanno Keepa anche senza link incollato (ASIN da OpenDB): sulla build di Davide
+  CPU, GPU e scheda madre, quindi la prova si fa cliccando «Keepa» e basta
+- ⚠️ **L'ASIN di OpenDB è copiato su tutti i 15 canali Amazon** (12 118 pezzi per ognuno, tutti
+  `verified`): non è la prova che il prodotto esista su amazon.it. Aperti a mano **12 su 12
+  giusti**, ma è un campione. Se un link Amazon «dal catalogo» apre il prodotto sbagliato o
+  una pagina vuota, si incolla quello vero, che vince sempre. Copertura: 83% delle CPU, 47%
+  delle GPU, 39% delle schede madri, 32% degli alimentatori
 - **`GIORNI_PROMEMORIA = 14`** è una soglia scelta, non misurata: si cambia in un punto solo,
   in `pc_negozi.py`
 - **L'intervallo di prezzo degli usati da eBay** (API Browse, con account sviluppatore gratuito

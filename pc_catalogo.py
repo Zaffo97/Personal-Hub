@@ -86,9 +86,24 @@ def _anno(d):
     return a if isinstance(a, int) and 1990 <= a <= 2100 else None
 
 
+def _asin(d):
+    """L'ASIN di amazon.it, per il link ad Amazon e a Keepa senza incollare niente.
+
+    ⚠️ Nel dump ogni pezzo che ha un ASIN lo ha **su tutti i 15 canali Amazon** (12 118 per
+    ognuno, tutti `verified`): sembra copiato per paese, non controllato. Aperti a mano su
+    amazon.it il 25/09/2026 nove presi a caso da sei categorie, più la 4070 Ti di Davide:
+    **dieci su dieci** il prodotto giusto. Per questo si usa, ma il link dice da dove viene."""
+    for r in _prendi(d, "identifiers.retailer_listings") or []:
+        if isinstance(r, dict) and r.get("source") == "amazon" and r.get("channel") == "it" \
+                and re.fullmatch(r"[A-Z0-9]{10}", r.get("source_product_id") or ""):
+            return r["source_product_id"]
+    return None
+
+
 def _compatta(cat, d):
     """I soli campi che servono ai controlli, con nomi nostri e stabili."""
-    c = {"cat": cat, "nome": (_prendi(d, "metadata.name") or "").strip(), "anno": _anno(d)}
+    c = {"cat": cat, "nome": (_prendi(d, "metadata.name") or "").strip(), "anno": _anno(d),
+         "asin": _asin(d)}
     if cat == "CPU":
         c.update(socket=d.get("socket"), tdp=_prendi(d, "specifications.tdp"),
                  ram=_prendi(d, "specifications.memory.types"))

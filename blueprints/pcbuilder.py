@@ -48,6 +48,8 @@ def pcbuilder():
             v = pc_catalogo.pezzo(c.get("opendb_id"))
             c["opendb_nome"] = v["nome"] if v else None
             c["opendb_perso"] = bool(c.get("opendb_id") and not v and catalogo)
+            # L'ASIN di amazon.it del modello: Amazon e Keepa senza incollare il link.
+            c["opendb_asin"] = v.get("asin") if v else None
         link = {c["id"]: pc_negozi.link(c) for c in componenti}
         # Il totale è quello che la build costa o è costata: un pezzo venduto non c'è più.
         # Stessa regola della Dashboard.

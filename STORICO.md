@@ -20,6 +20,16 @@ pagina ed esegue `new Function()` su ogni blocco `<script>` **e** su ogni handle
 
 ## 25/09/2026
 
+**PC Builder: Amazon e Keepa dal catalogo, senza incollare il link** (§4.7). OpenDB ha
+l'ASIN di amazon.it per 12 118 pezzi su 26 209 (83% delle CPU, 47% delle GPU, 32% degli
+alimentatori), ma **uguale su tutti i 15 canali** e tutto `verified`: copiato, non
+controllato. Quindi prima aperti a mano su amazon.it, nove presi a caso da sei categorie più
+i tre della build di Davide: **12 su 12** il prodotto giusto. L'indice tiene `asin` (solo
+canale `it`), la vista lo passa a `pc_negozi.link()`, e un pezzo collegato senza link
+incollato ha la pagina Amazon esatta e Keepa, con la nota che vengono dal catalogo; il link
+incollato vince sempre. Sulla build vera: CPU, GPU e scheda madre sì, la RAM no (resta la
+ricerca). `prova_pcbuilder.py` **105 su 105** (5 nuove), sweep 0 errori, query 0 scoperte.
+
 **PC Builder: la ricerca di BPM-Power, e la build vera sistemata** (§4.7). Il formato
 `/it/ricerca?k=` l'ha preso Davide da una ricerca vera (a Claude Cloudflare non la mostra): il
 link senza pagina incollata ora cerca per nome invece di aprire la home. Davide ha sistemato

@@ -95,6 +95,14 @@ def prove_modulo():
     con = N.link({"name": "RTX 3070", "link_amazon": "https://www.amazon.it/x/dp/B0D6W8L5YM"})
     esito("con la pagina Amazon: Keepa sul dominio 8 (amazon.it)",
           any(l["url"] == "https://keepa.com/#!product/8-B0D6W8L5YM" for l in con))
+    dal_catalogo = N.link({"name": "RTX 4070 Ti", "opendb_asin": "B0BNWFM7MZ"})
+    esito("senza link ma col modello collegato: Amazon esatto e Keepa dall'ASIN del catalogo",
+          any(l["url"] == "https://www.amazon.it/dp/B0BNWFM7MZ" and "OpenDB" in l["nota"] for l in dal_catalogo)
+          and any(l["url"] == "https://keepa.com/#!product/8-B0BNWFM7MZ" for l in dal_catalogo))
+    vince = N.link({"name": "RTX 4070 Ti", "opendb_asin": "B0BNWFM7MZ",
+                    "link_amazon": "https://www.amazon.it/x/dp/B0D6W8L5YM"})
+    esito("   ma il link incollato vince: Keepa sul suo ASIN, non su quello del catalogo",
+          [l["url"] for l in vince if l["etichetta"] == "Keepa"] == ["https://keepa.com/#!product/8-B0D6W8L5YM"])
 
     print("\n== 2. la data di un prezzo scritto a mano ==")
     esito("valore uguale: resta la data di prima",
@@ -150,7 +158,13 @@ PEZZI_FINTI = {
     ("GPU", "gpu-4070ti"): {"length": 308, "tdp": 285,
                             "power_connectors": {"pcie_6_pin": 0, "pcie_8_pin": 0,
                                                  "pcie_12VHPWR": 1, "pcie_12V_2x6": 0},
-                            "metadata": {"name": "MSI GeForce RTX 4070 Ti VENTUS 3X", "releaseYear": 2023}},
+                            "metadata": {"name": "MSI GeForce RTX 4070 Ti VENTUS 3X", "releaseYear": 2023},
+                            # L'ASIN vero, aperto su amazon.it il 25/09/2026; il canale "de"
+                            # messo prima per provare che si prende quello italiano.
+                            "identifiers": {"retailer_listings": [
+                                {"source": "amazon", "channel": "de", "source_product_id": "B0DEUTSCH1"},
+                                {"source": "newegg", "channel": "it", "source_product_id": "N82E1680"},
+                                {"source": "amazon", "channel": "it", "source_product_id": "B0BNWFM7MZ"}]}},
     ("GPU", "gpu-lunga"): {"length": 360, "tdp": 285,
                            "metadata": {"name": "ZOTAC GeForce RTX 4070 Ti lunghissima"}},
     ("GPU", "gpu-3x8"): {"length": 300, "tdp": 320,
@@ -229,6 +243,8 @@ def prove_catalogo(dove):
     esito("   primo scaricamento: nessuna novità, non «tutto nuovo»", C.novita() is None)
     esito("lo slot M.2 con chiave E (Wi-Fi) non entra fra quelli per SSD",
           len(C.pezzo("mb-b650")["m2"]) == 1)
+    esito("l'ASIN è quello di amazon.it, non del primo canale", C.pezzo("gpu-4070ti").get("asin") == "B0BNWFM7MZ")
+    esito("   e un pezzo senza ASIN non ne inventa uno", "asin" not in C.pezzo("gpu-lunga"))
     esito("la ricerca vuole tutte le parole", [x["id"] for x in C.cerca("GPU", "4070 ventus")] == ["gpu-4070ti"])
     esito("   e resta nella categoria", C.cerca("CPU", "4070") == [])
 
@@ -523,6 +539,8 @@ def prove_web(dove):
               "Lunghezza GPU / case" in testo and "100%" in testo and "ODC-By" in testo
               and "github.com/buildcores/buildcores-open-db" in testo)
         esito("   e il nome del modello collegato", "MSI GeForce RTX 4070 Ti VENTUS 3X" in testo)
+        esito("il pezzo collegato senza link Amazon ha Keepa dall'ASIN del catalogo",
+              "keepa.com/#!product/8-B0BNWFM7MZ" in testo and "amazon.it/dp/B0BNWFM7MZ" in testo)
         esito("le novità dell'ultimo aggiornamento sono nella pagina, coi pezzi usciti",
               "Novità nel catalogo" in testo and "GPU uscita adesso" in testo and "Usciti" in testo)
 
