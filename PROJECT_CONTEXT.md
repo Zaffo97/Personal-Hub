@@ -530,6 +530,20 @@ stanno nel blueprint.
 | `/fantacalcio/lega/<id>/chi-gioca` | GET | Le probabili di fantacalcio.it **in un iframe** accanto alla rosa, da leggere (pulsante «Probabili») |
 | `/fantacalcio/lega/<id>/formazione` (+`/salva`) · `/consiglio/applica` | GET/POST | Il campo e il consiglio: prima chi può giocare, poi la fantamedia della lega. `/salva` accetta la formazione **incompleta** (non quella sbagliata) e dice cosa manca; `applica` resta severo |
 
+### Arduino — `blueprints/arduino.py`
+Progetti con link a **Tinkercad** e **Wokwi**, anteprima incorporata (Tinkercad da
+`/embed/<id>`, solo circuiti pubblici; Wokwi da `/projects/<id>`), pulsanti «nuovo
+circuito» e la **tabella dei piedini** ricavata dal `diagram.json` di Wokwi incollato. La
+logica è `arduino_circuito.py` (reti coi fili, controlli PWM / analogico / I2C / seriale /
+tensione / ESP32 flash-avvio-ADC2-solo ingresso); i dati `data/arduino_piedini.json`, scritti
+da `scripts/importa_piedini_wokwi.py` dalle fonti (BACKLOG §4.9).
+
+| URL | Metodo | Descrizione |
+|-----|--------|-------------|
+| `/arduino/` | GET | Progetti, con anteprime e tabella dei piedini (resa dal server, nascosta, mostrata in una finestra) |
+| `/arduino/save` | POST | Un link di un altro sito non si salva e lo si dice; un `diagram.json` illeggibile **non sovrascrive** quello di prima |
+| `/arduino/<id>/delete` | POST | |
+
 ### Stampa 3D — `blueprints/stampa3d.py` (dal 25/09/2026)
 Sul modello di Arduino, pensata per una Bambu Lab. La logica sta in `stampa3d.py` (radice):
 link ammessi per campo, file su disco per impronta, soglie. **Solo link verso i siti**:
@@ -563,7 +577,7 @@ Tutte create da `init_db()` in `extensions.py`.
 > `init_db()` con `except: pass`, come `teams.regulation_id`.
 | `teams` | id, name, format, record, description, notes, **regulation_id** DEFAULT 'ma', created_at |
 | `team_members` | id, team_id (FK → teams CASCADE), slot, pokemon, mega_stone, nature, ability, held_item, tera_type, move1-4, ev_hp/atk/def/spa/spd/spe, sprite_url |
-| `arduino_projects` | id, name, board, status, tinkercad_url, code, description |
+| `arduino_projects` | id, name, board, status, tinkercad_url, **wokwi_url** (solo http(s) dei due siti, `arduino_circuito.link_valido()`), code, description, **wokwi_diagramma** (il `diagram.json` incollato, intero: la tabella dei piedini si ricalcola a ogni apertura) |
 | `python_topics` | id, category, name, done |
 | `pc_builds` | id, name, notes |
 | `pc_components` | id, build_id (FK), category, name, price, notes, **stato** (`posseduto`/`desiderato`/`venduto`, NULL = non indicato), **prezzo_data**, **obiettivo** (soglia), **valore_usato**, **valore_usato_data**, **link_amazon/eprice/bpm/versus** (solo http(s) del dominio giusto), **opendb_id** (il modello nel catalogo OpenDB, `pc_catalogo.py`). ⚠️ Righe **ricreate a ogni salvataggio**: le date passano dal form |
@@ -795,6 +809,7 @@ Di conseguenza tutto ciò che questa tabella dava per "funzionante" non era mai 
 
 | Data | Contenuto |
 |------|-----------|
+| 2026-09-25 | **Arduino: Tinkercad, Wokwi e la tabella dei piedini (§4.9).** `arduino_circuito.py` (nuovo), `scripts/importa_piedini_wokwi.py` → `data/arduino_piedini.json` (5 schede, 43 componenti, dalle fonti con controlli incrociati), colonne `wokwi_url` e `wokwi_diagramma`, route e template riscritti per anteprime, «nuovo circuito» e piedini. Chiuso il `href` senza controllo di `tinkercad_url`. `prova_arduino.py` **50 su 50** (2 difetti presi al primo giro: `3.3V` letto come piedino 3, scheda sconosciuta non nominata), sweep 0 errori, query 0 scoperte; provata in browser su un banco (finestre, form, 375 px). Gli iframe si provano nel Chrome di Davide |
 | 2026-09-25 | **Due bachi di §3.** Conferma di eliminazione utente con `|tojson` (prova col nome `d'amico "bis"`: travaso **58/58**). Ripristino su PC nuovo fermo sul tema dell'admin: `DA_COMPLETARE` in `importa_dati.py` (vuoto nel DB → si completa dall'export; valore diverso → conflitto), `piano_tabella()` torna un sesto elemento. `prova_importa_dati.py` **34/34** (era 19/32), completo 21/21, sweep 0 errori |
 | 2026-09-25 | **Stampa 3D: anteprima 3D (§4.8).** three.js 0.186.1 in `static/vendor/three-0.186.1/` (8 file, MIT, dal pacchetto npm), `static/js/stampa3d-anteprima.js` (modulo, import dinamici al primo clic), importmap e modale in `stampa3d.html`, `stampa3d.ANTEPRIMA`/`ha_anteprima()`. Unità del 3MF applicata a mano, normali STL ricalcolate. Provata in browser su cinque file con misure note; `prova_stampa3d.py` **43 su 43**, sweep 0 errori |
 | 2026-09-25 | **Stampa 3D, la sezione nuova (§4).** Fonti lette prima: MakerWorld vieta l'accesso automatico e non ha API, `bambustudio://open` accetta solo file dai domini Bambu, lo stato della stampante in rete solo in Developer Mode (da guardare quando c'è la stampante). Quindi link, file allegati da scaricare, inventario bobine. `stampa3d.py`, `blueprints/stampa3d.py`, `stampa3d.html`, tre tabelle `stampa_*`, registrata in `SEZIONI`, sidebar, `TABELLE_UTENTE`/`FIGLIE_DI`, `ETICHETTE`, controlli, sweep, export/import. Indirizzi aperti a mano (Printables dietro Cloudflare: solo link incollati). `prova_stampa3d.py` **38 su 38**, sweep 0 errori, query 0 scoperte, travaso 56/56, giro export→import 3 righe su 3; JS provato in browser (form, conferme con apostrofo, tinta), 375 px senza scorrimento. ⚠️ `prova_importa_dati.py` **19 su 32 anche prima di questo lavoro**: il banco, non l'import (a backlog §3) |

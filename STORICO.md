@@ -20,6 +20,20 @@ pagina ed esegue `new Function()` su ogni blocco `<script>` **e** su ogni handle
 
 ## 25/09/2026
 
+**Arduino: Tinkercad, Wokwi e la tabella dei piedini (§4.9)** — la voce del docx
+«verificare i connettori». Prima le fonti e gli indirizzi, aperti uno per uno: Tinkercad
+si incorpora solo da `/embed/` (le altre pagine `SAMEORIGIN`), i quattro modelli Wokwi
+(Uno, Nano, Mega, ESP32) col loro `diagram.json` — e un modello inesistente apre un Uno
+in silenzio. Dati dei piedini **dalle fonti** con `importa_piedini_wokwi.py`: sorgente
+wokwi-elements (MIT), board.json di wokwi-boards, tabella GPIO di ESP-IDF; 5 schede e 43
+componenti, quattro controlli incrociati (il primo giro ha preso il D15 della DevKit V1).
+Tabella dal `diagram.json` incollato, con le reti costruite sui fili: PWM, analogico,
+I2C (✗ su Arduino, ⚠ Wire.begin su ESP32), seriale, A6/A7 della Nano, tensione, corto
+alimentazione-massa, piedini non simulati, e sull'ESP32 flash (6-11 ✗, 16-17 ⚠ come dice
+Espressif), avvio, ADC2, solo ingresso. Chiuso il `href` senza controllo del link
+Tinkercad (anche per i link già salvati). `prova_arduino.py` **50 su 50**, sweep 0,
+query 0 scoperte, travaso 58/58, ripristino 34/34.
+
 **I due bachi piccoli di §3.** (1) La conferma di eliminazione in `admin_utenti.html` con
 lo username dentro un handler inline: ora `|tojson` fra apici singoli. `prova_travaso_utente.py`
 ha nei dati `d'amico "bis"`: sul template vecchio **56 su 58** (l'handler non compilava), ora

@@ -111,8 +111,9 @@ Le decisioni che valgono ancora: la sezione Pokémon si finisce prima delle altr
 il collaudo va alla fine, le guide dopo il collaudo, e **mettere l'app online per ultimo**
 («caricare il sito da qualche parte lo voglio tenere come una delle ultime cose»).
 
-1. §4 — le sezioni: **Tinkercad** (la domanda aperta in §4), Python, Log. La Stampa 3D
-   (§4.8) è fatta; il suo resto aspetta la stampante
+1. §4 — le sezioni: **Python**, poi Log. Stampa 3D (§4.8) e Arduino con Tinkercad e
+   Wokwi (§4.9) sono fatte; restano le loro prove nel Chrome di Davide e ciò che aspetta
+   la stampante
 2. I residui Pokémon: le due abilità senza effetto (§3), Kingambit e Game8 (§4.3)
 3. §5 — il giro di collaudo, l'inventario del codice morto
 4. §1.6 — le due guide, **dopo** il collaudo
@@ -298,7 +299,7 @@ Tutti gli altri bachi elencati qui fino al 23/09/2026 sono chiusi: vedi `STORICO
 |---|---|
 | 💻 **PC Builder** | 🟨 Wishlist, prezzi, link ai negozi, avvisi, **compatibilità** e **novità del catalogo** fatti il 25/09/2026: vedi §4.7 |
 | 🖨️ **Stampa 3D** | 🟨 Progetti con link, file allegati e inventario bobine **fatti il 25/09/2026**: vedi §4.8 |
-| 🤖 **Arduino** | ⬜ Richiamo a Tinkercad per disegnare il progetto e verificare i connettori. ⚠️ **Guardato il 25/09/2026**: il campo «Tinkercad URL» e il pulsante che lo apre **ci sono già** (`arduino.html:62`), quindi resta da capire con Davide cosa vuol dire «verificare i connettori» (anteprima incorporata? tabella piedini e collegamenti coi controlli? solo un pulsante «nuovo circuito»?): domanda posta e rimasta aperta. ⬜ **E un baco trovato lì**: `tinkercad_url` finisce in un `href` **senza controllo** — un `javascript:` salvato lì girerebbe al clic. Oggi 0 progetti, quindi nessun danno; la cura è quella di `pc_negozi.link_valido()` (solo http(s) di tinkercad.com) |
+| 🤖 **Arduino** | 🟨 Anteprima di Tinkercad e Wokwi, «nuovo circuito» e tabella dei piedini coi controlli **fatti il 25/09/2026**, e il baco del `href` senza controllo chiuso: vedi §4.9 |
 | 🐍 **Python** | ⬜ Spazio per inserire i propri progetti e testarli · ⬜ idee per rendere la sezione più utile |
 | 💾 **Log** | ⬜ Aggiungere una funzione di salvataggio log |
 | 🎨 **Grafica** | ⬜ `form-select` è usata da **4 tendine** (selettore di sezione in `arduino.html`, `gaming.html`, `pcbuilder.html`, `pokemon.html`) e non è definita da nessuna parte · ⬜ rivedere **lo scorrimento di sezioni e sottosezioni** (richiesta del 22/09/2026). ⚠️ Solo il Fantacalcio ha il `<form>` che avvolge header e footer della modale; in `arduino.html` e `pcbuilder.html` il form sta dentro `.modal-body` e lo scroll funziona, quindi la cura del Fantacalcio non va copiata a tappeto |
@@ -513,6 +514,49 @@ inventario delle bobine. Fatto: numeri in `STORICO.md`, logica in `stampa3d.py`,
 - **Soglie scelte, non misurate**: 200 MB per file (`MAX_BYTE`), 150 g per «quasi finita»
   (`SOGLIA_BOBINA_G`), in `stampa3d.py`
 - **La Dashboard** non ha un riquadro della Stampa 3D: non chiesto
+
+---
+
+### 4.9 🟨 Arduino: Tinkercad, Wokwi e i piedini (25/09/2026)
+
+Nel docx: «richiamo a Tinkercad per poter disegnare il progetto e vedere se i connettori
+ecc. sono funzionanti». Davide ricordava un editor che **simula** il progetto: sono
+Tinkercad Circuits e Wokwi. Scelte sue: tutti e due; la tabella dei piedini **non a mano**
+ma dal `diagram.json` di Wokwi incollato; le schede «non lo so», quindi i controlli ci
+sono per quelle che Wokwi simula e che stanno nell'elenco (Uno, Nano, Mega, ESP32).
+Numeri in `STORICO.md`, logica in `arduino_circuito.py`, prova `prova_arduino.py`.
+
+**Le fonti, lette il 25/09/2026**:
+
+| Cosa | Da dove |
+|---|---|
+| Piedini e segnali di schede e componenti | sorgente di **wokwi-elements** (MIT): è quello che usa il simulatore |
+| GPIO dietro i piedini delle ESP32 | `board.json` di **wokwi-boards** (DevKitC V4 e DevKit V1) |
+| Limiti dei GPIO ESP32 (solo ingresso, flash, avvio, ADC2) | tabella «GPIO Summary» di **ESP-IDF** |
+| I2C predefinito ESP32 (21/22) | `pins_arduino.h` del core **Arduino-ESP32** |
+
+⚠️ **`data/arduino_piedini.json` è derivato**: si rifà con `python scripts/importa_piedini_wokwi.py`
+(con `--dry-run` e `--rileggi`), non si modifica a mano. Lo script si **ferma** se i
+controlli incrociati non tornano (PWM di Uno e Mega contro la documentazione, frase su A6/A7
+della Nano, 34 GPIO di Espressif, PWM e I2C della DevKit V1 contro il suo elemento). Al primo
+giro l'incrocio ha preso il D15 della DevKit V1, scritto `"15"` invece di `"GPIO15"` nella
+fonte: sarebbe rimasto senza segnali in silenzio.
+
+**⬜ Resta aperto:**
+
+- **Provarlo nel Chrome di Davide**: nel pannello di Claude gli iframe di Tinkercad e Wokwi
+  restano bianchi senza nemmeno partire (lo stesso limite del Fantacalcio). Tinkercad si
+  vede solo se il circuito è **pubblico**
+- **Tinkercad non dà la tabella dei piedini**: non ha un `diagram.json` da incollare
+- **Schede senza controlli**: Leonardo, Pro Mini, ESP8266 (Wokwi non le simula),
+  Raspberry Pi, e nell'ESP32 le varianti S2/S3/C3 (i dati sono della ESP32 classica)
+- **Controlli che non ci sono**: il LED senza resistenza, la corrente per piedino, la
+  direzione (un LED è un'uscita, ma i componenti Wokwi non lo dichiarano: per questo su
+  34-39 dell'ESP32 l'avviso è generico), i pull-up
+- ⚠️ **Wokwi con un modello che non esiste apre un progetto Uno, senza dirlo**:
+  `/projects/new/scheda-che-non-esiste` ha il titolo «New Arduino Uno Project». I quattro
+  indirizzi di `WOKWI_NUOVO` sono stati aperti uno per uno (titolo e `diagram.json`): uno
+  nuovo va aperto allo stesso modo, non indovinato
 
 ---
 

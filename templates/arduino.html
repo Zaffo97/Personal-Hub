@@ -3,9 +3,9 @@
 {% block topbar_title %}&#128268; Arduino Projects{% endblock %}
 {% block extra_head %}
 <style>
-#codeModal{display:none;position:fixed;inset:0;background:rgba(0,0,0,.6);z-index:999;
+.ard-modal{display:none;position:fixed;inset:0;background:rgba(0,0,0,.6);z-index:999;
   align-items:center;justify-content:center;padding:1rem}
-#codeModal.open{display:flex}
+.ard-modal.open{display:flex}
 .modal-box{background:var(--surface);border:1px solid var(--border);border-radius:var(--radius-xl);
   width:100%;max-width:780px;max-height:92dvh;display:flex;flex-direction:column;overflow:hidden}
 .modal-header{display:flex;align-items:center;justify-content:space-between;
@@ -15,9 +15,22 @@
 .code-area{font-family:"JetBrains Mono",monospace;font-size:.78rem;line-height:1.6;
   min-height:260px;resize:vertical;tab-size:4}
 textarea.code-area{min-height:260px}
+textarea.json-area{font-family:"JetBrains Mono",monospace;font-size:.72rem;min-height:120px}
+#anteprimaFrame{width:100%;height:min(65dvh,560px);border:0;border-radius:var(--radius-sm);
+  background:var(--surface-off)}
+.pin-tab{width:100%;border-collapse:collapse;font-size:.76rem}
+.pin-tab th,.pin-tab td{padding:.35rem .45rem;border-bottom:1px solid var(--border);
+  text-align:left;vertical-align:top}
+.pin-tab th{color:var(--text-muted);font-weight:600;font-size:.7rem}
+.pin-tab code{font-size:.72rem}
+.esito-ok{color:var(--success)}
+.esito-avviso{color:var(--warning)}
+.esito-errore{color:var(--error)}
 </style>
 {% endblock %}
 {% block content %}
+{# Le icone di un esito: stesse tre parole di arduino_circuito.py. #}
+{% set SEGNO = {'ok': '&#10003;', 'avviso': '&#9888;&#65039;', 'errore': '&#10007;'} %}
 <div class="page-header">
   <div class="flex items-center justify-between flex-wrap gap-2">
     <div><h1>&#128268; Arduino Projects</h1>
@@ -35,6 +48,14 @@ textarea.code-area{min-height:260px}
       {% endif %}
       <button class="btn btn-primary" onclick="openModal()">+ Nuovo progetto</button>
     </div>
+  </div>
+  {# Si aprono e basta: l'hub non legge i due siti (arduino_circuito.py). #}
+  <div class="flex gap-1 flex-wrap mt-2 items-center">
+    <span class="text-xs text-muted">Nuovo circuito:</span>
+    <a href="{{ tinkercad_nuovo[1] }}" target="_blank" rel="noopener" class="btn btn-secondary btn-sm">&#128279; {{ tinkercad_nuovo[0] }}</a>
+    {% for scheda, url in wokwi_nuovo.items() %}
+    <a href="{{ url }}" target="_blank" rel="noopener" class="btn btn-secondary btn-sm">&#128279; Wokwi · {{ scheda|replace('Arduino ', '') }}</a>
+    {% endfor %}
   </div>
 </div>
 
@@ -57,16 +78,64 @@ textarea.code-area{min-height:260px}
     {% if p.code %}<div style="background:var(--surface-off);border-radius:var(--radius-sm);padding:.45rem .65rem;
       font-family:'JetBrains Mono',monospace;font-size:.7rem;color:var(--text-muted);
       overflow:hidden;max-height:64px;margin-bottom:.65rem">{{ p.code[:200] }}</div>{% endif %}
+    {% set c = p.circuito %}
+    {% if c %}
+    <div class="text-xs mb-2">
+      {% if c.errore %}<span class="esito-errore">&#9888;&#65039; Circuito: {{ c.errore }}</span>
+      {% else %}
+      <button class="btn btn-secondary btn-sm" onclick="apriPiedini({{ p.id }})">&#128204; Piedini</button>
+      <span class="esito-ok">{{ SEGNO.ok|safe }} {{ c.conti.ok }}</span>
+      {% if c.conti.avviso %}<span class="esito-avviso">{{ SEGNO.avviso|safe }} {{ c.conti.avviso }}</span>{% endif %}
+      {% if c.conti.errore %}<span class="esito-errore">{{ SEGNO.errore|safe }} {{ c.conti.errore }}</span>{% endif %}
+      {% endif %}
+    </div>
+    {% endif %}
     <div class="flex gap-1 flex-wrap">
-      <button class="btn btn-secondary btn-sm" onclick='openModal({{ p|tojson }})'>&#9998; Modifica</button>
-      {% if p.tinkercad_url %}
-        <a href="{{ p.tinkercad_url }}" target="_blank" class="btn btn-secondary btn-sm">&#128279; Tinkercad</a>{% endif %}
+      <button class="btn btn-secondary btn-sm" onclick='openModal({{ {"id": p.id, "name": p.name, "board": p.board, "status": p.status, "tinkercad_url": p.tinkercad_url, "wokwi_url": p.wokwi_url, "description": p.description, "code": p.code, "wokwi_diagramma": p.wokwi_diagramma}|tojson }})'>&#9998; Modifica</button>
+      {% if p.tinkercad_url_ok %}
+        <a href="{{ p.tinkercad_url_ok }}" target="_blank" rel="noopener" class="btn btn-secondary btn-sm">&#128279; Tinkercad</a>{% endif %}
+      {% if p.wokwi_url_ok %}
+        <a href="{{ p.wokwi_url_ok }}" target="_blank" rel="noopener" class="btn btn-secondary btn-sm">&#128279; Wokwi</a>{% endif %}
+      {% for sito, url in p.anteprime %}
+        <button class="btn btn-secondary btn-sm" onclick='apriAnteprima({{ url|tojson }}, {{ (p.name ~ " · " ~ sito)|tojson }}, {{ sito|tojson }})'>&#128065; Anteprima {{ sito }}</button>
+      {% endfor %}
       <form method="POST" action="/arduino/{{ p.id }}/delete"
             style="display:inline" onsubmit="return confirm('Eliminare?')">
         <button class="btn btn-danger btn-sm">&#128465;</button>
       </form>
     </div>
   </div>
+  {% if c and not c.errore %}
+  {# La tabella sta qui, nascosta, e la finestra dei piedini la mostra: resa dal server,
+     niente dati da ricostruire in JavaScript. #}
+  <div id="piedini-{{ p.id }}" hidden>
+    <p class="text-xs text-muted mb-2">Scheda nel circuito: <strong>{{ c.scheda.nome }}</strong> (<code>{{ c.scheda.id }}</code>) · dati dei piedini dal sorgente di Wokwi e dalla documentazione di Espressif</p>
+    {% for k in c.controlli %}
+    <div class="text-sm esito-{{ k.esito }} mb-1">{{ SEGNO[k.esito]|safe }} {{ k.testo }}</div>
+    {% endfor %}
+    <div style="overflow-x:auto">
+    <table class="pin-tab">
+      <thead><tr><th>Piedino</th><th>Sa fare</th><th>Collegato a</th><th>Esito</th></tr></thead>
+      <tbody>
+      {% for r in c.righe %}
+      <tr>
+        <td><code>{{ r.piedino }}</code>{% if r.gpio is not none %}<div class="text-xs text-muted">GPIO{{ r.gpio }}</div>{% endif %}</td>
+        <td class="text-xs text-muted">{{ r.segnali_vis|join(', ') or '—' }}</td>
+        <td>{% for col in r.collegati %}<div><code>{{ col.capo }}</code>{% if col.requisiti %} <span class="text-xs text-muted">vuole {{ col.requisiti_vis|join(', ') }}</span>{% endif %}</div>{% endfor %}</td>
+        <td class="esito-{{ r.esito }}">
+          {% if not r.esiti %}{{ SEGNO.ok|safe }}{% endif %}
+          {% for e in r.esiti %}<div class="esito-{{ e.esito }}">{{ SEGNO[e.esito]|safe }} {{ e.testo }}</div>{% endfor %}
+        </td>
+      </tr>
+      {% endfor %}
+      </tbody>
+    </table>
+    </div>
+    {% if c.sconosciuti %}
+    <p class="text-xs text-muted mt-2">Componenti che non conosco, quindi senza controlli sui requisiti: {{ c.sconosciuti|join(', ') }}</p>
+    {% endif %}
+  </div>
+  {% endif %}
 </div>
 {% endfor %}
 </div>
@@ -79,7 +148,7 @@ textarea.code-area{min-height:260px}
 </div>
 {% endif %}
 
-<div id="codeModal">
+<div id="codeModal" class="ard-modal">
   <div class="modal-box">
     <div class="modal-header">
       <span id="modalTitle" style="font-weight:700;font-size:.9rem">Nuovo progetto Arduino</span>
@@ -100,9 +169,18 @@ textarea.code-area{min-height:260px}
               {% for s in statuses %}<option>{{ s }}</option>{% endfor %}
             </select></div>
         </div>
-        <div class="form-group"><label>Tinkercad URL</label>
-          <input name="tinkercad_url" id="f_tinkercad" class="form-control"
-            placeholder="https://www.tinkercad.com/things/..."></div>
+        <div class="form-row">
+          <div class="form-group"><label>Tinkercad URL</label>
+            <input name="tinkercad_url" id="f_tinkercad" class="form-control"
+              placeholder="https://www.tinkercad.com/things/..."></div>
+          <div class="form-group"><label>Wokwi URL</label>
+            <input name="wokwi_url" id="f_wokwi" class="form-control"
+              placeholder="https://wokwi.com/projects/..."></div>
+        </div>
+        <p class="text-xs text-muted" style="margin:-.3rem 0 .6rem">L'anteprima di Tinkercad si vede solo se il circuito è <strong>pubblico</strong> (Proprietà del progetto).</p>
+        <div class="form-group"><label>diagram.json di Wokwi</label>
+          <textarea name="wokwi_diagramma" id="f_diagramma" class="form-control json-area"
+            placeholder="In Wokwi: linguetta «diagram.json», seleziona tutto, copia e incolla qui. Da qui l'hub ricava la tabella dei piedini."></textarea></div>
         <div class="form-group"><label>Descrizione</label>
           <textarea name="description" id="f_desc" class="form-control" rows="2"
             placeholder="Cosa fa, componenti usati..."></textarea></div>
@@ -112,35 +190,83 @@ textarea.code-area{min-height:260px}
       </form>
     </div>
     <div class="modal-footer">
-      <button class="btn btn-primary" onclick="document.getElementById('arduinoForm').submit()">&#128190; Salva</button>
+      <button class="btn btn-primary" onclick="inviaProgetto()">&#128190; Salva</button>
       <button class="btn btn-secondary" onclick="closeModal()">Annulla</button>
     </div>
   </div>
 </div>
 
+<div id="anteprimaModal" class="ard-modal">
+  <div class="modal-box" style="max-width:1000px">
+    <div class="modal-header">
+      <span id="anteprimaTitolo" style="font-weight:700;font-size:.9rem">Anteprima</span>
+      <button class="btn-icon" onclick="chiudiAnteprima()">&#10005;</button>
+    </div>
+    <div class="modal-body">
+      <iframe id="anteprimaFrame" title="Anteprima del circuito" loading="lazy"
+              referrerpolicy="no-referrer" allow="fullscreen"></iframe>
+      <p id="anteprimaNota" class="text-xs text-muted mt-2"></p>
+    </div>
+  </div>
+</div>
+
+<div id="piediniModal" class="ard-modal">
+  <div class="modal-box" style="max-width:900px">
+    <div class="modal-header">
+      <span style="font-weight:700;font-size:.9rem">Piedini e controlli</span>
+      <button class="btn-icon" onclick="chiudiPiedini()">&#10005;</button>
+    </div>
+    <div class="modal-body" id="piediniCorpo"></div>
+  </div>
+</div>
+
 <script>
+function campo(id, v) { document.getElementById(id).value = (v === null || v === undefined) ? '' : v; }
 function openModal(p) {
   const m = document.getElementById('codeModal');
+  document.getElementById('arduinoForm').reset();
+  campo('proj_id', p ? p.id : '');
+  document.getElementById('modalTitle').textContent = p ? 'Modifica: ' + p.name : 'Nuovo progetto Arduino';
   if (p) {
-    document.getElementById('modalTitle').textContent = 'Modifica: ' + p.name;
-    document.getElementById('proj_id').value  = p.id;
-    document.getElementById('f_name').value   = p.name || '';
-    document.getElementById('f_board').value  = p.board || '';
-    document.getElementById('f_status').value = p.status || '';
-    document.getElementById('f_tinkercad').value = p.tinkercad_url || '';
-    document.getElementById('f_desc').value   = p.description || '';
-    document.getElementById('f_code').value   = p.code || '';
-  } else {
-    document.getElementById('arduinoForm').reset();
-    document.getElementById('proj_id').value = '';
-    document.getElementById('modalTitle').textContent = 'Nuovo progetto Arduino';
+    campo('f_name', p.name); campo('f_board', p.board); campo('f_status', p.status);
+    campo('f_tinkercad', p.tinkercad_url); campo('f_wokwi', p.wokwi_url);
+    campo('f_diagramma', p.wokwi_diagramma);
+    campo('f_desc', p.description); campo('f_code', p.code);
   }
   m.classList.add('open');
 }
 function closeModal() { document.getElementById('codeModal').classList.remove('open'); }
-document.getElementById('codeModal').addEventListener('click', e => {
-  if (e.target === e.currentTarget) closeModal();
+// `submit()` salta la validazione del browser: il nome obbligatorio lo controlla
+// `reportValidity()`, altrimenti un progetto senza nome arriverebbe al server.
+function inviaProgetto() {
+  const f = document.getElementById('arduinoForm');
+  if (f.reportValidity()) f.submit();
+}
+function apriAnteprima(url, titolo, sito) {
+  document.getElementById('anteprimaTitolo').textContent = titolo;
+  document.getElementById('anteprimaNota').textContent = sito === 'Tinkercad'
+    ? 'Se resta vuota, il circuito non è pubblico: su Tinkercad, Proprietà → Pubblico.'
+    : 'La simulazione parte col pulsante verde dentro il riquadro.';
+  document.getElementById('anteprimaFrame').src = url;
+  document.getElementById('anteprimaModal').classList.add('open');
+}
+// L'iframe si svuota alla chiusura: una simulazione lasciata girare continua a
+// consumare anche col riquadro nascosto.
+function chiudiAnteprima() {
+  document.getElementById('anteprimaFrame').src = 'about:blank';
+  document.getElementById('anteprimaModal').classList.remove('open');
+}
+function apriPiedini(id) {
+  document.getElementById('piediniCorpo').innerHTML = document.getElementById('piedini-' + id).innerHTML;
+  document.getElementById('piediniModal').classList.add('open');
+}
+function chiudiPiedini() { document.getElementById('piediniModal').classList.remove('open'); }
+const CHIUDI = {codeModal: closeModal, anteprimaModal: chiudiAnteprima, piediniModal: chiudiPiedini};
+document.querySelectorAll('.ard-modal').forEach(m => m.addEventListener('click', e => {
+  if (e.target === e.currentTarget) CHIUDI[m.id]();
+}));
+document.addEventListener('keydown', e => {
+  if (e.key === 'Escape') document.querySelectorAll('.ard-modal.open').forEach(m => CHIUDI[m.id]());
 });
-document.addEventListener('keydown', e => { if (e.key === 'Escape') closeModal(); });
 </script>
 {% endblock %}

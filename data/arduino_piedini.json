@@ -1,0 +1,1342 @@
+{
+ "_fonte": {
+  "arduino_esp32": "https://raw.githubusercontent.com/espressif/arduino-esp32/master/variants/esp32/pins_arduino.h",
+  "esp_idf_gpio": "https://docs.espressif.com/projects/esp-idf/en/stable/esp32/api-reference/peripherals/gpio.html",
+  "letto_il": "2026-09-25",
+  "wokwi_boards": "https://github.com/wokwi/wokwi-boards",
+  "wokwi_elements": "https://github.com/wokwi/wokwi-elements (MIT)"
+ },
+ "componenti": {
+  "wokwi-7segment": {
+   "A": [],
+   "B": [],
+   "C": [],
+   "CLN": [],
+   "COM": [],
+   "COM.1": [],
+   "COM.2": [],
+   "D": [],
+   "DIG1": [],
+   "DIG2": [],
+   "DIG3": [],
+   "DIG4": [],
+   "DP": [],
+   "E": [],
+   "F": [],
+   "G": []
+  },
+  "wokwi-analog-joystick": {
+   "GND": [],
+   "HORZ": [
+    "analog"
+   ],
+   "SEL": [],
+   "VCC": [],
+   "VERT": [
+    "analog"
+   ]
+  },
+  "wokwi-biaxial-stepper": {
+   "A1+": [],
+   "A1-": [],
+   "A2+": [],
+   "A2-": [],
+   "B1+": [],
+   "B1-": [],
+   "B2+": [],
+   "B2-": []
+  },
+  "wokwi-big-sound-sensor": {
+   "AOUT": [],
+   "DOUT": [],
+   "GND": [],
+   "VCC": []
+  },
+  "wokwi-buzzer": {
+   "1": [],
+   "2": []
+  },
+  "wokwi-dht22": {
+   "GND": [],
+   "NC": [],
+   "SDA": [],
+   "VCC": []
+  },
+  "wokwi-dip-switch-8": {
+   "1a": [],
+   "1b": [],
+   "2a": [],
+   "2b": [],
+   "3a": [],
+   "3b": [],
+   "4a": [],
+   "4b": [],
+   "5a": [],
+   "5b": [],
+   "6a": [],
+   "6b": [],
+   "7a": [],
+   "7b": [],
+   "8a": [],
+   "8b": []
+  },
+  "wokwi-ds1307": {
+   "5V": [],
+   "GND": [],
+   "SCL": [
+    "i2c:SCL"
+   ],
+   "SDA": [
+    "i2c:SDA"
+   ],
+   "SQW": []
+  },
+  "wokwi-flame-sensor": {
+   "AOUT": [],
+   "DOUT": [],
+   "GND": [],
+   "VCC": []
+  },
+  "wokwi-gas-sensor": {
+   "AOUT": [],
+   "DOUT": [],
+   "GND": [],
+   "VCC": []
+  },
+  "wokwi-hc-sr04": {
+   "ECHO": [],
+   "GND": [],
+   "TRIG": [],
+   "VCC": [
+    "vcc:5"
+   ]
+  },
+  "wokwi-heart-beat-sensor": {
+   "GND": [],
+   "OUT": [],
+   "VCC": []
+  },
+  "wokwi-hx711": {
+   "DT": [],
+   "GND": [],
+   "SCK": [],
+   "VCC": []
+  },
+  "wokwi-ili9341": {
+   "CS": [],
+   "D/C": [],
+   "GND": [],
+   "LED": [],
+   "MISO": [],
+   "MOSI": [],
+   "RST": [],
+   "SCK": [],
+   "VCC": []
+  },
+  "wokwi-ir-receiver": {
+   "DAT": [],
+   "GND": [],
+   "VCC": []
+  },
+  "wokwi-ks2e-m-dc5": {
+   "COIL1": [],
+   "COIL2": [],
+   "NC1": [],
+   "NC2": [],
+   "NO1": [],
+   "NO2": [],
+   "P1": [],
+   "P2": []
+  },
+  "wokwi-ky-040": {
+   "CLK": [],
+   "DT": [],
+   "GND": [],
+   "SW": [],
+   "VCC": []
+  },
+  "wokwi-lcd1602": {
+   "A": [],
+   "D0": [],
+   "D1": [],
+   "D2": [],
+   "D3": [],
+   "D4": [],
+   "D5": [],
+   "D6": [],
+   "D7": [],
+   "E": [],
+   "GND": [],
+   "K": [],
+   "RS": [],
+   "RW": [],
+   "SCL": [
+    "i2c:SCL"
+   ],
+   "SDA": [
+    "i2c:SDA"
+   ],
+   "V0": [],
+   "VCC": [],
+   "VDD": [],
+   "VSS": []
+  },
+  "wokwi-lcd2004": {
+   "A": [],
+   "D0": [],
+   "D1": [],
+   "D2": [],
+   "D3": [],
+   "D4": [],
+   "D5": [],
+   "D6": [],
+   "D7": [],
+   "E": [],
+   "GND": [],
+   "K": [],
+   "RS": [],
+   "RW": [],
+   "SCL": [
+    "i2c:SCL"
+   ],
+   "SDA": [
+    "i2c:SDA"
+   ],
+   "V0": [],
+   "VCC": [],
+   "VDD": [],
+   "VSS": []
+  },
+  "wokwi-led": {
+   "A": [],
+   "C": []
+  },
+  "wokwi-led-bar-graph": {
+   "A1": [],
+   "A10": [],
+   "A2": [],
+   "A3": [],
+   "A4": [],
+   "A5": [],
+   "A6": [],
+   "A7": [],
+   "A8": [],
+   "A9": [],
+   "C1": [],
+   "C10": [],
+   "C2": [],
+   "C3": [],
+   "C4": [],
+   "C5": [],
+   "C6": [],
+   "C7": [],
+   "C8": [],
+   "C9": []
+  },
+  "wokwi-led-ring": {
+   "DIN": [],
+   "DOUT": [],
+   "GND": [],
+   "VCC": []
+  },
+  "wokwi-membrane-keypad": {
+   "C1": [],
+   "C2": [],
+   "C3": [],
+   "C4": [],
+   "R1": [],
+   "R2": [],
+   "R3": [],
+   "R4": []
+  },
+  "wokwi-microsd-card": {
+   "CD": [],
+   "CS": [],
+   "DI": [],
+   "DO": [],
+   "GND": [],
+   "SCK": [],
+   "VCC": []
+  },
+  "wokwi-mpu6050": {
+   "AD0": [],
+   "GND": [],
+   "INT": [],
+   "SCL": [
+    "i2c:SCL"
+   ],
+   "SDA": [
+    "i2c:SDA"
+   ],
+   "VCC": [],
+   "XCL": [],
+   "XDA": []
+  },
+  "wokwi-neopixel": {
+   "DIN": [],
+   "DOUT": [],
+   "VDD": [],
+   "VSS": []
+  },
+  "wokwi-neopixel-matrix": {
+   "DIN": [],
+   "DOUT": [],
+   "GND": [],
+   "VCC": []
+  },
+  "wokwi-ntc-temperature-sensor": {
+   "GND": [],
+   "OUT": [
+    "analog"
+   ],
+   "VCC": []
+  },
+  "wokwi-photoresistor-sensor": {
+   "AO": [
+    "analog"
+   ],
+   "DO": [],
+   "GND": [],
+   "VCC": []
+  },
+  "wokwi-pir-motion-sensor": {
+   "GND": [],
+   "OUT": [],
+   "VCC": []
+  },
+  "wokwi-potentiometer": {
+   "GND": [],
+   "SIG": [
+    "analog"
+   ],
+   "VCC": []
+  },
+  "wokwi-pushbutton": {
+   "1.l": [],
+   "1.r": [],
+   "2.l": [],
+   "2.r": []
+  },
+  "wokwi-pushbutton-6mm": {
+   "1.l": [],
+   "1.r": [],
+   "2.l": [],
+   "2.r": []
+  },
+  "wokwi-resistor": {
+   "1": [],
+   "2": []
+  },
+  "wokwi-rgb-led": {
+   "B": [],
+   "COM": [],
+   "G": [],
+   "R": []
+  },
+  "wokwi-rotary-dialer": {
+   "DIAL": [],
+   "GND": [],
+   "PULSE": []
+  },
+  "wokwi-servo": {
+   "GND": [],
+   "PWM": [
+    "pwm"
+   ],
+   "V+": []
+  },
+  "wokwi-slide-potentiometer": {
+   "GND": [],
+   "SIG": [
+    "analog"
+   ],
+   "VCC": []
+  },
+  "wokwi-slide-switch": {
+   "1": [],
+   "2": [],
+   "3": []
+  },
+  "wokwi-small-sound-sensor": {
+   "AOUT": [],
+   "DOUT": [],
+   "GND": [],
+   "VCC": []
+  },
+  "wokwi-ssd1306": {
+   "3V3": [
+    "vcc:3.3"
+   ],
+   "CLK": [
+    "i2c:SCL"
+   ],
+   "CS": [],
+   "DATA": [
+    "i2c:SDA"
+   ],
+   "DC": [],
+   "GND": [],
+   "RST": [],
+   "VIN": []
+  },
+  "wokwi-stepper-motor": {
+   "A+": [],
+   "A-": [],
+   "B+": [],
+   "B-": []
+  },
+  "wokwi-tilt-switch": {
+   "GND": [],
+   "OUT": [],
+   "VCC": []
+  }
+ },
+ "schede": {
+  "board-esp32-devkit-c-v4": {
+   "gpio": {
+    "0": {
+     "adc": "ADC2_CH1",
+     "avvio": true
+    },
+    "1": {
+     "seriale": "TXD"
+    },
+    "10": {
+     "flash": true
+    },
+    "11": {
+     "flash": true
+    },
+    "12": {
+     "adc": "ADC2_CH5",
+     "avvio": true,
+     "jtag": true
+    },
+    "13": {
+     "adc": "ADC2_CH4",
+     "jtag": true
+    },
+    "14": {
+     "adc": "ADC2_CH6",
+     "jtag": true
+    },
+    "15": {
+     "adc": "ADC2_CH3",
+     "avvio": true,
+     "jtag": true
+    },
+    "16": {
+     "flash": true
+    },
+    "17": {
+     "flash": true
+    },
+    "18": {},
+    "19": {},
+    "2": {
+     "adc": "ADC2_CH2",
+     "avvio": true
+    },
+    "21": {},
+    "22": {},
+    "23": {},
+    "25": {
+     "adc": "ADC2_CH8"
+    },
+    "26": {
+     "adc": "ADC2_CH9"
+    },
+    "27": {
+     "adc": "ADC2_CH7"
+    },
+    "3": {
+     "seriale": "RXD"
+    },
+    "32": {
+     "adc": "ADC1_CH4"
+    },
+    "33": {
+     "adc": "ADC1_CH5"
+    },
+    "34": {
+     "adc": "ADC1_CH6",
+     "solo_ingresso": true
+    },
+    "35": {
+     "adc": "ADC1_CH7",
+     "solo_ingresso": true
+    },
+    "36": {
+     "adc": "ADC1_CH0",
+     "solo_ingresso": true
+    },
+    "37": {
+     "adc": "ADC1_CH1",
+     "solo_ingresso": true
+    },
+    "38": {
+     "adc": "ADC1_CH2",
+     "solo_ingresso": true
+    },
+    "39": {
+     "adc": "ADC1_CH3",
+     "solo_ingresso": true
+    },
+    "4": {
+     "adc": "ADC2_CH0"
+    },
+    "5": {
+     "avvio": true
+    },
+    "6": {
+     "flash": true
+    },
+    "7": {
+     "flash": true
+    },
+    "8": {
+     "flash": true
+    },
+    "9": {
+     "flash": true
+    }
+   },
+   "nome": "ESP32 DevKitC V4",
+   "piedini": {
+    "0": [
+     "gpio:0",
+     "pwm",
+     "analog"
+    ],
+    "12": [
+     "gpio:12",
+     "pwm",
+     "analog"
+    ],
+    "13": [
+     "gpio:13",
+     "pwm",
+     "analog"
+    ],
+    "14": [
+     "gpio:14",
+     "pwm",
+     "analog"
+    ],
+    "15": [
+     "gpio:15",
+     "pwm",
+     "analog"
+    ],
+    "16": [
+     "gpio:16",
+     "pwm"
+    ],
+    "17": [
+     "gpio:17",
+     "pwm"
+    ],
+    "18": [
+     "gpio:18",
+     "pwm"
+    ],
+    "19": [
+     "gpio:19",
+     "pwm"
+    ],
+    "2": [
+     "gpio:2",
+     "pwm",
+     "analog"
+    ],
+    "21": [
+     "gpio:21",
+     "pwm",
+     "i2c:SDA"
+    ],
+    "22": [
+     "gpio:22",
+     "pwm",
+     "i2c:SCL"
+    ],
+    "23": [
+     "gpio:23",
+     "pwm"
+    ],
+    "25": [
+     "gpio:25",
+     "pwm",
+     "analog"
+    ],
+    "26": [
+     "gpio:26",
+     "pwm",
+     "analog"
+    ],
+    "27": [
+     "gpio:27",
+     "pwm",
+     "analog"
+    ],
+    "32": [
+     "gpio:32",
+     "pwm",
+     "analog"
+    ],
+    "33": [
+     "gpio:33",
+     "pwm",
+     "analog"
+    ],
+    "34": [
+     "gpio:34",
+     "analog"
+    ],
+    "35": [
+     "gpio:35",
+     "analog"
+    ],
+    "3V3": [
+     "vcc:3.3"
+    ],
+    "4": [
+     "gpio:4",
+     "pwm",
+     "analog"
+    ],
+    "5": [
+     "gpio:5",
+     "pwm"
+    ],
+    "5V": [
+     "vcc:5"
+    ],
+    "CLK": [
+     "gpio:6",
+     "pwm"
+    ],
+    "CMD": [
+     "gpio:11",
+     "pwm"
+    ],
+    "D0": [
+     "gpio:7",
+     "pwm"
+    ],
+    "D1": [
+     "gpio:8",
+     "pwm"
+    ],
+    "D2": [
+     "gpio:9",
+     "pwm"
+    ],
+    "D3": [
+     "gpio:10",
+     "pwm"
+    ],
+    "EN": [],
+    "GND.1": [
+     "gnd"
+    ],
+    "GND.2": [
+     "gnd"
+    ],
+    "GND.3": [
+     "gnd"
+    ],
+    "RX": [
+     "gpio:3",
+     "pwm"
+    ],
+    "TX": [
+     "gpio:1",
+     "pwm"
+    ],
+    "VN": [
+     "gpio:39",
+     "analog"
+    ],
+    "VP": [
+     "gpio:36",
+     "analog"
+    ]
+   },
+   "predefiniti": {
+    "MISO": 19,
+    "MOSI": 23,
+    "RX": 3,
+    "SCK": 18,
+    "SCL": 22,
+    "SDA": 21,
+    "SS": 5,
+    "TX": 1
+   }
+  },
+  "wokwi-arduino-mega": {
+   "nome": "Arduino Mega",
+   "non_simulati": [
+    "3.3V",
+    "IOREF",
+    "AREF",
+    "RESET"
+   ],
+   "piedini": {
+    "0": [
+     "usart:RX"
+    ],
+    "1": [
+     "usart:TX"
+    ],
+    "10": [
+     "pwm"
+    ],
+    "11": [
+     "pwm"
+    ],
+    "12": [
+     "pwm"
+    ],
+    "13": [
+     "pwm"
+    ],
+    "14": [
+     "usart3:TX"
+    ],
+    "15": [
+     "usart3:RX"
+    ],
+    "16": [
+     "usart2:TX"
+    ],
+    "17": [
+     "usart2:RX"
+    ],
+    "18": [
+     "usart1:TX"
+    ],
+    "19": [
+     "usart1:RX"
+    ],
+    "2": [
+     "pwm"
+    ],
+    "20": [
+     "i2c:SDA"
+    ],
+    "21": [
+     "i2c:SCL"
+    ],
+    "22": [],
+    "23": [],
+    "24": [],
+    "25": [],
+    "26": [],
+    "27": [],
+    "28": [],
+    "29": [],
+    "3": [
+     "pwm"
+    ],
+    "3.3V": [
+     "vcc:3.3"
+    ],
+    "30": [],
+    "31": [],
+    "32": [],
+    "33": [],
+    "34": [],
+    "35": [],
+    "36": [],
+    "37": [],
+    "38": [],
+    "39": [],
+    "4": [
+     "pwm"
+    ],
+    "40": [],
+    "41": [],
+    "42": [],
+    "43": [],
+    "44": [
+     "pwm"
+    ],
+    "45": [
+     "pwm"
+    ],
+    "46": [
+     "pwm"
+    ],
+    "47": [],
+    "48": [],
+    "49": [],
+    "5": [
+     "pwm"
+    ],
+    "50": [
+     "spi:MISO"
+    ],
+    "51": [
+     "spi:MOSI"
+    ],
+    "52": [
+     "spi:SCK"
+    ],
+    "53": [],
+    "5V": [
+     "vcc:5"
+    ],
+    "5V.1": [
+     "vcc:5"
+    ],
+    "5V.2": [
+     "vcc:5"
+    ],
+    "6": [
+     "pwm"
+    ],
+    "7": [
+     "pwm"
+    ],
+    "8": [
+     "pwm"
+    ],
+    "9": [
+     "pwm"
+    ],
+    "A0": [
+     "analog"
+    ],
+    "A1": [
+     "analog"
+    ],
+    "A10": [
+     "analog"
+    ],
+    "A11": [
+     "analog"
+    ],
+    "A12": [
+     "analog"
+    ],
+    "A13": [
+     "analog"
+    ],
+    "A14": [
+     "analog"
+    ],
+    "A15": [
+     "analog"
+    ],
+    "A2": [
+     "analog"
+    ],
+    "A3": [
+     "analog"
+    ],
+    "A4": [
+     "analog"
+    ],
+    "A5": [
+     "analog"
+    ],
+    "A6": [
+     "analog"
+    ],
+    "A7": [
+     "analog"
+    ],
+    "A8": [
+     "analog"
+    ],
+    "A9": [
+     "analog"
+    ],
+    "AREF": [],
+    "GND.1": [
+     "gnd"
+    ],
+    "GND.2": [
+     "gnd"
+    ],
+    "GND.3": [
+     "gnd"
+    ],
+    "GND.4": [
+     "gnd"
+    ],
+    "GND.5": [
+     "gnd"
+    ],
+    "IOREF": [],
+    "RESET": [],
+    "SCL": [
+     "i2c:SCL"
+    ],
+    "SDA": [
+     "i2c:SDA"
+    ],
+    "VIN": [
+     "vcc"
+    ]
+   }
+  },
+  "wokwi-arduino-nano": {
+   "nome": "Arduino Nano",
+   "non_simulati": [
+    "3.3V",
+    "IOREF",
+    "AREF",
+    "RESET"
+   ],
+   "piedini": {
+    "0": [
+     "usart:TX"
+    ],
+    "1": [
+     "usart:RX"
+    ],
+    "10": [
+     "pwm",
+     "spi:SS"
+    ],
+    "11": [
+     "pwm",
+     "spi:MOSI"
+    ],
+    "11.2": [
+     "pwm",
+     "spi:MOSI"
+    ],
+    "12": [
+     "spi:MISO"
+    ],
+    "12.2": [
+     "spi:MISO"
+    ],
+    "13": [
+     "spi:SCK"
+    ],
+    "13.2": [
+     "spi:SCK"
+    ],
+    "2": [],
+    "3": [
+     "pwm"
+    ],
+    "3.3V": [
+     "vcc:3.3"
+    ],
+    "4": [],
+    "5": [
+     "pwm"
+    ],
+    "5V": [
+     "vcc:5"
+    ],
+    "5V.2": [
+     "vcc:5"
+    ],
+    "6": [
+     "pwm"
+    ],
+    "7": [],
+    "8": [],
+    "9": [
+     "pwm"
+    ],
+    "A0": [
+     "analog"
+    ],
+    "A1": [
+     "analog"
+    ],
+    "A2": [
+     "analog"
+    ],
+    "A3": [
+     "analog"
+    ],
+    "A4": [
+     "analog",
+     "i2c:SDA"
+    ],
+    "A5": [
+     "analog",
+     "i2c:SCL"
+    ],
+    "A6": [
+     "analog"
+    ],
+    "A7": [
+     "analog"
+    ],
+    "AREF": [],
+    "GND.1": [
+     "gnd"
+    ],
+    "GND.2": [
+     "gnd"
+    ],
+    "GND.3": [
+     "gnd"
+    ],
+    "RESET": [],
+    "RESET.2": [],
+    "RESET.3": [],
+    "VIN": [
+     "vcc"
+    ]
+   },
+   "solo_analogici": [
+    "A6",
+    "A7"
+   ]
+  },
+  "wokwi-arduino-uno": {
+   "nome": "Arduino Uno",
+   "non_simulati": [
+    "3.3V",
+    "IOREF",
+    "AREF",
+    "RESET"
+   ],
+   "piedini": {
+    "0": [
+     "usart:RX"
+    ],
+    "1": [
+     "usart:TX"
+    ],
+    "10": [
+     "pwm",
+     "spi:SS"
+    ],
+    "11": [
+     "pwm",
+     "spi:MOSI"
+    ],
+    "12": [
+     "spi:MISO"
+    ],
+    "13": [
+     "spi:SCK"
+    ],
+    "2": [],
+    "3": [
+     "pwm"
+    ],
+    "3.3V": [
+     "vcc:3.3"
+    ],
+    "4": [],
+    "5": [
+     "pwm"
+    ],
+    "5V": [
+     "vcc:5"
+    ],
+    "6": [
+     "pwm"
+    ],
+    "7": [],
+    "8": [],
+    "9": [
+     "pwm"
+    ],
+    "A0": [
+     "analog"
+    ],
+    "A1": [
+     "analog"
+    ],
+    "A2": [
+     "analog"
+    ],
+    "A3": [
+     "analog"
+    ],
+    "A4": [
+     "analog",
+     "i2c:SDA"
+    ],
+    "A4.2": [
+     "analog",
+     "i2c:SDA"
+    ],
+    "A5": [
+     "analog",
+     "i2c:SCL"
+    ],
+    "A5.2": [
+     "analog",
+     "i2c:SCL"
+    ],
+    "AREF": [],
+    "GND.1": [
+     "gnd"
+    ],
+    "GND.2": [
+     "gnd"
+    ],
+    "GND.3": [
+     "gnd"
+    ],
+    "IOREF": [],
+    "RESET": [],
+    "VIN": [
+     "vcc"
+    ]
+   }
+  },
+  "wokwi-esp32-devkit-v1": {
+   "gpio": {
+    "0": {
+     "adc": "ADC2_CH1",
+     "avvio": true
+    },
+    "1": {
+     "seriale": "TXD"
+    },
+    "10": {
+     "flash": true
+    },
+    "11": {
+     "flash": true
+    },
+    "12": {
+     "adc": "ADC2_CH5",
+     "avvio": true,
+     "jtag": true
+    },
+    "13": {
+     "adc": "ADC2_CH4",
+     "jtag": true
+    },
+    "14": {
+     "adc": "ADC2_CH6",
+     "jtag": true
+    },
+    "15": {
+     "adc": "ADC2_CH3",
+     "avvio": true,
+     "jtag": true
+    },
+    "16": {
+     "flash": true
+    },
+    "17": {
+     "flash": true
+    },
+    "18": {},
+    "19": {},
+    "2": {
+     "adc": "ADC2_CH2",
+     "avvio": true
+    },
+    "21": {},
+    "22": {},
+    "23": {},
+    "25": {
+     "adc": "ADC2_CH8"
+    },
+    "26": {
+     "adc": "ADC2_CH9"
+    },
+    "27": {
+     "adc": "ADC2_CH7"
+    },
+    "3": {
+     "seriale": "RXD"
+    },
+    "32": {
+     "adc": "ADC1_CH4"
+    },
+    "33": {
+     "adc": "ADC1_CH5"
+    },
+    "34": {
+     "adc": "ADC1_CH6",
+     "solo_ingresso": true
+    },
+    "35": {
+     "adc": "ADC1_CH7",
+     "solo_ingresso": true
+    },
+    "36": {
+     "adc": "ADC1_CH0",
+     "solo_ingresso": true
+    },
+    "37": {
+     "adc": "ADC1_CH1",
+     "solo_ingresso": true
+    },
+    "38": {
+     "adc": "ADC1_CH2",
+     "solo_ingresso": true
+    },
+    "39": {
+     "adc": "ADC1_CH3",
+     "solo_ingresso": true
+    },
+    "4": {
+     "adc": "ADC2_CH0"
+    },
+    "5": {
+     "avvio": true
+    },
+    "6": {
+     "flash": true
+    },
+    "7": {
+     "flash": true
+    },
+    "8": {
+     "flash": true
+    },
+    "9": {
+     "flash": true
+    }
+   },
+   "nome": "ESP32 DevKit V1",
+   "piedini": {
+    "3V3": [
+     "vcc:3.3"
+    ],
+    "D12": [
+     "gpio:12",
+     "pwm",
+     "analog"
+    ],
+    "D13": [
+     "gpio:13",
+     "pwm",
+     "analog"
+    ],
+    "D14": [
+     "gpio:14",
+     "pwm",
+     "analog"
+    ],
+    "D15": [
+     "gpio:15",
+     "pwm",
+     "analog"
+    ],
+    "D18": [
+     "gpio:18",
+     "pwm"
+    ],
+    "D19": [
+     "gpio:19",
+     "pwm"
+    ],
+    "D2": [
+     "gpio:2",
+     "pwm",
+     "analog"
+    ],
+    "D21": [
+     "gpio:21",
+     "pwm",
+     "i2c:SDA"
+    ],
+    "D22": [
+     "gpio:22",
+     "pwm",
+     "i2c:SCL"
+    ],
+    "D23": [
+     "gpio:23",
+     "pwm"
+    ],
+    "D25": [
+     "gpio:25",
+     "pwm",
+     "analog"
+    ],
+    "D26": [
+     "gpio:26",
+     "pwm",
+     "analog"
+    ],
+    "D27": [
+     "gpio:27",
+     "pwm",
+     "analog"
+    ],
+    "D32": [
+     "gpio:32",
+     "pwm",
+     "analog"
+    ],
+    "D33": [
+     "gpio:33",
+     "pwm",
+     "analog"
+    ],
+    "D34": [
+     "gpio:34",
+     "analog"
+    ],
+    "D35": [
+     "gpio:35",
+     "analog"
+    ],
+    "D4": [
+     "gpio:4",
+     "pwm",
+     "analog"
+    ],
+    "D5": [
+     "gpio:5",
+     "pwm"
+    ],
+    "EN": [],
+    "GND.1": [
+     "gnd"
+    ],
+    "GND.2": [
+     "gnd"
+    ],
+    "RX0": [
+     "gpio:3",
+     "pwm"
+    ],
+    "RX2": [
+     "gpio:16",
+     "pwm"
+    ],
+    "TX0": [
+     "gpio:1",
+     "pwm"
+    ],
+    "TX2": [
+     "gpio:17",
+     "pwm"
+    ],
+    "VIN": [
+     "vcc:5"
+    ],
+    "VN": [
+     "gpio:39",
+     "analog"
+    ],
+    "VP": [
+     "gpio:36",
+     "analog"
+    ]
+   },
+   "predefiniti": {
+    "MISO": 19,
+    "MOSI": 23,
+    "RX": 3,
+    "SCK": 18,
+    "SCL": 22,
+    "SDA": 21,
+    "SS": 5,
+    "TX": 1
+   }
+  }
+ }
+}

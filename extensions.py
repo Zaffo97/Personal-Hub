@@ -776,6 +776,17 @@ def init_db():
         except Exception:
             pass
 
+    # Arduino, dal 25/09/2026: il link al progetto su Wokwi e il suo `diagram.json`
+    # incollato, da cui `arduino_circuito.py` ricava la tabella dei piedini. Il testo si
+    # tiene intero, com'è arrivato: la tabella si ricalcola a ogni apertura, così un
+    # controllo nuovo vale anche per i circuiti salvati prima.
+    for col in ("wokwi_url", "wokwi_diagramma"):
+        try:
+            db.execute(f"ALTER TABLE arduino_projects ADD COLUMN {col} TEXT")
+            db.commit()
+        except Exception:
+            pass
+
     db.commit()
     db.close()
 
