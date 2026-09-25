@@ -1665,7 +1665,44 @@
       "ruolo": "a"
     }
   ],
-  "stampa_progetti": [],
-  "stampa_file": [],
-  "stampa_filamenti": []
+  "stampa_progetti": [
+    {
+      "id": 1,
+      "user_id": 1,
+      "nome": "Shark",
+      "stato": "Idea",
+      "stampante": null,
+      "materiale": "PLA",
+      "link_modello": "https://www.printables.com/model/973406-articulated-happy-shark-flexi-fish-toy/files",
+      "link_disegno": null,
+      "grammi": null,
+      "note": null,
+      "created_at": "2026-09-25 17:44:12"
+    }
+  ],
+  "stampa_file": [
+    {
+      "id": 1,
+      "progetto_id": 1,
+      "nome": "Happy_Shark_3MF.3mf",
+      "impronta": "5b440216fa864ea527ade88741f4b1f55db20feb479c9d6b08c20f2b0bd72980",
+      "byte": 2521970,
+      "caricato_il": "2026-09-25 17:44:12"
+    }
+  ],
+  "stampa_filamenti": [
+    {
+      "id": 1,
+      "user_id": 1,
+      "materiale": "PLA",
+      "marca": null,
+      "colore": null,
+      "colore_hex": "#5a2b2b",
+      "peso_totale": 1000.0,
+      "peso_rimasto": 1000.0,
+      "prezzo": null,
+      "note": null,
+      "created_at": "2026-09-25 17:43:15"
+    }
+  ]
 }

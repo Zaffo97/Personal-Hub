@@ -135,6 +135,19 @@ MAI_SOVRASCRITTE = {
     "regulations": {"created_at"},
 }
 
+# Colonne che, **vuote nel DB**, si riempiono dall'export senza chiamarlo conflitto.
+# ⚠️ Trovato il 25/09/2026: dal 22/09 `users` ha `tema` e `lingua`, e `init_db()` su
+# un PC nuovo crea l'admin con tutte e due a NULL. L'export di un admin che ha scelto
+# un tema dice `sabbia`, quindi la riga 1 risultava **in conflitto** e il ripristino
+# si fermava — cioè il caso per cui il ripristino esiste (un PC nuovo) non passava
+# più, e l'unica uscita era `--sovrascrivi`. Riempire un vuoto non cancella niente.
+# Se invece il DB ha un valore **suo** e diverso, resta un conflitto come prima.
+# L'elenco è stretto di proposito: una regola generale («ogni NULL si completa»)
+# cambierebbe il ripristino di tutte le tabelle, ed è una decisione da prendere a sé.
+DA_COMPLETARE = {
+    "users": {"tema", "lingua"},
+}
+
 
 def leggibile(percorso):
     """Il path relativo alla radice se ci sta dentro, altrimenti quello assoluto.
@@ -203,10 +216,14 @@ def indice(db, tabella, colonne, chiave):
 
 
 def piano_tabella(db, tabella, righe_export):
-    """`(nuove, identiche, conflitti, colonne_assenti_nel_db, colonne_solo_nel_db)`.
+    """`(nuove, identiche, conflitti, colonne_assenti_nel_db, colonne_solo_nel_db,
+    da_completare)`.
 
     `conflitti` e' la lista `(chiave, differenze)` dove `differenze` sono le sole
     colonne che cambierebbero: e' quello che viene stampato prima di sovrascrivere.
+    `da_completare` e' la lista `(chiave, {colonna: valore})` delle colonne di
+    `DA_COMPLETARE` vuote nel DB e piene nell'export, **solo** su righe senza conflitti:
+    una riga in conflitto la decide `--sovrascrivi`, per intero.
     """
     colonne_db = schema_db(db, tabella)
     if colonne_db is None:
@@ -231,7 +248,8 @@ def piano_tabella(db, tabella, righe_export):
         return ("CHIAVE", "la chiave primaria è (" + ", ".join(chiave) + ") e "
                           "nell'export manca " + ", ".join(fuori_export))
     presenti = indice(db, tabella, colonne_export, chiave) if colonne_export else {}
-    nuove, identiche, conflitti = [], 0, []
+    nuove, identiche, conflitti, completare = [], 0, [], []
+    completabili = DA_COMPLETARE.get(tabella, set())
     for riga in righe_export:
         k = tuple(riga[c] for c in chiave)
         vecchia = presenti.get(k)
@@ -239,13 +257,18 @@ def piano_tabella(db, tabella, righe_export):
             nuove.append(riga)
             continue
         intoccabili = MAI_SOVRASCRITTE.get(tabella, set())
+        vuote = {c: riga[c] for c in colonne_export
+                 if c in completabili and vecchia[c] is None and riga[c] is not None}
         diverse = {c: (vecchia[c], riga[c]) for c in colonne_export
-                   if c not in intoccabili and not uguali(vecchia[c], riga[c])}
+                   if c not in intoccabili and c not in vuote
+                   and not uguali(vecchia[c], riga[c])}
         if diverse:
             conflitti.append((k, diverse))
         else:
             identiche += 1
-    return (nuove, identiche, conflitti, assenti, solo_db)
+            if vuote:
+                completare.append((k, vuote))
+    return (nuove, identiche, conflitti, assenti, solo_db, completare)
 
 
 def argomenti_disallineati(db, dati):
@@ -433,8 +456,12 @@ def main():
     for tabella in ORDINE:
         if tabella not in piani:
             continue
-        nuove, identiche, conflitti, _, _ = piani[tabella]
+        nuove, identiche, conflitti, _, _, completare = piani[tabella]
         print(f"  {tabella:<18} {len(nuove):>7} {identiche:>12} {len(conflitti):>14}")
+        for chiave, colonne in completare:
+            etichetta = chiave[0] if len(chiave) == 1 else chiave
+            print(f"      {tabella} {etichetta}: vuoto nel DB, dall'export "
+                  + ", ".join(f"{c}={v!r}" for c, v in colonne.items()))
 
     if mancanti:
         print(f"\n  (tabelle non presenti nell'export: {', '.join(mancanti)})")
@@ -517,7 +544,8 @@ def main():
 
     da_scrivere = sum(len(piani[t][0]) for t in piani)
     da_sovrascrivere = sum(len(piani[t][2]) for t in piani) if args.sovrascrivi else 0
-    if not da_scrivere and not da_sovrascrivere:
+    da_completare = sum(len(piani[t][5]) for t in piani)
+    if not da_scrivere and not da_sovrascrivere and not da_completare:
         print("\nNiente da fare: il DB ha già tutto quello che c'è nell'export.")
         db.close()
         return 0
@@ -561,7 +589,8 @@ def main():
 
     if args.dry_run:
         print(f"\n--dry-run: {da_scrivere} righe da inserire, "
-              f"{da_sovrascrivere} da sovrascrivere. Non ho scritto niente.")
+              f"{da_sovrascrivere} da sovrascrivere, {da_completare} da completare. "
+              "Non ho scritto niente.")
         db.close()
         return 0
 
@@ -581,16 +610,29 @@ def main():
     print(f"\nCopia di sicurezza: {leggibile(copia)}")
 
     utenti_nuovi = len(piani.get("users", ([], 0, [], [], []))[0])
-    scritte, sovrascritte, a_vuoto = 0, 0, []
+    scritte, sovrascritte, completate, a_vuoto = 0, 0, 0, []
     try:
         db.execute("BEGIN")
         for tabella in ORDINE:
             if tabella not in piani:
                 continue
-            nuove, _, conflitti, _, _ = piani[tabella]
+            nuove, _, conflitti, _, _, completare = piani[tabella]
             for riga in nuove:
                 inserisci(db, tabella, riga)
                 scritte += 1
+            # Solo dove è ancora vuoto: `IS NULL` nella condizione, così un valore
+            # scritto nel frattempo non si tocca — e il `rowcount` a zero lo dice.
+            chiave_t = chiave_di(db, tabella) if completare else ()
+            for chiave, colonne in completare:
+                for colonna, valore in colonne.items():
+                    dove = " AND ".join(f"{c}=?" for c in chiave_t)
+                    cur = db.execute(f"UPDATE {tabella} SET {colonna}=? "
+                                     f"WHERE {dove} AND {colonna} IS NULL",
+                                     [valore] + list(chiave))
+                    if cur.rowcount == 0:
+                        a_vuoto.append((tabella, chiave))
+                    else:
+                        completate += 1
             if args.sovrascrivi:
                 for chiave, _ in conflitti:
                     riga = next(r for r in dati[tabella]
@@ -614,7 +656,8 @@ def main():
         return 1
     db.close()
 
-    print(f"Scritte {scritte} righe nuove, {sovrascritte} sovrascritte.")
+    print(f"Scritte {scritte} righe nuove, {sovrascritte} sovrascritte, "
+          f"{completate} valori completati.")
     if utenti_nuovi and not con_password:
         print(f"\n⚠️  {utenti_nuovi} utenti sono rientrati **senza password**: l'export")
         print("    non le contiene di proposito. Non possono entrare finché un")

@@ -133,6 +133,26 @@ def prove(dove):
           "senza password" in out)
     esito("la copia di sicurezza è stata lasciata", "Copia di sicurezza" in out)
 
+    # ⚠️ Il caso del 25/09/2026: `init_db()` crea l'admin col tema **vuoto**, e un
+    # export dove l'admin ha scelto un tema lo vedeva come conflitto — il ripristino
+    # su un PC nuovo si fermava. Il valore atteso si legge dall'export, non si scrive
+    # qui: la prova non deve dipendere dal tema che Davide ha scelto oggi.
+    admin_export = next((u for u in export.get("users", []) if u.get("id") == 1), {})
+    tema_export = admin_export.get("tema")
+    if tema_export:
+        esito("il tema dell'admin, vuoto sul DB nuovo, torna quello dell'export",
+              valore(base, "SELECT tema FROM users WHERE id=1") == tema_export
+              and "vuoto nel DB" in out, tema_export)
+        suo = db_vergine(dove, "tema_suo.db")
+        esegui(suo, "UPDATE users SET tema='prova-diverso' WHERE id=1")
+        rc, out_suo = gira(suo, "--dry-run")
+        esito("   ma un tema già scelto e diverso resta un conflitto, e non si tocca",
+              rc == 1 and "tema" in out_suo
+              and valore(suo, "SELECT tema FROM users WHERE id=1") == "prova-diverso")
+    else:
+        esito("(l'admin dell'export non ha un tema: il completamento non si può provare)",
+              True, "sceglierne uno e riesportare per riattivarla")
+
     # ⚠️ Il conteggio non basta, e il 22/09/2026 si è visto perché: la tabella che
     # ha tenuto rotto **tutto** il ripristino è `fanta_formazione`, l'unica senza
     # una colonna `id`. Qui si guarda una riga **dentro**, ritrovata per la sua

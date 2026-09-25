@@ -58,6 +58,7 @@ E sulla **copia** (§4.3):
 """
 import argparse
 import os
+import re
 import shutil
 import sys
 import tempfile
@@ -390,6 +391,43 @@ def prove(dove):
               _quante(db, "games", ids["nuovo"]) == quanti_prima,
               f"games={_quante(db, 'games', ids['nuovo'])} (erano {quanti_prima})")
         db.close()
+
+    print("\n== 9. le conferme della pagina Utenti con un nome difficile ==")
+    # ⚠️ Il caso difficile va **nei dati**: lo sweep rende la pagina sul DB vero, e
+    # finché nessun utente ha l'apostrofo nel nome l'handler sbagliato risulta pulito
+    # (la trappola di `{{ nome|e }}`, §3 del backlog, 25/09/2026). Se l'`onsubmit`
+    # non compila, il `confirm` sparisce e l'eliminazione parte senza chiedere.
+    difficile = "d'amico \"bis\""
+    db = extensions.get_db()
+    db.execute("INSERT INTO users(username,password,display_name,role) VALUES(?,?,?,?)",
+               (difficile, "x", "D'Amico", "user"))
+    db.commit()
+    db.close()
+    with app.test_client() as c:
+        da_capo(c)
+        pagina = c.get("/admin/utenti").get_data(as_text=True)
+    sys.path.insert(0, os.path.join(RADICE, "scripts"))
+    try:
+        import esprima
+        from sweep_pagine import controlla
+        errori = controlla(esprima, "/admin/utenti", pagina)
+        esito("script e handler compilano, con apostrofo e virgolette nel nome",
+              errori == 0, f"{errori} errori")
+    except ImportError:
+        esito("manca esprima: pip install esprima", False)
+    import html as H
+    import json
+    # Si confronta la stringa **decodificata**, come la legge il browser: `|tojson`
+    # scrive l'apostrofo come `'`, e un confronto sul testo grezzo fallirebbe su
+    # un codice giusto.
+    testi = []
+    for h in re.findall(r"onsubmit='([^']*)'", pagina):
+        m = re.fullmatch(r"\s*return confirm\((.*)\)\s*", H.unescape(h), re.S)
+        if m:
+            testi.append(json.loads(m.group(1)))
+    atteso = f"Eliminare l’utente {difficile}? L’operazione non si annulla."
+    esito("la conferma di eliminazione nomina l'utente per intero", atteso in testi,
+          f"{len(testi)} conferme lette")
 
 
 def main():

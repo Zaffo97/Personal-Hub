@@ -20,6 +20,18 @@ pagina ed esegue `new Function()` su ogni blocco `<script>` **e** su ogni handle
 
 ## 25/09/2026
 
+**I due bachi piccoli di §3.** (1) La conferma di eliminazione in `admin_utenti.html` con
+lo username dentro un handler inline: ora `|tojson` fra apici singoli. `prova_travaso_utente.py`
+ha nei dati `d'amico "bis"`: sul template vecchio **56 su 58** (l'handler non compilava), ora
+**58 su 58**. (2) `prova_importa_dati.py` a 19 su 32: la prima diagnosi («è il banco») era
+**sbagliata** — il banco rifaceva fedelmente un PC nuovo, e il ripristino vero su un PC
+nuovo si sarebbe fermato allo stesso modo: l'admin di `init_db()` ha il tema vuoto, l'export
+`sabbia`, e un vuoto contro un valore contava come conflitto. Nuovo `DA_COMPLETARE` in
+`importa_dati.py` (oggi `users.tema` e `users.lingua`): vuoto nel DB → si completa, e si
+dice; valore diverso → conflitto come prima. Scrittura con `IS NULL` nella condizione e
+controllo del `rowcount`. `prova_importa_dati.py` **34 su 34** (2 nuove), `prova_esporta_completo.py`
+21/21, sweep 0 errori, dry-run sul DB vero «niente da fare».
+
 **Stampa 3D: l'anteprima 3D dei file (§4.8)** — chiesta da Davide. three.js 0.186.1 (MIT)
 dal pacchetto npm ufficiale (sha1 verificato), solo gli 8 file che servono in
 `static/vendor/` (2,3 MB), caricati **al primo clic** con un importmap: la pagina non pesa
