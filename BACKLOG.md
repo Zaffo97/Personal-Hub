@@ -287,6 +287,7 @@ mancante e **lo si dichiara**. Non si riempie a stima.
 | | Baco | Stato |
 |---|---|---|
 | ⬜ | **Due abilità senza effetto nel motore** | Trovate il 23/09/2026. **Affilama** (Sharpness, di Mega Absol Z) ha `effect: none` e dovrebbe potenziare le mosse **da taglio** — che hanno il flag `slicing`, quindi il motore potrebbe leggerlo. **Aura Guard** (Mega Lucario Z) è nuova e senza descrizione. Tutti e due i valori vanno presi da una fonte, non da memoria |
+| ⬜ | **L'import DxDiag salva nomi che non sono pezzi** | Trovato il 25/09/2026 provando la compatibilità sulla build vera: la scheda madre è registrata come **«System Product Name»** (il segnaposto che ASUS lascia nel campo `System Model`, che `_parse_dxdiag()` legge quando manca `Motherboard`), la RAM come **«32768MB RAM»**, e la grafica **integrata** del 7800X3D («AMD Radeon(TM) Graphics») come seconda GPU — il filtro scarta solo `microsoft`/`basic`. Nessun errore: i nomi sembrano dati. Non corretto, fuori scope. Con la compatibilità conta di più, perché la ricerca nel catalogo parte da quel nome |
 | ⬜ | **`confirm` con lo username non escapato** | `admin_utenti.html:117`: `'Eliminare l’utente {{ u.username }}?'` dentro un handler inline. Uno username con l'apostrofo rompe l'handler, e il `confirm` di un'eliminazione sparisce (vedi la trappola su `{{ nome|e }}`). Le due conferme sopra (righe 92 e 105) usano già `|tojson` |
 
 Tutti gli altri bachi elencati qui fino al 23/09/2026 sono chiusi: vedi `STORICO.md`.
@@ -297,7 +298,7 @@ Tutti gli altri bachi elencati qui fino al 23/09/2026 sono chiusi: vedi `STORICO
 
 | Sezione | Voce |
 |---|---|
-| 💻 **PC Builder** | 🟨 Wishlist, prezzi, link ai negozi e avvisi **fatti il 25/09/2026**: vedi §4.7 · ⬜ percentuale di compatibilità fra i pezzi (valutare UserBenchmark) · ⬜ gestire l'uscita di nuovi pezzi nel tempo |
+| 💻 **PC Builder** | 🟨 Wishlist, prezzi, link ai negozi, avvisi e **compatibilità** fatti il 25/09/2026: vedi §4.7 · ⬜ gestire l'uscita di nuovi pezzi nel tempo |
 | 🖨️ **Stampa 3D** | ⬜ Sezione nuova, sul modello di Arduino: richiamo a un sito per disegnare e salvataggio dei progetti |
 | 🤖 **Arduino** | ⬜ Richiamo a Tinkercad per disegnare il progetto e verificare i connettori |
 | 🐍 **Python** | ⬜ Spazio per inserire i propri progetti e testarli · ⬜ idee per rendere la sezione più utile |
@@ -463,7 +464,30 @@ riquadro «Da guardare» all'apertura. Logica in `pc_negozi.py`, prova `prova_pc
   e chiave fuori dal repo): rimandato da Davide, «prima solo i link»
 - **Notifiche vere** (email, telefono, a PC spento): per Amazon le fa Keepa, per eBay le
   ricerche salvate. L'hub avvisa solo quando lo apri
-- **Compatibilità fra pezzi** e **uscita di pezzi nuovi**: le due voci vecchie, non toccate
+- **L'uscita di pezzi nuovi**: la voce vecchia, non toccata. Ora ha una base — il catalogo
+  OpenDB si aggiorna col pulsante, e confrontando due indici si vedrebbe cosa è entrato
+
+**✅ La compatibilità, fatta il 25/09/2026** (numeri in `STORICO.md`). Fonte: **BuildCores
+OpenDB**, licenza ODC-By 1.0, scaricata col pulsante «Aggiorna catalogo» (zip da 46 MB, indice
+da 3,9 MB in `data/cache/`). Scartati UserBenchmark (ne vieta ogni uso senza permesso) e
+PCPartPicker (nessuna API: quella che circola è scraping). Ogni pezzo si **collega** al suo
+modello dal modulo; i dieci controlli girano sulla configurazione **dopo gli acquisti** e
+dicono ✓ / ✗ / non noto / da verificare, con la percentuale sui soli verificabili. Scelte di
+Davide: elenco più percentuale, alimentatore a **+30%** sulla somma dei TDP, aggiornamento a
+pulsante. Logica in `pc_catalogo.py`.
+
+**⬜ Della compatibilità resta:**
+
+- ⚠️ **Collegare i 5 pezzi veri di Davide**: nessuno è collegato, e con i nomi di DxDiag la
+  ricerca non basta (vedi il baco in §3). Il catalogo va scaricato una prima volta col pulsante
+- **Quello che il catalogo non sa**, ed è dichiarato a schermo: l'altezza massima del
+  dissipatore c'è solo per **1 case su 3** (36%), l'altezza dei dissipatori per il 70%;
+  **LGA 1151** dà «da verificare» (due generazioni incompatibili sullo stesso socket), e su
+  **AM4** una CPU recente può chiedere un BIOS aggiornato, che nessun dato dice
+- **Non controllati**: i connettori di alimentazione della GPU (8 pin, 12VHPWR) contro quelli
+  dell'alimentatore, e gli slot M.2 — i dati ci sono, non sono stati chiesti
+- **Più pezzi della stessa categoria** (due kit di RAM, due GPU): si controlla il primo e la
+  pagina lo dice. Sommare due kit di RAM non è stato fatto
 
 ---
 

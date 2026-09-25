@@ -19,6 +19,8 @@ Quello che queste prove devono tenere fermo sono i difetti che non darebbero err
   nessun link deve usarla
 """
 import argparse
+import io
+import json
 import os
 import re
 import shutil
@@ -47,14 +49,15 @@ def esito(nome, ok, dettaglio=""):
 
 
 def riga(cat, nome, prezzo="", stato="", obiettivo="", usato="", prev="", data_p="",
-         usato_prev="", usato_data="", amazon="", eprice="", bpm="", versus="", note=""):
+         usato_prev="", usato_data="", amazon="", eprice="", bpm="", versus="", note="",
+         opendb=""):
     """I campi di una riga del form, nell'ordine di `CAMPI_RIGA`."""
     return {"comp_cat": cat, "comp_name": nome, "comp_price": prezzo, "comp_notes": note,
             "comp_stato": stato, "comp_obiettivo": obiettivo, "comp_usato": usato,
             "comp_price_prev": prev, "comp_price_date": data_p,
             "comp_usato_prev": usato_prev, "comp_usato_date": usato_data,
             "comp_link_amazon": amazon, "comp_link_eprice": eprice,
-            "comp_link_bpm": bpm, "comp_link_versus": versus}
+            "comp_link_bpm": bpm, "comp_link_versus": versus, "comp_opendb": opendb}
 
 
 def form(nome_build, righe, bid=""):
@@ -117,6 +120,112 @@ def prove_modulo():
           ob == ["da vendere", "sotto soglia"], str(ob))
     esito("da ricontrollare: il prezzo vecchio e quello mai scritto, nient'altro",
           ri == ["mai scritto", "vecchio"], str(ri))
+
+
+# Uno zip finto con la forma di quello di OpenDB: <radice>/open-db/<Categoria>/<id>.json.
+# Pochi pezzi scelti per far scattare ogni controllo; i valori sono presi dal dump vero
+# del 25/09/2026 (7800X3D 120 W AM5, RTX 4070 Ti 285 W, Fractal North 355/170 mm, ...).
+PEZZI_FINTI = {
+    ("CPU", "cpu-7800"): {"socket": "AM5", "specifications": {"tdp": 120, "memory": {"types": ["DDR5"]}},
+                          "metadata": {"name": "AMD Ryzen 7 7800X3D"}},
+    ("CPU", "cpu-9700k"): {"socket": "LGA 1151", "specifications": {"tdp": 95, "memory": {"types": ["DDR4"]}},
+                           "metadata": {"name": "Intel Core i7-9700K"}},
+    ("Motherboard", "mb-b650"): {"socket": "AM5", "form_factor": "Micro ATX",
+                                 "memory": {"ram_type": "DDR5", "slots": 4, "max": 192},
+                                 "metadata": {"name": "ASUS TUF GAMING B650M-E WIFI"}},
+    ("Motherboard", "mb-h270"): {"socket": "LGA 1151", "form_factor": "Thin Mini-ITX",
+                                 "memory": {"ram_type": "DDR4", "slots": 2, "max": 32},
+                                 "metadata": {"name": "Scheda H270 Thin"}},
+    ("RAM", "ram-ddr5"): {"ram_type": "DDR5", "modules": {"quantity": 2}, "capacity": 32,
+                          "metadata": {"name": "Kit DDR5 32GB (2x16GB)"}},
+    ("RAM", "ram-ddr4"): {"ram_type": "DDR4", "modules": {"quantity": 4}, "capacity": 64,
+                          "metadata": {"name": "Kit DDR4 64GB (4x16GB)"}},
+    ("GPU", "gpu-4070ti"): {"length": 308, "tdp": 285,
+                            "metadata": {"name": "MSI GeForce RTX 4070 Ti VENTUS 3X"}},
+    ("GPU", "gpu-lunga"): {"length": 360, "tdp": 285,
+                           "metadata": {"name": "ZOTAC GeForce RTX 4070 Ti lunghissima"}},
+    ("PCCase", "case-north"): {"supported_motherboard_form_factors": ["ATX", "Micro ATX", "Mini-ITX"],
+                               "max_video_card_length": 355, "max_cpu_cooler_height": 170,
+                               "metadata": {"name": "Fractal Design North"}},
+    ("PCCase", "case-ignoto"): {"supported_motherboard_form_factors": ["ATX"],
+                                "max_video_card_length": 400, "max_cpu_cooler_height": None,
+                                "metadata": {"name": "Case senza altezza"}},
+    ("PSU", "psu-750"): {"wattage": 750, "metadata": {"name": "Alimentatore 750W"}},
+    ("PSU", "psu-500"): {"wattage": 500, "metadata": {"name": "Alimentatore 500W"}},
+    ("CPUCooler", "dis-ak400"): {"height": 155, "cpu_sockets": ["AM4", "AM5", "LGA 1700"],
+                                 "metadata": {"name": "Deepcool AK400"}},
+}
+
+
+def zip_finto():
+    import zipfile
+    buf = io.BytesIO()
+    with zipfile.ZipFile(buf, "w") as z:
+        for (cat, pid), d in PEZZI_FINTI.items():
+            z.writestr(f"buildcores-open-db-main/open-db/{cat}/{pid}.json",
+                       json.dumps({"opendb_id": pid, **d}))
+        z.writestr("buildcores-open-db-main/open-db/Chair/sedia.json",
+                   json.dumps({"opendb_id": "sedia", "metadata": {"name": "Una sedia"}}))
+    return buf.getvalue()
+
+
+def prove_catalogo(dove):
+    import pc_catalogo as C
+    C.INDICE = os.path.join(dove, "cache", "opendb_pezzi.json")   # mai data/cache vera
+    print("\n== 10. il catalogo: rifiuto, indice, ricerca ==")
+    C.scarica = zip_finto
+    try:
+        C.aggiorna()
+        rifiutato = False
+    except ValueError as e:
+        rifiutato = "troppo pochi" in str(e)
+    esito("uno zip con pochi pezzi si RIFIUTA (i minimi veri sono centinaia)", rifiutato)
+    esito("   e l'indice non viene scritto", not os.path.exists(C.INDICE))
+    C.MINIMI = {c: 1 for c in C.MINIMI}
+    conti = C.aggiorna()
+    esito("coi minimi abbassati l'indice si scrive, e la sedia resta fuori",
+          os.path.exists(C.INDICE) and conti == {"CPU": 2, "Motherboard": 2, "RAM": 2, "GPU": 2,
+                                                   "Case": 2, "PSU": 2, "CPU Cooler": 1}, str(conti))
+    esito("la ricerca vuole tutte le parole", [x["id"] for x in C.cerca("GPU", "4070 ventus")] == ["gpu-4070ti"])
+    esito("   e resta nella categoria", C.cerca("CPU", "4070") == [])
+
+    print("\n== 11. i controlli ==")
+
+    def conf(*ids, stato="posseduto"):
+        return [{"name": i, "stato": stato, "opendb_id": i} for i in ids]
+
+    def per(k):
+        return {e["controllo"]: e for e in k["controlli"]}
+
+    k = C.controlli(conf("cpu-7800", "mb-b650", "ram-ddr5", "gpu-4070ti", "case-north", "psu-750", "dis-ak400"))
+    esito("la configurazione buona: 10 su 10, 100%",
+          (k["ok"], k["verificabili"], k["percentuale"], k["non_noti"]) == (10, 10, 100, 0),
+          str([(e["controllo"], e["esito"]) for e in k["controlli"] if e["esito"] != "ok"]))
+    k = per(C.controlli(conf("cpu-7800", "mb-b650", "ram-ddr4")))
+    esito("RAM DDR4 su scheda e CPU DDR5: due «no»",
+          k["Tipo di RAM / scheda madre"]["esito"] == "no" and k["Tipo di RAM / CPU"]["esito"] == "no")
+    k = per(C.controlli(conf("cpu-9700k", "mb-h270")))
+    esito("LGA 1151 con LGA 1151: «da verificare», non «ok»",
+          k["Socket CPU / scheda madre"]["esito"] == "verifica")
+    k = per(C.controlli(conf("mb-h270", "case-north")))
+    esito("Thin Mini-ITX in un case Mini-ITX: ok", k["Formato scheda madre / case"]["esito"] == "ok")
+    k = per(C.controlli(conf("cpu-7800", "gpu-lunga", "case-ignoto", "dis-ak400", "psu-500")))
+    esito("dissipatore in un case senza altezza massima: «non noto», mai «ok»",
+          k["Altezza dissipatore / case"]["esito"] == "non_noto")
+    esito("alimentatore: 500 W < (120+285)x1,3 = 526 W: no",
+          k["Alimentatore / consumi"]["esito"] == "no" and "526" in k["Alimentatore / consumi"]["dettaglio"],
+          k["Alimentatore / consumi"]["dettaglio"])
+    k = C.controlli(conf("gpu-lunga", "case-north"))
+    esito("GPU da 360 mm in un case da 355: no, e la percentuale è 0",
+          per(k)["Lunghezza GPU / case"]["esito"] == "no" and k["percentuale"] == 0)
+    esito("un solo pezzo collegato: nessun controllo", C.controlli(conf("cpu-7800"))["controlli"] == [])
+    k = C.controlli(conf("gpu-lunga", "case-north") + conf("gpu-4070ti", stato="desiderato"))
+    esito("la GPU desiderata prende il posto della posseduta: 308 mm, ok",
+          per(k)["Lunghezza GPU / case"]["esito"] == "ok")
+    k = C.controlli(conf("case-north") + conf("gpu-4070ti", stato="venduto"))
+    esito("un pezzo venduto non entra nella configurazione", k["collegati"] == 1)
+    k = C.controlli(conf("gpu-lunga", "gpu-4070ti", "case-north"))
+    esito("due GPU possedute: si dice, e si controlla la prima", k["doppi"] == ["GPU"])
 
 
 def prove_web(dove):
@@ -212,6 +321,39 @@ def prove_web(dove):
         esito("   e i pezzi di prima sono ancora tutti lì",
               set(pezzi()) == {"Nvidia GeForce RTX 3070", "Nvidia GeForce RTX 4070"}, str(list(pezzi())))
 
+        print("\n== 12. il catalogo nella pagina ==")
+        r = c.get("/pcbuilder/api/catalogo?cat=GPU&q=ventus").get_json()
+        esito("l'API cerca", [x["id"] for x in r["risultati"]] == ["gpu-4070ti"])
+        esito("   e rifiuta una categoria senza catalogo",
+              c.get("/pcbuilder/api/catalogo?cat=Monitor&q=x").get_json()["ok"] is False)
+        r = c.post("/pcbuilder/save", data=form("Il mio PC", [
+            riga("GPU", "Nvidia GeForce RTX 4070", "600", "desiderato", opendb="gpu-4070ti"),
+            riga("Case", "Il case", "90", "posseduto", opendb="case-north"),
+            riga("RAM", "La RAM", "80", "posseduto", opendb="gpu-4070ti"),
+        ], bid=bid), follow_redirects=True)
+        testo = r.get_data(as_text=True)
+        p = pezzi()
+        esito("il collegamento giusto entra", p["Nvidia GeForce RTX 4070"]["opendb_id"] == "gpu-4070ti")
+        esito("una RAM collegata a una GPU NO, e la pagina lo dice",
+              p["La RAM"]["opendb_id"] is None and "non è della stessa categoria" in testo)
+        esito("la pagina mostra i controlli, la percentuale e la fonte con la licenza",
+              "Lunghezza GPU / case" in testo and "100%" in testo and "ODC-By" in testo
+              and "github.com/buildcores/buildcores-open-db" in testo)
+        esito("   e il nome del modello collegato", "MSI GeForce RTX 4070 Ti VENTUS 3X" in testo)
+
+        import pc_catalogo as C
+        prima = open(C.INDICE, encoding="utf-8").read()
+
+        def rotto():
+            raise OSError("rete assente")
+        C.scarica = rotto
+        testo = c.post("/pcbuilder/catalogo/aggiorna", follow_redirects=True).get_data(as_text=True)
+        esito("aggiornamento fallito: lo dice, e il catalogo di prima resta intatto",
+              "Catalogo non aggiornato" in testo and open(C.INDICE, encoding="utf-8").read() == prima)
+        C.scarica = zip_finto
+        testo = c.post("/pcbuilder/catalogo/aggiorna", follow_redirects=True).get_data(as_text=True)
+        esito("aggiornamento riuscito: lo dice coi numeri", "Catalogo aggiornato: 2 CPU" in testo)
+
         print("\n== 9. la Dashboard ==")
         c.post("/pcbuilder/save", data=form("Il mio PC", [
             riga("GPU", "Nvidia GeForce RTX 3070", "499", "venduto"),
@@ -236,6 +378,7 @@ def main():
     dove = tempfile.mkdtemp(prefix="prova_pcbuilder_")
     try:
         prove_modulo()
+        prove_catalogo(dove)
         prove_web(dove)
     finally:
         if args.tieni:

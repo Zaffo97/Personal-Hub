@@ -733,7 +733,9 @@ def init_db():
     for col, tipo in [("stato", "TEXT"), ("prezzo_data", "TEXT"), ("obiettivo", "REAL"),
                       ("valore_usato", "REAL"), ("valore_usato_data", "TEXT"),
                       ("link_amazon", "TEXT"), ("link_eprice", "TEXT"),
-                      ("link_bpm", "TEXT"), ("link_versus", "TEXT")]:
+                      ("link_bpm", "TEXT"), ("link_versus", "TEXT"),
+                      # il pezzo del catalogo OpenDB a cui è collegato (`pc_catalogo.py`)
+                      ("opendb_id", "TEXT")]:
         try:
             db.execute(f"ALTER TABLE pc_components ADD COLUMN {col} {tipo}")
             db.commit()

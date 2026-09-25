@@ -154,7 +154,7 @@ ECCEZIONI = {
     ("blueprints/pcbuilder.py", "pcbuilder_save",
      "INSERT INTO pc_components(build_id,category,name,price,notes,stato,prezzo_data,"
      "obiettivo,valore_usato,valore_usato_data,link_amazon,link_eprice,link_bpm,"
-     "link_versus) VALUES(?,?,?,?,?,?,?,?,?,?,?,?,?,?)"):
+     "link_versus,opendb_id) VALUES(?,?,?,?,?,?,?,?,?,?,?,?,?,?,?)"):
         "stessa build appena verificata: il proprietario e' quello del padre",
     ("blueprints/gaming.py", "steam_importa",
      "UPDATE games SET hours_played=? WHERE id=?"):

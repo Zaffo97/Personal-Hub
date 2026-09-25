@@ -4,6 +4,7 @@ from flask import Blueprint, render_template, request, redirect, url_for, flash,
 from extensions import (get_db, login_required, _i, _f,
                         ambito_utente, utente_id, e_admin)
 from data import PC_CATEGORIES
+import pc_catalogo
 import pc_negozi
 
 bp = Blueprint("pcbuilder", __name__, url_prefix="/pcbuilder")
@@ -38,6 +39,12 @@ def pcbuilder():
         # salvata la pagina rispondeva 500. Stesso motivo per cui pokemon()
         # costruisce teams_json con dict().
         componenti = [dict(c) for c in comps]
+        for c in componenti:
+            # Il nome del pezzo di catalogo, per vederlo in tabella e nel modulo. Se il
+            # catalogo non c'è (mai scaricato, o cache cancellata) il collegamento resta:
+            # si ritrova al prossimo «Aggiorna catalogo».
+            v = pc_catalogo.pezzo(c.get("opendb_id"))
+            c["opendb_nome"] = v["nome"] if v else None
         link = {c["id"]: pc_negozi.link(c) for c in componenti}
         # Il totale è quello che la build costa o è costata: un pezzo venduto non c'è più.
         # Stessa regola della Dashboard.
@@ -46,7 +53,8 @@ def pcbuilder():
                         "confronti": pc_negozi.confronti(componenti),
                         "total": sum(c["price"] or 0 for c in attivi),
                         "da_comprare": sum(c["price"] or 0 for c in attivi
-                                           if c.get("stato") == "desiderato")})
+                                           if c.get("stato") == "desiderato"),
+                        "compatibilita": pc_catalogo.controlli(componenti)})
         # Gli avvisi sono di chi guarda: l'admin che vede tutte le build non deve
         # sentirsi dire che la wishlist di un altro è da ricontrollare.
         if b["user_id"] == utente_id():
@@ -65,7 +73,13 @@ def pcbuilder():
                            proprietari=proprietari, filtro_utente=di,
                            nomi_utenti=nomi_utenti, avvisi=pc_negozi.avvisi(mie),
                            stati=pc_negozi.STATI,
-                           giorni_promemoria=pc_negozi.GIORNI_PROMEMORIA)
+                           giorni_promemoria=pc_negozi.GIORNI_PROMEMORIA,
+                           catalogo=(pc_catalogo.carica() or {}).get("_meta"),
+                           cat_catalogo=sorted(set(pc_catalogo.CATEGORIE.values())),
+                           fonte={"nome": pc_catalogo.FONTE, "url": pc_catalogo.FONTE_URL,
+                                  "licenza": pc_catalogo.LICENZA,
+                                  "licenza_url": pc_catalogo.LICENZA_URL},
+                           margine=round((pc_catalogo.MARGINE_ALIMENTATORE - 1) * 100))
 
 
 # I campi di una riga componente, nell'ordine in cui il form li manda. Tutti devono
@@ -74,7 +88,7 @@ def pcbuilder():
 CAMPI_RIGA = ("comp_cat", "comp_name", "comp_price", "comp_notes", "comp_stato",
               "comp_obiettivo", "comp_usato", "comp_price_prev", "comp_price_date",
               "comp_usato_prev", "comp_usato_date", "comp_link_amazon",
-              "comp_link_eprice", "comp_link_bpm", "comp_link_versus")
+              "comp_link_eprice", "comp_link_bpm", "comp_link_versus", "comp_opendb")
 
 
 @bp.route("/save", methods=["POST"])
@@ -104,7 +118,7 @@ def pcbuilder_save():
                           utente_id()))
         bid = cur.lastrowid
     db.execute("DELETE FROM pc_components WHERE build_id=?", (bid,))
-    oggi = date.today(); scartati = []
+    oggi = date.today(); scartati = []; scartati_cat = []
     for riga in zip(*(colonne[k] for k in CAMPI_RIGA)):
         r = dict(zip(CAMPI_RIGA, riga))
         name = r["comp_name"]
@@ -118,12 +132,21 @@ def pcbuilder_save():
             link[campo] = pc_negozi.link_valido(campo, grezzo)
             if grezzo and not link[campo]:
                 scartati.append(f"{name.strip()} ({pc_negozi.NEGOZI[campo][0]})")
+        # Il collegamento al catalogo si tiene solo se il pezzo esiste ed è della stessa
+        # categoria: una RAM collegata a una scheda madre darebbe controlli senza senso.
+        # Senza catalogo non si può verificare, e il collegamento di prima si lascia com'è.
+        opendb = r["comp_opendb"].strip() or None
+        if opendb and pc_catalogo.carica():
+            v = pc_catalogo.pezzo(opendb)
+            if not v or v["cat"] != r["comp_cat"]:
+                scartati_cat.append(name.strip())
+                opendb = None
         # ⚠️ Le date dei prezzi passano dal form: questa funzione ricrea i pezzi a ogni
         # salvataggio, e senza la data di prima il promemoria non scatterebbe mai.
         db.execute(
             "INSERT INTO pc_components(build_id,category,name,price,notes,stato,prezzo_data,"
             "obiettivo,valore_usato,valore_usato_data,link_amazon,link_eprice,link_bpm,"
-            "link_versus) VALUES(?,?,?,?,?,?,?,?,?,?,?,?,?,?)",
+            "link_versus,opendb_id) VALUES(?,?,?,?,?,?,?,?,?,?,?,?,?,?,?)",
             (bid, r["comp_cat"], name, prezzo, r["comp_notes"], stato,
              pc_negozi.data_valore(prezzo, _numero(r["comp_price_prev"]),
                                    r["comp_price_date"], oggi),
@@ -131,13 +154,44 @@ def pcbuilder_save():
              pc_negozi.data_valore(usato, _numero(r["comp_usato_prev"]),
                                    r["comp_usato_date"], oggi),
              link["link_amazon"], link["link_eprice"], link["link_bpm"],
-             link["link_versus"]))
+             link["link_versus"], opendb))
     db.commit(); db.close()
     flash("Build salvata", "success")
     if scartati:
         # Detto, non taciuto: un link che sparisce senza spiegazione sembra un baco.
         flash("Link non salvati perché non sono del negozio giusto o non cominciano per "
               "http(s): " + ", ".join(scartati), "error")
+    if scartati_cat:
+        flash("Collegamento al catalogo tolto perché il pezzo non è della stessa categoria: "
+              + ", ".join(scartati_cat), "error")
+    return redirect(url_for("pcbuilder.pcbuilder"))
+
+
+@bp.route("/api/catalogo")
+@login_required
+def api_catalogo():
+    """La ricerca nel catalogo dei pezzi, per collegare un componente al suo modello."""
+    cat = request.args.get("cat", "")
+    if cat not in pc_catalogo.CATEGORIE.values():
+        return jsonify({"ok": False, "errore": "categoria senza catalogo", "risultati": []})
+    if not pc_catalogo.carica():
+        return jsonify({"ok": False, "errore": "catalogo non scaricato: premi «Aggiorna catalogo»",
+                        "risultati": []})
+    return jsonify({"ok": True, "risultati": pc_catalogo.cerca(cat, request.args.get("q", ""))})
+
+
+@bp.route("/catalogo/aggiorna", methods=["POST"])
+@login_required
+def catalogo_aggiorna():
+    """Scarica OpenDB (~46 MB) e riscrive l'indice. Come la cache IGDB del Gaming: lo
+    preme chi usa la sezione, quando vuole, e il catalogo è di tutti."""
+    try:
+        conti = pc_catalogo.aggiorna()
+    except Exception as e:                      # rete, zip, o conti che non tornano
+        flash(f"Catalogo non aggiornato: {e}. Quello di prima resta com'era.", "error")
+    else:
+        flash("Catalogo aggiornato: " + ", ".join(f"{n} {c}" for c, n in conti.items()),
+              "success")
     return redirect(url_for("pcbuilder.pcbuilder"))
 
 

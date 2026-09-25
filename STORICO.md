@@ -20,6 +20,28 @@ pagina ed esegue `new Function()` su ogni blocco `<script>` **e** su ogni handle
 
 ## 25/09/2026
 
+**PC Builder: la compatibilità fra i pezzi (§4.7)** — la voce del backlog diceva «valutare
+UserBenchmark»: letti i termini, ne vieta ogni uso senza permesso; PCPartPicker non ha API.
+La fonte è **BuildCores OpenDB** (GitHub, ODC-By 1.0, aggiornato il giorno stesso): misurata
+prima di scrivere — 789 CPU, 3701 schede madri, 4876 RAM, 3862 GPU, 3783 case, 3297
+alimentatori, 2405 dissipatori; socket, tipo di RAM, formato, wattaggio e lunghezza GPU pieni
+fra 96 e 100%, altezza massima del dissipatore nei case al **36%**. Nomi di socket e formati
+coerenti fra le categorie, salvo «Thin Mini-ITX» che nessun case nomina (trattata come
+Mini-ITX, stesse misure). Di «RTX 4070 Ti» ci sono **72 modelli** da 242 a 356 mm: per questo
+il pezzo si **collega** al modello, non si indovina dal nome. Scelte di Davide: elenco più
+percentuale sui verificabili, alimentatore +30% sui TDP, aggiornamento a pulsante. Nuovo
+`pc_catalogo.py`, colonna `opendb_id`, ricerca nel modulo, API `/pcbuilder/api/catalogo`,
+route `/pcbuilder/catalogo/aggiorna`. **LGA 1151** dà «da verificare», un campo vuoto «non
+noto», mai «ok». `prova_pcbuilder.py` **61 su 61** (24 nuove: zip finto, rifiuto di uno zip
+povero, dieci controlli, configurazione dopo gli acquisti, collegamento di categoria sbagliata
+tolto, aggiornamento fallito che lascia intatto il catalogo di prima); importa 28/28,
+esporta 21/21, travaso 56/56, query 0 scoperte. **Lo sweep ha preso un apice mancante** nel
+JavaScript del modulo — tutto lo script della pagina non partiva — prima di arrivare al
+browser. Provato in browser sul catalogo **vero** (22 713 pezzi, indice in meno di un
+secondo): sette pezzi collegati dalla ricerca, 10 controlli su 10, «Modifica» che li ricarica,
+console pulita. Trovato per strada e non corretto: l'import DxDiag salva «System Product
+Name» come scheda madre (§3).
+
 **PC Builder: wishlist, prezzi datati, link ai negozi e avvisi (§4.7)** — chiesto da Davide.
 Prima le fonti, lette una per una: Amazon vieta robot e data mining e apre l'API solo agli
 affiliati con 10 vendite; BPM-Power sta dietro la verifica anti-bot di Cloudflare; eBay dà

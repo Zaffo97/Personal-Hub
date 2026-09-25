@@ -61,6 +61,17 @@
   </div>
 </div>
 
+<div class="flex items-center gap-2 flex-wrap mb-3 text-xs text-muted">
+  <span>&#128230; Catalogo pezzi per la compatibilità:
+    {% if catalogo %}<a href="{{ fonte.url }}" target="_blank" rel="noopener noreferrer">{{ fonte.nome }}</a>, aggiornato il {{ catalogo.aggiornato }}
+      ({{ catalogo.conti.values()|sum }} pezzi)
+    {% else %}<strong>non scaricato</strong> — senza, i pezzi non si collegano e i controlli non ci sono{% endif %}</span>
+  <form method="POST" action="/pcbuilder/catalogo/aggiorna"
+        onsubmit="this.querySelector('button').disabled=true;this.querySelector('button').textContent='Scarico (46 MB)…'">
+    <button class="btn btn-secondary btn-sm" title="Scarica BuildCores OpenDB (circa 46 MB) e rifà l'indice">&#8635; Aggiorna catalogo</button>
+  </form>
+</div>
+
 {% if avvisi.obiettivo or avvisi.ricontrollare %}
 <div class="card mb-3">
   <div class="card-header"><span class="card-title">&#128276; Da guardare</span>
@@ -140,7 +151,9 @@
         <tr class="{% if c.stato %}stato-{{ c.stato }}{% endif %}">
           <td><span class="badge badge-neutral">{{ c.category }}</span></td>
           <td><span class="font-600">{{ c.name }}</span>
-            {% if c.stato %}<div class="text-xs text-muted">{{ c.stato }}</div>{% endif %}</td>
+            {% if c.stato %}<div class="text-xs text-muted">{{ c.stato }}</div>{% endif %}
+            {% if c.opendb_nome %}<div class="text-xs text-muted" title="Il modello del catalogo usato per i controlli">&#128230; {{ c.opendb_nome }}</div>
+            {% elif c.opendb_id %}<div class="text-xs text-muted">&#128230; collegato, ma il catalogo non è scaricato</div>{% endif %}</td>
           <td style="text-align:right;color:var(--primary);font-weight:700;white-space:nowrap">
             {% if c.price %}&euro; {{ "%.2f"|format(c.price) }}{% else %}&mdash;{% endif %}
             {% if c.prezzo_data %}<div class="text-xs text-muted" style="font-weight:400">al {{ c.prezzo_data.split('-')|reverse|join('/') }}</div>{% endif %}
@@ -159,6 +172,29 @@
       <a class="link-chip" href="{{ v.url }}" target="_blank" rel="noopener noreferrer"
          title="indirizzo ricavato dai nomi: se dà «Not found», incolla nei due pezzi la loro pagina Versus">{{ v.categoria }}: {{ v.a }} vs {{ v.b }}</a>
       {% endfor %}
+      {% endif %}
+      {% set k = b.compatibilita %}
+      <div class="text-xs font-700 text-muted mt-3 mb-1" style="text-transform:uppercase">Compatibilità</div>
+      {% if k.collegati < 2 %}
+      <p class="text-xs text-muted">Collega almeno due pezzi al catalogo (&#9998; Modifica &rarr; «Cerca nel catalogo») per avere i controlli.</p>
+      {% else %}
+      <div class="text-sm mb-1">
+        {% if k.percentuale is not none %}<strong style="color:var(--primary)">{{ k.percentuale }}%</strong>
+          &mdash; {{ k.ok }} su {{ k.verificabili }} controlli verificabili{% else %}Nessun controllo verificabile{% endif %}
+        {% if k.non_noti %} &middot; {{ k.non_noti }} non noti{% endif %}
+        {% if k.da_verificare %} &middot; {{ k.da_verificare }} da verificare a mano{% endif %}
+      </div>
+      <div class="text-xs text-muted mb-1">Sulla configurazione dopo gli acquisti: il pezzo desiderato prende il posto del posseduto della stessa categoria, i venduti non ci sono.
+        {% if k.doppi %}Più pezzi in: {{ k.doppi|join(', ') }} — controllato il primo.{% endif %}</div>
+      <ul class="avvisi-lista">
+        {% for e in k.controlli %}
+        <li><span title="{{ e.esito }}">{% if e.esito == 'ok' %}&#9989;{% elif e.esito == 'no' %}&#10060;{% elif e.esito == 'verifica' %}&#9888;&#65039;{% else %}&#10068;{% endif %}</span>
+          <strong>{{ e.controllo }}</strong><span class="text-muted">{{ e.dettaglio }}</span></li>
+        {% endfor %}
+      </ul>
+      <p class="text-xs text-muted mt-1">Alimentatore: somma dei TDP di CPU e GPU più il {{ margine }}%, una regola pratica e non un dato del produttore.
+        Dati dei componenti: <a href="{{ fonte.url }}" target="_blank" rel="noopener noreferrer">{{ fonte.nome }}</a>,
+        licenza <a href="{{ fonte.licenza_url }}" target="_blank" rel="noopener noreferrer">{{ fonte.licenza }}</a>.</p>
       {% endif %}
       {% else %}
       <div style="text-align:center;padding:1.5rem;color:var(--text-muted);font-size:.83rem">
@@ -292,12 +328,53 @@ function addRow(c) {
     + inp('comp_link_eprice', c.link_eprice, 'placeholder="Link ePrice"')
     + inp('comp_link_bpm', c.link_bpm, 'placeholder="Link BPM-Power"')
     + inp('comp_link_versus', c.link_versus, 'placeholder="Link Versus" title="Serve se il nome non basta a trovare la pagina (es. i nomi di DxDiag)"')
+    // La ricerca non ha `name`: non viaggia col form. Viaggia solo l'id scelto.
+    + '<input class="form-control cerca-catalogo" type="search" placeholder="&#128230; Cerca nel catalogo" list="dl_' + (++righeCreate) + '" autocomplete="off" title="Scegli il modello esatto: i controlli di compatibilità usano i suoi dati">'
+    + '<datalist id="dl_' + righeCreate + '"></datalist>'
+    + inp('comp_opendb', c.opendb_id, 'type="hidden"')
+    + '<div class="text-xs text-muted esito-catalogo" style="grid-column:1/-1">' + (c.opendb_id ? '&#128230; ' + v(c.opendb_nome || 'collegato (catalogo non scaricato)') + ' <a href="#" class="scollega">scollega</a>' : '') + '</div>'
     + inp('comp_price_prev', c.price || '', 'type="hidden"')
     + inp('comp_price_date', c.prezzo_data, 'type="hidden"')
     + inp('comp_usato_prev', c.valore_usato, 'type="hidden"')
     + inp('comp_usato_date', c.valore_usato_data, 'type="hidden"')
     + '</div>';
   d.appendChild(r);
+  collegaRicerca(r);
+}
+
+let righeCreate = 0;
+const CAT_CATALOGO = {{ cat_catalogo|tojson }};
+
+// La ricerca nel catalogo di una riga: suggerimenti mentre si scrive, e l'id nel campo
+// nascosto solo quando si sceglie **una voce dell'elenco**. Un testo scritto e basta non
+// collega niente: sarebbe il «nome indovinato» che il catalogo esiste per evitare.
+function collegaRicerca(r) {
+  const cerca = r.querySelector('.cerca-catalogo'), lista = r.querySelector('datalist');
+  const nascosto = r.querySelector('[name=comp_opendb]'), esito = r.querySelector('.esito-catalogo');
+  const categoria = () => r.querySelector('[name=comp_cat]').value;
+  let risultati = [], attesa = null;
+  const mostra = (html) => { esito.innerHTML = html; const s = esito.querySelector('.scollega'); if (s) s.onclick = ev => { ev.preventDefault(); nascosto.value = ''; esito.innerHTML = 'scollegato: si salva col pulsante in fondo'; }; };
+  mostra(esito.innerHTML);
+  cerca.addEventListener('input', () => {
+    const scelto = risultati.find(x => x.nome === cerca.value);
+    if (scelto) {
+      nascosto.value = scelto.id;
+      mostra('&#128230; ' + escHtml(scelto.nome) + ' <a href="#" class="scollega">scollega</a>');
+      return;
+    }
+    clearTimeout(attesa);
+    if (!CAT_CATALOGO.includes(categoria())) { mostra('la categoria ' + escHtml(categoria()) + ' non ha catalogo'); return; }
+    if (cerca.value.trim().length < 3) return;
+    attesa = setTimeout(() => {
+      fetch('/pcbuilder/api/catalogo?cat=' + encodeURIComponent(categoria()) + '&q=' + encodeURIComponent(cerca.value))
+        .then(x => x.json()).then(d => {
+          risultati = d.risultati || [];
+          lista.innerHTML = risultati.map(x => '<option value="' + escHtml(x.nome) + '">').join('');
+          if (!d.ok) mostra(escHtml(d.errore));
+          else if (!risultati.length) mostra('nessun modello con tutte queste parole');
+        }).catch(() => mostra('ricerca non riuscita'));
+    }, 250);
+  });
 }
 
 function escHtml(s) { return s.replace(/&/g,'&amp;').replace(/"/g,'&quot;').replace(/</g,'&lt;'); }
