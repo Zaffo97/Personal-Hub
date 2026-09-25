@@ -20,6 +20,18 @@ pagina ed esegue `new Function()` su ogni blocco `<script>` **e** su ogni handle
 
 ## 25/09/2026
 
+**Fantacalcio 2: gli Excel presi dai download (§4.6)** — richiesta di Davide: scarica lui i due
+file, l'hub li trova entrando nella sezione, li importa e li cancella (anche le copie « (1)»);
+il dato resta nel DB fino al download dopo. Solo `.xlsx` con «fantacalcio» nel nome, quale sia
+quale dal contenuto; con un file solo non importa e lo dice; un import rifiutato lascia i file.
+Cartella senza percorsi nel codice: `FANTA2_CARTELLA_DOWNLOAD`, altrimenti quella registrata da
+Windows o `XDG_DOWNLOAD_DIR` su Linux («Scaricati»). ⚠️ Isolati `prova_fantacalcio2.py` e
+`sweep_pagine.py` su una cartella temporanea: sui download veri avrebbero cancellato gli Excel
+di Davide. In più `_allerta()` riceve la lega già verificata invece di rileggerla (la query
+aggiunta per la formazione incompleta era **scoperta** per `controlla_proprietario.py`).
+`prova_fantacalcio2.py` **85 su 85** (9 nuove), `prova_fantacalcio.py` **245 su 245**, sweep
+0 errori, query 0 scoperte.
+
 **Termini di fantacalcio.it letti per intero** (versione «Settembre 2026») — nessuna clausola
 su iframe o link; ma l'art. 3 vieta anche di copiare ed **elaborare** i Contenuti e l'art. 9.3
 permette la copia solo su un disco non in rete e senza altri programmi che la sfruttino: gli

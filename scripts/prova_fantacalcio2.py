@@ -34,6 +34,7 @@ import re
 import shutil
 import sys
 import tempfile
+import time
 import zipfile
 
 RADICE = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
@@ -170,6 +171,11 @@ def prove(dove):
     extensions.DB = os.path.join(dove, "prova.db")
     extensions.CHIAVE = os.path.join(dove, "chiave.txt")
     extensions.init_db()
+    # ⚠️ Mai i download veri: entrando nella sezione gli Excel si importano e si
+    # cancellano. Una cartella della prova, vuota finché la sezione 10 non la riempie.
+    scaricati = os.path.join(dove, "download")
+    os.makedirs(scaricati)
+    os.environ["FANTA2_CARTELLA_DOWNLOAD"] = scaricati
 
     # ⚠️ Niente rete, mai: senza chiave le pagine non aggiornano il calendario da
     # sole, e le due letture dell'API **sollevano** se qualcuno le chiama per caso.
@@ -597,6 +603,70 @@ def prove(dove):
     esito("⚠️ e alla fine il listone della prima sezione è ancora com'era",
           db.execute("SELECT COUNT(*) FROM fanta_players").fetchone()[0] == 1)
     db.close()
+
+    # --- 10. gli Excel presi dai download ----------------------------------------
+    print("\n== 10. gli Excel presi dalla cartella dei download ==")
+    import fanta2_fonti as F
+
+    def metti(nome, dati, eta=0):
+        percorso = os.path.join(scaricati, nome)
+        with open(percorso, "wb") as f:
+            f.write(dati)
+        if eta:
+            os.utime(percorso, (time.time() - eta, time.time() - eta))
+        return percorso
+
+    def c_e(nome):
+        return os.path.exists(os.path.join(scaricati, nome))
+
+    esito("la cartella è quella della variabile", F.cartella_download() == scaricati)
+    Q, S = ("Quotazioni_Fantacalcio_Stagione_2026_27.xlsx",
+            "Statistiche_Fantacalcio_Stagione_2026_27.xlsx")
+    metti(Q, file_quotazioni())
+    pagina = c.get("/fantacalcio2/", follow_redirects=True).data.decode("utf-8", "replace")
+    esito("con un file solo non importa, lo dice, e il file resta",
+          "manca quello delle statistiche" in pagina and c_e(Q))
+    metti(S, file_statistiche())
+    metti("Quotazioni_Fantacalcio_Stagione_2026_27 (1).xlsx",
+          file_quotazioni(GIOCATORI[:3]), eta=3600)
+    metti("Fantacalcio_mie_note.xlsx", xlsx({"Foglio1": [["a", "b"], [1, 2]]}))
+    metti("altro.xlsx", file_quotazioni())
+    pagina = c.get("/fantacalcio2/", follow_redirects=True).data.decode("utf-8", "replace")
+    db = extensions.get_db()
+    riga = db.execute("SELECT attivo FROM fanta2_players WHERE id=15").fetchone()
+    db.close()
+    esito("⚠️ con tutti e due importa il più recente (Dif Cinque torna attivo)",
+          "Listone caricato dai download" in pagina and riga and riga["attivo"] == 1)
+    esito("e cancella i due file, copia vecchia compresa",
+          not c_e(Q) and not c_e(S)
+          and not c_e("Quotazioni_Fantacalcio_Stagione_2026_27 (1).xlsx"))
+    esito("⚠️ ma non tocca gli altri: né un .xlsx col nome giusto e un altro contenuto, "
+          "né uno che non ha «fantacalcio» nel nome",
+          c_e("Fantacalcio_mie_note.xlsx") and c_e("altro.xlsx"))
+    metti(Q, file_quotazioni(GIOCATORI[:3]))
+    metti(S, file_statistiche(GIOCATORI[:3]))
+    pagina = c.get("/fantacalcio2/", follow_redirects=True).data.decode("utf-8", "replace")
+    esito("⚠️ un import rifiutato (un terzo dei giocatori) lascia i file dove sono",
+          "Listone non caricato dai download" in pagina and c_e(Q) and c_e(S))
+    os.remove(os.path.join(scaricati, Q))
+    os.remove(os.path.join(scaricati, S))
+    esito("la pagina dice dove guarda", scaricati in pagina)
+
+    casa = os.path.join(dove, "casa")
+    os.makedirs(os.path.join(casa, ".config"))
+    xdg = os.environ.pop("XDG_CONFIG_HOME", None)
+    try:
+        esito("Linux senza user-dirs.dirs: ~/Downloads",
+              F._download_linux(casa) == os.path.join(casa, "Downloads"))
+        with open(os.path.join(casa, ".config", "user-dirs.dirs"), "w",
+                  encoding="utf-8") as f:
+            f.write('# commento\nXDG_DESKTOP_DIR="$HOME/Scrivania"\n'
+                    'XDG_DOWNLOAD_DIR="$HOME/Scaricati"\n')
+        esito("⚠️ Linux in italiano: legge «Scaricati» da user-dirs.dirs",
+              F._download_linux(casa) == casa + "/Scaricati")
+    finally:
+        if xdg is not None:
+            os.environ["XDG_CONFIG_HOME"] = xdg
 
 
 def main():

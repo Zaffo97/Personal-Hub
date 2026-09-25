@@ -424,7 +424,8 @@ app non si sposta da sola: quelli non sono stati toccati.
 non potranno stare in variabili d'ambiente di Windows** (`setx`). Serve un'alternativa, da
 pensare. Oggi dall'ambiente si leggono `SECRET_KEY`, `STEAM_API_KEY`, `STEAM_ID`,
 `IGDB_CLIENT_ID`, `IGDB_CLIENT_SECRET`, `HUB_DEBUG`, `HUB_HOST`, `HUB_PORT` e, dalla §4.6,
-`FOOTBALL_DATA_API_KEY`. Una strada già usata nel progetto è quella di `SECRET_KEY`: un file
+`FOOTBALL_DATA_API_KEY` e, dal 25/09/2026, `FANTA2_CARTELLA_DOWNLOAD` (facoltativa: dove la
+Fantacalcio 2 cerca gli Excel; senza, la cartella Download del sistema). Una strada già usata nel progetto è quella di `SECRET_KEY`: un file
 in `data/` escluso da git (`data/secret_key.txt`). Qualunque cosa si scelga, **deve restare
 fuori dal repository** (i termini di football-data.org lo chiedono esplicitamente, §6.1) e
 fuori da `hub_export.json`.
@@ -1317,7 +1318,7 @@ sa dal codice, non un piano.
 
 | Dato | Fonte | Come arriva |
 |---|---|---|
-| **Listone e statistiche** | i due Excel di fantacalcio.it | Davide li scarica **col suo login** e li carica dalla pagina (o con `importa_listone2.py`). Letti in memoria, **mai salvati**: sono contenuti presi con un account, e non devono finire nel repository |
+| **Listone e statistiche** | i due Excel di fantacalcio.it | Davide li scarica **col suo login**; dal 25/09/2026 **entrando nella sezione l'hub li trova nei download, li importa e li cancella** (o si caricano dalla pagina, o con `importa_listone2.py`). Letti in memoria, **mai salvati**: sono contenuti presi con un account, e non devono finire nel repository |
 | **Calendario e classifica** | football-data.org, piano gratuito | con la chiave, da solo entrando se la copia ha più di un giorno, o con «Aggiorna ora» |
 | **Probabili** | nessuna | un **link** che le apre nel browser di Davide (strada «a») |
 
@@ -1377,6 +1378,12 @@ difesa** è il valore pieno: senza probabili non c'è la probabilità per cui mo
     (personale, non commerciale, dati dai loro Excel scaricati col suo account, niente
     ripubblicazione) e chiede il permesso scritto. Finché non c'è, la 2 è **meno esposta**
     della prima (niente lettura automatica) ma **non in regola** sugli Excel.
+- ⚠️ **Gli Excel dai download, su Debian** (25/09/2026). La cartella la trova da sola anche
+  su Linux (`XDG_DOWNLOAD_DIR`, quindi «Scaricati» su un Debian in italiano), ma **funziona
+  solo se il browser che scarica e l'hub stanno sulla stessa macchina**. Se l'hub diventa un
+  server e scarichi dal PC o dal telefono, i file finiscono sul dispositivo, non sul server:
+  serve una cartella condivisa (es. Samba) come cartella di download del browser, indicata
+  all'hub con `FANTA2_CARTELLA_DOWNLOAD`; altrimenti resta il caricamento dalla pagina.
 - **Provarla a mano in browser**, e soprattutto **il riquadro delle probabili nel Chrome di
   Davide**. Le pagine sono provate dal test client e dallo sweep (0 errori su 6 pagine per
   lingua); l'elenco delle leghe è stato visto in browser dopo il login di Davide il

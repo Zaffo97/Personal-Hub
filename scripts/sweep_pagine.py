@@ -169,6 +169,9 @@ def main():
 
     import extensions
     extensions.DB = copia                # ⚠️ prima di creare l'app, non dopo
+    # ⚠️ E una cartella dei download vuota: entrando nella Fantacalcio 2 l'hub importa
+    # e **cancella** gli Excel che trova nei download veri di Davide (25/09/2026).
+    os.environ["FANTA2_CARTELLA_DOWNLOAD"] = tempfile.mkdtemp(prefix="sweep_download_")
     import app as modulo_app
     flask_app = modulo_app.create_app()
     flask_app.config.update(TESTING=True, SECRET_KEY="sweep")

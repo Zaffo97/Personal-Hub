@@ -241,6 +241,98 @@ def statistiche(fogli):
     return voci, problemi
 
 
+# ── Gli Excel presi dalla cartella dei download ─────────────────────────────
+# Richiesta di Davide del 25/09/2026: scarica i due file col suo login, e l'hub li
+# trova da solo, li importa e li **cancella**. Il clic su «Scarica» resta suo: è il
+# confine con quello che i termini vietano (un programma che entra al posto suo).
+#
+# ⚠️ **Nessun percorso scritto qui dentro**: l'hub oggi gira su Windows e un domani su
+# Debian, dove la cartella può chiamarsi «Scaricati». Nell'ordine:
+# 1. `FANTA2_CARTELLA_DOWNLOAD`, se c'è — è anche la strada per quando l'hub gira su
+#    un'altra macchina rispetto al browser: si punta a una cartella condivisa;
+# 2. Windows: la cartella «Download» come la registra Windows (può essere spostata
+#    su un altro disco), altrimenti `%USERPROFILE%\Downloads`;
+# 3. Linux: `XDG_DOWNLOAD_DIR` da `~/.config/user-dirs.dirs`, altrimenti `~/Downloads`.
+
+# Il pre-filtro sul nome: in «Download» c'è di tutto, e aprire ogni `.xlsx` a ogni
+# visita sarebbe lento e invadente. Il nome lo decide fantacalcio.it
+# («Quotazioni_Fantacalcio_Stagione_2026_27.xlsx»), il browser al massimo aggiunge
+# « (1)». Quale dei due sia lo dice comunque il **contenuto** (`che_file_e()`).
+PAROLA_NEL_NOME = "fantacalcio"
+MAX_BYTE_EXCEL = 20 * 1024 * 1024
+_CHIAVE_DOWNLOAD_WINDOWS = "{374DE290-123F-4565-9164-39C4925E467B}"
+
+
+def _download_windows():
+    try:
+        import winreg
+        with winreg.OpenKey(winreg.HKEY_CURRENT_USER,
+                            r"Software\Microsoft\Windows\CurrentVersion\Explorer"
+                            r"\User Shell Folders") as k:
+            valore, _ = winreg.QueryValueEx(k, _CHIAVE_DOWNLOAD_WINDOWS)
+        return os.path.expandvars(valore)
+    except (ImportError, OSError):
+        return os.path.join(os.path.expanduser("~"), "Downloads")
+
+
+def _download_linux(casa=None):
+    """`XDG_DOWNLOAD_DIR` da `user-dirs.dirs`: su un Debian in italiano è «Scaricati»."""
+    casa = casa or os.path.expanduser("~")
+    conf = os.path.join(os.environ.get("XDG_CONFIG_HOME") or
+                        os.path.join(casa, ".config"), "user-dirs.dirs")
+    try:
+        with open(conf, encoding="utf-8") as f:
+            for riga in f:
+                m = re.match(r'\s*XDG_DOWNLOAD_DIR\s*=\s*"(.*)"\s*$', riga)
+                if m:
+                    return m.group(1).replace("$HOME", casa)
+    except OSError:
+        pass
+    return os.path.join(casa, "Downloads")
+
+
+def cartella_download():
+    """Dove cercare i due Excel. Vedi sopra per l'ordine."""
+    scelta = (os.environ.get("FANTA2_CARTELLA_DOWNLOAD") or "").strip()
+    if scelta:
+        return os.path.expanduser(scelta)
+    return _download_windows() if sys.platform == "win32" else _download_linux()
+
+
+def excel_nei_download(cartella=None):
+    """`{"quotazioni": [...], "statistiche": [...]}`, ognuno dal **più recente**.
+
+    Ogni voce è `{"percorso", "quando", "fogli"}`. I file col nome giusto che non
+    sono né l'uno né l'altro **non si toccano**: non sono nostri.
+    """
+    cartella = cartella or cartella_download()
+    trovati = {"quotazioni": [], "statistiche": []}
+    try:
+        nomi = os.listdir(cartella)
+    except OSError:
+        return trovati
+    for nome in nomi:
+        basso = nome.lower()
+        if not basso.endswith(".xlsx") or PAROLA_NEL_NOME not in basso:
+            continue
+        percorso = os.path.join(cartella, nome)
+        try:
+            if not os.path.isfile(percorso) or os.path.getsize(percorso) > MAX_BYTE_EXCEL:
+                continue
+            with open(percorso, "rb") as f:
+                fogli = leggi_xlsx(f.read())
+            quando = os.path.getmtime(percorso)
+        except Exception:
+            continue          # un download a metà, o un file che non è un .xlsx
+        quale = che_file_e(fogli)
+        if quale:
+            trovati[quale].append({"percorso": percorso, "quando": quando,
+                                   "fogli": fogli})
+    for elenco in trovati.values():
+        elenco.sort(key=lambda x: -x["quando"])
+    return trovati
+
+
 # ── football-data.org ────────────────────────────────────────────────────────
 
 API = "https://api.football-data.org/v4"

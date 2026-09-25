@@ -22,6 +22,8 @@ passano **dalla lega** (§1.1). E ogni `UPDATE`/`DELETE` filtrato guarda il
 prima sezione invece di ricopiarle: sono le stesse, e due copie divergono. Il
 giorno che la prima sezione si spegne, vanno spostate — è scritto nel backlog.
 """
+import os
+
 from flask import (Blueprint, render_template, request, redirect, url_for,
                    flash, jsonify)
 
@@ -161,9 +163,10 @@ def _valuta(db, lega, rosa, ctx):
                          ctx["calendario_c_e"], _scelte(db, ctx["giornata"]))
 
 
-def _allerta(db, lid, rosa, valutazioni):
-    """Cosa non torna nella formazione salvata, o `None` se non c'è niente da dire."""
-    schierati = _schierati(db, lid)
+def _allerta(db, lega, rosa, valutazioni):
+    """Cosa non torna nella formazione salvata, o `None` se non c'è niente da dire.
+    `lega` è la riga **già letta** col filtro del proprietario (§1.1)."""
+    schierati = _schierati(db, lega["id"])
     if not schierati:
         return None
     nomi = {g["id"]: g["nome"] for g in rosa}
@@ -177,15 +180,13 @@ def _allerta(db, lid, rosa, valutazioni):
                                     {g["id"] for g in rosa})
     # La formazione si salva anche a metà (25/09/2026): quello che manca si dice qui,
     # contando solo chi è ancora in rosa — chi se n'è andato è già fra gli `spariti`.
-    lega = db.execute("SELECT modulo_scelto, n_panchinari FROM fanta2_leagues "
-                      "WHERE id=?", (lid,)).fetchone()
     ruoli = {g["id"]: g["ruolo_classic"] for g in rosa}
     in_rosa = [(p, r) for p, r in schierati.items() if p in ruoli]
     _, allerta["mancano"] = G.controlla_formazione_larga(
-        lega["modulo_scelto"] if lega else None,
+        lega.get("modulo_scelto"),
         [p for p, r in in_rosa if r.get("titolare")],
         [p for p, r in in_rosa if not r.get("titolare")],
-        ruoli, lega["n_panchinari"] if lega else None)
+        ruoli, lega.get("n_panchinari"))
     return allerta if _quanti(allerta) else None
 
 
@@ -201,6 +202,8 @@ def fantacalcio2():
     guaio = _calendario_se_vecchio(db)
     if guaio:
         flash(guaio, "error")
+    for testo, categoria in _listone_dai_download(db):
+        flash(testo, categoria)
     di = _i(request.args.get("utente")) or None
     cond, par = ambito_utente(di=di)
     leghe = [dict(r) for r in db.execute(
@@ -222,7 +225,7 @@ def fantacalcio2():
     guai_lega = {}
     for l in leghe:
         rosa_l = _rosa_della_lega(db, l["id"])
-        quanti = _quanti(_allerta(db, l["id"], rosa_l, _valuta(db, l, rosa_l, ctx)))
+        quanti = _quanti(_allerta(db, l, rosa_l, _valuta(db, l, rosa_l, ctx)))
         if quanti:
             guai_lega[l["id"]] = quanti
     eta = G.eta_calendario(db)
@@ -238,7 +241,7 @@ def fantacalcio2():
         eta_calendario=eta, chiave=bool(F.chiave_api()),
         variabile_chiave=F.VARIABILE_CHIAVE, attribuzione=F.ATTRIBUZIONE,
         link_probabili=LINK_PROBABILI, link_quotazioni=LINK_QUOTAZIONI,
-        link_statistiche=LINK_STATISTICHE,
+        link_statistiche=LINK_STATISTICHE, cartella_download=F.cartella_download(),
         proprietari=proprietari, filtro_utente=di, nomi_utenti=nomi_utenti)
 
 
@@ -263,9 +266,15 @@ def carica_listone():
     r = G.importa_listone(db, fq, fs, forza=bool(request.form.get("forza")),
                           ambito=ambito_utente("l.user_id"))
     db.close()
+    for testo, categoria in _messaggi_import(r):
+        flash(testo, categoria)
+    return _torna()
+
+
+def _messaggi_import(r, da=""):
+    """I messaggi di un import del listone, dal form o dai download."""
     if not r["ok"]:
-        flash(f"Listone non caricato: {r['motivo']}", "error")
-        return _torna()
+        return [(f"Listone non caricato{da}: {r['motivo']}", "error")]
     pezzi = [f"{r['letti'] - r['ceduti']} in Serie A", f"{r['ceduti']} ceduti"]
     if r["nuovi"]:
         pezzi.append(f"{len(r['nuovi'])} nuovi")
@@ -275,12 +284,47 @@ def carica_listone():
         pezzi.append(f"{len(r['spenti'])} non più nel file")
     if r["in_rosa"]:
         pezzi.append(f"{len(r['in_rosa'])} di quelli usciti sono in una tua rosa")
-    flash("Listone caricato: " + ", ".join(pezzi), "success")
+    fuori = [(f"Listone caricato{da}: " + ", ".join(pezzi), "success")]
     if r["senza_statistiche"] or r["solo_statistiche"]:
-        flash(f"{r['senza_statistiche']} giocatori senza statistiche, "
-              f"{len(r['solo_statistiche'])} solo nelle statistiche (non entrano)",
-              "error")
-    return _torna()
+        fuori.append((f"{r['senza_statistiche']} giocatori senza statistiche, "
+                      f"{len(r['solo_statistiche'])} solo nelle statistiche (non entrano)",
+                      "error"))
+    return fuori
+
+
+def _listone_dai_download(db):
+    """I due Excel scaricati da Davide: se ci sono **tutti e due**, dentro e via.
+
+    Richiesta del 25/09/2026. Si guarda entrando nella sezione, come il calendario.
+    ⚠️ I file si cancellano **solo se l'import è andato**: un file rifiutato (il
+    calo sospetto, un file sbagliato) resta dov'è, e il messaggio lo dice a ogni
+    visita finché non lo si toglie o lo si carica a mano con «forza». Si cancellano
+    anche le copie più vecchie (« (1)»), che altrimenti tornerebbero a galla.
+    Torna una lista di `(messaggio, categoria)`.
+    """
+    trovati = F.excel_nei_download()
+    q, s = trovati["quotazioni"], trovati["statistiche"]
+    if not q and not s:
+        return []
+    if not q or not s:
+        manca = "delle statistiche" if q else "delle quotazioni"
+        return [(f"Nei download c'è un solo file di fantacalcio.it: manca quello "
+                 f"{manca}. Lo importo quando ci sono tutti e due.", "info")]
+    r = G.importa_listone(db, q[0]["fogli"], s[0]["fogli"],
+                          ambito=ambito_utente("l.user_id"))
+    messaggi = _messaggi_import(r, " dai download")
+    if not r["ok"]:
+        return messaggi
+    rimasti = []
+    for voce in q + s:
+        try:
+            os.remove(voce["percorso"])
+        except OSError:
+            rimasti.append(os.path.basename(voce["percorso"]))
+    if rimasti:
+        messaggi.append((f"Importati, ma non sono riuscito a cancellare: "
+                         f"{', '.join(rimasti)}.", "error"))
+    return messaggi
 
 
 @bp.route("/calendario/aggiorna", methods=["POST"])
@@ -401,7 +445,7 @@ def lega(lid):
     rosa = _rosa_della_lega(db, lid)
     ctx = _contesto_giornata(db)
     valutazioni = _valuta(db, riga, rosa, ctx)
-    allerta = _allerta(db, lid, rosa, valutazioni)
+    allerta = _allerta(db, riga, rosa, valutazioni)
     db.close()
 
     partita = {v["g"]["id"]: v["partita"] for v in valutazioni}
@@ -535,7 +579,7 @@ def formazione(lid):
         flash("Lega non trovata", "error")
         return _torna()
     schierati = _schierati(db, lid)
-    allerta = _allerta(db, lid, ctx["rosa"], ctx["valutazioni"])
+    allerta = _allerta(db, lega, ctx["rosa"], ctx["valutazioni"])
     db.close()
 
     moduli = [m.strip() for m in (lega.get("moduli") or "").split(",")
