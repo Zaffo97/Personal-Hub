@@ -1076,7 +1076,7 @@
       "bonus_rigore_parato": 3.0,
       "malus_rigore_sbagliato": -3.0,
       "malus_autogol": -2.0,
-      "modulo_scelto": null,
+      "modulo_scelto": "3-4-3",
       "note": null,
       "created_at": "2026-09-24 22:24:15"
     },
@@ -1456,5 +1456,20 @@
       "note": null
     }
   ],
-  "fanta_formazione": []
+  "fanta_formazione": [
+    {
+      "league_id": 1,
+      "player_id": 1850,
+      "titolare": 1,
+      "ordine": 0,
+      "ruolo": "c"
+    },
+    {
+      "league_id": 1,
+      "player_id": 2809,
+      "titolare": 0,
+      "ordine": 0,
+      "ruolo": "p"
+    }
+  ]
 }

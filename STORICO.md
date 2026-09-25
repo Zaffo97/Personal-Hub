@@ -20,6 +20,18 @@ pagina ed esegue `new Function()` su ogni blocco `<script>` **e** su ogni handle
 
 ## 25/09/2026
 
+**Le statistiche di stagione nel Fantacalcio (§4.6)** — chieste da Davide: media voto,
+fantamedia, gol, assist, ammonizioni, espulsioni, autogol, rigori segnati e sbagliati, e per
+il portiere gol subiti e rigori parati (`fanta.statistiche()`, tutto dal file delle
+statistiche). Le voleva **nel campo** sotto nome e partita, «se non sballano troppo»:
+**provato e fotografato** su una copia del DB con una formazione applicata — nel campo il
+testo usciva dalle caselle da 82 px, la panchina passava da ~290 a ~470 px — quindi, come
+aveva proposto lui, stanno **nella pagina delle probabili** (due righe per giocatore) e,
+nel campo, solo nell'elenco che si apre per scegliere chi mettere in un posto.
+⚠️ **La porta inviolata non c'è**: il file non la porta, e dal calendario si saprebbe che la
+squadra non ha preso gol, non che quel portiere ha giocato. `prova_fantacalcio.py` **105 su
+105** (5 nuove), sweep 0 errori, `controlla_proprietario.py` 0 scoperte.
+
 **Gli stemmi delle squadre nel Fantacalcio (§4.6)** — chiesti da Davide: accanto al nome di
 ogni giocatore (lega, campo, panchina e scelta, consiglio, avviso, probabili, listone e sua
 scheda, ricerca per la rosa, incolla), davanti all'avversario, e alle due squadre della

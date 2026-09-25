@@ -626,6 +626,7 @@ def chi_gioca(lid):
     return render_template(
         "fanta_chi_gioca.html", lega=lega, ruoli=RUOLI_FANTA,
         ordine=ORDINE_RUOLI_FANTA, per_ruolo=G.per_reparto(valutazioni),
+        stat={g["id"]: G.statistiche(g) for g in rosa},
         link_probabili=LINK_PROBABILI, attribuzione=F.ATTRIBUZIONE, **ctx)
 
 
@@ -665,6 +666,7 @@ def formazione(lid):
         schierati=schierati, allerta=allerta,
         reparti={m: scomponi_modulo(m) for m in moduli}, dettaglio=dettaglio,
         minimo_partite=MINIMO_PARTITE_FIDATO, partita=partita, fm_lega=fm_lega,
+        stat={g["id"]: G.statistiche(g) for g in ctx["rosa"]},
         link_probabili=LINK_PROBABILI, attribuzione=F.ATTRIBUZIONE, **ctx)
 
 

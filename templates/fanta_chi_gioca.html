@@ -1,5 +1,6 @@
 {% extends "base.html" %}
 {% from "_fanta_stemma.html" import stemma %}
+{% from "_fanta_statistiche.html" import statistiche %}
 {#
   Le probabili accanto alla rosa — Fantacalcio (§4.6).
 
@@ -38,6 +39,9 @@
 .chi{flex:1;min-width:0}
 .chi-nome{font-weight:600;font-size:.8rem;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
 .chi-dati{font-size:.66rem;color:var(--text-muted)}
+/* Le statistiche di stagione, sotto la partita (25/09/2026). */
+.stat-riga{font-size:.64rem;color:var(--text-muted);line-height:1.35}
+.stat-riga strong{color:var(--text)}
 .ruolo{display:inline-flex;align-items:center;justify-content:center;width:1.15rem;height:1.15rem;
   border-radius:50%;font-size:.58rem;font-weight:700;color:#fff;flex-shrink:0}
 .ruolo-p{background:#d97706}.ruolo-d{background:#2563eb}
@@ -93,6 +97,7 @@
             {% if p.gioca %}&middot; vs {{ stemma(stemmi.get(p.avversario_slug), p.avversario) }}{{ p.avversario }} ({{ 'casa' if p.in_casa else 'fuori' }})
             {% elif p.gioca is sameas false %}&middot; <strong>{{ p.perche }}</strong>{% endif %}
           </div>
+          {{ statistiche(stat.get(v.g.id)) }}
         </div>
       </div>
       {% endfor %}

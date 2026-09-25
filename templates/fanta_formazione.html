@@ -44,6 +44,8 @@
 /* Fantacalcio: la squadra gioca, non gioca, o il giocatore e' ceduto. */
 .pal-gioca{background:#22c55e}.pal-ceduto{background:#ef4444}
 .posto-pct{font-size:.55rem;color:rgba(255,255,255,.8)}
+/* Le statistiche, solo nell'elenco da cui si sceglie (25/09/2026). */
+.riga-st{font-size:.66rem;color:var(--text-muted);line-height:1.35}
 
 /* La panchina: una lista **ordinata**, perché l'ordine decide chi subentra. */
 .panchina-riga{display:flex;align-items:center;gap:.45rem;padding:.32rem .5rem;
@@ -210,6 +212,7 @@ const DATI = {
   {{ g.id }}: {
     nome: {{ g.nome|tojson }}, squadra: {{ (g.squadra or '—')|tojson }},
     stemma: {{ stemmi.get(g.squadra_slug)|tojson }},
+    st: {{ stat[g.id]|tojson }},
     ruolo: {{ (g.ruolo_classic or '')|tojson }}, attivo: {{ g.attivo or 0 }},
     fm: {{ g.fantamedia if g.fantamedia is not none else 'null' }},
     {% set p = partita.get(g.id, {}) %}
@@ -268,6 +271,30 @@ function cambiaModulo(nuovo){
   });
   avanzati.forEach(id => { if (!panchina.includes(id)) panchina.push(id); });
   disegna();
+}
+
+/* Le statistiche di stagione (25/09/2026), da `fanta.statistiche()`, **solo
+   nell'elenco da cui si sceglie** chi mettere in un posto. Davide le aveva chieste
+   anche nel campo e in panchina, «se non sballano troppo»: provate il 25/09/2026, nel
+   campo uscivano dalle caselle da 82 px e la panchina passava da ~290 a ~470 px,
+   quindi lì non ci sono. Stanno per esteso nella pagina delle probabili.
+   ⚠️ La porta inviolata non c'è: il file delle statistiche non la porta. */
+function righeStat(st){
+  if (!st) return [];
+  const n = v => (v === null || v === undefined) ? '—' : v;
+  const d2 = v => (v === null || v === undefined) ? '—' : Number(v).toFixed(2);
+  const fuori = [st.pg ? 'MV ' + d2(st.mv) + ' · FM ' + d2(st.fm) + ' · ' + st.pg + ' pv'
+                       : 'nessuna partita a voto',
+                 'G ' + n(st.gol) + ' · A ' + n(st.assist) + ' · Au ' + n(st.autogol),
+                 'Amm ' + n(st.amm) + ' · Esp ' + n(st.esp) +
+                 ' · R+ ' + n(st.rig_segnati) + ' · R− ' + n(st.rig_sbagliati)];
+  if (st.gol_subiti !== undefined)
+    fuori.push('GS ' + n(st.gol_subiti) + ' · RP ' + n(st.rig_parati));
+  return fuori;
+}
+function statHtml(st){
+  const r = righeStat(st);
+  return r.length ? '<div class="riga-st">' + r.join(' · ') + '</div>' : '';
 }
 
 function statoDi(id){
@@ -411,7 +438,7 @@ function apriScelta(ruolo, posto){
           (d.fm !== null ? ' · FM ' + d.fm : '') +
           (d.stato ? ' · <span class="pallino pal-' + d.stato + '"></span>' + statoDi(id) : '') +
           (gia ? ' · già schierato' : '') +
-        '</div></span>';
+        '</div>' + statHtml(d.st) + '</span>';
     voce.onclick = () => scegli(id);
     lista.appendChild(voce);
   });

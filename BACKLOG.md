@@ -1007,6 +1007,11 @@ completo della lettura è in `git show b61fa8e:BACKLOG.md`, §4.6.
 - **La chiave su Debian**: oggi `FOOTBALL_DATA_API_KEY` si legge dall'ambiente e, su
   Windows, dal registro dell'utente (così `setx` basta senza riavviare l'hub da un terminale
   nuovo). Su Debian il registro non c'è: è la voce di §1.5.
+- ⬜ **La porta inviolata del portiere** (chiesta da Davide il 25/09/2026 con le altre
+  statistiche) **non c'è**: il file delle statistiche non la porta. Dal calendario si
+  saprebbe solo che la **squadra** non ha preso gol, non che quel portiere ha giocato —
+  sarebbe un numero plausibile e falso per ogni secondo portiere. Serve una fonte con le
+  presenze partita per partita; finché non c'è, resta fuori, e la pagina non la finge.
 - **Gli stemmi** (25/09/2026) vengono dalla classifica di football-data.org: se un giorno
   l'API smettesse di dare `crest`, o cambiasse CDN, le pagine tornerebbero ai soli nomi
   **senza dirlo**. Non è un baco, è da sapere. E vanno visti **sul campo pieno**: nessuna

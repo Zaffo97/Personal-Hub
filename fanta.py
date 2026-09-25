@@ -27,7 +27,8 @@ from datetime import datetime
 
 import fanta_fonti as F
 from data import (ORDINE_RUOLI_FANTA, MINIMO_PARTITE_FIDATO, scomponi_modulo,
-                  nome_ruolo, fantamedia_regole, soglie_mod_difesa, modificatore_difesa)
+                  nome_ruolo, fantamedia_regole, soglie_mod_difesa, modificatore_difesa,
+                  rigori_segnati_tirati)
 
 # Il calendario invecchia in un giorno, come nella sezione vecchia, e per la stessa
 # ragione: da lì esce la scadenza del timer, e un anticipo spostato cambia l'ora.
@@ -413,6 +414,32 @@ def _chiave(v):
             -(v["fm"] or 0),
             -(v["partite"] or 0),
             v["g"].get("nome") or "")
+
+
+def statistiche(g):
+    """I numeri di stagione di un giocatore, come li mostra il campo (25/09/2026).
+
+    Richiesta di Davide: media voto, fantamedia, gol, assist, ammonizioni,
+    espulsioni, autogol, rigori segnati e sbagliati; per il portiere anche gol
+    subiti e rigori parati. Vengono **tutti** dal file delle statistiche.
+    ⚠️ La **porta inviolata** non c'è: il file non la porta, e dal calendario si
+    saprebbe che la squadra non ha preso gol, non che quel portiere ha giocato.
+    ⚠️ Senza partite a voto le medie sono `None`, non 0: il file scrive 0.0, e uno
+    zero lì direbbe «ha giocato malissimo» di chi non ha mai giocato.
+    """
+    pg = g.get("partite_a_voto") or 0
+    segnati, tirati = rigori_segnati_tirati(g.get("rigori"))
+    fuori = {"pg": pg,
+             "mv": g.get("media_voto") if pg else None,
+             "fm": g.get("fantamedia") if pg else None,
+             "gol": g.get("gol") or 0, "assist": g.get("assist") or 0,
+             "amm": g.get("ammonizioni") or 0, "esp": g.get("espulsioni") or 0,
+             "autogol": g.get("autogol") or 0,
+             "rig_segnati": segnati, "rig_sbagliati": max(0, tirati - segnati)}
+    if g.get("ruolo_classic") == "p":
+        fuori.update(gol_subiti=g.get("gol_subiti") or 0,
+                     rig_parati=g.get("rigori_parati") or 0)
+    return fuori
 
 
 def per_reparto(valutazioni):

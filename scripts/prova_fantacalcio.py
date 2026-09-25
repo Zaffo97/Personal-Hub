@@ -537,6 +537,26 @@ def prove(dove):
     if esprima is not None:
         guai = rotti(testo)
         esito("e il suo JavaScript compila", not guai, str(guai[:3]))
+    # Le statistiche di stagione (25/09/2026): nelle probabili per esteso, nel campo
+    # solo nell'elenco da cui si sceglie.
+    db = extensions.get_db()
+    riga = lambda pid: dict(db.execute("SELECT * FROM fanta_players WHERE id=?",
+                                       (pid,)).fetchone())
+    st31, st1, st33 = (G.statistiche(riga(p)) for p in (31, 1, 33))
+    db.close()
+    esito("statistiche: i rigori «1 / 2» diventano 1 segnato e 1 sbagliato",
+          st31["rig_segnati"] == 1 and st31["rig_sbagliati"] == 1 and st31["gol"] == 6
+          and st31["amm"] == 1 and "gol_subiti" not in st31, str(st31))
+    esito("il portiere ha in più gol subiti e rigori parati",
+          st1.get("gol_subiti") == 3 and st1.get("rig_parati") == 0, str(st1))
+    esito("⚠️ senza partite a voto le medie non sono 0, sono assenti",
+          st33["mv"] is None and st33["fm"] is None and st33["pg"] == 0, str(st33))
+    esito("le probabili mostrano le statistiche accanto alla rosa",
+          testo.count('class="stat-riga"') >= 2 and "GS 3" in testo and "R+ 1" in testo)
+    campo = c.get(f"/fantacalcio/lega/{lid}/formazione").data.decode("utf-8", "replace")
+    esito("nel campo arrivano all'elenco da cui si sceglie, non alle caselle",
+          '"rig_sbagliati": 1' in campo and "statHtml(d.st)" in campo
+          and "statHtml(d.st, true)" not in campo)
     esito("un altro utente non apre la pagina di una lega non sua",
           b"Lega non trovata" in a.get(f"/fantacalcio/lega/{lid}/chi-gioca",
                                        follow_redirects=True).data)

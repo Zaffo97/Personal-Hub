@@ -1,0 +1,24 @@
+{# Le statistiche di stagione di un giocatore, da `fanta.statistiche()` (25/09/2026).
+
+   Chieste da Davide: media voto, fantamedia, gol, assist, ammonizioni, espulsioni,
+   autogol, rigori segnati e sbagliati; per il portiere anche gol subiti e rigori
+   parati. Due righe: le medie, poi i conteggi.
+   ⚠️ La **porta inviolata** non c'e': il file delle statistiche non la porta, e dal
+   calendario si saprebbe che la squadra non ha preso gol, non che quel portiere ha
+   giocato. Meglio assente che plausibile e falsa.
+   Si usa con `{% from "_fanta_statistiche.html" import statistiche %}`. #}
+{% macro statistiche(st) -%}
+{%- if st -%}
+<div class="stat-riga">
+  {% if st.pg %}MV <strong>{{ '%.2f'|format(st.mv) if st.mv is not none else '—' }}</strong>
+  &middot; FM <strong>{{ '%.2f'|format(st.fm) if st.fm is not none else '—' }}</strong>
+  &middot; {{ st.pg }} a voto{% else %}nessuna partita a voto{% endif %}
+</div>
+<div class="stat-riga">
+  G {{ st.gol }} &middot; A {{ st.assist }} &middot; Amm {{ st.amm }} &middot;
+  Esp {{ st.esp }} &middot; Au {{ st.autogol }} &middot; R+ {{ st.rig_segnati }}
+  &middot; R&minus; {{ st.rig_sbagliati }}
+  {%- if st.gol_subiti is defined %} &middot; GS {{ st.gol_subiti }} &middot; RP {{ st.rig_parati }}{% endif %}
+</div>
+{%- endif -%}
+{%- endmacro %}
