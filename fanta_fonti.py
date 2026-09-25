@@ -443,7 +443,12 @@ def classifica(chiave):
     dati = _get(f"/competitions/{SERIE_A}/standings", chiave)
     tabella = next((s["table"] for s in dati.get("standings", [])
                     if s.get("type") == "TOTAL"), [])
+    # `crest` è l'indirizzo dello stemma sul CDN di football-data.org
+    # (`https://crests.football-data.org/<id>.png`, visto il 25/09/2026 per tutte e
+    # 20). Si salva l'**indirizzo** e lo carica il browser: gli stemmi sono marchi
+    # dei club, scaricarli nel progetto vorrebbe dire ripubblicarli su GitHub.
     return [{"squadra": t["team"].get("shortName"), "squadra_id": t["team"].get("id"),
+             "stemma": t["team"].get("crest"),
              "posizione": t.get("position"), "punti": t.get("points"),
              "giocate": t.get("playedGames"), "gol_fatti": t.get("goalsFor"),
              "gol_subiti": t.get("goalsAgainst")} for t in tabella]

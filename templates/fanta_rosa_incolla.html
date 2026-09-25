@@ -1,5 +1,6 @@
 {# L'incolla della rosa del Fantacalcio (§4.6). #}
 {% extends "base.html" %}
+{% from "_fanta_stemma.html" import stemma %}
 {#
   L'anteprima della rosa incollata (§4.2, 21/09/2026).
 
@@ -99,7 +100,7 @@ td.stretta{width:1%;white-space:nowrap}
             </select>
           {% elif r.scelto %}
             <input type="hidden" name="pid_{{ n }}" value="{{ r.scelto.id }}">
-            <strong>{{ r.scelto.nome }}</strong>
+            {{ stemma(stemmi.get(r.scelto.squadra_slug), r.scelto.squadra) }}<strong>{{ r.scelto.nome }}</strong>
             <span class="text-xs text-muted">
               {{ r.scelto.squadra or '?' }} &middot; {{ ruoli.get(r.scelto.ruolo_classic, '?') }}
               {% if r.scelto.fvm %}&middot; FVM {{ r.scelto.fvm }}{% endif %}

@@ -5,7 +5,9 @@
    gioca** (ceduto, squadra senza partita, partita rinviata) e — dal 25/09/2026, da
    quando si salva anche a meta' — cosa **manca** per completarla. Niente sulla
    titolarita': le scelte segnate a mano sono state tolte lo stesso giorno.
-   Si usa con `{% from "_fanta_allerta.html" import avviso %}`. #}
+   Si usa con `{% from "_fanta_allerta.html" import avviso with context %}`: il
+   `with context` porta `stemmi`, e senza gli stemmi semplicemente non ci sono. #}
+{% from "_fanta_stemma.html" import stemma %}
 {% macro avviso(allerta, giornata, url_campo=None) %}
 {% if allerta and (allerta.fuori or allerta.spariti or allerta.mancano) %}
 <div class="card mb-3" style="border-color:#d97706">
@@ -36,7 +38,7 @@
       <strong>non {{ 'scende' if allerta.fuori|length == 1 else 'scendono' }} in campo</strong>:
       <div class="text-xs mt-1">
         {% for v in allerta.fuori %}
-        <span class="badge badge-error">{{ v.nome }} &middot; {{ v.perche or 'non gioca' }}</span>
+        <span class="badge badge-error">{{ stemma((stemmi or {}).get(v.squadra_slug)) }}{{ v.nome }} &middot; {{ v.perche or 'non gioca' }}</span>
         {% endfor %}
       </div>
     </div>
@@ -47,7 +49,7 @@
       In panchina, dello stesso ruolo, hai:
       <div class="text-xs mt-1">
         {% for v in allerta.occasioni %}
-        <span class="badge badge-success">{{ v.nome }}{% if v.fm is not none %} &middot; FM {{ '%.2f'|format(v.fm) }}{% endif %}</span>
+        <span class="badge badge-success">{{ stemma((stemmi or {}).get(v.squadra_slug)) }}{{ v.nome }}{% if v.fm is not none %} &middot; FM {{ '%.2f'|format(v.fm) }}{% endif %}</span>
         {% endfor %}
       </div>
     </div>

@@ -1,0 +1,18 @@
+{# Lo stemma di una squadra di Serie A, accanto al nome (chiesto da Davide il 25/09/2026).
+
+   Si usa con `{% from "_fanta_stemma.html" import stemma %}` e poi
+   `{{ stemma(stemmi.get(g.squadra_slug), g.squadra) }}`: `stemmi` lo mette in ogni
+   pagina della sezione il context processor del blueprint, `{squadra_slug: url}`.
+
+   ⚠️ L'indirizzo e' quello che football-data.org da' nella classifica
+   (`https://crests.football-data.org/<id>.png`), e l'immagine la carica **il
+   browser**: gli stemmi sono marchi dei club, e nel progetto non si salvano.
+   ⚠️ Senza indirizzo non disegna niente, e il nome accanto resta: prima del primo
+   «Aggiorna» del calendario la pagina e' quella di sempre. Se l'immagine non si
+   carica (niente rete) si toglie da sola, invece di lasciare l'icona rotta. #}
+{% macro stemma(url, nome='') -%}
+{%- if url -%}
+<img class="stemma" src="{{ url }}" alt=""{% if nome %} title="{{ nome }}"{% endif %}
+     width="16" height="16" loading="lazy" onerror="this.remove()">
+{%- endif -%}
+{%- endmacro %}

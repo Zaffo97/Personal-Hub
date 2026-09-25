@@ -484,10 +484,12 @@ def init_db():
     -- La classifica **totale**: l'unica del piano gratuito (niente casa/trasferta,
     -- `form` vuoto). Serve a mostrare l'avversario accanto al giocatore, non a
     -- pesarlo: decisione di Davide del 24/09/2026.
+    -- `stemma` e' l'indirizzo dell'immagine sul CDN di football-data.org, non il
+    -- file: lo carica il browser (25/09/2026).
     CREATE TABLE IF NOT EXISTS fanta_classifica(
         squadra_slug TEXT PRIMARY KEY,
         squadra TEXT, posizione INTEGER, punti INTEGER, giocate INTEGER,
-        gol_fatti INTEGER, gol_subiti INTEGER,
+        gol_fatti INTEGER, gol_subiti INTEGER, stemma TEXT,
         aggiornato_il TIMESTAMP DEFAULT CURRENT_TIMESTAMP);
     -- ── «Ricorda credenziali» (22/09/2026) ────────────────────────────────
     -- ⚠️ **Qui dentro non c'e' nessuna password, e non ci sara' mai.** Quello che
@@ -711,6 +713,14 @@ def init_db():
     # qui sopra tocca solo i DB nuovi. Stessa forma delle colonne aggiunte a `games`.
     try:
         db.execute("ALTER TABLE game_releases ADD COLUMN hypes INTEGER")
+        db.commit()
+    except Exception:
+        pass
+
+    # Lo stemma della squadra, dal 25/09/2026. Stessa forma di sopra: la CREATE TABLE
+    # vale solo per i DB nuovi. Si riempie al primo «Aggiorna» del calendario.
+    try:
+        db.execute("ALTER TABLE fanta_classifica ADD COLUMN stemma TEXT")
         db.commit()
     except Exception:
         pass

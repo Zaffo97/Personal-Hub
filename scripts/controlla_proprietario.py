@@ -302,7 +302,7 @@ ECCEZIONI = {
      'SELECT * FROM fanta_players WHERE id=?'):
         'la riga del listone condiviso; le rose tue sono lette a parte con ambito_utente()',
     ('blueprints/fantacalcio.py', 'api_giocatori',
-     'SELECT id, nome, squadra, ruolo_classic, qa, fvm, fantamedia, attivo FROM fanta_players WHERE nome LIKE ? ORDER BY attivo DESC, fvm DESC, nome LIMIT 25'):
+     'SELECT id, nome, squadra, squadra_slug, ruolo_classic, qa, fvm, fantamedia, attivo FROM fanta_players WHERE nome LIKE ? ORDER BY attivo DESC, fvm DESC, nome LIMIT 25'):
         'la ricerca nel listone condiviso, per scegliere chi mettere in rosa',
     ('blueprints/fantacalcio.py', '_contesto_giornata',
      'SELECT 1 FROM fanta_calendario LIMIT 1'):
@@ -335,7 +335,7 @@ ECCEZIONI = {
      'DELETE FROM fanta_classifica'):
         'calendario e classifica della Serie A da football-data.org: dati condivisi, e le squadre del listone condiviso per abbinarli',
     ('fanta.py', 'aggiorna_calendario',
-     'INSERT INTO fanta_classifica(squadra_slug, squadra, posizione, punti, giocate, gol_fatti, gol_subiti) VALUES(?,?,?,?,?,?,?)'):
+     'INSERT INTO fanta_classifica(squadra_slug, squadra, posizione, punti, giocate, gol_fatti, gol_subiti, stemma) VALUES(?,?,?,?,?,?,?,?)'):
         'calendario e classifica della Serie A da football-data.org: dati condivisi, e le squadre del listone condiviso per abbinarli',
     ('fanta.py', 'partite_della_giornata',
      'SELECT * FROM fanta_calendario WHERE giornata=? ORDER BY inizio'):
@@ -364,6 +364,9 @@ ECCEZIONI = {
     ('fanta.py', 'classifica',
      'SELECT * FROM fanta_classifica ORDER BY posizione'):
         'la classifica della Serie A: dato condiviso',
+    ('fanta.py', 'stemmi',
+     'SELECT squadra_slug, stemma FROM fanta_classifica WHERE stemma IS NOT NULL AND squadra_slug IS NOT NULL'):
+        'gli stemmi delle squadre di Serie A, dalla classifica: dato condiviso',
 }
 
 

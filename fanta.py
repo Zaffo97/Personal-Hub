@@ -235,9 +235,10 @@ def aggiorna_calendario(db, scrivi=True):
     db.execute("DELETE FROM fanta_classifica")
     db.executemany(
         "INSERT INTO fanta_classifica(squadra_slug, squadra, posizione, punti, "
-        "giocate, gol_fatti, gol_subiti) VALUES(?,?,?,?,?,?,?)",
+        "giocate, gol_fatti, gol_subiti, stemma) VALUES(?,?,?,?,?,?,?,?)",
         [(abbinate.get(t["squadra"]) or F.slug_squadra(t["squadra"]), t["squadra"],
-          t["posizione"], t["punti"], t["giocate"], t["gol_fatti"], t["gol_subiti"])
+          t["posizione"], t["punti"], t["giocate"], t["gol_fatti"], t["gol_subiti"],
+          _stemma_buono(t.get("stemma")))
          for t in tabella])
     db.commit()
     r["scritto"] = True
@@ -277,8 +278,13 @@ def scadenza(db, giornata):
             "%d/%m/%Y alle %H:%M")
     except ValueError:
         quando = prima["inizio"]
+    # Gli stemmi viaggiano **dentro** la scadenza: il timer è una macro importata
+    # senza contesto (Dashboard e sezione), e così non deve chiederli a nessuno.
+    loghi = stemmi(db)
     return {"giornata": giornata, "inizio": prima["inizio"], "quando": quando,
             "casa": prima["casa"], "fuori": prima["fuori"], "quante": len(righe),
+            "casa_stemma": loghi.get(prima["casa_slug"]),
+            "fuori_stemma": loghi.get(prima["fuori_slug"]),
             "senza_ora": len([x for x in righe if x["stato"] not in F.CON_ORA
                               and x["stato"] not in F.NON_SI_GIOCA])}
 
@@ -306,6 +312,28 @@ def partite_della_giornata(db, giornata):
 def classifica(db):
     return {x["squadra_slug"]: dict(x) for x in db.execute(
         "SELECT * FROM fanta_classifica ORDER BY posizione")}
+
+
+def _stemma_buono(url):
+    """L'indirizzo dello stemma se è un `https://`, altrimenti `None`.
+
+    Finisce nell'`src` di un `<img>` di ogni pagina: Jinja lo scappa, ma un
+    `javascript:` o un `http://` qualunque non ci deve arrivare comunque.
+    """
+    url = (url or "").strip()
+    return url if url.startswith("https://") else None
+
+
+def stemmi(db):
+    """`{squadra_slug: url}` per le squadre di cui la classifica ha lo stemma.
+
+    ⚠️ Viene dalla classifica, quindi c'è solo dopo il primo «Aggiorna» del
+    calendario (dal 25/09/2026): prima la mappa è vuota e le pagine mostrano il nome
+    senza stemma, come facevano. Nessuno stemma «indovinato» da un nome.
+    """
+    return {x["squadra_slug"]: x["stemma"] for x in db.execute(
+        "SELECT squadra_slug, stemma FROM fanta_classifica "
+        "WHERE stemma IS NOT NULL AND squadra_slug IS NOT NULL")}
 
 
 def partita_di(g, partite, tabella, calendario_c_e):
@@ -488,8 +516,12 @@ def controlla_schierati(schierati, valutazioni, nomi, in_rosa):
     """
     per_id = {v["g"]["id"]: v for v in valutazioni}
     fuori, occasioni, spariti = [], [], []
+    # `squadra_slug` c'è per lo stemma accanto al nome (25/09/2026); chi non è più
+    # in rosa non ha una valutazione, e resta senza.
+    slug = lambda pid: (per_id.get(pid) or {}).get("g", {}).get("squadra_slug")
     for pid, riga in (schierati or {}).items():
-        voce = {"id": pid, "nome": nomi.get(pid, "?"), "perche": None}
+        voce = {"id": pid, "nome": nomi.get(pid, "?"), "perche": None,
+                "squadra_slug": slug(pid)}
         if pid not in in_rosa:
             spariti.append(voce)
             continue
@@ -503,7 +535,8 @@ def controlla_schierati(schierati, valutazioni, nomi, in_rosa):
         v = per_id.get(pid)
         if (v and not riga.get("titolare") and not v["escluso"]
                 and v["g"].get("ruolo_classic") in ruoli_scoperti):
-            occasioni.append({"id": pid, "nome": nomi.get(pid, "?"), "fm": v["fm"]})
+            occasioni.append({"id": pid, "nome": nomi.get(pid, "?"), "fm": v["fm"],
+                              "squadra_slug": slug(pid)})
     return {"fuori": sorted(fuori, key=lambda x: x["nome"]), "incerti": [],
             "occasioni": sorted(occasioni, key=lambda x: -(x["fm"] or 0)),
             "spariti": sorted(spariti, key=lambda x: x["nome"])}

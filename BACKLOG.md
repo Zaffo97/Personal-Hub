@@ -1007,8 +1007,11 @@ completo della lettura è in `git show b61fa8e:BACKLOG.md`, §4.6.
 - **La chiave su Debian**: oggi `FOOTBALL_DATA_API_KEY` si legge dall'ambiente e, su
   Windows, dal registro dell'utente (così `setx` basta senza riavviare l'hub da un terminale
   nuovo). Su Debian il registro non c'è: è la voce di §1.5.
-- La cartella `data/cache/fantacalcio/` (cinque pagine di fantacalcio.it lette dalla
-  sezione vecchia, esclusa da git) non la scrive più nessuno: **si può cancellare a mano**.
+- **Gli stemmi** (25/09/2026) vengono dalla classifica di football-data.org: se un giorno
+  l'API smettesse di dare `crest`, o cambiasse CDN, le pagine tornerebbero ai soli nomi
+  **senza dirlo**. Non è un baco, è da sapere. E vanno visti **sul campo pieno**: nessuna
+  lega aveva una formazione salvata, quindi lì li ha provati solo lo sweep (il JavaScript
+  compila), non l'occhio.
 
 Le verifiche fatte prima di scrivere il codice, il 24/09/2026 — restano qui perché sono
 la ragione di ogni scelta sopra:

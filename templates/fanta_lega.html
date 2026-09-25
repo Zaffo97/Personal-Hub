@@ -1,7 +1,9 @@
 {# La lega del Fantacalcio (§4.6): nata come copia di quella della sezione vecchia, con la partita al posto della probabile. #}
 {% extends "base.html" %}
-{% from "_fanta_allerta.html" import avviso as allerta_formazione %}
+{# `with context`: l'avviso mette lo stemma accanto ai nomi, e `stemmi` sta nel contesto. #}
+{% from "_fanta_allerta.html" import avviso as allerta_formazione with context %}
 {% from "_fanta_timer.html" import timer %}
+{% from "_fanta_stemma.html" import stemma %}
 {% block title %}{{ lega.nome }} &ndash; Fantacalcio{% endblock %}
 {% block topbar_title %}&#9917; {{ lega.nome }}{% endblock %}
 {% block body_class %}sez-fanta{% endblock %}
@@ -226,13 +228,13 @@
       {% set p = partita.get(g.id, {}) %}
       <div class="giocatore {% if not g.attivo %}spento{% endif %}">
         <div>
-          <div class="g-nome">{{ g.nome }}
+          <div class="g-nome">{{ stemma(stemmi.get(g.squadra_slug), g.squadra) }}{{ g.nome }}
             {% if not g.attivo %}<span class="badge badge-warning">{{ 'ceduto' if g.ceduto else 'fuori listone' }}</span>
             {% elif p.gioca is sameas false %}<span class="prob prob-non_gioca">{{ p.perche }}</span>{% endif %}
           </div>
           <div class="g-dati">
             {% if p.gioca %}
-              vs {{ p.avversario or '—' }}
+              vs {{ stemma(p.avv.stemma if p.avv else none, p.avversario) }}{{ p.avversario or '—' }}
               ({% if p.in_casa %}in casa{% else %}fuori{% endif %})
               {% if p.avv %}&middot; {{ p.avv.posizione }}ª, {{ p.avv.gol_fatti }} gol fatti e {{ p.avv.gol_subiti }} subiti{% endif %}
               {% if not p.ora_certa %}&middot; orario da definire{% endif %}
@@ -287,7 +289,7 @@
             <tr{% if not g.attivo %} class="spento"{% endif %}>
               <td>
                 <span class="ruolo ruolo-{{ g.ruolo_classic }}">{{ g.ruolo_classic|upper }}</span>
-                {{ g.nome }}
+                {{ stemma(stemmi.get(g.squadra_slug), g.squadra) }}{{ g.nome }}
                 <span class="text-xs text-muted">{{ g.squadra or '—' }}</span>
                 {% if not g.attivo %}<span class="badge badge-warning">{{ 'ceduto' if g.ceduto else 'fuori listone' }}</span>{% endif %}
               </td>
@@ -439,9 +441,19 @@ function confermaModifica(f){
         voci.forEach(function(g){
           const d = document.createElement('div');
           const fm = (g.fantamedia === null || g.fantamedia === undefined) ? '—' : g.fantamedia;
-          d.textContent = (RUOLI[g.ruolo_classic] || '?') + ' · ' + g.nome +
+          // Lo stemma come elemento e il resto come testo: niente `innerHTML` con
+          // dei nomi dentro, che è il modo in cui un apostrofo diventa un baco.
+          if (g.stemma) {
+            const img = document.createElement('img');
+            img.className = 'stemma'; img.src = g.stemma; img.alt = '';
+            img.width = 16; img.height = 16;
+            img.onerror = function(){ img.remove(); };
+            d.appendChild(img);
+          }
+          d.appendChild(document.createTextNode(
+                          (RUOLI[g.ruolo_classic] || '?') + ' · ' + g.nome +
                           ' (' + (g.squadra || '—') + ') · QA ' + (g.qa === null ? '—' : g.qa) +
-                          ' · FM ' + fm + (g.attivo ? '' : ' · ceduto');
+                          ' · FM ' + fm + (g.attivo ? '' : ' · ceduto')));
           d.onclick = function(){
             campo.value = g.id;
             cerca.value = g.nome;

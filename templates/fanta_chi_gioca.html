@@ -1,4 +1,5 @@
 {% extends "base.html" %}
+{% from "_fanta_stemma.html" import stemma %}
 {#
   Le probabili accanto alla rosa — Fantacalcio (§4.6).
 
@@ -86,10 +87,10 @@
       <div class="riga{% if v.gioca is sameas false %} bloccato{% endif %}">
         <span class="ruolo ruolo-{{ r }}">{{ r|upper }}</span>
         <div class="chi">
-          <div class="chi-nome">{{ v.g.nome }}</div>
+          <div class="chi-nome">{{ stemma(stemmi.get(v.g.squadra_slug), v.g.squadra) }}{{ v.g.nome }}</div>
           <div class="chi-dati">
             {{ v.g.squadra or '—' }}
-            {% if p.gioca %}&middot; vs {{ p.avversario }} ({{ 'casa' if p.in_casa else 'fuori' }})
+            {% if p.gioca %}&middot; vs {{ stemma(stemmi.get(p.avversario_slug), p.avversario) }}{{ p.avversario }} ({{ 'casa' if p.in_casa else 'fuori' }})
             {% elif p.gioca is sameas false %}&middot; <strong>{{ p.perche }}</strong>{% endif %}
           </div>
         </div>

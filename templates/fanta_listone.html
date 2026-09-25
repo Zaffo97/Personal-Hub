@@ -1,4 +1,5 @@
 {% extends "base.html" %}
+{% from "_fanta_stemma.html" import stemma %}
 {#
   Il listone da sfogliare (chiesto da Davide il 22/09/2026).
 
@@ -135,7 +136,7 @@
           <tr class="riga-g{% if not g.attivo %} spento{% endif %}" data-id="{{ g.id }}">
             <td><span class="ruolo ruolo-{{ g.ruolo_classic }}">{{ (g.ruolo_classic or '?')|upper }}</span></td>
             <td>
-              <strong>{{ g.nome }}</strong>
+              {{ stemma(stemmi.get(g.squadra_slug), g.squadra) }}<strong>{{ g.nome }}</strong>
               {% if not g.attivo %}<span class="badge badge-warning">{{ 'ceduto' if g.ceduto else 'fuori listone' }}</span>{% endif %}
               {% if mie.get(g.id) %}
               <span class="badge badge-success" title="{{ mie[g.id]|map(attribute='nome')|join(', ') }}">in rosa</span>
@@ -199,6 +200,12 @@
     d.textContent = (t === null || t === undefined) ? '' : String(t);
     return d.innerHTML;
   }
+  /* Lo stemma (25/09/2026): l'indirizzo viene dal server, e passa da `esc` come
+     tutto il resto prima di finire in un `innerHTML`. */
+  function stemmaHtml(url){
+    return url ? '<img class="stemma" src="' + esc(url).replace(/"/g, '&quot;') +
+                 '" alt="" width="16" height="16" onerror="this.remove()">' : '';
+  }
   function casella(etichetta, valore){
     return '<div><div class="scheda-et">' + esc(etichetta) + '</div>' +
            '<div class="scheda-val">' + esc(valore) + '</div></div>';
@@ -206,7 +213,7 @@
 
   function disegna(dati){
     var g = dati.giocatore, p = dati.partita || {};
-    nome.innerHTML = esc(g.nome) + (g.attivo ? '' :
+    nome.innerHTML = stemmaHtml(g.stemma) + esc(g.nome) + (g.attivo ? '' :
       ' <span class="badge badge-warning">' + (g.ceduto ? 'ceduto' : 'fuori listone') + '</span>');
     squadra.textContent = (g.squadra || '—') + ' · ' +
       (RUOLI[g.ruolo_classic] || '?') +
@@ -218,7 +225,8 @@
     if (p.gioca === true) {
       html += '<span class="prob prob-titolare">la squadra gioca</span> ' +
               '<span class="text-muted">giornata ' + esc(dati.giornata) + ' · contro ' +
-              esc(p.avversario) + (p.in_casa ? ' in casa' : ' in trasferta') +
+              stemmaHtml(p.avversario_stemma) + esc(p.avversario) +
+              (p.in_casa ? ' in casa' : ' in trasferta') +
               (p.avv ? ' · ' + esc(p.avv.posizione) + 'ª, ' + esc(p.avv.gol_fatti) +
                        ' gol fatti e ' + esc(p.avv.gol_subiti) + ' subiti' : '') +
               '</span>';

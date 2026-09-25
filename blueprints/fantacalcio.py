@@ -138,6 +138,21 @@ def _numeri(f):
     return fuori
 
 
+@bp.context_processor
+def _stemmi():
+    """`stemmi` in ogni pagina della sezione: `{squadra_slug: url}` (25/09/2026).
+
+    Una query da 20 righe per pagina resa, invece di passarlo a mano a nove
+    `render_template()` e dimenticarne uno. Le pagine lo usano con la macro di
+    `_fanta_stemma.html`; dove manca, resta il nome da solo.
+    """
+    db = get_db()
+    try:
+        return {"stemmi": G.stemmi(db)}
+    finally:
+        db.close()
+
+
 def _torna(lid=None):
     return redirect(url_for("fantacalcio.lega", lid=lid) if lid
                     else url_for("fantacalcio.fantacalcio"))
@@ -1032,6 +1047,10 @@ def api_giocatore(pid):
     voce = dict(riga)
     ctx = _contesto_giornata(db)
     partita = G.partita_di(voce, ctx["partite"], ctx["tabella"], ctx["calendario_c_e"])
+    loghi = G.stemmi(db)
+    voce["stemma"] = loghi.get(voce.get("squadra_slug"))
+    if partita.get("avversario_slug"):
+        partita["avversario_stemma"] = loghi.get(partita["avversario_slug"])
     cond, par = ambito_utente("l.user_id")
     rose = [{"lid": r["lid"], "lega": r["lega"], "prezzo": r["prezzo"]}
             for r in db.execute(
@@ -1052,8 +1071,9 @@ def api_giocatori():
         return jsonify([])
     db = get_db()
     righe = db.execute(
-        "SELECT id, nome, squadra, ruolo_classic, qa, fvm, fantamedia, attivo "
-        "FROM fanta_players WHERE nome LIKE ? "
+        "SELECT id, nome, squadra, squadra_slug, ruolo_classic, qa, fvm, fantamedia, "
+        "attivo FROM fanta_players WHERE nome LIKE ? "
         "ORDER BY attivo DESC, fvm DESC, nome LIMIT 25", (f"%{q}%",)).fetchall()
+    loghi = G.stemmi(db)
     db.close()
-    return jsonify([dict(r) for r in righe])
+    return jsonify([dict(r, stemma=loghi.get(r["squadra_slug"])) for r in righe])

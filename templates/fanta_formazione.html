@@ -1,6 +1,7 @@
 {# Il campo del Fantacalcio (§4.6): nato come copia di quello della sezione vecchia, col calendario al posto delle probabili. #}
 {% extends "base.html" %}
-{% from "_fanta_allerta.html" import avviso as allerta_formazione %}
+{# `with context`: l'avviso mette lo stemma accanto ai nomi, e `stemmi` sta nel contesto. #}
+{% from "_fanta_allerta.html" import avviso as allerta_formazione with context %}
 {% from "_fanta_timer.html" import timer %}
 {% block title %}Formazione &ndash; {{ lega.nome }} (Fantacalcio){% endblock %}
 {% block topbar_title %}&#9917; Formazione &mdash; {{ lega.nome }}{% endblock %}
@@ -208,15 +209,25 @@ const DATI = {
   {% for g in rosa %}
   {{ g.id }}: {
     nome: {{ g.nome|tojson }}, squadra: {{ (g.squadra or '—')|tojson }},
+    stemma: {{ stemmi.get(g.squadra_slug)|tojson }},
     ruolo: {{ (g.ruolo_classic or '')|tojson }}, attivo: {{ g.attivo or 0 }},
     fm: {{ g.fantamedia if g.fantamedia is not none else 'null' }},
     {% set p = partita.get(g.id, {}) %}
     stato: {{ ('ceduto' if p.perche == 'ceduto' else 'gioca' if p.gioca else 'non_gioca' if p.gioca is sameas false else '')|tojson }},
-    testo: {{ (('vs ' ~ p.avversario ~ (' (c)' if p.in_casa else ' (f)')) if p.gioca else (p.perche or ''))|tojson }}
+    testo: {{ (('vs ' ~ p.avversario ~ (' (c)' if p.in_casa else ' (f)')) if p.gioca else (p.perche or ''))|tojson }},
+    avv: {{ (stemmi.get(p.avversario_slug) if p.gioca else none)|tojson }}
   }{% if not loop.last %},{% endif %}
   {% endfor %}
 };
 const REPARTI = {{ reparti|tojson }};
+/* Lo stemma accanto al nome (25/09/2026). L'indirizzo viene da `fanta.stemmi()`,
+   che accetta solo `https://`; qui si scappa comunque, perché finisce in un
+   `innerHTML`. Senza stemma, niente: il nome resta com'era. */
+function stemmaHtml(url) {
+  if (!url) return '';
+  const u = String(url).replace(/&/g, '&amp;').replace(/"/g, '&quot;').replace(/</g, '&lt;');
+  return '<img class="stemma" src="' + u + '" alt="" width="16" height="16" onerror="this.remove()">';
+}
 const RUOLI = {p: 'Portiere', d: 'Difensore', c: 'Centrocampista', a: 'Attaccante'};
 const MAX_PANCHINA = {{ lega.n_panchinari or 0 }};
 
@@ -261,6 +272,9 @@ function cambiaModulo(nuovo){
 
 function statoDi(id){
   const d = DATI[id];
+  // «vs Genoa (c)»: lo stemma dell'avversario va dopo il «vs», davanti al nome.
+  if (d && d.avv && d.testo.indexOf('vs ') === 0)
+    return 'vs ' + stemmaHtml(d.avv) + d.testo.slice(3);
   return (d && d.testo) || '';
 }
 
@@ -288,7 +302,7 @@ function disegna(){
       if (casella.id) {
         const d = DATI[casella.id];
         box.innerHTML =
-          '<div class="posto-nome">' + d.nome + '</div>' +
+          '<div class="posto-nome">' + stemmaHtml(d.stemma) + d.nome + '</div>' +
           '<div class="posto-sq">' + d.squadra + '</div>' +
           (d.stato ? '<div class="posto-pct"><span class="pallino pal-' + d.stato +
                      '"></span>' + statoDi(casella.id) + '</div>' : '');
@@ -337,7 +351,7 @@ function disegnaPanchina(){
       '<span class="num">' + (i + 1) + '</span>' +
       '<span class="ruolo ruolo-' + d.ruolo + '">' + d.ruolo.toUpperCase() + '</span>' +
       '<span style="flex:1;min-width:0">' +
-        '<span class="text-sm font-600">' + d.nome + '</span>' +
+        '<span class="text-sm font-600">' + stemmaHtml(d.stemma) + d.nome + '</span>' +
         '<span class="text-xs text-muted"> · ' + d.squadra +
         (d.stato ? ' · <span class="pallino pal-' + d.stato + '"></span>' + statoDi(id) : '') +
         '</span></span>';
@@ -390,7 +404,7 @@ function apriScelta(ruolo, posto){
     voce.innerHTML =
       '<span class="ruolo ruolo-' + d.ruolo + '">' + d.ruolo.toUpperCase() + '</span>' +
       '<span style="flex:1;min-width:0">' +
-        '<div class="text-sm font-600">' + d.nome +
+        '<div class="text-sm font-600">' + stemmaHtml(d.stemma) + d.nome +
           (d.attivo ? '' : ' <span class="badge badge-warning">ceduto</span>') +
         '</div>' +
         '<div class="text-xs text-muted">' + d.squadra +

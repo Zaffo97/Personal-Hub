@@ -15,6 +15,7 @@
    ⚠️ L'orario e' ora italiana senza fuso (`2026-10-10 15:00`), e il conto lo fa il
    browser con la **sua** ora locale: l'app gira in casa, nello stesso fuso della
    Serie A. Scrivendolo con la `Z` diventerebbe UTC, cioe' due ore di anticipo. #}
+{% from "_fanta_stemma.html" import stemma %}
 {% macro timer(scadenza, id, compatto=False) %}
 {% if scadenza %}
 <div class="scadenza{% if compatto %} scadenza-compatta{% endif %}"
@@ -25,7 +26,10 @@
   </div>
   <div class="scadenza-quando">
     Giornata {{ scadenza.giornata }} &middot; {{ scadenza.quando }}
-    {% if scadenza.casa %}&middot; {{ scadenza.casa }}&ndash;{{ scadenza.fuori }}{% endif %}
+    {# Gli stemmi arrivano dentro `scadenza` (`fanta.scadenza()`): questa macro si
+       importa senza contesto, e `stemmi` qui non ci sarebbe. #}
+    {% if scadenza.casa %}&middot;
+      {{ stemma(scadenza.casa_stemma) }}{{ scadenza.casa }}&ndash;{{ stemma(scadenza.fuori_stemma) }}{{ scadenza.fuori }}{% endif %}
     {% if scadenza.senza_ora %}
     <br>{{ scadenza.senza_ora }} partit{{ 'a' if scadenza.senza_ora == 1 else 'e' }}
     di questa giornata non {{ 'ha' if scadenza.senza_ora == 1 else 'hanno' }} ancora

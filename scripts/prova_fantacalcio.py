@@ -160,9 +160,13 @@ for _p in PARTITE:
     for _k in ("casa_id", "fuori_id", "gol_casa", "gol_fuori", "aggiornata"):
         _p.setdefault(_k, None)
 CLASSIFICA = [
-    {"squadra": "Roma", "posizione": 1, "punti": 13, "giocate": 5, "gol_fatti": 14, "gol_subiti": 3},
-    {"squadra": "Lazio", "posizione": 3, "punti": 10, "giocate": 5, "gol_fatti": 8, "gol_subiti": 3},
-    {"squadra": "Como 1907", "posizione": 9, "punti": 7, "giocate": 5, "gol_fatti": 6, "gol_subiti": 6},
+    {"squadra": "Roma", "posizione": 1, "punti": 13, "giocate": 5, "gol_fatti": 14, "gol_subiti": 3,
+     "stemma": "https://crests.football-data.org/100.png"},
+    {"squadra": "Lazio", "posizione": 3, "punti": 10, "giocate": 5, "gol_fatti": 8, "gol_subiti": 3,
+     "stemma": "https://crests.football-data.org/110.png"},
+    # ⚠️ Uno stemma che non è un `https://` non deve arrivare in nessuna pagina.
+    {"squadra": "Como 1907", "posizione": 9, "punti": 7, "giocate": 5, "gol_fatti": 6, "gol_subiti": 6,
+     "stemma": "javascript:alert(1)"},
     {"squadra": "Venezia FC", "posizione": 18, "punti": 2, "giocate": 5, "gol_fatti": 3, "gol_subiti": 11},
 ]
 
@@ -274,6 +278,14 @@ def prove(dove):
           sc and sc["inizio"] == "2026-10-10 15:00" and sc["senza_ora"] == 0, str(sc))
     esito("⚠️ una giornata solo SCHEDULED non ha scadenza: l'ora non è certa",
           G.scadenza(db, 7) is None)
+    loghi = G.stemmi(db)
+    esito("gli stemmi arrivano dalla classifica, per squadra del listone",
+          loghi.get("roma", "").endswith("/100.png") and loghi.get("lazio", "").endswith("/110.png"),
+          str(loghi))
+    esito("⚠️ uno stemma che non è https:// viene scartato, e chi non ce l'ha resta senza",
+          "como" not in loghi and "venezia" not in loghi)
+    esito("la scadenza porta gli stemmi delle due squadre della prima partita",
+          "casa_stemma" in sc and "fuori_stemma" in sc, str(sc))
     F.chiave_api = lambda: None
     F.partite = F.classifica = _niente_rete
     db.close()
@@ -486,6 +498,23 @@ def prove(dove):
     r = c.get("/fantacalcio/api/giocatore/31").get_json()
     esito("la scheda porta la partita e le rose",
           r["partita"]["avversario"] == "Lazio" and r["rose"], str(r.get("partita")))
+    esito("e gli stemmi: del giocatore e dell'avversario",
+          (r["giocatore"].get("stemma") or "").endswith("/100.png")
+          and (r["partita"].get("avversario_stemma") or "").endswith("/110.png"),
+          f"{r['giocatore'].get('stemma')} / {r['partita'].get('avversario_stemma')}")
+    ricerca = c.get("/fantacalcio/api/giocatori?q=Portiere").get_json()
+    esito("la ricerca per la rosa porta lo stemma",
+          ricerca and (ricerca[0].get("stemma") or "").endswith(("/100.png", "/110.png")),
+          str(ricerca[:1]))
+    # Lo stemma della Roma nelle pagine che mostrano giocatori della Roma; e quello
+    # «javascript:» del Como da nessuna parte.
+    for nome, url in pagine.items():
+        testo = c.get(url).data.decode("utf-8", "replace")
+        if nome != "elenco":
+            esito(f"{nome}: c'è lo stemma accanto ai nomi",
+                  "crests.football-data.org/100.png" in testo)
+        esito(f"{nome}: ⚠️ nessuno stemma javascript: in pagina",
+              "javascript:alert" not in testo)
     elenco = c.get("/fantacalcio/").data.decode("utf-8")
     esito("⚠️ l'attribuzione chiesta dai termini di football-data è in pagina",
           F.ATTRIBUZIONE in elenco)

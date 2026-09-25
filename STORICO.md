@@ -20,6 +20,20 @@ pagina ed esegue `new Function()` su ogni blocco `<script>` **e** su ogni handle
 
 ## 25/09/2026
 
+**Gli stemmi delle squadre nel Fantacalcio (§4.6)** — chiesti da Davide: accanto al nome di
+ogni giocatore (lega, campo, panchina e scelta, consiglio, avviso, probabili, listone e sua
+scheda, ricerca per la rosa, incolla), davanti all'avversario, e alle due squadre della
+prima partita nel timer, **Dashboard compresa**. Fonte: `crest` della classifica di
+football-data.org, già scaricata — **20 su 20** squadre del listone, provato col DB vero il
+25/09/2026. Si salva l'**indirizzo** (`fanta_classifica.stemma`, `https://` e basta),
+l'immagine la carica il browser: sono marchi dei club, nel repository non entrano. Macro in
+`_fanta_stemma.html`, mappa `stemmi` dal context processor del blueprint. Visto su tre
+pagine rese e fotografate (lega, campo, Dashboard); il campo **pieno** no, perché nessuna
+lega ha una formazione salvata. `prova_fantacalcio.py` **100 su 100** (12 nuove, compreso
+uno stemma `javascript:` che non deve arrivare in pagina), sweep 0 errori,
+`controlla_proprietario.py` 0 scoperte. Cancellata anche `data/cache/fantacalcio/` (5 pagine,
+4,3 MB, non più lette).
+
 **Il Fantacalcio è uno solo: la 2 prende il posto della vecchia (§4.6)** — decisioni di
 Davide: via **tutta** la sezione vecchia (blueprint, `fantacalcio_it.py`, `fanta_import.py`,
 `importa_probabili.py`, `importa_calendario.py`, sei template e `prova_fantacalcio.py` da 245

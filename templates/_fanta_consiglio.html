@@ -5,6 +5,7 @@
    non lo dicesse sembrerebbe sapere una cosa che non sa.
    Se si cambia l'ordinamento in `fanta.py`, questo testo cambia con lui.
    Lo stile delle classi sta nell'`extra_head` di `fanta_formazione.html`. #}
+{% from "_fanta_stemma.html" import stemma %}
 <div class="card mb-3" style="border-color:var(--warning)">
   <div class="card-body text-sm">
     <strong>&#9888; Questo consiglio non sa chi è titolare.</strong>
@@ -124,12 +125,12 @@
   <td class="num text-muted">{{ posto }}</td>
   <td><span class="ruolo ruolo-{{ v.g.ruolo_classic }}">{{ v.g.ruolo_classic|upper }}</span></td>
   <td>
-    <strong>{{ v.g.nome }}</strong>
+    {{ stemma(stemmi.get(v.g.squadra_slug), v.g.squadra) }}<strong>{{ v.g.nome }}</strong>
     <span class="text-xs text-muted">{{ v.g.squadra or '—' }}</span>
   </td>
   <td class="text-xs">
     {% if p.gioca %}
-      vs {{ p.avversario }} ({{ 'casa' if p.in_casa else 'fuori' }}){% if p.avv %},
+      vs {{ stemma(p.avv.stemma if p.avv else none, p.avversario) }}{{ p.avversario }} ({{ 'casa' if p.in_casa else 'fuori' }}){% if p.avv %},
       {{ p.avv.posizione }}ª &middot; {{ p.avv.gol_fatti }}/{{ p.avv.gol_subiti }}{% endif %}
     {% elif p.gioca is sameas false %}
       <span class="fascia fascia-panchina">{{ p.perche }}</span>
@@ -211,7 +212,7 @@
         {% for v in per_ruolo[r] %}
         <tr class="{% if not v.fidata %}thin{% endif %}">
           <td class="num text-muted">{{ loop.index }}</td>
-          <td>{{ v.g.nome }}
+          <td>{{ stemma(stemmi.get(v.g.squadra_slug), v.g.squadra) }}{{ v.g.nome }}
             <span class="text-xs text-muted">{{ v.g.squadra or '—' }}</span>
             {% if v.gioca is sameas false %}<span class="fascia fascia-panchina">{{ v.partita.perche }}</span>{% endif %}</td>
           <td class="num">{% if v.fm is not none %}{{ '%.2f'|format(v.fm) }}{% else %}—{% endif %}</td>
