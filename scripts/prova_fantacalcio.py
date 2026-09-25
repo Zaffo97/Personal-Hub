@@ -1,40 +1,42 @@
 #!/usr/bin/env python
-"""Le prove della sezione Fantacalcio (§4.2). Non tocca `hub.db` né la rete.
+"""Le prove del Fantacalcio (§4.6). Non tocca `hub.db` né la rete.
 
     python scripts/prova_fantacalcio.py [--tieni]
 
-Ogni prova gira su un DB **suo**, creato da `init_db()` in una cartella temporanea.
-⚠️ Non è pignoleria: il 16/08/2026 uno script di prova che cancellava «il mio
-intervallo» di id si è portato via 497 righe vere.
+Ogni prova gira su un DB **suo**, creato da `init_db()` in una cartella temporanea,
+come `prova_fantacalcio.py`. Gli Excel sono **costruiti qui**, con la stessa forma di
+quelli veri (titolo sopra, intestazione con `Id`, foglio `Ceduti`): i file veri non
+vanno nel repository, e una prova che dipende da un download non è ripetibile.
+Il calendario e la classifica sono **finti** anche loro: una prova che va in rete
+fallisce a seconda di come va la linea, e consuma le chiamate della chiave.
 
 Cosa dimostra, in ordine:
 
-- che il **listone è di tutti e le leghe di ognuno**: un secondo utente non vede la
-  lega di un altro, non la modifica, non la cancella e non le tocca la rosa. È la
-  regola di §1.1, e qui vale doppio perché `fanta_roster` **non ha** una colonna
-  `user_id`: il proprietario le arriva dalla lega, quindi una query che non passa
-  di lì sarebbe scoperta senza dare nessun errore
-- che un **modulo che non torna viene rifiutato** invece di essere salvato e far poi
-  sbagliare il conto dei ruoli
-- che un **campo di regola lasciato vuoto non vale zero**: varrebbe azzerare il bonus
-  gol di una lega a ogni salvataggio che non lo ripassa
-- che l'aggiornamento del listone **spegne e non cancella** chi esce dalla Serie A, e
-  che la rosa che lo nomina sopravvive: è il caso del mercato di gennaio
-- che il lettore delle pagine regge una pagina **cambiata di forma** invece di
-  inventarsi dei numeri
-- che le **probabili formazioni** si leggono, si importano e si rileggono senza
-  raddoppiare, che una pagina a metà viene **rifiutata** invece di scritta, e che
-  «non convocato» e «la sua squadra non gioca» restano due cose diverse
-
-⚠️ Le probabili si provano su una pagina **finta**, costruita qui sotto: la cache
-vera è un file di 700 KB che può non esserci, e senza cache `scarica()` andrebbe in
-rete — cioè una prova che fallisce a seconda di come va la linea.
+- che i due Excel si **riconoscono dal contenuto** e non dall'ordine o dal nome, che
+  l'intestazione si cerca, e che un file sbagliato viene rifiutato
+- che l'import **spegne e non cancella** (ceduti e usciti), che la rosa che li nomina
+  sopravvive, che un file troppo corto viene rifiutato, e che rieseguirlo non cambia
+  niente
+- che la **fusione del 25/09/2026** porta nelle tabelle nuove le leghe che la sezione
+  vecchia aveva e la nuova no, toglie le tabelle vecchie e si fa una volta sola
+- che le squadre di football-data si abbinano **solo** quando il candidato è uno, e
+  che l'ora italiana regge anche senza `tzdata`
+- che le leghe restano **di chi le ha create** (§1.1), anche passando dalla rosa
+- che il consiglio mette in fondo chi **non gioca** e ordina gli altri per
+  fantamedia, e che «applica» passa dalla stessa validazione del campo
+- che le pagine si aprono, e che nessun `<script>` e nessun handler inline ha un
+  `SyntaxError` — anche con un apostrofo nel nome
 """
 import argparse
+import html as _html
+import io
 import os
+import re
 import shutil
 import sys
 import tempfile
+import time
+import zipfile
 
 RADICE = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 if RADICE not in sys.path:
@@ -47,142 +49,122 @@ except Exception:
 
 esiti = []
 
-# ── La pagina finta delle probabili ──────────────────────────────────────────
-# Ha la stessa forma di quella vera nei punti che il lettore guarda: il riquadro
-# della giornata, le due `label` del titolo, il disegno sul campo con il modulo, e
-# le due schede (titolari e panchina) con ruolo e percentuale. Costruirla da una
-# struttura Python permette di **romperla apposta**, che è l'unico modo per sapere
-# se i controlli del lettore servono davvero.
-BASE_URL = "https://www.fantacalcio.it/serie-a/squadre"
-
-
-def _squadra_html(slug, nome, modulo, titolari, panchina, campo=None):
-    """Una squadra: il suo blocco sul campo e la sua scheda.
-
-    `campo` serve a far dire al campo qualcosa di **diverso** dalla scheda, che è
-    il caso che la controprova del lettore deve saper prendere.
-    """
-    sul_campo = titolari if campo is None else campo
-    disegno = "".join(
-        f'<li class="player ani-scatter"><a class="player-name player-link" '
-        f'href="{BASE_URL}/{slug}/{s}/{i}"><span>{n}</span></a></li>'
-        for i, n, _r, _p, s in sul_campo)
-    def scheda(voci, classe, stato):
-        righe = "".join(
-            f'<li class="player-item pill" data-status="{stato}">'
-            f'<span class="role" data-value="{r}"></span>'
-            f'<a class="player-name player-link" href="{BASE_URL}/{slug}/{s}/{i}">'
-            f'<span>{n}</span></a>'
-            f'<div class="progress progress-starter"><div class="progress-bar" '
-            f'role="progressbar" aria-valuenow="{p}"></div></div></li>'
-            for i, n, r, p, s in voci)
-        return f'<ul class="player-list {classe}">{righe}</ul>'
-    return (disegno, scheda(titolari, "starters", "success") +
-            scheda(panchina, "reserves", "warn"))
-
-
-def pagina_finta(partite, giornata=6, stagione="2026-27"):
-    """`partite` è una lista di coppie di squadre, ognuna come la vuole `_squadra_html`."""
-    pezzi = ['<ul class="match-list">']
-    for n, (casa, fuori) in enumerate(partite, start=1):
-        d_casa, s_casa = _squadra_html(*casa)
-        d_fuori, s_fuori = _squadra_html(*fuori)
-        gg = f'<div class="matchweek">{giornata}</div>' if giornata else ""
-        pezzi.append(
-            f'<li class="match match-item" data-match-id="{1000 + n}">{gg}'
-            f'<label itemprop="homeTeam" for="a" class="team-home">'
-            f'<a class="team-name team-link" href="{BASE_URL}/{casa[0]}">'
-            f'<meta itemprop="name" content="{casa[1]}" />{casa[1]}</a></label>'
-            f'<label itemprop="awayTeam" for="b" class="team-away">'
-            f'<a class="team-name team-link" href="{BASE_URL}/{fuori[0]}">'
-            f'<meta itemprop="name" content="{fuori[1]}" />{fuori[1]}</a></label>'
-            + (f'<meta itemprop="name" content="Serie A {stagione} - {giornata}'
-               f'&#xB0; giornata - {casa[0]}-{fuori[0]}" />' if giornata else "") +
-            f'<div class="pitch">'
-            f'<div class="team team-home" data-team-formation="{casa[2]}">'
-            f'<ul class="team-lineup">{d_casa}<li class="separator"></li></ul></div>'
-            f'<div class="team team-away" data-team-formation="{fuori[2]}">'
-            f'<ul class="team-lineup">{d_fuori}<li class="separator"></li></ul></div>'
-            f'</div>'
-            f'<div class="card team-card">{s_casa}</div>'
-            f'<div class="card team-card">{s_fuori}</div>'
-            f'</li>')
-    pezzi.append("</ul>")
-    return "<html><body>" + "".join(pezzi) + "</body></html>"
-
-
-
-# ── La pagina finta del calendario ───────────────────────────────────────────
-# Ha la forma che il lettore guarda: il `div.match-pill` con dentro il riquadro
-# della giornata, le due `label` delle squadre, il link al dettaglio (che è dove
-# stanno **insieme** giornata e id della partita) e il riquadro della data.
-#
-# ⚠️ Ogni partita è scritta **due volte**, come nella pagina vera: una versione
-# `size-large` per lo schermo e una `size-compact` per il telefono. È qui apposta:
-# se il lettore smettesse di fonderle, una giornata avrebbe venti partite e il
-# timer punterebbe lo stesso alla prima — cioè il baco non si vedrebbe.
-PARTITE_FINTE = [
-    {"mid": 18008, "casa": "genoa", "casa_nome": "Genoa", "fuori": "fiorentina",
-     "fuori_nome": "Fiorentina", "data": "2026-10-09", "ora": "20:45"},
-    {"mid": 18009, "casa": "inter", "casa_nome": "Inter", "fuori": "parma",
-     "fuori_nome": "Parma", "data": "2026-10-10", "ora": "15:00"},
-    {"mid": 18010, "casa": "lazio", "casa_nome": "Lazio", "fuori": "monza",
-     "fuori_nome": "Monza", "data": "2026-10-10", "ora": "18:00"},
-    {"mid": 18011, "casa": "lecce", "casa_nome": "Lecce", "fuori": "bologna",
-     "fuori_nome": "Bologna", "data": "2026-10-10", "ora": "20:45"},
-    {"mid": 18012, "casa": "napoli", "casa_nome": "Napoli", "fuori": "frosinone",
-     "fuori_nome": "Frosinone", "data": "2026-10-11", "ora": "12:30"},
-    {"mid": 18013, "casa": "sassuolo", "casa_nome": "Sassuolo", "fuori": "milan",
-     "fuori_nome": "Milan", "data": "2026-10-11", "ora": "15:00"},
-    {"mid": 18014, "casa": "torino", "casa_nome": "Torino", "fuori": "udinese",
-     "fuori_nome": "Udinese", "data": "2026-10-11", "ora": "15:00"},
-    {"mid": 18015, "casa": "como", "casa_nome": "Como", "fuori": "roma",
-     "fuori_nome": "Roma", "data": "2026-10-11", "ora": "18:00"},
-    {"mid": 18016, "casa": "cagliari", "casa_nome": "Cagliari", "fuori": "juventus",
-     "fuori_nome": "Juventus", "data": "2026-10-11", "ora": "20:45"},
-    {"mid": 18017, "casa": "atalanta", "casa_nome": "Atalanta", "fuori": "venezia",
-     "fuori_nome": "Venezia", "data": "2026-10-12", "ora": "20:45"},
-]
-
-
-def _pill(p, giornata, taglia):
-    base = "https://www.fantacalcio.it/serie-a"
-    return f'''
-<div itemscope itemtype="http://schema.org/SportsEvent"
-     class="match-pill theme-light size-{taglia} match-status-0" data-match-status="0">
-  <div class="matchweek">{giornata}</div>
-  <label itemprop="homeTeam" itemscope class="team-home ">
-    <a class="team-name team-link " href="{base}/squadre/{p['casa']}">
-      <meta itemprop="name" content="{p['casa_nome']}" />{p['casa_nome']}</a>
-  </label>
-  <label itemprop="awayTeam" itemscope class="team-away ">
-    <a class="team-name team-link " href="{base}/squadre/{p['fuori']}">
-      <meta itemprop="name" content="{p['fuori_nome']}" />{p['fuori_nome']}</a>
-  </label>
-  <a class="match-score unstyled"
-     href="{base}/calendario/{giornata}/2026-27/{p['casa']}-{p['fuori']}/{p['mid']}">
-    <span class="score-home">0</span><span class="score-away">0</span></a>
-  <div class="match-date">
-    <meta itemprop="startDate" content="{p['data']}"/>
-    <span class="day">{p['data'][8:]}/{p['data'][5:7]}</span>
-    <span class="hours">{p['ora']}</span>
-  </div>
-  <div class="match-location"><span class="stadium" itemprop="location">Stadio</span></div>
-  <meta itemprop="name" content="Serie A 2026-27 - {giornata}&#xB0; giornata" />
-</div>'''
-
-
-def pagina_calendario_finta(partite, giornata=6):
-    corpo = "".join(_pill(p, giornata, taglia)
-                    for p in partite for taglia in ("large", "compact"))
-    return ("<html><body><div class='content'><ul class='match-list'>" +
-            "".join(f"<li class='match'>{x}</li>" for x in [corpo]) +
-            "</ul></div></body></html>")
-
 
 def esito(nome, ok, dettaglio=""):
     esiti.append(bool(ok))
     print(f"  {'OK ' if ok else 'NO '} {nome}" + (f"   {dettaglio}" if dettaglio else ""))
+
+
+# ── Gli Excel finti ──────────────────────────────────────────────────────────
+
+def _cella(ref, valore):
+    if isinstance(valore, (int, float)):
+        return f'<c r="{ref}"><v>{valore}</v></c>'
+    testo = _html.escape(str(valore))
+    return f'<c r="{ref}" t="inlineStr"><is><t>{testo}</t></is></c>'
+
+
+def _foglio(righe):
+    corpo = []
+    for i, riga in enumerate(righe, 1):
+        celle = "".join(_cella(f"{chr(65 + j)}{i}", v) for j, v in enumerate(riga)
+                        if v is not None)
+        corpo.append(f'<row r="{i}">{celle}</row>')
+    return ('<?xml version="1.0" encoding="UTF-8"?><worksheet xmlns="http://schemas.'
+            'openxmlformats.org/spreadsheetml/2006/main"><sheetData>' +
+            "".join(corpo) + "</sheetData></worksheet>")
+
+
+def xlsx(fogli):
+    """Un `.xlsx` minimo da `{nome: [righe]}`: bytes, come arriva da un upload."""
+    buf = io.BytesIO()
+    with zipfile.ZipFile(buf, "w") as z:
+        nomi = list(fogli)
+        z.writestr("[Content_Types].xml", '<?xml version="1.0"?><Types xmlns="http://'
+                   'schemas.openxmlformats.org/package/2006/content-types"/>')
+        z.writestr("xl/workbook.xml",
+                   '<?xml version="1.0"?><workbook xmlns="http://schemas.openxmlformats.'
+                   'org/spreadsheetml/2006/main" xmlns:r="http://schemas.openxmlformats.'
+                   'org/officeDocument/2006/relationships"><sheets>' +
+                   "".join(f'<sheet name="{n}" sheetId="{i}" r:id="rId{i}"/>'
+                           for i, n in enumerate(nomi, 1)) + "</sheets></workbook>")
+        z.writestr("xl/_rels/workbook.xml.rels",
+                   '<?xml version="1.0"?><Relationships xmlns="http://schemas.'
+                   'openxmlformats.org/package/2006/relationships">' +
+                   "".join(f'<Relationship Id="rId{i}" Target="worksheets/sheet{i}.xml" '
+                           'Type="http://schemas.openxmlformats.org/officeDocument/2006/'
+                           'relationships/worksheet"/>' for i in range(1, len(nomi) + 1)) +
+                   "</Relationships>")
+        for i, n in enumerate(nomi, 1):
+            z.writestr(f"xl/worksheets/sheet{i}.xml", _foglio(fogli[n]))
+    return buf.getvalue()
+
+
+TESTA_Q = ["Id", "R", "RM", "Nome", "Squadra", "Qt.A", "Qt.I", "Diff.", "Qt.A M",
+           "Qt.I M", "Diff.M", "FVM", "FVM M"]
+TESTA_S = ["Id", "R", "Rm", "Nome", "Squadra", "Pv", "Mv", "Fm", "Gf", "Gs", "Rp",
+           "Rc", "R+", "R-", "Ass", "Amm", "Esp", "Au"]
+
+# (id, ruolo, mantra, nome, squadra, qa, fvm) — una rosa che basta a un 4-4-2 con
+# panchina, divisa fra quattro squadre, più un nome con l'apostrofo.
+GIOCATORI = [
+    (1, "P", "Por", "Portiere Uno", "Roma", 15, 60),
+    (2, "P", "Por", "Portiere Due", "Lazio", 8, 20),
+    (11, "D", "Dc", "Dif Uno", "Roma", 18, 120), (12, "D", "Dc", "Dif Due", "Roma", 12, 80),
+    (13, "D", "Dd;E", "Dif Tre", "Lazio", 10, 60), (14, "D", "Dc", "Dif Quattro", "Lazio", 9, 40),
+    (15, "D", "Dc", "Dif Cinque", "Como", 8, 30),
+    (21, "C", "M;C", "Cen Uno", "Roma", 20, 150), (22, "C", "C", "Cen Due", "Lazio", 15, 90),
+    (23, "C", "C;T", "Cen Tre", "Como", 12, 70), (24, "C", "M", "Cen Quattro", "Como", 10, 50),
+    (25, "C", "C", "N'Dri", "Venezia", 9, 30),
+    (31, "A", "Pc", "Att Uno", "Roma", 30, 250), (32, "A", "Pc", "Att Due", "Venezia", 22, 160),
+    (33, "A", "A", "Att Tre", "Lazio", 14, 70),
+]
+# id -> (Pv, Mv, Fm, Gf, Gs, Rp, Rc, R+, R-, Ass, Amm, Esp, Au)
+STAT = {g[0]: (5, 6.2, 6.5, 1, 0, 0, 0, 0, 0, 1, 1, 0, 0) for g in GIOCATORI}
+STAT[1] = (5, 6.4, 5.8, 0, 3, 0, 0, 0, 0, 0, 0, 0, 0)
+STAT[31] = (5, 7.1, 10.6, 6, 0, 0, 2, 1, 1, 0, 1, 0, 0)
+STAT[32] = (5, 6.0, 7.0, 2, 0, 0, 0, 0, 0, 0, 0, 0, 1)     # un autogol
+STAT[33] = (0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0)        # mai a voto
+CEDUTO = (99, "C", "C", "Ceduto Tizio", "Roma", 5, 10)
+
+
+def file_quotazioni(giocatori=GIOCATORI, ceduti=(CEDUTO,), titolo=True):
+    def righe(elenco):
+        return ([["Quotazioni Fantacalcio Stagione 2026 27"]] if titolo else []) + \
+            [TESTA_Q] + [[g[0], g[1], g[2], g[3], g[4], g[5], g[5], 0, g[5], g[5], 0,
+                          g[6], g[6]] for g in elenco]
+    return xlsx({"Tutti": righe(giocatori), "Ceduti": righe(ceduti)})
+
+
+def file_statistiche(giocatori=GIOCATORI):
+    righe = [["Statistiche Fantacalcio Stagione 2026 27"], TESTA_S]
+    for g in giocatori:
+        s = STAT.get(g[0], (0,) * 13)
+        righe.append([g[0], g[1], g[2], g[3], g[4]] + list(s))
+    return xlsx({"Tutti": righe})
+
+
+# Il calendario finto: giornata 6, con **Como–Venezia rinviata**.
+PARTITE = [
+    {"match_id": 1, "giornata": 6, "stato": "TIMED", "utc": "2026-10-10T13:00:00Z",
+     "inizio": "2026-10-10 15:00", "casa": "Roma", "fuori": "Lazio"},
+    {"match_id": 2, "giornata": 6, "stato": "POSTPONED", "utc": "2026-10-11T13:00:00Z",
+     "inizio": "2026-10-11 15:00", "casa": "Como 1907", "fuori": "Venezia FC"},
+    {"match_id": 3, "giornata": 7, "stato": "SCHEDULED", "utc": "2026-10-17T13:00:00Z",
+     "inizio": "2026-10-17 15:00", "casa": "Lazio", "fuori": "Roma"},
+    {"match_id": 4, "giornata": 5, "stato": "FINISHED", "utc": "2026-09-20T13:00:00Z",
+     "inizio": "2026-09-20 15:00", "casa": "Venezia FC", "fuori": "Roma"},
+]
+# I campi che `fanta_fonti.partite()` mette in ogni voce e che qui non contano.
+for _p in PARTITE:
+    for _k in ("casa_id", "fuori_id", "gol_casa", "gol_fuori", "aggiornata"):
+        _p.setdefault(_k, None)
+CLASSIFICA = [
+    {"squadra": "Roma", "posizione": 1, "punti": 13, "giocate": 5, "gol_fatti": 14, "gol_subiti": 3},
+    {"squadra": "Lazio", "posizione": 3, "punti": 10, "giocate": 5, "gol_fatti": 8, "gol_subiti": 3},
+    {"squadra": "Como 1907", "posizione": 9, "punti": 7, "giocate": 5, "gol_fatti": 6, "gol_subiti": 6},
+    {"squadra": "Venezia FC", "posizione": 18, "punti": 2, "giocate": 5, "gol_fatti": 3, "gol_subiti": 11},
+]
 
 
 def prove(dove):
@@ -190,1906 +172,577 @@ def prove(dove):
     extensions.DB = os.path.join(dove, "prova.db")
     extensions.CHIAVE = os.path.join(dove, "chiave.txt")
     extensions.init_db()
+    # ⚠️ Mai i download veri: entrando nella sezione gli Excel si importano e si
+    # cancellano. Una cartella della prova, vuota finché la sezione 10 non la riempie.
+    scaricati = os.path.join(dove, "download")
+    os.makedirs(scaricati)
+    os.environ["FANTA_CARTELLA_DOWNLOAD"] = scaricati
 
-    # ⚠️ Dal 21/09/2026 **aprire una pagina può scaricare**: le route del
-    # Fantacalcio rileggono la fonte da sé quando la copia è vecchia. Senza queste
-    # due righe la suite andrebbe in rete a ogni `GET` — l'ha fatto davvero, e il
-    # sintomo è stato una prova che trovava 482 convocati veri in un DB di prova
-    # che doveva averne zero. Quindi: la cache è **sempre fresca** (l'automatico
-    # non scatta mai per caso) e `scarica()` **solleva**, così una lettura di rete
-    # non voluta si vede come errore invece di riuscire in silenzio. I blocchi che
-    # provano l'aggiornamento li sostituiscono da sé, e rimettono questi a posto.
-    import fantacalcio_it as F
-    F.eta_cache = lambda nome: 0.0
+    # ⚠️ Niente rete, mai: senza chiave le pagine non aggiornano il calendario da
+    # sole, e le due letture dell'API **sollevano** se qualcuno le chiama per caso.
+    # I blocchi che provano l'aggiornamento le sostituiscono da sé.
+    import fanta_fonti as F
+    import fanta as G
+    F.chiave_api = lambda: None
 
-    def _niente_rete(nome, forza=False):
-        raise AssertionError(f"la prova non deve leggere la rete: {nome}")
-    F.scarica = _niente_rete
+    def _niente_rete(*a, **k):
+        raise AssertionError("la prova non deve leggere la rete")
+    F.partite = F.classifica = _niente_rete
 
     db = extensions.get_db()
-    db.execute("INSERT INTO users(username,password,display_name,role) "
-               "VALUES('davide','x','Davide','user')")
-    db.execute("INSERT INTO users(username,password,display_name,role) "
-               "VALUES('altro','x','Altro','user')")
-    # Un pezzo di listone finto: non si scarica niente in una prova.
-    for pid, nome, sq, ruolo, qa, fvm in (
-            (1, "Sommer", "INT", "p", 15, 60),
-            (2, "Bastoni", "INT", "d", 18, 120),
-            (3, "Barella", "INT", "c", 24, 210),
-            (4, "Thuram", "INT", "a", 31, 275),
-            (5, "Uscito", "XXX", "c", 5, 10)):
-        db.execute("INSERT INTO fanta_players(id,nome,squadra,ruolo_classic,qa,fvm,"
-                   "fantamedia,attivo,visto_il) VALUES(?,?,?,?,?,?,6.0,1,'2026-09-21')",
-                   (pid, nome, sq, ruolo, qa, fvm))
+    for nome in ("davide", "altro"):
+        db.execute("INSERT INTO users(username,password,display_name,role) "
+                   "VALUES(?,'x',?,'user')", (nome, nome.title()))
     db.commit()
     ids = {r["username"]: r["id"] for r in db.execute("SELECT id, username FROM users")}
     db.close()
 
+    # --- 1. i due file ---------------------------------------------------------
+    print("\n== 1. i due Excel si riconoscono dal contenuto ==")
+    fq, fs, pr = G.leggi_i_due_file(file_statistiche(), file_quotazioni())
+    esito("scambiati nel form, si riconoscono lo stesso", fq and fs and not pr, str(pr))
+    q, pq = F.quotazioni(fq)
+    esito("il foglio Ceduti entra, segnato", q.get(99, {}).get("ceduto") == 1
+          and q[1]["ceduto"] == 0)
+    esito("il ruolo Mantra prende la forma `m|c`",
+          q[13]["ruolo_mantra"] == "dd|e", q[13]["ruolo_mantra"])
+    q2, _ = F.quotazioni(F.leggi_xlsx(file_quotazioni(titolo=False)))
+    esito("⚠️ l'intestazione si cerca: senza la riga del titolo legge lo stesso",
+          len(q2) == len(q))
+    s, _ = F.statistiche(fs)
+    esito("i rigori diventano «segnati / tirati»", s[31]["rigori"] == "1 / 2",
+          s[31]["rigori"])
+    esito("e l'autogol c'è", s[32]["autogol"] == 1)
+    _, _, pr = G.leggi_i_due_file(file_quotazioni(), file_quotazioni())
+    esito("⚠️ due file di quotazioni vengono rifiutati", bool(pr), str(pr))
+    _, _, pr = G.leggi_i_due_file(b"non sono un excel", file_quotazioni())
+    esito("⚠️ un file che non è un .xlsx viene rifiutato", bool(pr), str(pr))
+    altro = xlsx({"Foglio1": [["Nome", "Cognome"], ["a", "b"]]})
+    _, _, pr = G.leggi_i_due_file(altro, file_quotazioni())
+    esito("⚠️ e anche un .xlsx che non è di fantacalcio.it", bool(pr), str(pr))
+
+    # --- 2. l'import -----------------------------------------------------------
+    print("\n== 2. l'import spegne e non cancella ==")
+    db = extensions.get_db()
+    r = G.importa_listone(db, fq, fs)
+    esito("il primo import scrive tutti", r["ok"] and len(r["nuovi"]) == len(GIOCATORI) + 1,
+          str(r["motivo"]))
+    riga = db.execute("SELECT attivo, ceduto FROM fanta_players WHERE id=99").fetchone()
+    esito("⚠️ il ceduto entra spento", riga["attivo"] == 0 and riga["ceduto"] == 1)
+    r = G.importa_listone(db, fq, fs)
+    esito("rieseguito non cambia niente", r["ok"] and not r["nuovi"] and not r["cambiati"],
+          f"nuovi {len(r['nuovi'])} cambiati {r['cambiati']}")
+    db.close()
+
+    # --- 3. squadre e ore ------------------------------------------------------
+    print("\n== 3. squadre di football-data e ora italiana ==")
+    abb, sole = F.abbina_squadre(["Como 1907", "Venezia FC", "Roma", "Inter"],
+                                 {"como", "venezia", "roma", "lazio"})
+    esito("Como 1907 e Venezia FC si abbinano", abb.get("Como 1907") == "como"
+          and abb.get("Venezia FC") == "venezia")
+    esito("⚠️ una squadra che non c'è resta non abbinata, senza indovinare",
+          sole == ["Inter"], str(sole))
+    _, sole = F.abbina_squadre(["Hellas Verona"], {"hellas-verona", "verona"})
+    esito("e con due candidati vince quello esatto, non il primo",
+          F.abbina_squadre(["Hellas Verona"], {"hellas-verona", "verona"})[0]
+          .get("Hellas Verona") == "hellas-verona")
+    salvata = F._ROMA
+    F._ROMA = None
+    esito("senza tzdata: ottobre è ora legale", F.ora_italiana("2026-10-10T13:00:00Z")
+          == "2026-10-10 15:00")
+    esito("dicembre no", F.ora_italiana("2026-12-10T13:00:00Z") == "2026-12-10 14:00")
+    esito("⚠️ e il cambio cade alle 01:00 UTC dell'ultima domenica di ottobre",
+          F.ora_italiana("2026-10-25T00:30:00Z") == "2026-10-25 02:30"
+          and F.ora_italiana("2026-10-25T01:30:00Z") == "2026-10-25 02:30")
+    F._ROMA = salvata
+
+    # --- 4. il calendario ------------------------------------------------------
+    print("\n== 4. il calendario ==")
+    db = extensions.get_db()
+    r = G.aggiorna_calendario(db)
+    esito("senza chiave non parte, e lo dice", not r["ok"] and "chiave" in r["motivo"])
+    F.chiave_api = lambda: "finta"
+    F.partite = lambda chiave: PARTITE
+    F.classifica = lambda chiave: CLASSIFICA
+    r = G.aggiorna_calendario(db)
+    esito("con la chiave scrive partite e classifica",
+          r["ok"] and r["partite"] == 4 and not r["non_abbinate"], str(r))
+    esito("la giornata corrente è la prima con partite da giocare (la 6)",
+          G.giornata_corrente(db) == 6)
+    sc = G.scadenza(db, 6)
+    esito("la scadenza è la prima partita con l'ora esatta",
+          sc and sc["inizio"] == "2026-10-10 15:00" and sc["senza_ora"] == 0, str(sc))
+    esito("⚠️ una giornata solo SCHEDULED non ha scadenza: l'ora non è certa",
+          G.scadenza(db, 7) is None)
+    F.chiave_api = lambda: None
+    F.partite = F.classifica = _niente_rete
+    db.close()
+
+    # --- 5. di chi sono le leghe --------------------------------------------------
+    print("\n== 5. le leghe sono di chi le crea ==")
     import app as m
     app = m.create_app()
     app.config["TESTING"] = True
 
-    print("\n== 1. una lega si crea, e le regole si salvano ==")
-    with app.test_client() as c:
+    def cliente(nome):
+        c = app.test_client()
         with c.session_transaction() as s:
-            s["username"] = "davide"
+            s["username"] = nome
             s["role"] = "user"
-            s["user_id"] = ids["davide"]
-        r = c.post("/fantacalcio/lega/salva", data={
-            "nome": "Lega Amici", "moduli": "3-4-3,4-4-2", "n_panchinari": "7",
-            "mod_difesa": "1", "mod_difesa_portiere": "1",
-            "bonus_gol": "4", "bonus_assist": "1"},
-            follow_redirects=True)
-        esito("la creazione risponde", r.status_code == 200)
-        db = extensions.get_db()
-        lega = db.execute("SELECT * FROM fanta_leagues").fetchone()
-        db.close()
-        esito("la lega è nata col suo proprietario",
-              lega is not None and lega["user_id"] == ids["davide"],
-              f"user_id={lega['user_id'] if lega else None}")
-        esito("il bonus scritto nel form è quello salvato", lega["bonus_gol"] == 4)
-        esito("e quelli non toccati restano al default del DB",
-              lega["bonus_rigore_parato"] == 3 and lega["malus_amm"] == -0.5,
-              f"rig={lega['bonus_rigore_parato']} amm={lega['malus_amm']}")
-        esito("il modificatore di difesa è acceso", lega["mod_difesa"] == 1)
-        # ⚠️ Le due voci che il regolamento non fissa hanno lo stesso un valore di
-        # partenza — quello convenzionale, che è il DEFAULT della tabella. Il
-        # primo giro le faceva partire dal primo valore della tendina, cioè zero:
-        # una lega nuova nasceva con l'autogol che non toglie niente, e nessun
-        # errore da nessuna parte. L'ha preso la prova in browser.
-        esito("⚠️ autogol e porta inviolata non nascono a zero",
-              lega["malus_autogol"] == -2 and lega["bonus_imbattibilita"] == 1,
-              f"autogol={lega['malus_autogol']} porta={lega['bonus_imbattibilita']}")
-        esito("⚠️ il gol è UNA colonna sola, non quattro",
-              "bonus_gol" in lega.keys() and "bonus_gol_a" not in lega.keys(),
-              "il regolamento dà +3 a chiunque segni")
-        lid = lega["id"]
+            s["user_id"] = ids[nome]
+        return c
 
-        # --- 2. un modulo che non torna non si salva ------------------------
-        print("\n== 2. un modulo sbagliato viene rifiutato ==")
-        r = c.post("/fantacalcio/lega/salva", data={
-            "lega_id": str(lid), "nome": "Lega Amici", "moduli": "3-4-3,4-4-4"},
-            follow_redirects=True)
-        db = extensions.get_db()
-        dopo = db.execute("SELECT moduli FROM fanta_leagues WHERE id=?", (lid,)).fetchone()
-        db.close()
-        esito("«4-4-4» non entra e i moduli di prima restano",
-              dopo["moduli"] == "3-4-3,4-4-2", dopo["moduli"])
+    c = cliente("davide")
+    c.post("/fantacalcio/lega/salva", data={
+        "nome": "L'Inter dei \"miei\"", "moduli": "4-4-2,3-4-3", "n_panchinari": "7",
+        "bonus_gol": "3", "malus_autogol": "-2"})
+    db = extensions.get_db()
+    lid = db.execute("SELECT id FROM fanta_leagues").fetchone()["id"]
+    db.close()
+    # La rosa: metà dall'incolla (anteprima e conferma, come da pagina), metà dalla
+    # ricerca uno per volta. Le righe della conferma si mandano come le manda il
+    # form: `riga_N` spuntata e `pid_N` col giocatore scelto.
+    incollati = [g[0] for g in GIOCATORI[:8]]
+    dati = {}
+    for n, pid in enumerate(incollati):
+        dati[f"riga_{n}"], dati[f"pid_{n}"], dati[f"prezzo_{n}"] = "1", str(pid), "5"
+    dati["riga_99"], dati["pid_99"] = "1", "123456"          # un id inventato
+    c.post(f"/fantacalcio/lega/{lid}/rosa/incolla/conferma", data=dati)
+    for g in GIOCATORI[8:] + [CEDUTO]:
+        c.post(f"/fantacalcio/lega/{lid}/rosa/aggiungi",
+               data={"player_id": str(g[0]), "prezzo": "3"})
+    db = extensions.get_db()
+    in_rosa = db.execute("SELECT COUNT(*) FROM fanta_roster WHERE league_id=?",
+                         (lid,)).fetchone()[0]
+    db.close()
+    esito("la rosa entra intera, e l'id inventato no", in_rosa == len(GIOCATORI) + 1,
+          f"{in_rosa} in rosa")
+    anteprima = c.post(f"/fantacalcio/lega/{lid}/rosa/incolla",
+                       data={"testo": "Att Uno\nNessuno Così"})
+    esito("l'anteprima dell'incolla riconosce chi c'è e dichiara chi no",
+          anteprima.status_code == 200 and "Att Uno" in anteprima.data.decode("utf-8"))
 
-        # --- 3. un campo vuoto non azzera -----------------------------------
-        print("\n== 3. un campo di regola lasciato vuoto non vale zero ==")
-        r = c.post("/fantacalcio/lega/salva", data={
-            "lega_id": str(lid), "nome": "Lega Amici", "moduli": "3-4-3,4-4-2",
-            "bonus_gol": ""}, follow_redirects=True)
-        db = extensions.get_db()
-        dopo = db.execute("SELECT bonus_gol FROM fanta_leagues WHERE id=?",
-                          (lid,)).fetchone()
-        db.close()
-        esito("il bonus gol è ancora 4, non 0", dopo["bonus_gol"] == 4,
-              str(dopo["bonus_gol"]))
-        # ⚠️ La tendina manda sempre qualcosa: «altro» con la casella libera vuota
-        # è l'altro modo di dire «non l'ho toccato», e non deve azzerare niente.
-        r = c.post("/fantacalcio/lega/salva", data={
-            "lega_id": str(lid), "nome": "Lega Amici", "moduli": "3-4-3,4-4-2",
-            "bonus_gol": "altro", "bonus_gol_altro": ""}, follow_redirects=True)
-        db = extensions.get_db()
-        dopo = db.execute("SELECT bonus_gol FROM fanta_leagues WHERE id=?",
-                          (lid,)).fetchone()
-        db.close()
-        esito("⚠️ «Altro…» con la casella vuota non azzera il bonus",
-              dopo["bonus_gol"] == 4, str(dopo["bonus_gol"]))
-        r = c.post("/fantacalcio/lega/salva", data={
-            "lega_id": str(lid), "nome": "Lega Amici", "moduli": "3-4-3,4-4-2",
-            "bonus_gol": "altro", "bonus_gol_altro": "2,5"}, follow_redirects=True)
-        db = extensions.get_db()
-        dopo = db.execute("SELECT bonus_gol FROM fanta_leagues WHERE id=?",
-                          (lid,)).fetchone()
-        db.close()
-        esito("e con un numero dentro vince quello, virgola compresa",
-              dopo["bonus_gol"] == 2.5, str(dopo["bonus_gol"]))
-        c.post("/fantacalcio/lega/salva", data={
-            "lega_id": str(lid), "nome": "Lega Amici", "moduli": "3-4-3,4-4-2",
-            "bonus_gol": "3"}, follow_redirects=True)
+    a = cliente("altro")
+    r = a.get(f"/fantacalcio/lega/{lid}", follow_redirects=True)
+    esito("un altro utente non vede la lega", b"Lega non trovata" in r.data)
+    a.post("/fantacalcio/lega/salva", data={"lega_id": lid, "nome": "presa"})
+    a.post(f"/fantacalcio/lega/{lid}/elimina")
+    a.post(f"/fantacalcio/lega/{lid}/rosa/svuota", data={"ruolo": "tutti"})
+    a.post(f"/fantacalcio/lega/{lid}/rosa/modifica", data={"togli": ["1", "2", "3"]})
+    db = extensions.get_db()
+    lega = db.execute("SELECT nome FROM fanta_leagues WHERE id=?", (lid,)).fetchone()
+    resta = db.execute("SELECT COUNT(*) FROM fanta_roster WHERE league_id=?",
+                       (lid,)).fetchone()[0]
+    db.close()
+    esito("⚠️ né la rinomina, né la cancella, né le svuota o corregge la rosa",
+          lega and lega["nome"] != "presa" and resta == in_rosa)
+    esito("e la sua ricerca nel listone non vede le rose di Davide",
+          b"in rosa" not in a.get("/fantacalcio/listone").data)
 
-        # --- 4. la rosa ------------------------------------------------------
-        print("\n== 4. la rosa ==")
-        for pid in (1, 2, 3, 4, 5):
-            c.post(f"/fantacalcio/lega/{lid}/rosa/aggiungi",
-                   data={"player_id": str(pid), "prezzo": "10"})
-        db = extensions.get_db()
-        quanti = db.execute("SELECT COUNT(*) FROM fanta_roster").fetchone()[0]
-        db.close()
-        esito("cinque giocatori in rosa", quanti == 5, str(quanti))
-        r = c.post(f"/fantacalcio/lega/{lid}/rosa/aggiungi",
-                   data={"player_id": "1"}, follow_redirects=True)
-        db = extensions.get_db()
-        quanti2 = db.execute("SELECT COUNT(*) FROM fanta_roster").fetchone()[0]
-        db.close()
-        esito("lo stesso giocatore non entra due volte", quanti2 == 5, str(quanti2))
-        r = c.post(f"/fantacalcio/lega/{lid}/rosa/aggiungi",
-                   data={"player_id": "999"}, follow_redirects=True)
-        esito("un id che non è nel listone viene rifiutato",
-              b"non trovato" in r.data.lower() or quanti2 == 5)
-
-        r = c.get(f"/fantacalcio/lega/{lid}")
-        esito("la pagina della lega si apre e mostra la rosa",
-              r.status_code == 200 and b"Barella" in r.data and b"Sommer" in r.data)
-        esito("e dice quali moduli sono copribili e quali no",
-              b"3-4-3" in r.data and (b"mancano" in r.data or b"copribile" in r.data))
-
-        # --- 4b. correggere senza disfare -----------------------------------
-        # Le due voci rimaste aperte il 21/09/2026: il prezzo si correggeva solo
-        # nell'anteprima dell'incolla, e il togli era una riga per volta.
-        print("\n== 4b. i prezzi si correggono, e si toglie in blocco ==")
-
-        def rosa_ora():
-            db = extensions.get_db()
-            fuori = {x["player_id"]: dict(x) for x in db.execute(
-                "SELECT id, player_id, prezzo FROM fanta_roster")}
-            db.close()
-            return fuori
-
-        righe = rosa_ora()
-        c.post(f"/fantacalcio/lega/{lid}/rosa/modifica", data={
-            f"prezzo_{righe[1]['id']}": "25",
-            f"prezzo_{righe[2]['id']}": "0",
-            f"prezzo_{righe[3]['id']}": "10"}, follow_redirects=True)
-        p = rosa_ora()
-        esito("il prezzo si corregge senza togliere e rimettere",
-              p[1]["prezzo"] == 25 and p[2]["prezzo"] == 0,
-              f"1={p[1]['prezzo']} 2={p[2]['prezzo']}")
-        esito("e chi non era nel form resta com'era",
-              p[4]["prezzo"] == 10 and p[5]["prezzo"] == 10,
-              f"4={p[4]['prezzo']} 5={p[5]['prezzo']}")
-        r = c.post(f"/fantacalcio/lega/{lid}/rosa/modifica", data={},
-                   follow_redirects=True)
-        esito("un salvataggio che non cambia niente lo dice",
-              "Niente da cambiare" in r.data.decode("utf-8", "replace"))
-        # ⚠️ I numeri del form si rileggono dalla rosa prima di usarli: un `rid`
-        # che non è di questa lega non deve togliere niente. È la stessa scelta
-        # dei `player_id` nella conferma dell'incolla.
-        c.post(f"/fantacalcio/lega/{lid}/rosa/modifica", data={"togli": "9999"},
+    # --- 6. il consiglio -----------------------------------------------------------
+    print("\n== 6. il consiglio senza la titolarità ==")
+    import blueprints.fantacalcio as B
+    db = extensions.get_db()
+    lega, ctx = None, None
+    with app.test_request_context():
+        from flask import session
+        session["username"], session["role"], session["user_id"] = "davide", "user", ids["davide"]
+        lega, ctx = B._consiglio(db, lid)
+    db.close()
+    per_id = {v["g"]["id"]: v for v in ctx["valutazioni"]}
+    esito("il ceduto non gioca", per_id[99]["gioca"] is False
+          and per_id[99]["partita"]["perche"] == "ceduto")
+    esito("⚠️ Como–Venezia rinviata: i loro giocatori non giocano, e si dice perché",
+          per_id[23]["gioca"] is False
+          and per_id[23]["partita"]["perche"] == "partita rinviata",
+          str(per_id[23]["partita"]))
+    esito("Roma–Lazio si gioca, con l'avversario e la sua classifica",
+          per_id[31]["gioca"] is True and per_id[31]["partita"]["avversario"] == "Lazio"
+          and per_id[31]["partita"]["avv"]["posizione"] == 3)
+    esito("l'autogol toglie dalla fantamedia della lega",
+          round(per_id[32]["fm"], 2) == round(6.0 + (2 * 3 - 2) / 5, 2),
+          str(per_id[32]["fm"]))
+    esito("⚠️ chi non ha partite a voto non ha fantamedia (non zero)",
+          per_id[33]["fm"] is None)
+    c442 = next(x for x in ctx["consigli"] if x["modulo"] == "4-4-2")
+    titolari = [v["g"]["id"] for v in c442["titolari"]]
+    esito("in attacco: prima chi gioca con la fantamedia più alta",
+          [i for i in titolari if i >= 31] == [31, 33], str(titolari))
+    esito("⚠️ chi non gioca finisce titolare solo se il reparto non si riempie",
+          32 not in titolari and {v["g"]["id"] for v in c442["forzati"]} <= {15, 23, 24, 25},
+          str([v["g"]["nome"] for v in c442["forzati"]]))
+    esito("in panchina al massimo tanti per ruolo quanti ne gioca il modulo "
+          "(prima di chi avanza)",
+          [v["g"]["ruolo_classic"] for v in c442["panchina"][:1]] == ["p"])
+    r = c.post(f"/fantacalcio/lega/{lid}/consiglio/applica", data={"modulo": "4-4-2"},
                follow_redirects=True)
-        esito("⚠️ un id che non è in questa rosa non toglie niente",
-              len(rosa_ora()) == 5, str(len(rosa_ora())))
-        c.post(f"/fantacalcio/lega/{lid}/rosa/modifica", data={
-            "togli": [str(righe[1]["id"]), str(righe[2]["id"])]},
-            follow_redirects=True)
-        rimasti = rosa_ora()
-        esito("due spuntati escono insieme, con una conferma sola",
-              len(rimasti) == 3 and 1 not in rimasti and 2 not in rimasti,
-              str(sorted(rimasti)))
-        # Le prove che vengono dopo contano cinque righe in rosa: questo blocco
-        # rimette quello che ha tolto, prezzo compreso.
-        for pid in (1, 2):
-            c.post(f"/fantacalcio/lega/{lid}/rosa/aggiungi",
-                   data={"player_id": str(pid), "prezzo": "10"})
-        esito("la rosa torna com'era per le prove che seguono",
-              len(rosa_ora()) == 5, str(len(rosa_ora())))
-
-        # --- 5. l'autocomplete ----------------------------------------------
-        r = c.get("/fantacalcio/api/giocatori?q=bar")
-        voci = r.get_json()
-        esito("la ricerca trova Barella", any(v["nome"] == "Barella" for v in voci),
-              f"{len(voci)} risultati")
-        r = c.get("/fantacalcio/api/giocatori?q=b")
-        esito("con una lettera sola non cerca niente", r.get_json() == [])
-
-    # --- 6. un altro utente non ci arriva ------------------------------------
-    print("\n== 5. le leghe sono di chi le ha fatte ==")
-    with app.test_client() as c:
-        with c.session_transaction() as s:
-            s["username"] = "altro"
-            s["role"] = "user"
-            s["user_id"] = ids["altro"]
-        r = c.get("/fantacalcio/", follow_redirects=True)
-        esito("l'altro utente non vede la lega nell'elenco",
-              b"Lega Amici" not in r.data)
-        r = c.get(f"/fantacalcio/lega/{lid}", follow_redirects=True)
-        esito("e aprendola per id non ci entra", b"Lega Amici" not in r.data)
-        r = c.post("/fantacalcio/lega/salva", data={
-            "lega_id": str(lid), "nome": "Rubata"}, follow_redirects=True)
-        db = extensions.get_db()
-        nome = db.execute("SELECT nome FROM fanta_leagues WHERE id=?", (lid,)).fetchone()["nome"]
-        db.close()
-        esito("non può rinominarla", nome == "Lega Amici", nome)
-        r = c.post(f"/fantacalcio/lega/{lid}/elimina", follow_redirects=True)
-        db = extensions.get_db()
-        viva = db.execute("SELECT COUNT(*) FROM fanta_leagues WHERE id=?", (lid,)).fetchone()[0]
-        rosa = db.execute("SELECT COUNT(*) FROM fanta_roster").fetchone()[0]
-        db.close()
-        esito("non può cancellarla, e la rosa è intatta", viva == 1 and rosa == 5,
-              f"leghe={viva} rosa={rosa}")
-        rid = None
-        db = extensions.get_db()
-        rid = db.execute("SELECT id FROM fanta_roster LIMIT 1").fetchone()["id"]
-        db.close()
-        c.post(f"/fantacalcio/lega/{lid}/rosa/{rid}/rimuovi", follow_redirects=True)
-        db = extensions.get_db()
-        rosa2 = db.execute("SELECT COUNT(*) FROM fanta_roster").fetchone()[0]
-        db.close()
-        esito("e non può togliere un giocatore dalla rosa altrui", rosa2 == 5, str(rosa2))
-        db = extensions.get_db()
-        prezzi_prima = sorted(x["prezzo"] for x in db.execute(
-            "SELECT prezzo FROM fanta_roster"))
-        tutti = [x["id"] for x in db.execute("SELECT id FROM fanta_roster")]
-        db.close()
-        c.post(f"/fantacalcio/lega/{lid}/rosa/modifica",
-               data={"togli": [str(x) for x in tutti],
-                     f"prezzo_{tutti[0]}": "999"}, follow_redirects=True)
-        db = extensions.get_db()
-        prezzi_dopo = sorted(x["prezzo"] for x in db.execute(
-            "SELECT prezzo FROM fanta_roster"))
-        db.close()
-        esito("⚠️ né correggere i prezzi o svuotare la rosa di un altro in blocco",
-              prezzi_dopo == prezzi_prima, f"{prezzi_prima} -> {prezzi_dopo}")
-
-    # --- 7. il mercato: si spegne, non si cancella ---------------------------
-    print("\n== 6. il mercato: chi esce dal listone si spegne, non sparisce ==")
     db = extensions.get_db()
-    db.execute("UPDATE fanta_players SET attivo=0 WHERE id=5")
-    db.commit()
-    resta = db.execute("SELECT COUNT(*) FROM fanta_roster WHERE player_id=5").fetchone()[0]
+    tit = db.execute("SELECT COUNT(*) FROM fanta_formazione WHERE league_id=? "
+                     "AND titolare=1", (lid,)).fetchone()[0]
     db.close()
-    esito("il giocatore uscito è ancora in rosa", resta == 1, str(resta))
-    with app.test_client() as c:
-        with c.session_transaction() as s:
-            s["username"] = "davide"
-            s["role"] = "user"
-            s["user_id"] = ids["davide"]
-        r = c.get(f"/fantacalcio/lega/{lid}")
-        esito("e la pagina lo dichiara invece di nasconderlo",
-              b"fuori listone" in r.data and b"Uscito" in r.data)
+    esito("«applica» scrive una formazione da 11", tit == 11,
+          f"{tit} titolari")
 
-    # --- 8. il lettore regge una pagina che cambia forma ---------------------
-    print("\n== 7. il lettore delle pagine ==")
-    import fantacalcio_it as F
-    esito("una pagina senza righe da' zero giocatori, non un errore",
-          F._RigheGiocatori() is not None)
-    p = F._RigheGiocatori()
-    p.feed("<table><tr class='player-row' data-filter-keywords='X'><td>niente</td></tr></table>")
-    esito("una riga senza id non entra: senza id non si lega a niente",
-          p.righe == [], str(p.righe))
-    esito("«6,5» con la virgola diventa 6.5, non None", F._decimale("6,5") == 6.5)
-    esito("«-» vuol dire «non lo sappiamo», non zero",
-          F._decimale("-") is None and F._intero("-") is None)
-    from data import (scomponi_modulo, soglie_mod_difesa, scrivi_soglie,
-                      modificatore_difesa, MOD_DIFESA_SOGLIE)
-    esito("i moduli si scompongono, e quelli che non fanno 10 no",
-          scomponi_modulo("3-5-2") == {"p": 1, "d": 3, "c": 5, "a": 2}
-          and scomponi_modulo("4-4-4") is None and scomponi_modulo("") is None)
-
-    # --- 7bis. il modificatore di difesa ------------------------------------
-    # La tabella standard è quella del vademecum di FantaGazzetta, letta il
-    # 21/09/2026: +6 da 7, +3 da 6.5, +1 da 6, e sotto il 6 niente.
-    print("\n== 7b. il modificatore di difesa ==")
-    esito("la tabella standard è quella della fonte",
-          MOD_DIFESA_SOGLIE == [(7.0, 6.0), (6.5, 3.0), (6.0, 1.0)])
-    esito("7.2 vale +6, 6.8 vale +3, 6.2 vale +1",
-          (modificatore_difesa(7.2), modificatore_difesa(6.8),
-           modificatore_difesa(6.2)) == (6.0, 3.0, 1.0))
-    esito("⚠️ il confronto è «maggiore o uguale»: 6 esatto vale +1, non 0",
-          modificatore_difesa(6.0) == 1.0)
-    esito("5.9 non vale niente", modificatore_difesa(5.9) == 0.0)
-    esito("⚠️ «non lo sappiamo» non è un voto basso: None vale 0, non un malus",
-          modificatore_difesa(None) == 0.0)
-    esito("una tabella della lega si legge e si riscrive uguale",
-          soglie_mod_difesa("7:6, 6.5:3, 6:1") == MOD_DIFESA_SOGLIE
-          and scrivi_soglie(MOD_DIFESA_SOGLIE) == "7:6, 6.5:3, 6:1",
-          scrivi_soglie(MOD_DIFESA_SOGLIE))
-    esito("le soglie tornano ordinate dalla più alta, comunque siano scritte",
-          soglie_mod_difesa("6:1, 7:6, 6.5:3") == MOD_DIFESA_SOGLIE)
-    esito("⚠️ una riga scritta male torna allo standard, non a una tabella a caso",
-          soglie_mod_difesa("boh") == MOD_DIFESA_SOGLIE
-          and soglie_mod_difesa("7:sei") == MOD_DIFESA_SOGLIE
-          and soglie_mod_difesa(None) == MOD_DIFESA_SOGLIE)
-    esito("⚠️ e nemmeno una tabella a metà: se una coppia non si legge, standard",
-          soglie_mod_difesa("7:6, 6.5:tre, 6:1") == MOD_DIFESA_SOGLIE)
-    # ⚠️ La virgola in italiano è anche il separatore decimale: spezzando la riga
-    # sulle virgole, «7,5:8» diventava «7» e «5:8», cioè un'altra tabella senza
-    # nessun errore. L'ha preso questa prova al primo giro.
-    esito("⚠️ «7,5:8» resta 7.5, non diventa 7 e 5:8",
-          soglie_mod_difesa("7,5:8, 6:2") == [(7.5, 8.0), (6.0, 2.0)],
-          str(soglie_mod_difesa("7,5:8, 6:2")))
-    su_misura = soglie_mod_difesa("7,5:8, 6:2")
-    esito("e una tabella diversa viene usata davvero",
-          modificatore_difesa(7.6, su_misura) == 8.0
-          and modificatore_difesa(6.4, su_misura) == 2.0
-          and modificatore_difesa(5.0, su_misura) == 0.0)
-
-    # --- 7quater. i quarti di voto ------------------------------------------
-    # Chiesti da Davide il 22/09/2026: «voglio che vengano gestiti i casi 0.25, che
-    # è come li propone di default FantaGazzetta». ⚠️ Il regolamento pubblico non
-    # pubblica nessun valore (§10.1: la piattaforma «propone la versione più
-    # diffusa», e la tabella sta dietro il login), quindi i numeri vengono da
-    # fantacalcio-online.com — la stessa fonte secondaria delle fasce di titolarità.
-    print("\n== 7d. la tabella a quarti di voto ==")
-    from data import MOD_DIFESA_SOGLIE_QUARTI, fasce_mod_difesa
-    esito("la tabella a quarti ha sei fasce",
-          len(MOD_DIFESA_SOGLIE_QUARTI) == 6, str(MOD_DIFESA_SOGLIE_QUARTI))
-    # I numeri della fonte, uno per uno: 6,00 → +1; 6,01-6,25 → +2; 6,26-6,50 → +3;
-    # 6,51-6,75 → +4; 6,76-7,00 → +5; 7,01+ → +6.
-    q = MOD_DIFESA_SOGLIE_QUARTI
-    esito("e ogni fascia della fonte torna al punto giusto",
-          [modificatore_difesa(m, q) for m in
-           (5.99, 6.0, 6.25, 6.26, 6.5, 6.51, 6.75, 6.76, 7.0, 7.01, 8.0)]
-          == [0, 1, 2, 3, 3, 4, 4, 5, 5, 6, 6],
-          str([modificatore_difesa(m, q) for m in
-               (5.99, 6.0, 6.25, 6.26, 6.5, 6.51, 6.75, 6.76, 7.0, 7.01, 8.0)]))
-    # ⚠️ Il caso che Davide ha citato: la fonte scrive la fascia «6,01-6,25», qui è
-    # scritta «da 6,01 in su» e finisce dove comincia la successiva (6,26). Le due
-    # letture danno lo stesso punto perché fra 6,25 e 6,26 non esiste nessuna media:
-    # i voti hanno due decimali. Se questa prova fallisse, le due scritture non
-    # sarebbero più equivalenti e la tabella andrebbe ripensata, non aggiustata.
-    esito("⚠️ una media di 6,25 sta nella fascia bassa, come sulle piattaforme",
-          modificatore_difesa(6.25, q) == 2.0 and modificatore_difesa(6.26, q) == 3.0)
-    esito("le fasce si leggono anche come intervalli, per mostrarle",
-          [(f["da"], f["a"]) for f in fasce_mod_difesa(q)]
-          == [(7.01, None), (6.76, 7.0), (6.51, 6.75), (6.26, 6.5),
-              (6.01, 6.25), (6.0, 6.0)],
-          str(fasce_mod_difesa(q)))
-    esito("e la fascia più alta non ha un tetto",
-          fasce_mod_difesa(q)[0]["a"] is None)
-    esito("⚠️ una tabella con una fascia sola è un intervallo aperto, non vuoto",
-          fasce_mod_difesa([(6.0, 1.0)]) == [{"da": 6.0, "a": None, "punti": 1.0}])
-    # E la tabella a quarti deve **passare dal form** come qualunque altra: è il
-    # pulsante «Sei fasce, a quarti» della modale.
-    with app.test_client() as cq:
-        with cq.session_transaction() as s:
-            s["username"] = "davide"
-            s["role"] = "user"
-            s["user_id"] = ids["davide"]
-        cq.post("/fantacalcio/lega/salva", data={
-            "lega_id": str(lid), "nome": "Lega Amici", "moduli": "3-4-3,4-4-2",
-            "mod_difesa": "1",
-            "soglia_media": [str(m) for m, _ in q],
-            "soglia_punti": [str(p) for _, p in q]}, follow_redirects=True)
+    # La formazione si salva anche a metà (25/09/2026), mai sbagliata.
+    def salvata():
         db = extensions.get_db()
-        scritta = db.execute("SELECT mod_difesa_soglie FROM fanta_leagues "
-                             "WHERE id=?", (lid,)).fetchone()[0]
+        righe = db.execute("SELECT player_id, titolare FROM fanta_formazione "
+                           "WHERE league_id=? ORDER BY titolare DESC, ordine",
+                           (lid,)).fetchall()
         db.close()
-    esito("⚠️ i quarti si salvano senza perdere i centesimi",
-          scritta == "7.01:6, 6.76:5, 6.51:4, 6.26:3, 6.01:2, 6:1", scritta)
-    esito("e rilette danno la stessa tabella",
-          soglie_mod_difesa(scritta) == [(m, p) for m, p in q],
-          str(soglie_mod_difesa(scritta)))
+        return ([r["player_id"] for r in righe if r["titolare"]],
+                [r["player_id"] for r in righe if not r["titolare"]])
+    ruolo = {v["g"]["id"]: v["g"]["ruolo_classic"] for v in ctx["valutazioni"]}
+    difensori = [i for i in titolari if ruolo[i] == "d"]
+    nove = [i for i in titolari if i not in difensori[:2]]
+    r = c.post(f"/fantacalcio/lega/{lid}/formazione/salva",
+               data={"modulo": "4-4-2", "titolare": nove, "panchinaro": []},
+               follow_redirects=True)
+    pagina = r.data.decode("utf-8", "replace")
+    esito("⚠️ una formazione da 9, panchina vuota, si salva e si rilegge uguale",
+          salvata() == (nove, []), str(salvata()))
+    esito("e dice cosa manca, nel messaggio e nell'avviso sopra il campo",
+          "Non è ancora completa: mancano 2 difensori" in pagina
+          and "<strong>Non è completa</strong>" in pagina)
+    r = c.post(f"/fantacalcio/lega/{lid}/formazione/salva",
+               data={"modulo": "4-4-2", "titolare": nove[:-1],
+                     "panchinaro": [nove[0]]}, follow_redirects=True)
+    esito("un doppione invece non si salva, e la formazione di prima resta",
+          "schierato due volte" in r.data.decode("utf-8", "replace")
+          and salvata() == (nove, []))
+    attaccanti = [i for i in ruolo if ruolo[i] == "a"]
+    r = c.post(f"/fantacalcio/lega/{lid}/formazione/salva",
+               data={"modulo": "4-4-2", "titolare": attaccanti[:3]},
+               follow_redirects=True)
+    esito("né un attaccante in più di quanti il modulo ne vuole",
+          "ne vuole 2" in r.data.decode("utf-8", "replace")
+          and salvata() == (nove, []), f"{len(attaccanti)} attaccanti in rosa")
+    c.post(f"/fantacalcio/lega/{lid}/consiglio/applica", data={"modulo": "4-4-2"})
 
-    # --- 7ter. le soglie salvate dal form -----------------------------------
-    print("\n== 7c. le soglie si salvano dalla lega ==")
-    with app.test_client() as c:
-        with c.session_transaction() as s:
-            s["username"] = "davide"
-            s["role"] = "user"
-            s["user_id"] = ids["davide"]
-        c.post("/fantacalcio/lega/salva", data={
-            "lega_id": str(lid), "nome": "Lega Amici", "moduli": "3-4-3,4-4-2",
-            "mod_difesa": "1", "soglia_media": ["7", "6.5", "6"],
-            "soglia_punti": ["8", "4", "2"]}, follow_redirects=True)
-        db = extensions.get_db()
-        riga = db.execute("SELECT mod_difesa_soglie, mod_difesa_portiere "
-                          "FROM fanta_leagues WHERE id=?", (lid,)).fetchone()
-        db.close()
-        esito("la tabella su misura è salvata", riga["mod_difesa_soglie"] == "7:8, 6.5:4, 6:2",
-              str(riga["mod_difesa_soglie"]))
-        esito("⚠️ e togliendo la spunta il portiere esce dalla media",
-              riga["mod_difesa_portiere"] == 0, str(riga["mod_difesa_portiere"]))
-
-        # ⚠️ Le fasce non sono tre: il regolamento fissa **come** si fa la media,
-        # non in quanti scalini si traduce. Dal 22/09/2026 le righe si aggiungono
-        # e si tolgono dalla modale, quindi ne può arrivare un numero qualsiasi.
-        def soglie_salvate():
-            db = extensions.get_db()
-            fuori = db.execute("SELECT mod_difesa_soglie FROM fanta_leagues "
-                               "WHERE id=?", (lid,)).fetchone()[0]
-            db.close()
-            return fuori
-
-        c.post("/fantacalcio/lega/salva", data={
-            "lega_id": str(lid), "nome": "Lega Amici", "moduli": "3-4-3,4-4-2",
-            "mod_difesa": "1",
-            "soglia_media": ["6", "7.5", "7", "6.5", "8"],
-            "soglia_punti": ["1", "8", "6", "3", "10"]}, follow_redirects=True)
-        esito("cinque fasce si salvano tutte, ordinate dalla più alta",
-              soglie_salvate() == "8:10, 7.5:8, 7:6, 6.5:3, 6:1", soglie_salvate())
-        c.post("/fantacalcio/lega/salva", data={
-            "lega_id": str(lid), "nome": "Lega Amici", "moduli": "3-4-3,4-4-2",
-            "mod_difesa": "1", "soglia_media": ["6"], "soglia_punti": ["2"]},
-            follow_redirects=True)
-        esito("e una sola fascia è una tabella valida", soglie_salvate() == "6:2",
-              soglie_salvate())
-        # Una riga aggiunta e lasciata in bianco non deve diventare una fascia: il
-        # server la salta, ed è il motivo per cui la modale può aggiungerla vuota.
-        c.post("/fantacalcio/lega/salva", data={
-            "lega_id": str(lid), "nome": "Lega Amici", "moduli": "3-4-3,4-4-2",
-            "mod_difesa": "1", "soglia_media": ["7", "", "6"],
-            "soglia_punti": ["6", "", ""]}, follow_redirects=True)
-        esito("⚠️ una riga lasciata a metà non diventa una fascia",
-              soglie_salvate() == "7:6", soglie_salvate())
-        # ⚠️ Nessuna riga leggibile **non** vuol dire «tabella vuota»: la colonna
-        # non entra nella query e resta quella di prima. È la stessa regola dei
-        # campi delle regole lasciati stare, ed è il motivo per cui l'ultima riga
-        # non si può togliere dalla modale.
-        c.post("/fantacalcio/lega/salva", data={
-            "lega_id": str(lid), "nome": "Lega Amici", "moduli": "3-4-3,4-4-2",
-            "mod_difesa": "1"}, follow_redirects=True)
-        esito("⚠️ e senza nessuna fascia la tabella di prima resta",
-              soglie_salvate() == "7:6", soglie_salvate())
-        c.post("/fantacalcio/lega/salva", data={
-            "lega_id": str(lid), "nome": "Lega Amici", "moduli": "3-4-3,4-4-2",
-            "mod_difesa": "1", "soglia_media": ["7", "6.5", "6"],
-            "soglia_punti": ["8", "4", "2"]}, follow_redirects=True)
-        esito("la tabella torna com'era per le prove che seguono",
-              soglie_salvate() == "7:8, 6.5:4, 6:2", soglie_salvate())
-        r = c.get(f"/fantacalcio/lega/{lid}")
-        pagina = r.data.decode("utf-8", "replace")
-        esito("la scheda della lega mostra la tabella e come si fa la media",
-              "migliori 4 difensori" in pagina and "+8" in pagina)
-        # Una soglia che non è un numero non si salva «tanto poi si vede».
-        c.post("/fantacalcio/lega/salva", data={
-            "lega_id": str(lid), "nome": "Lega Amici", "moduli": "3-4-3,4-4-2",
-            "mod_difesa": "1", "soglia_media": ["sette"], "soglia_punti": ["8"]},
-            follow_redirects=True)
-        db = extensions.get_db()
-        dopo = db.execute("SELECT mod_difesa_soglie FROM fanta_leagues WHERE id=?",
-                          (lid,)).fetchone()["mod_difesa_soglie"]
-        db.close()
-        esito("⚠️ una soglia che non è un numero viene rifiutata, e resta la vecchia",
-              dopo == "7:8, 6.5:4, 6:2", str(dopo))
-
-    # --- 9. le probabili formazioni -----------------------------------------
-    # (id, nome, ruolo, percentuale, slug-nell-url)
-    print("\n== 8. le probabili: il lettore ==")
-    inter_tit = [(1, "Sommer", "p", 90, "sommer"), (2, "Bastoni", "d", 85, "bastoni"),
-                 (3, "Barella", "c", 90, "barella")]
-    inter_pan = [(4, "Thuram", "a", 55, "thuram"), (99, "Ignoto", "c", 20, "ignoto")]
-    milan_tit = [(11, "Maignan", "p", 90, "maignan")]
-    milan_pan = [(12, "Leao", "a", 60, "leao")]
-    una = [(("inter", "Inter", "3-5-2", inter_tit, inter_pan),
-            ("milan", "Milan", "4-3-3", milan_tit, milan_pan))]
-
-    import fantacalcio_it as F
-    vera = F.scarica
-    F.scarica = lambda nome, forza=False: pagina_finta(una)
-    try:
-        dati, problemi = F.probabili()
-        esito("legge la giornata e la stagione",
-              dati["giornata"] == 6 and dati["stagione"] == "2026-27",
-              f"{dati['giornata']} / {dati['stagione']}")
-        esito("legge le due squadre con i loro moduli",
-              dati["squadre"]["inter"]["modulo"] == "3-5-2"
-              and dati["squadre"]["milan"]["modulo"] == "4-3-3")
-        esito("⚠️ e la squadra in trasferta ha il modulo, non None",
-              dati["squadre"]["milan"]["modulo"] is not None)
-        esito("l'avversario e il campo arrivano dall'altra metà della partita",
-              dati["squadre"]["inter"]["avversario"] == "Milan"
-              and dati["squadre"]["inter"]["in_casa"] == 1
-              and dati["squadre"]["milan"]["in_casa"] == 0)
-        esito("sette convocati, quattro titolari", len(dati["voci"]) == 7
-              and sum(v["titolare"] for v in dati["voci"]) == 4,
-              f"{len(dati['voci'])} voci")
-        una_voce = next(v for v in dati["voci"] if v["id"] == 2)
-        esito("ruolo, percentuale e squadra vengono dall'URL, non dal titolo",
-              una_voce["ruolo"] == "d" and una_voce["percentuale"] == 85
-              and una_voce["squadra_slug"] == "inter")
-        esito("una pagina che torna così non ha problemi da dire",
-              problemi == [], "; ".join(problemi))
-
-        # Rotta apposta: il campo dice un undici, la scheda un altro.
-        storta = [(("inter", "Inter", "3-5-2", inter_tit, inter_pan,
-                    inter_tit[:1]),
-                   ("milan", "Milan", "4-3-3", milan_tit, milan_pan))]
-        F.scarica = lambda nome, forza=False: pagina_finta(storta)
-        _, problemi2 = F.probabili()
-        esito("⚠️ se il campo e la scheda non combaciano, lo dice",
-              any("campo" in p for p in problemi2), "; ".join(problemi2) or "niente")
-
-        # Senza giornata: non si inventa un numero.
-        F.scarica = lambda nome, forza=False: pagina_finta(una, giornata=None)
-        senza, problemi3 = F.probabili()
-        esito("⚠️ una pagina senza giornata non ne inventa una",
-              senza["giornata"] is None and any("giornata" in p for p in problemi3))
-
-        # --- lo script di import, sulla stessa pagina finta ------------------
-        print("\n== 9. le probabili: l'import ==")
-        sys.path.insert(0, os.path.join(RADICE, "scripts"))
-        import importa_probabili as IP
-        F.scarica = lambda nome, forza=False: pagina_finta(una)
-
-        argv = sys.argv
-        sys.argv = ["importa_probabili.py"]
-        codice = IP.main()
-        esito("⚠️ con due squadre sole si rifiuta di scrivere (soglia 20)",
-              codice == 1)
-        db = extensions.get_db()
-        vuoto = db.execute("SELECT COUNT(*) FROM fanta_probabili").fetchone()[0]
-        db.close()
-        esito("e infatti non ha scritto niente", vuoto == 0, str(vuoto))
-
-        sys.argv = ["importa_probabili.py", "--forza"]
-        IP.main()
-        db = extensions.get_db()
-        quante = db.execute("SELECT COUNT(*) FROM fanta_probabili").fetchone()[0]
-        squadre = db.execute("SELECT COUNT(*) FROM fanta_probabili_squadre").fetchone()[0]
-        db.close()
-        esito("con --forza scrive i sette convocati e le due squadre",
-              quante == 7 and squadre == 2, f"{quante} voci, {squadre} squadre")
-
-        IP.main()
-        db = extensions.get_db()
-        ancora = db.execute("SELECT COUNT(*) FROM fanta_probabili").fetchone()[0]
-        db.close()
-        esito("rieseguirlo non raddoppia niente", ancora == 7, str(ancora))
-
-        # La giornata si riscrive **per intero**: chi sparisce dai convocati deve
-        # sparire, non restare a dire che è in panchina.
-        senza_thuram = [(("inter", "Inter", "3-5-2", inter_tit,
-                          [v for v in inter_pan if v[0] != 4]),
-                         ("milan", "Milan", "4-3-3", milan_tit, milan_pan))]
-        F.scarica = lambda nome, forza=False: pagina_finta(senza_thuram)
-        IP.main()
-        db = extensions.get_db()
-        resta = db.execute("SELECT COUNT(*) FROM fanta_probabili WHERE player_id=4"
-                           ).fetchone()[0]
-        db.close()
-        esito("⚠️ chi non è più fra i convocati esce dalla giornata", resta == 0,
-              str(resta))
-        sys.argv = argv
-    finally:
-        F.scarica = vera
-
-    # --- 10. le probabili a schermo -----------------------------------------
-    print("\n== 10. le probabili: a schermo ==")
+    # --- 7. l'avviso e il campo ----------------------------------------------------
+    print("\n== 7. l'avviso sulla formazione e chi esce dalla rosa ==")
     db = extensions.get_db()
-    # Rimetto Thuram, e allineo il listone finto alle squadre della giornata: la
-    # rosa di prova ha cinque giocatori dell'Inter, uno dei quali è uscito.
-    db.execute("INSERT INTO fanta_probabili(giornata, player_id, nome, squadra_slug,"
-               " ruolo, titolare, percentuale) VALUES(6,4,'Thuram','inter','a',0,55)")
-    db.execute("UPDATE fanta_players SET squadra_slug='inter' WHERE id IN (1,2,3,4)")
-    db.execute("UPDATE fanta_players SET squadra_slug='xxx' WHERE id=5")
-    # Il quarto stato, che è quello che si confonde più facilmente: un giocatore
-    # dell'Inter che l'Inter **non ha convocato**. L'Inter gioca, lui no — ed è
-    # diverso da «la sua squadra non gioca», che è il caso dell'id 5.
-    db.execute("INSERT INTO fanta_players(id,nome,squadra,squadra_slug,ruolo_classic,"
-               "qa,fvm,attivo,visto_il) "
-               "VALUES(6,'Escluso','INT','inter','c',8,20,1,'2026-09-21')")
-    db.execute("INSERT INTO fanta_roster(league_id, player_id, prezzo) VALUES(?,6,1)",
-               (lid,))
+    # Si mette titolare a forza uno che non gioca: l'avviso lo deve dire.
+    db.execute("UPDATE fanta_formazione SET titolare=1 WHERE league_id=? AND "
+               "player_id IN (23)", (lid,))
+    db.execute("INSERT OR REPLACE INTO fanta_formazione(league_id,player_id,titolare,"
+               "ordine,ruolo) VALUES(?,23,1,20,'c')", (lid,))
     db.commit()
     db.close()
-    with app.test_client() as c:
-        with c.session_transaction() as s:
-            s["username"] = "davide"
-            s["role"] = "user"
-            s["user_id"] = ids["davide"]
-        r = c.get(f"/fantacalcio/lega/{lid}")
-        testo_pagina = r.data.decode("utf-8", "replace")
-        esito("la pagina della lega dice chi è titolare e chi in panchina",
-              "titolare 90%" in testo_pagina and "panchina 55%" in testo_pagina)
-        esito("⚠️ «non convocato» (la sua squadra gioca) c'è, ed è suo",
-              "non convocato" in testo_pagina)
-        esito("⚠️ e «non gioca» (la sua squadra non c'è) è un'altra cosa ancora",
-              "non gioca" in testo_pagina)
-        esito("i quattro stati stanno tutti e quattro nella stessa pagina",
-              all(s in testo_pagina for s in
-                  ("titolare 90%", "panchina 55%", "non convocato", "non gioca")))
-        r = c.get("/fantacalcio/probabili")
-        pagina = r.data.decode("utf-8", "replace")
-        esito("la pagina delle probabili si apre con le due squadre",
-              r.status_code == 200 and "Inter" in pagina and "Milan" in pagina)
-        esito("e segna quali sono in una tua rosa", ">mio<" in pagina)
-
-    with app.test_client() as c:
-        with c.session_transaction() as s:
-            s["username"] = "altro"
-            s["role"] = "user"
-            s["user_id"] = ids["altro"]
-        r = c.get("/fantacalcio/probabili")
-        altrui = r.data.decode("utf-8", "replace")
-        esito("un altro utente vede le formazioni (sono pubbliche)",
-              "Barella" in altrui)
-        esito("⚠️ ma non gli risulta «mio» nessun giocatore della rosa altrui",
-              ">mio<" not in altrui)
-
-    # --- 11. il pulsante e l'aggiornamento automatico ------------------------
-    print("\n== 11. aggiornare: il pulsante e l'automatico ==")
-    import fanta_import as IMP
-    # Una giornata intera finta: venti squadre, così la soglia delle 20 non
-    # scatta e si prova la strada normale, non quella del rifiuto.
-    def venti_squadre(giornata=7):
-        partite = []
-        for n in range(10):
-            casa = (f"casa{n}", f"Casa {n}", "4-3-3",
-                    [(1000 + n * 10 + i, f"Tit{n}_{i}", "d", 90, f"t{n}{i}")
-                     for i in range(3)],
-                    [(1500 + n * 10 + i, f"Pan{n}_{i}", "c", 40, f"p{n}{i}")
-                     for i in range(2)])
-            fuori = (f"fuori{n}", f"Fuori {n}", "3-5-2",
-                     [(2000 + n * 10 + i, f"TitF{n}_{i}", "a", 85, f"tf{n}{i}")
-                      for i in range(3)],
-                     [(2500 + n * 10 + i, f"PanF{n}_{i}", "p", 30, f"pf{n}{i}")
-                      for i in range(2)])
-            partite.append((casa, fuori))
-        return pagina_finta(partite, giornata=giornata)
-
-    vera_scarica, vera_eta = F.scarica, F.eta_cache
-    try:
-        F.scarica = lambda nome, forza=False: venti_squadre()
-        # La cache è «fresca»: entrando nella sezione non si deve rileggere niente.
-        F.eta_cache = lambda nome: 0.1
-        with app.test_client() as c:
-            with c.session_transaction() as s:
-                s["username"] = "davide"
-                s["role"] = "user"
-                s["user_id"] = ids["davide"]
-            c.get("/fantacalcio/")
-            db = extensions.get_db()
-            g7 = db.execute("SELECT COUNT(*) FROM fanta_probabili WHERE giornata=7"
-                            ).fetchone()[0]
-            db.close()
-            esito("⚠️ con la copia fresca entrare nella sezione NON riscarica niente",
-                  g7 == 0, f"righe della giornata 7: {g7}")
-
-            # Copia vecchia: entrando, si rilegge da sé.
-            F.eta_cache = lambda nome: 99.0
-            c.get("/fantacalcio/")
-            db = extensions.get_db()
-            g7 = db.execute("SELECT COUNT(*) FROM fanta_probabili WHERE giornata=7"
-                            ).fetchone()[0]
-            db.close()
-            esito("con la copia vecchia si aggiorna da sé entrando", g7 == 100,
-                  f"righe della giornata 7: {g7}")
-            esito("e la giornata di prima resta nell'archivio",
-                  extensions.get_db().execute(
-                      "SELECT COUNT(DISTINCT giornata) FROM fanta_probabili"
-                  ).fetchone()[0] == 2)
-
-            # Il pulsante: è un POST, e un GET non deve funzionare.
-            r = c.get("/fantacalcio/aggiorna/probabili")
-            esito("⚠️ il pulsante è un POST: da GET non si aggiorna",
-                  r.status_code == 405, str(r.status_code))
-            r = c.post("/fantacalcio/aggiorna/probabili", follow_redirects=True)
-            esito("il pulsante aggiorna e lo dice",
-                  b"Probabili aggiornate" in r.data)
-            r = c.post("/fantacalcio/aggiorna/quelloCheVuoi", follow_redirects=True)
-            esito("e non aggiorna qualcosa che non esiste",
-                  "Non so cosa aggiornare" in r.data.decode("utf-8", "replace"))
-
-            # ⚠️ Il caso che conta: la fonte non risponde. La sezione deve aprirsi
-            # lo stesso, col dato di prima, e dirlo.
-            def rotta(nome, forza=False):
-                raise OSError("la rete non va")
-            F.scarica = rotta
-            r = c.get("/fantacalcio/")
-            pagina = r.data.decode("utf-8", "replace")
-            esito("⚠️ se la fonte non risponde la sezione si apre lo stesso",
-                  r.status_code == 200)
-            esito("e lo dice invece di far finta di niente",
-                  "Non sono riuscito a leggere fantacalcio.it" in pagina)
-            db = extensions.get_db()
-            resta = db.execute("SELECT COUNT(*) FROM fanta_probabili WHERE giornata=7"
-                               ).fetchone()[0]
-            db.close()
-            esito("e il dato di prima è ancora lì", resta == 100, str(resta))
-            r = c.post("/fantacalcio/aggiorna/listone", follow_redirects=True)
-            esito("stessa cosa premendo il pulsante: un errore, non una pagina rotta",
-                  r.status_code == 200
-                  and "Non sono riuscito a leggere" in r.data.decode("utf-8", "replace"))
-
-        # ⚠️ «in una tua rosa» dev'essere tua. Il primo giro contava le rose di
-        # tutti gli utenti, e l'ha preso `controlla_proprietario.py`: la funzione
-        # è la stessa per gli script (che una sessione non ce l'hanno) e per il
-        # web (che ce l'ha), e il default «vedi tutto» era la trappola di §1.1.
-        print("\n== 11b. «in una tua rosa» è davvero tua ==")
-        import fanta_import as IMP2
-        db = extensions.get_db()
-        db.execute("INSERT INTO fanta_leagues(user_id, nome) VALUES(?, 'Lega altrui')",
-                   (ids["altro"],))
-        altrui_id = db.execute("SELECT id FROM fanta_leagues WHERE nome='Lega altrui'"
-                               ).fetchone()["id"]
-        # Lo stesso giocatore uscito dal listone, in rosa a tutti e due.
-        db.execute("INSERT INTO fanta_roster(league_id, player_id, prezzo) VALUES(?,5,1)",
-                   (altrui_id,))
-        db.commit()
-        quante_in_tutto = db.execute(
-            "SELECT COUNT(*) FROM fanta_roster WHERE player_id=5").fetchone()[0]
-        db.close()
-        esito("il giocatore uscito è in due rose, una per utente",
-              quante_in_tutto == 2, str(quante_in_tutto))
-        db = extensions.get_db()
-        tutte = IMP2._rose(db, [5], IMP2.TUTTE_LE_ROSE)
-        db.close()
-        esito("uno script da riga di comando le vede tutte e due",
-              tutte.get(5) == 2, str(tutte))
-        db = extensions.get_db()
-        mie = IMP2._rose(db, [5], ("l.user_id=?", [ids["davide"]]))
-        db.close()
-        esito("⚠️ ma con l'ambito di Davide ne conta UNA, non due",
-              mie.get(5) == 1, str(mie))
-        db = extensions.get_db()
-        sue = IMP2._rose(db, [5], ("l.user_id=?", [ids["altro"]]))
-        db.close()
-        esito("e con l'ambito dell'altro utente conta la sua", sue.get(5) == 1, str(sue))
-    finally:
-        F.scarica, F.eta_cache = vera_scarica, vera_eta
-
-    # --- 12. la formazione ---------------------------------------------------
-    # La rosa di prova ha 5 giocatori e non basta per un 3-4-3, quindi qui se ne
-    # aggiunge una vera: undici titolari più qualche panchinaro.
-    print("\n== 12. la formazione ==")
+    pagina = c.get(f"/fantacalcio/lega/{lid}").data.decode("utf-8", "replace")
+    esito("un titolare con la partita rinviata viene dichiarato",
+          "chi non gioca" in pagina and "partita rinviata" in pagina)
     db = extensions.get_db()
-    pid = 100
-    per_ruolo = {}
-    for ruolo, quanti in (("p", 2), ("d", 6), ("c", 7), ("a", 5)):
-        for n in range(quanti):
-            pid += 1
-            db.execute("INSERT INTO fanta_players(id,nome,squadra,squadra_slug,"
-                       "ruolo_classic,qa,fvm,attivo,visto_il) "
-                       "VALUES(?,?,'INT','inter',?,10,20,1,'2026-09-21')",
-                       (pid, f"{ruolo.upper()}{n}", ruolo))
-            db.execute("INSERT INTO fanta_roster(league_id,player_id,prezzo) "
-                       "VALUES(?,?,1)", (lid, pid))
-            per_ruolo.setdefault(ruolo, []).append(pid)
-    db.commit()
+    rid = db.execute("SELECT id FROM fanta_roster WHERE league_id=? AND player_id=23",
+                     (lid,)).fetchone()["id"]
+    db.close()
+    c.post(f"/fantacalcio/lega/{lid}/rosa/{rid}/rimuovi")
+    db = extensions.get_db()
+    esito("chi esce dalla rosa esce anche dal campo",
+          not db.execute("SELECT 1 FROM fanta_formazione WHERE league_id=? AND "
+                         "player_id=23", (lid,)).fetchone())
     db.close()
 
-    undici = (per_ruolo["p"][:1] + per_ruolo["d"][:3] +
-              per_ruolo["c"][:4] + per_ruolo["a"][:3])       # 3-4-3
-    panca = per_ruolo["d"][3:5] + per_ruolo["c"][4:6]
-
-    def salva(c, dati):
-        r = c.post(f"/fantacalcio/lega/{lid}/formazione/salva", data=dati,
-                   follow_redirects=True)
-        return r.data.decode("utf-8", "replace")
-
-    def righe():
-        db = extensions.get_db()
-        fuori = [dict(x) for x in db.execute(
-            "SELECT * FROM fanta_formazione WHERE league_id=? "
-            "ORDER BY titolare DESC, ordine", (lid,))]
-        db.close()
-        return fuori
-
-    with app.test_client() as c:
-        with c.session_transaction() as s:
-            s["username"] = "davide"
-            s["role"] = "user"
-            s["user_id"] = ids["davide"]
-        r = c.get(f"/fantacalcio/lega/{lid}/formazione")
-        esito("la pagina del campo si apre", r.status_code == 200
-              and b"Formazione" in r.data)
-
-        pagina = salva(c, {"modulo": "3-4-3", "titolare": undici, "panchinaro": panca})
-        esito("una formazione buona si salva", "Formazione salvata" in pagina)
-        dentro = righe()
-        esito("undici titolari e quattro in panchina",
-              sum(1 for x in dentro if x["titolare"]) == 11
-              and sum(1 for x in dentro if not x["titolare"]) == 4,
-              f"{len(dentro)} righe")
-        esito("⚠️ la panchina è salvata IN ORDINE: è l'ordine di subentro",
-              [x["player_id"] for x in dentro if not x["titolare"]] == panca)
-        db = extensions.get_db()
-        esito("e il modulo sta sulla lega, non su ogni riga",
-              db.execute("SELECT modulo_scelto FROM fanta_leagues WHERE id=?",
-                         (lid,)).fetchone()["modulo_scelto"] == "3-4-3")
-        db.close()
-
-        # --- i rifiuti: Davide ha scelto la validazione severa ---------------
-        quante_prima = len(righe())
-        pagina = salva(c, {"modulo": "3-4-3", "titolare": undici[:10]})
-        esito("⚠️ dieci titolari vengono rifiutati, e non si salva niente",
-              "devono essere 11" in pagina and len(righe()) == quante_prima)
-        pagina = salva(c, {"modulo": "3-5-2", "titolare": undici})
-        esito("un 3-4-3 mandato come 3-5-2 viene rifiutato",
-              "ne vuole 5" in pagina and len(righe()) == quante_prima)
-        pagina = salva(c, {"modulo": "4-4-2", "titolare": undici[:10] + undici[:1]})
-        esito("⚠️ lo stesso giocatore due volte viene rifiutato",
-              "due volte" in pagina and len(righe()) == quante_prima)
-        pagina = salva(c, {"modulo": "3-4-3", "titolare": undici[:10] + [9999]})
-        esito("un giocatore che non è in rosa viene rifiutato",
-              "non è in questa rosa" in pagina and len(righe()) == quante_prima)
-        pagina = salva(c, {"modulo": "4-5-1", "titolare": undici})
-        esito("un modulo che la lega non ammette viene rifiutato",
-              "non è fra quelli ammessi" in pagina and len(righe()) == quante_prima)
-        pagina = salva(c, {"modulo": "3-4-3", "titolare": undici,
-                           "panchinaro": per_ruolo["d"][3:6] + per_ruolo["c"][4:7] +
-                                         per_ruolo["a"][3:5] + per_ruolo["p"][1:2]})
-        esito("una panchina più lunga di quella ammessa viene rifiutata",
-              "ammette 7" in pagina and len(righe()) == quante_prima)
-
-        # ⚠️ Il ruolo lo decide la rosa, non il form: se lo decidesse il browser
-        # basterebbe dire che un attaccante è un difensore per far tornare i conti.
-        pagina = salva(c, {"modulo": "3-4-3",
-                           "titolare": per_ruolo["p"][:1] + per_ruolo["a"][:3] +
-                                       per_ruolo["c"][:4] + per_ruolo["a"][3:5] +
-                                       per_ruolo["d"][:1],
-                           "ruolo": ["d"] * 11})
-        esito("⚠️ un ruolo mandato dal form non cambia i conti dei reparti",
-              "difensor" in pagina and len(righe()) == quante_prima)
-
-    # --- la formazione è della lega, e la lega è di qualcuno -----------------
-    with app.test_client() as c:
-        with c.session_transaction() as s:
-            s["username"] = "altro"
-            s["role"] = "user"
-            s["user_id"] = ids["altro"]
-        r = c.get(f"/fantacalcio/lega/{lid}/formazione", follow_redirects=True)
-        esito("un altro utente non apre il campo di una lega non sua",
-              b"Lega non trovata" in r.data or b"Formazione" not in r.data)
-        prima = righe()
-        salva(c, {"modulo": "4-4-2", "titolare": undici})
-        esito("⚠️ e non può nemmeno scrivere la formazione altrui",
-              righe() == prima, f"{len(righe())} righe")
-
-
-    # ── 13. la rosa incollata ───────────────────────────────────────────────
-    # ⚠️ Questo blocco si fa una **lega sua**, perché le prove di prima hanno
-    # riempito la rosa della prima: una rosa vuota è l'unico posto in cui si può
-    # dire con certezza quante righe ha scritto un incolla.
-    print("\n== 13. la rosa incollata ==")
-    from data import analizza_riga_rosa, leggi_rosa_incollata, chiave_nome
-
-    # Le tre forme di ambiguità misurate sul listone vero, in piccolo:
-    # `Thuram` esiste **e** c'è `Thuram K.` (nome che è prefisso di un altro),
-    # i due `Martinez` condividono il cognome, e `Koné` ha un accento che nessuno
-    # scrive quando incolla.
-    db = extensions.get_db()
-    for pid, nome, sq, slug, ruolo in (
-            (201, "Thuram K.", "JUV", "juventus", "c"),
-            (202, "Martinez L.", "INT", "inter", "a"),
-            (203, "Martinez Jo.", "INT", "inter", "p"),
-            (204, "Koné M.", "ROM", "roma", "c"),
-            (205, "Adams A.", "VEN", "venezia", "a"),
-            (206, "Adams C.", "TOR", "torino", "a")):
-        db.execute("INSERT INTO fanta_players(id,nome,squadra,squadra_slug,"
-                   "ruolo_classic,qa,fvm,attivo,visto_il) "
-                   "VALUES(?,?,?,?,?,10,20,1,'2026-09-21')",
-                   (pid, nome, sq, slug, ruolo))
-    db.execute("INSERT INTO fanta_leagues(user_id,nome,moduli,n_panchinari) "
-               "VALUES(?,'Seconda Lega','3-4-3',7)", (ids["davide"],))
-    db.commit()
-    lid2 = db.execute("SELECT id FROM fanta_leagues WHERE nome='Seconda Lega'"
-                      ).fetchone()["id"]
-    listone = [dict(r) for r in db.execute(
-        "SELECT id, nome, squadra, squadra_slug, ruolo_classic, qa, fvm, attivo "
-        "FROM fanta_players")]
-    db.close()
-
-    # --- la riga, scomposta -------------------------------------------------
-    r = analizza_riga_rosa("1. Thuram K. JUV 18", {"juv": "JUV"})
-    esito("una riga con indice, squadra e prezzo si scompone",
-          r["nome"] == "Thuram K." and r["squadra"] == "JUV" and r["prezzo"] == 18.0,
-          f"nome={r['nome']!r} sq={r['squadra']} prezzo={r['prezzo']}")
-    r = analizza_riga_rosa("Barella, 12,5")
-    esito("⚠️ la virgola decimale non è un separatore: 12,5 resta 12.5",
-          r["nome"] == "Barella" and r["prezzo"] == 12.5,
-          f"nome={r['nome']!r} prezzo={r['prezzo']}")
-    r = analizza_riga_rosa("Difensori")
-    esito("una riga col solo ruolo è un'intestazione, non un giocatore",
-          r["intestazione"] and r["ruolo"] == "d")
-    # ⚠️ Il punto è tutto: `A.` è l'iniziale di un nome, `A` è il ruolo. Senza
-    # questa distinzione ogni `Adams A.` del listone perderebbe la sua iniziale.
-    r = analizza_riga_rosa("Adams A.")
-    esito("⚠️ «A.» col punto resta parte del nome, non diventa il ruolo",
-          r["nome"] == "Adams A." and r["ruolo"] is None, f"nome={r['nome']!r}")
-    r = analizza_riga_rosa("A Adams")
-    esito("e «A» senza punto è il ruolo",
-          r["nome"] == "Adams" and r["ruolo"] == "a", f"nome={r['nome']!r}")
-    r = analizza_riga_rosa("Thuram 3 5")
-    esito("due numeri in una riga la dichiarano dubbia invece di scegliere",
-          r["dubbia"], f"prezzo={r['prezzo']}")
-    esito("gli accenti non contano nel confronto dei nomi",
-          chiave_nome("Koné M.") == chiave_nome("Kone M.") == "kone m")
-
-    # --- l'abbinamento ------------------------------------------------------
-    def leggi(testo, gia=()):
-        return {v["grezzo"]: v for v in leggi_rosa_incollata(testo, listone, gia)}
-
-    v = leggi("Bastoni 22\nThuram\nMartinez\nLautaro Martinez\nAdams\n"
-              "Kone M.\nZibaldone 4")
-    esito("un nome esatto e senza omonimi è «ok»",
-          v["Bastoni 22"]["stato"] == "ok" and v["Bastoni 22"]["prezzo"] == 22.0)
-    # ⚠️ Il caso che si sarebbe sbagliato in silenzio: «Thuram» **è** un nome
-    # esatto del listone, e un codice ragionevole l'avrebbe preso e messo in rosa.
-    # Ma c'è anche `Thuram K.`, che è un altro giocatore in un'altra squadra e in
-    # un altro ruolo.
-    esito("⚠️ un nome esatto CON un omonimo non è «ok»: è da confermare",
-          v["Thuram"]["stato"] == "conferma"
-          and len(v["Thuram"]["candidati"]) == 2
-          and v["Thuram"]["scelto"]["id"] == 4,
-          f"stato={v['Thuram']['stato']} candidati={len(v['Thuram']['candidati'])}")
-    esito("un cognome condiviso da due giocatori non ne scegli uno",
-          v["Martinez"]["stato"] == "scegli" and v["Martinez"]["scelto"] is None
-          and len(v["Martinez"]["candidati"]) == 2)
-    esito("ma col nome proprio davanti l'iniziale lo risolve",
-          v["Lautaro Martinez"]["stato"] == "conferma"
-          and v["Lautaro Martinez"]["scelto"]["id"] == 202,
-          str((v["Lautaro Martinez"]["scelto"] or {}).get("nome")))
-    # ⚠️ Questa è la prova che ha trovato il baco al primo giro: «Adams» da solo,
-    # contro `Adams A.` e `Adams C.`, veniva risolto in `Adams A.` perché la «a»
-    # dell'iniziale comincia anche «adams». Cioè si inventava una risposta dove
-    # non c'era niente da confrontare.
-    esito("⚠️ «Adams» da solo resta da scegliere, non diventa «Adams A.»",
-          v["Adams"]["stato"] == "scegli" and v["Adams"]["scelto"] is None,
-          str((v["Adams"]["scelto"] or {}).get("nome")))
-    esito("un nome senza accenti trova quello con l'accento",
-          v["Kone M."]["stato"] == "ok" and v["Kone M."]["scelto"]["id"] == 204)
-    esito("un nome che non esiste non viene indovinato",
-          v["Zibaldone 4"]["stato"] == "niente"
-          and not v["Zibaldone 4"]["candidati"])
-
-    # L'intestazione che scende sulle righe dopo, e la squadra che disambigua.
-    # ⚠️ Qui le due righe sono **la stessa riga scritta due volte** e vanno lette
-    # in ordine, non per nome: la prima versione di questa prova le metteva in un
-    # dizionario per `grezzo` e ne perdeva una, dicendo NO a un codice giusto.
-    doppia = leggi_rosa_incollata("Portieri\nMartinez\nAttaccanti\nMartinez", listone)
-    esito("⚠️ l'intestazione del ruolo rende univoco un cognome condiviso",
-          [x["scelto"]["id"] for x in doppia] == [203, 202],
-          str([(x["stato"], (x["scelto"] or {}).get("nome")) for x in doppia]))
-    v = leggi("Martinez INT p")
-    esito("e la squadra e il ruolo sulla riga fanno lo stesso",
-          v["Martinez INT p"]["scelto"]["id"] == 203)
-    # ⚠️ Una sigla sbagliata non deve far sparire il giocatore: la riga si vede
-    # comunque, con la scelta in mano a chi guarda. Ma non resta «sicura» — o la
-    # sigla è sbagliata, o il giocatore giusto è un altro, e in tutti e due i casi
-    # è una riga da guardare. Anche questa l'ha trovata la prova: prima diceva
-    # «ok» su una riga che chiedeva un giocatore della Juve e ne trovava uno
-    # dell'Inter.
-    v = leggi("Bastoni JUV")
-    esito("⚠️ una squadra che non combacia non cancella il candidato ma lo dichiara",
-          v["Bastoni JUV"]["stato"] == "conferma"
-          and v["Bastoni JUV"]["scarti"] == ["squadra"],
-          f"stato={v['Bastoni JUV']['stato']} scarti={v['Bastoni JUV']['scarti']}")
-
-    # --- la pagina: guarda, poi scrive --------------------------------------
-    def in_rosa():
-        db = extensions.get_db()
-        fuori = [r["player_id"] for r in db.execute(
-            "SELECT player_id FROM fanta_roster WHERE league_id=? ORDER BY player_id",
-            (lid2,))]
-        db.close()
-        return fuori
-
-    with app.test_client() as c:
-        with c.session_transaction() as s:
-            s["username"] = "davide"
-            s["role"] = "user"
-            s["user_id"] = ids["davide"]
-        testo = "Bastoni 22\nThuram\nMartinez\nZibaldone"
-        r = c.post(f"/fantacalcio/lega/{lid2}/rosa/incolla", data={"testo": testo})
-        pagina = r.data.decode("utf-8", "replace")
-        esito("l'anteprima si apre", r.status_code == 200 and "righe lette" in pagina)
-        esito("⚠️ e non ha scritto NIENTE in rosa", in_rosa() == [],
-              f"{len(in_rosa())} righe")
-        esito("la riga da scegliere ha una tendina, non un id fisso",
-              'name="pid_2"' in pagina and 'name="pid_2" value=' not in pagina)
-
-        # La conferma scrive **solo** le righe spuntate: la spunta è la decisione.
-        r = c.post(f"/fantacalcio/lega/{lid2}/rosa/incolla/conferma", data={
-            "riga_0": "on", "pid_0": "2", "prezzo_0": "22",
-            "pid_1": "4", "prezzo_1": "",           # non spuntata: non entra
-            "riga_2": "on", "pid_2": "", "prezzo_2": "",   # scelta lasciata vuota
-        }, follow_redirects=True)
-        esito("entra solo la riga spuntata", in_rosa() == [2], str(in_rosa()))
-        db = extensions.get_db()
-        esito("col prezzo che avevo scritto io",
-              db.execute("SELECT prezzo FROM fanta_roster WHERE league_id=? AND "
-                         "player_id=2", (lid2,)).fetchone()["prezzo"] == 22.0)
-        db.close()
-
-        # Un id che non è nel listone non entra, per quanto sia spuntato.
-        c.post(f"/fantacalcio/lega/{lid2}/rosa/incolla/conferma", data={
-            "riga_0": "on", "pid_0": "99999", "prezzo_0": "5"}, follow_redirects=True)
-        esito("⚠️ un player_id inventato dal browser non entra in rosa",
-              in_rosa() == [2], str(in_rosa()))
-
-        # Lo stesso giocatore due volte, e uno che c'era già: il vincolo UNIQUE
-        # non deve diventare un errore in faccia.
-        r = c.post(f"/fantacalcio/lega/{lid2}/rosa/incolla/conferma", data={
-            "riga_0": "on", "pid_0": "3", "prezzo_0": "7",
-            "riga_1": "on", "pid_1": "3", "prezzo_1": "7",
-            "riga_2": "on", "pid_2": "2", "prezzo_2": "9",
-        }, follow_redirects=True)
-        esito("un doppione e uno già in rosa non raddoppiano niente",
-              in_rosa() == [2, 3], str(in_rosa()))
-        esito("e la pagina lo dice invece di dare un errore",
-              "già in rosa da prima" in r.data.decode("utf-8", "replace"))
-
-        # L'anteprima di un giocatore già in rosa parte **senza** la spunta.
-        r = c.post(f"/fantacalcio/lega/{lid2}/rosa/incolla",
-                   data={"testo": "Bastoni"})
-        esito("chi è già in rosa è segnato «già in rosa»",
-              "già in rosa" in r.data.decode("utf-8", "replace"))
-
-    # --- e la lega è di chi ce l'ha -----------------------------------------
-    with app.test_client() as c:
-        with c.session_transaction() as s:
-            s["username"] = "altro"
-            s["role"] = "user"
-            s["user_id"] = ids["altro"]
-        r = c.post(f"/fantacalcio/lega/{lid2}/rosa/incolla",
-                   data={"testo": "Barella"}, follow_redirects=True)
-        esito("un altro utente non apre l'anteprima di una lega non sua",
-              b"Lega non trovata" in r.data)
-        prima = in_rosa()
-        c.post(f"/fantacalcio/lega/{lid2}/rosa/incolla/conferma", data={
-            "riga_0": "on", "pid_0": "4", "prezzo_0": "1"}, follow_redirects=True)
-        esito("⚠️ e non può scrivere nella rosa di un altro", in_rosa() == prima,
-              str(in_rosa()))
-
-
-    # ── 14. il consiglio ────────────────────────────────────────────────────
-    # ⚠️ Anche questo blocco si fa **lega e rosa sue**, con statistiche scelte a
-    # mano: il consiglio è tutto ordinamento, e su una rosa qualsiasi «sembra
-    # giusto» senza dimostrare niente. Qui ogni giocatore esiste per far fallire
-    # una regola precisa.
-    print("\n== 14. il consiglio ==")
-    from data import (fantamedia_regole, fascia_titolarita, rigori_segnati_tirati,
-                      valuta_rosa, consiglia_formazione, consiglia_moduli,
-                      MINIMO_PARTITE_FIDATO, SOGLIA_SCHIERABILE)
-
-    # --- i pezzi puri --------------------------------------------------------
-    esito("«2 / 3» sono due rigori segnati su tre tirati",
-          rigori_segnati_tirati("2 / 3") == (2, 3))
-    esito("una casella vuota non diventa un rigore sbagliato",
-          rigori_segnati_tirati(None) == (0, 0) and rigori_segnati_tirati("") == (0, 0))
-    # Le soglie sono quelle della fonte, e i bordi sono la parte che conta.
-    esito("le fasce cadono dove le mette la fonte",
-          [fascia_titolarita(x) for x in (90, 89, 60, 59, 40, 39, 1)]
-          == ["sicuro", "favorito", "favorito", "ballottaggio", "ballottaggio",
-              "panchina", "panchina"])
-    esito("⚠️ senza percentuale la fascia non si inventa",
-          fascia_titolarita(None) is None)
-
-    # La fantamedia rifatta: un caso fatto a mano, coi conti in chiaro.
-    # media 6.0 su 5 partite, 2 gol (+3), 1 assist (+1), 2 ammonizioni (−0,5)
-    # → bonus 6+1−1 = 6, quindi 6.0 + 6/5 = 7.2
-    tizio = {"partite_a_voto": 5, "media_voto": 6.0, "gol": 2, "assist": 1,
-             "ammonizioni": 2, "espulsioni": 0, "gol_subiti": 0,
-             "rigori_parati": 0, "rigori": "0 / 0"}
-    regole_base = {"bonus_gol": 3, "bonus_assist": 1, "malus_amm": -0.5,
-                   "malus_esp": -1, "malus_gol_subito": -1,
-                   "bonus_rigore_parato": 3, "malus_rigore_sbagliato": -3}
-    fm, pezzi = fantamedia_regole(tizio, regole_base)
-    esito("la fantamedia rifatta torna al conto fatto a mano (7.2)",
-          round(fm, 3) == 7.2, str(fm))
-    esito("e dice di quali voci è fatta", len(pezzi) == 3,
-          str([p["voce"] for p in pezzi]))
-    # ⚠️ Il punto di tutta la decisione: cambiando la regola della lega, cambia.
-    fm5, _ = fantamedia_regole(tizio, dict(regole_base, bonus_gol=5))
-    esito("⚠️ con il gol a +5 la stessa stagione vale 8.0, non 7.2",
-          round(fm5, 3) == 8.0, str(fm5))
-    # I rigori sbagliati si contano dalla differenza, e i segnati NON si
-    # ricontano: sono già dentro `gol`.
-    fm_rig, _ = fantamedia_regole(dict(tizio, rigori="1 / 3"), regole_base)
-    esito("due rigori sbagliati su tre tirati togliono 6 punti su 5 partite",
-          round(fm_rig, 3) == round(7.2 - 6.0 / 5, 3), str(fm_rig))
-    esito("⚠️ senza partite a voto la fantamedia è assente, non zero",
-          fantamedia_regole(dict(tizio, partite_a_voto=0), regole_base)[0] is None)
-
-    # --- la rosa di prova ---------------------------------------------------
-    db = extensions.get_db()
-    db.execute("INSERT INTO fanta_leagues(user_id,nome,moduli,n_panchinari,"
-               "bonus_gol,bonus_assist,malus_amm) "
-               "VALUES(?,'Terza Lega','3-4-3,4-4-2',4,3,1,-0.5)", (ids["davide"],))
-    db.commit()
-    lid3 = db.execute("SELECT id FROM fanta_leagues WHERE nome='Terza Lega'"
-                      ).fetchone()["id"]
-    # (id, nome, ruolo, squadra, partite, media, gol, percentuale|None)
-    # Le squadre: `casa` gioca la giornata 7, `ferma` no — serve a distinguere
-    # «non convocato» da «la sua squadra non gioca».
-    banco = [
-        (301, "Portiere1", "p", "casa", 5, 6.0, 0, 90),
-        (302, "Portiere2", "p", "casa", 5, 5.8, 0, 90),
-        (303, "Portiere3", "p", "casa", 5, 5.6, 0, 90),
-        (304, "Dif1", "d", "casa", 5, 6.4, 1, 90),
-        (305, "Dif2", "d", "casa", 5, 6.2, 0, 90),
-        (306, "Dif3", "d", "casa", 5, 6.0, 0, 90),
-        (307, "Dif4", "d", "casa", 5, 5.8, 0, 90),
-        (308, "Cen1", "c", "casa", 5, 6.6, 1, 90),
-        (309, "Cen2", "c", "casa", 5, 6.4, 0, 90),
-        (310, "Cen3", "c", "casa", 5, 6.2, 0, 90),
-        (311, "Cen4", "c", "casa", 5, 6.0, 0, 90),
-        (312, "Cen5", "c", "casa", 5, 5.5, 0, 70),
-        # ⚠️ Il caso che ha trovato il baco: fantamedia **altissima** ma
-        # percentuale da ballottaggio. Non deve entrare al posto di un titolare
-        # sicuro, e deve comparire fra i «contesi». I nove gol sono volutamente
-        # assurdi, e il numero è **contato**: perché il disaccordo fra le due
-        # letture esista davvero servono punti attesi più alti del peggior
-        # titolare (0.9 × 6.0 = 5.4), cioè 0.5 × fm > 5.4, cioè fm > 10.8 — con
-        # 5 partite a media 6.0 vuol dire più di 8 gol. Col primo valore (5 gol,
-        # fm 9.0, attesi 4.5) i «contesi» erano legittimamente **vuoti** e la
-        # prova diceva NO a un codice giusto.
-        (313, "Fenomeno", "c", "casa", 5, 6.0, 9, 50),
-        (314, "Att1", "a", "casa", 5, 6.8, 2, 90),
-        (315, "Att2", "a", "casa", 5, 6.6, 1, 90),
-        (316, "Att3", "a", "casa", 5, 6.4, 1, 90),
-        (317, "Att4", "a", "casa", 5, 6.0, 0, 60),
-        # Nessuna partita a voto: fantamedia assente, non zero.
-        (318, "Nuovo", "c", "casa", 0, None, 0, 90),
-        # ⚠️ Sotto il 40%, quindi nella fascia «parte dalla panchina»: esiste
-        # perché la regola operativa della fonte — il rivale di un ballottaggio
-        # schierato va **in cima alla panchina** — si può provare solo se un
-        # centrocampista resta fuori. Senza di lui la prova chiedeva un rivale
-        # che non poteva esistere, e diceva NO a un codice giusto.
-        (319, "Riserva", "c", "casa", 5, 5.0, 0, 30),
-    ]
-    for pid, nome, ruolo, slug, pg, mv, gol, _pct in banco:
-        db.execute("INSERT INTO fanta_players(id,nome,squadra,squadra_slug,"
-                   "ruolo_classic,qa,fvm,attivo,visto_il,partite_a_voto,media_voto,"
-                   "gol,assist,ammonizioni,espulsioni,gol_subiti,rigori_parati,rigori)"
-                   " VALUES(?,?,'CAS',?,?,10,20,1,'2026-09-21',?,?,?,0,0,0,0,0,'0 / 0')",
-                   (pid, nome, slug, ruolo, pg, mv, gol))
-        db.execute("INSERT INTO fanta_roster(league_id,player_id,prezzo) VALUES(?,?,1)",
-                   (lid3, pid))
-    db.execute("INSERT INTO fanta_probabili_squadre(giornata,squadra_slug,squadra,"
-               "modulo,avversario,avversario_slug,in_casa,match_id) "
-               "VALUES(7,'casa','CAS','4-3-3','OSP','ospite',1,1)")
-    db.execute("INSERT INTO fanta_probabili_squadre(giornata,squadra_slug,squadra,"
-               "modulo,avversario,avversario_slug,in_casa,match_id) "
-               "VALUES(7,'ospite','OSP','4-3-3','CAS','casa',0,1)")
-    for pid, nome, ruolo, _slug, _pg, _mv, _gol, pct in banco:
-        if pct is not None:
-            db.execute("INSERT INTO fanta_probabili(giornata,player_id,nome,"
-                       "squadra_slug,ruolo,titolare,percentuale) "
-                       "VALUES(7,?,?,'casa',?,?,?)",
-                       (pid, nome, ruolo, 1 if pct >= 60 else 0, pct))
-    db.commit()
-    lega3 = dict(db.execute("SELECT * FROM fanta_leagues WHERE id=?", (lid3,)).fetchone())
-    rosa3 = [dict(r) for r in db.execute(
-        "SELECT p.* FROM fanta_roster r JOIN fanta_players p ON p.id=r.player_id "
-        "WHERE r.league_id=?", (lid3,))]
-    db.close()
-
-    prob3 = {pid: {"stato": "titolare" if (pct or 0) >= 60 else "panchina",
-                   "percentuale": pct}
-             for pid, _n, _r, _s, _pg, _mv, _g, pct in banco if pct is not None}
-    val = valuta_rosa(rosa3, prob3, lega3)
-    quali = {v["g"]["nome"]: v for v in val}
-    esito("il «Fenomeno» ha la fantamedia più alta del centrocampo",
-          quali["Fenomeno"]["fm"] > max(quali[n]["fm"] for n in
-                                        ("Cen1", "Cen2", "Cen3", "Cen4")),
-          f"{quali['Fenomeno']['fm']} contro {quali['Cen1']['fm']}")
-    esito("e sta nella fascia del ballottaggio",
-          quali["Fenomeno"]["fascia"] == "ballottaggio"
-          and not quali["Fenomeno"]["schierabile"] is False,
-          f"{quali['Fenomeno']['percentuale']}% {quali['Fenomeno']['fascia']}")
-    esito("chi non ha partite a voto non ha fantamedia e non vale zero",
-          quali["Nuovo"]["fm"] is None and quali["Nuovo"]["atteso"] is None)
-    esito(f"e chi ne ha meno di {MINIMO_PARTITE_FIDATO} non è «fidato»",
-          quali["Nuovo"]["fidata"] is False and quali["Cen1"]["fidata"] is True)
-
-    c = consiglia_formazione(val, "3-4-3", lega3["n_panchinari"])
-    dentro = [v["g"]["nome"] for v in c["titolari"]]
-    panca = [v["g"]["nome"] for v in c["panchina"]]
-    esito("l'undici del 3-4-3 ha 11 nomi e i reparti giusti", len(dentro) == 11
-          and len([v for v in c["titolari"] if v["g"]["ruolo_classic"] == "d"]) == 3
-          and len([v for v in c["titolari"] if v["g"]["ruolo_classic"] == "c"]) == 4,
-          str(dentro))
-    # ⚠️ **La prova che ha trovato il baco.** Il primo ordinamento metteva il
-    # merito prima della fascia, e il Fenomeno (50%) entrava al posto di un
-    # titolare sicuro al 90%. La gerarchia della fonte dice l'opposto: prima
-    # *se* gioca, poi *se conviene*.
-    esito("⚠️ un ballottaggio al 50% NON scavalca un titolare sicuro al 90%",
-          "Fenomeno" not in dentro and "Cen4" in dentro, str(dentro))
-    esito("e il consiglio dichiara che lì le due letture litigano",
-          any(x["fuori"]["g"]["nome"] == "Fenomeno" for x in c["contesi"]),
-          str([(x["fuori"]["g"]["nome"], x["dentro"]["g"]["nome"])
-               for x in c["contesi"]]))
-    # ⚠️ Il tetto per ruolo in panchina: con un portiere in campo, di sostituti
-    # portiere può servirne **uno**. Due occuperebbero un posto che non servirà.
-    esito("⚠️ in panchina non finiscono due portieri di riserva",
-          len([v for v in c["panchina"] if v["g"]["ruolo_classic"] == "p"]) <= 1,
-          str(panca))
-    esito("la panchina è lunga quanto la lega ammette", len(panca) == 4, str(panca))
-
-    # La regola operativa della fonte: se schieri un ballottaggio, il primo posto
-    # in panchina va a un altro del suo ruolo.
-    val_b = valuta_rosa([g for g in rosa3 if g["nome"] not in
-                         ("Cen1", "Cen2", "Cen3")], prob3, lega3)
-    cb = consiglia_formazione(val_b, "3-4-3", 4)
-    schierati_b = [v["g"]["nome"] for v in cb["titolari"]]
-    esito("togliendo tre centrocampisti il ballottaggio entra per forza",
-          "Fenomeno" in schierati_b, str(schierati_b))
-    esito("⚠️ e il primo posto in panchina va a un altro centrocampista, come dice "
-          "la fonte",
-          cb["panchina"] and cb["panchina"][0]["g"]["ruolo_classic"] == "c",
-          str([(v["g"]["nome"], v["g"]["ruolo_classic"]) for v in cb["panchina"]]))
-
-    # I «forzati»: un reparto che i convocati non riempiono.
-    soli = [g for g in rosa3 if g["ruolo_classic"] != "a"] + \
-           [g for g in rosa3 if g["nome"] in ("Att1", "Att2", "Att3")]
-    prob_senza_att = {k: v for k, v in prob3.items() if k not in (314, 315, 316)}
-    cf = consiglia_formazione(valuta_rosa(soli, prob_senza_att, lega3), "3-4-3", 4)
-    esito("⚠️ i posti riempiti per forza sono dichiarati, non spacciati per consiglio",
-          len(cf["forzati"]) == 3,
-          str([v["g"]["nome"] for v in cf["forzati"]]))
-
-    moduli = consiglia_moduli(val, ["3-4-3", "4-4-2"], 4)
-    esito("ogni modulo ammesso ha il suo consiglio, con un migliore solo",
-          len(moduli) == 2 and len([m for m in moduli if m["migliore"]]) == 1,
-          str([(m["modulo"], m["atteso"], m["migliore"]) for m in moduli]))
-    esito("un modulo che non esiste non produce un consiglio",
-          consiglia_formazione(val, "4-4-4", 4) is None)
-
-    # --- la pagina ----------------------------------------------------------
-    def formazione_scritta():
-        db = extensions.get_db()
-        fuori = [dict(x) for x in db.execute(
-            "SELECT * FROM fanta_formazione WHERE league_id=? "
-            "ORDER BY titolare DESC, ordine", (lid3,))]
-        db.close()
-        return fuori
-
-    with app.test_client() as c2:
-        with c2.session_transaction() as s:
-            s["username"] = "davide"
-            s["role"] = "user"
-            s["user_id"] = ids["davide"]
-        # ⚠️ Dal 22/09/2026 `/consiglio` **non è più una pagina**: il consiglio sta
-        # sotto il campo, e questo indirizzo ci rimanda. La prova segue il rimando
-        # di proposito — quello che deve continuare a valere è che da qui si
-        # arriva al consiglio, non che ci sia una pagina in più.
-        r = c2.get(f"/fantacalcio/lega/{lid3}/consiglio")
-        esito("⚠️ il vecchio indirizzo del consiglio porta al campo",
-              r.status_code == 302 and f"/lega/{lid3}/formazione" in r.headers["Location"]
-              and "#consiglio" in r.headers["Location"], r.headers.get("Location"))
-        r = c2.get(f"/fantacalcio/lega/{lid3}/consiglio", follow_redirects=True)
-        pagina = r.data.decode("utf-8", "replace")
-        esito("e il consiglio si apre insieme al campo, nella stessa pagina",
-              r.status_code == 200 and "L'undici consigliato" in pagina
-              and 'id="campo"' in pagina)
-        # ⚠️ Davide ha chiesto che il criterio sia **scritto nella pagina**: è una
-        # richiesta, non una decorazione, e quindi è una prova. ⚠️ Cosa deve dire è
-        # il criterio, **non le parole con cui è scritto**: il 22/09/2026 i testi a
-        # schermo sono stati riscritti in forma generica e questa prova è cambiata
-        # con loro. Se cambiano ancora, va aggiornata di nuovo — e va bene così: è
-        # il prezzo per avere una prova su ciò che l'utente legge davvero.
-        esito("⚠️ la pagina dichiara su cosa si basa, numeri compresi",
-              "due domande" in pagina
-              and "titolarità" in pagina
-              and "fantamedia ricalcolata" in pagina
-              and "punti attesi" in pagina.lower()
-              and str(MINIMO_PARTITE_FIDATO) in pagina
-              and str(SOGLIA_SCHIERABILE) in pagina)
-        esito("e dice dove i due criteri non concordano",
-              "Fenomeno" in pagina and "non concordano" in pagina)
-        esito("il consiglio non ha scritto niente da sé",
-              formazione_scritta() == [], f"{len(formazione_scritta())} righe")
-
-        r = c2.post(f"/fantacalcio/lega/{lid3}/consiglio/applica",
-                    data={"modulo": "3-4-3"}, follow_redirects=True)
-        scritta = formazione_scritta()
-        esito("«applica» porta il consiglio nel campo",
-              sum(1 for x in scritta if x["titolare"]) == 11
-              and sum(1 for x in scritta if not x["titolare"]) == 4,
-              f"{len(scritta)} righe")
-        esito("con lo stesso undici che la pagina mostrava",
-              [x["player_id"] for x in scritta if x["titolare"]]
-              == [v["g"]["id"] for v in c["titolari"]])
-        db = extensions.get_db()
-        esito("e il modulo finisce sulla lega",
-              db.execute("SELECT modulo_scelto FROM fanta_leagues WHERE id=?",
-                         (lid3,)).fetchone()["modulo_scelto"] == "3-4-3")
-        db.close()
-        prima = formazione_scritta()
-        r = c2.post(f"/fantacalcio/lega/{lid3}/consiglio/applica",
-                    data={"modulo": "4-5-1"}, follow_redirects=True)
-        esito("⚠️ un modulo che la lega non ammette non si applica",
-              formazione_scritta() == prima
-              and "non è fra quelli consigliabili" in r.data.decode("utf-8", "replace"))
-
-    with app.test_client() as c2:
-        with c2.session_transaction() as s:
-            s["username"] = "altro"
-            s["role"] = "user"
-            s["user_id"] = ids["altro"]
-        r = c2.get(f"/fantacalcio/lega/{lid3}/consiglio", follow_redirects=True)
-        esito("un altro utente non vede il consiglio di una lega non sua",
-              b"Lega non trovata" in r.data)
-        prima = formazione_scritta()
-        c2.post(f"/fantacalcio/lega/{lid3}/consiglio/applica",
-                data={"modulo": "4-4-2"}, follow_redirects=True)
-        esito("⚠️ e non può applicarlo al campo di un altro",
-              formazione_scritta() == prima)
-
-
-    # --- 15. un apostrofo nel nome non rompe la conferma ---------------------
-    # ⚠️ `{{ nome|e }}` dentro un `onsubmit` è un baco silenzioso: l'escape HTML
-    # rende `N'Dicka` come `N&#39;Dicka`, il browser lo **decodifica prima** di
-    # passare il codice al parser JS, e l'handler diventa un `SyntaxError`. Un
-    # handler che non compila non è un errore a schermo: il `confirm` sparisce e
-    # il form parte lo stesso, cioè il giocatore esce dalla rosa al primo clic.
-    # Sul listone vero i nomi con l'apostrofo sono due (`N'Dicka`, `N'Dri`), e il
-    # nome di una lega lo scrive Davide — «L'Inter dei miei» basta e avanza.
-    print("\n== 15. un apostrofo nel nome non rompe la conferma ==")
-    import html as _html
-    import re
+    # --- 8. le pagine, e la sintassi di ogni script -----------------------------
+    print("\n== 8. le pagine si aprono e il JavaScript compila ==")
     try:
         import esprima
     except ImportError:
         esprima = None
-    HANDLER = re.compile(
-        r"""\bon(?:click|change|submit)\s*=\s*("([^"]*)"|'([^']*)')""", re.I)
-    SENZA_SCRIPT = re.compile(r"<script\b[^>]*>.*?</script>", re.S | re.I)
+    HANDLER = re.compile(r"""\bon(?:click|change|submit|input)\s*=\s*("([^"]*)"|'([^']*)')""", re.I)
+    SCRIPT = re.compile(r"<script\b[^>]*>(.*?)</script>", re.S | re.I)
 
-    db = extensions.get_db()
-    db.execute("INSERT INTO fanta_players(id,nome,squadra,ruolo_classic,qa,fvm,"
-               "fantamedia,attivo,visto_il) VALUES(99,'N''Dri','XXX','a',10,20,"
-               "6.0,1,'2026-09-21')")
-    db.execute("INSERT INTO fanta_leagues(user_id,nome,sistema,moduli) "
-               "VALUES(?,?,'classic','3-4-3')",
-               (ids["davide"], 'L\'Inter dei "miei"'))
-    lid_ap = db.execute("SELECT id FROM fanta_leagues ORDER BY id DESC "
-                        "LIMIT 1").fetchone()["id"]
-    db.commit()
-    db.close()
-
-    def handler_rotti(pagina):
-        """Quanti handler inline non compilano, come li vedrebbe il browser."""
-        rotti = []
-        for m in HANDLER.finditer(SENZA_SCRIPT.sub("", pagina)):
+    def rotti(pagina):
+        fuori = []
+        for m in SCRIPT.finditer(pagina):
+            try:
+                esprima.parseScript(m.group(1), {"tolerant": False})
+            except Exception as e:
+                fuori.append(f"<script>: {str(e)[:60]}")
+        for m in HANDLER.finditer(SCRIPT.sub("", pagina)):
             codice = _html.unescape(m.group(2) if m.group(2) is not None else m.group(3))
             try:
                 esprima.parseScript("function _(){%s}" % codice, {"tolerant": False})
             except Exception as e:
-                rotti.append(f"{codice[:60]} -> {str(e)[:40]}")
-        return rotti
-
-    with app.test_client() as c3:
-        with c3.session_transaction() as s:
-            s["username"] = "davide"
-            s["role"] = "user"
-            s["user_id"] = ids["davide"]
-        c3.post(f"/fantacalcio/lega/{lid_ap}/rosa/aggiungi",
-                data={"player_id": "99", "prezzo": "10"})
-        pagina = c3.get(f"/fantacalcio/lega/{lid_ap}").data.decode("utf-8", "replace")
-        elenco = c3.get("/fantacalcio/").data.decode("utf-8", "replace")
-    esito("il giocatore con l'apostrofo è davvero in pagina", "N&#39;Dri" in pagina)
-    if esprima is None:
-        esito("⚠️ senza `esprima` la sintassi degli handler non è provata", False,
-              "pip install esprima")
-    else:
-        rotti = handler_rotti(pagina)
-        esito("⚠️ nessun handler rotto dall'apostrofo nel nome del giocatore",
-              not rotti, str(rotti))
-        rotti = handler_rotti(elenco)
-        esito("⚠️ né dall'apostrofo e dalle virgolette nel nome della lega",
-              not rotti, str(rotti))
-
-
-    # --- 16. la formazione contro le probabili di adesso ---------------------
-    # Chiesta da Davide il 22/09/2026: schieri giovedì, venerdì uno finisce in
-    # panchina, e fino a ieri te ne accorgevi solo riaprendo il campo e guardando
-    # riga per riga. ⚠️ «Automatico» qui vuol dire **quando apri la pagina**: non
-    # c'è niente che giri in sottofondo, e la prova non può dimostrare altro.
-    print("\n== 16. la formazione contro le probabili di adesso ==")
-    from data import controlla_schierati, quanti_guai
-
-    schierati_finti = {1: {"titolare": 1}, 2: {"titolare": 1}, 3: {"titolare": 1},
-                       4: {"titolare": 0}, 5: {"titolare": 1}}
-    prob_finte = {1: {"stato": "titolare", "percentuale": 90},
-                  2: {"stato": "panchina", "percentuale": 30},
-                  3: {"stato": "titolare", "percentuale": 35},
-                  4: {"stato": "titolare", "percentuale": 85},
-                  5: {"stato": "non_gioca", "percentuale": None}}
-    nomi_finti = {1: "Uno", 2: "Due", 3: "Tre", 4: "Quattro", 5: "Cinque"}
-    a = controlla_schierati(schierati_finti, prob_finte, nomi_finti,
-                            in_rosa={1, 2, 3, 4, 5})
-    esito("un titolare finito in panchina viene dichiarato",
-          [v["nome"] for v in a["fuori"]] == ["Cinque", "Due"],
-          str([(v["nome"], v["stato"]) for v in a["fuori"]]))
-    esito("⚠️ e chi non scende in campo per niente viene prima di chi è in panchina",
-          a["fuori"][0]["stato"] == "non_gioca")
-    esito("un titolare sotto la soglia del ballottaggio è «incerto», non «fuori»",
-          [v["nome"] for v in a["incerti"]] == ["Tre"], str(a["incerti"]))
-    # ⚠️ Il conto sono **3**: i due «fuori» più l'«incerto». L'occasione non ci
-    # entra, ed è tutto il punto di `quanti_guai()` — contarla direbbe 4 a una
-    # formazione che ha tre cose da sistemare e una da sfruttare.
-    esito("e un panchinaro dato titolare è un'occasione, non un guaio",
-          [v["nome"] for v in a["occasioni"]] == ["Quattro"]
-          and quanti_guai(a) == 3, f"{a['occasioni']} guai={quanti_guai(a)}")
-    # ⚠️ Togliere un giocatore dalla rosa **non** cancella la sua riga in
-    # `fanta_formazione`: il campo smette di disegnarlo e i titolari diventano
-    # dieci senza che nessuno lo dica. Finché è così, l'avviso deve dirlo.
-    b = controlla_schierati(schierati_finti, prob_finte, nomi_finti,
-                            in_rosa={1, 2, 3, 4})
-    esito("⚠️ chi è schierato ma non è più in rosa viene dichiarato",
-          [v["nome"] for v in b["spariti"]] == ["Cinque"], str(b["spariti"]))
-    esito("⚠️ senza probabili non si accusa nessuno",
-          quanti_guai(controlla_schierati(schierati_finti, {}, nomi_finti)) == 0)
-    esito("e una formazione che torna non produce nessun guaio",
-          quanti_guai(controlla_schierati(
-              {1: {"titolare": 1}}, {1: {"stato": "titolare", "percentuale": 90}},
-              nomi_finti, in_rosa={1})) == 0)
-
-    # --- e la stessa cosa dalle pagine ---------------------------------------
-    db = extensions.get_db()
-    db.execute("UPDATE fanta_players SET squadra_slug='inter' WHERE id IN (1,2,3,4)")
-    db.execute("INSERT INTO fanta_leagues(user_id,nome,sistema,moduli) "
-               "VALUES(?,'Lega Allerta','classic','3-4-3')", (ids["davide"],))
-    lid_al = db.execute("SELECT id FROM fanta_leagues ORDER BY id DESC "
-                        "LIMIT 1").fetchone()["id"]
-    for pid in (1, 2, 3, 4):
-        db.execute("INSERT INTO fanta_roster(league_id,player_id,prezzo) "
-                   "VALUES(?,?,10)", (lid_al, pid))
-    # Tre in campo e uno in panchina, e le probabili della giornata 9 che li
-    # smentiscono: il portiere resta titolare, il difensore è in panchina, il
-    # centrocampista è dato titolare ma al 30%, l'attaccante in panchina gioca.
-    for pid, titolare, ordine in ((1, 1, 0), (2, 1, 1), (3, 1, 2), (4, 0, 0)):
-        db.execute("INSERT INTO fanta_formazione(league_id,player_id,titolare,"
-                   "ordine,ruolo) VALUES(?,?,?,?,?)", (lid_al, pid, titolare,
-                                                       ordine, "d"))
-    db.execute("INSERT INTO fanta_probabili_squadre(giornata,squadra_slug,squadra,"
-               "avversario,in_casa,modulo,aggiornato_il) VALUES(9,'inter','Inter',"
-               "'Milan',1,'3-5-2',CURRENT_TIMESTAMP)")
-    for pid, titolare, pct in ((1, 1, 90), (2, 0, 25), (3, 1, 30), (4, 1, 85)):
-        db.execute("INSERT INTO fanta_probabili(giornata,player_id,nome,squadra_slug,"
-                   "ruolo,titolare,percentuale,aggiornato_il) "
-                   "VALUES(9,?,?,'inter','d',?,?,CURRENT_TIMESTAMP)",
-                   (pid, nomi_finti[pid], titolare, pct))
-    db.commit()
-    db.close()
-
-    with app.test_client() as c4:
-        with c4.session_transaction() as s:
-            s["username"] = "davide"
-            s["role"] = "user"
-            s["user_id"] = ids["davide"]
-        scheda = c4.get(f"/fantacalcio/lega/{lid_al}").data.decode("utf-8", "replace")
-        campo = c4.get(f"/fantacalcio/lega/{lid_al}/formazione").data.decode("utf-8", "replace")
-        elenco = c4.get("/fantacalcio/").data.decode("utf-8", "replace")
-    esito("la scheda della lega apre con l'avviso",
-          "non corrisponde alle probabili" in scheda and "Bastoni" in scheda,
-          "Bastoni è il titolare finito in panchina")
-    esito("⚠️ e dice di quale giornata sta parlando",
-          "giornata 9" in scheda)
-    esito("l'avviso c'è anche sul campo, dove si rimedia",
-          "non corrisponde alle probabili" in campo)
-    esito("e l'elenco delle leghe lo dice prima di entrare",
-          "da guardare nella formazione" in elenco)
-    # ⚠️ Le occasioni non entrano nel conto: un suggerimento non è un guaio, e un
-    # numero che conta anche quelli farebbe dire «3 da guardare» a una formazione
-    # che ne ha due.
-    esito("⚠️ il numero nell'elenco conta i guai, non i suggerimenti",
-          ">\n      &#9888; 2 da guardare nella formazione" in elenco
-          or "2 da guardare nella formazione" in elenco,
-          "2 = un titolare in panchina + un titolare al 30%")
-
-    with app.test_client() as c4:
-        with c4.session_transaction() as s:
-            s["username"] = "altro"
-            s["role"] = "user"
-            s["user_id"] = ids["altro"]
-        elenco = c4.get("/fantacalcio/").data.decode("utf-8", "replace")
-    esito("⚠️ e un altro utente non vede né la lega né il suo avviso",
-          "Lega Allerta" not in elenco and "da guardare nella formazione" not in elenco)
-
-    # --- 16b. il modificatore di difesa entra nel consiglio ------------------
-    # Chiesto da Davide il 22/09/2026: il consiglio ordinava i moduli sui soli punti
-    # attesi dei giocatori, e il modificatore vale su un **reparto** — in una lega
-    # che lo usa, un 5-3-2 e un 3-4-3 non sono confrontabili senza.
-    print("\n== 16b. il modificatore di difesa nel consiglio ==")
-    from data import modificatore_atteso, MINIMO_DIFENSORI_MOD
-
-    def _v(ruolo, voto, pct, nome="X"):
-        """Una valutazione finta con dentro i soli campi che il modificatore legge."""
-        return {"g": {"id": id(nome) % 100000, "nome": nome,
-                      "ruolo_classic": ruolo, "media_voto": voto},
-                "percentuale": pct}
-
-    regole_on = {"mod_difesa": 1, "mod_difesa_portiere": 1,
-                 "mod_difesa_soglie": "7:6, 6.5:3, 6:1"}
-    # Portiere a 6.5 e quattro difensori a 7.0/6.8/6.6/5.0: la media del portiere e
-    # dei **migliori 3** è (6.5+7.0+6.8+6.6)/4 = 6.725, che con la tabella standard
-    # vale +3. Il quarto difensore, il peggiore, non entra nella media.
-    undici = [_v("p", 6.5, 100, "Por"), _v("d", 7.0, 100, "D1"),
-              _v("d", 6.8, 100, "D2"), _v("d", 6.6, 100, "D3"),
-              _v("d", 5.0, 100, "D4")]
-    m = modificatore_atteso(undici, regole_on)
-    esito("la media è del portiere e dei migliori 3 difensori",
-          m["media"] == 6.73 or m["media"] == 6.72, str(m["media"]))
-    esito("e la tabella della lega le dà +3", m["pieni"] == 3.0, str(m["pieni"]))
-    esito("con tutti al 100% il conto atteso è il valore pieno",
-          m["punti"] == 3.0, str(m["punti"]))
-    # ⚠️ Lo sconto per la probabilità: gli stessi voti con quattro all'80% valgono
-    # 3 × 0.8⁴ = 1.23, non 3. Senza, un reparto di ballottaggi varrebbe come uno di
-    # titolari sicuri e il modulo con più difensori vincerebbe sempre.
-    incerti = [_v("p", 6.5, 80, "Por"), _v("d", 7.0, 80, "D1"),
-               _v("d", 6.8, 80, "D2"), _v("d", 6.6, 80, "D3"),
-               _v("d", 5.0, 80, "D4")]
-    m2 = modificatore_atteso(incerti, regole_on)
-    esito("⚠️ e chi potrebbe non giocare vale meno: 3 × 0.8⁴ = 1.23",
-          m2["punti"] == 1.23 and m2["pieni"] == 3.0, str(m2))
-    # ⚠️ Il numero dei difensori è il motivo per cui il modulo conta: con tre non
-    # si arriva al minimo, e si dice **perché** invece di dare zero e basta.
-    tre = [_v("p", 6.5, 100, "Por"), _v("d", 7.0, 100, "D1"),
-           _v("d", 6.8, 100, "D2"), _v("d", 6.6, 100, "D3")]
-    m3 = modificatore_atteso(tre, regole_on)
-    esito(f"⚠️ con meno di {MINIMO_DIFENSORI_MOD} difensori non si applica, e lo dice",
-          m3["punti"] == 0.0 and "servono" in (m3["perche"] or ""), str(m3["perche"]))
-    esito("senza il portiere nella media entrano i migliori 4 difensori",
-          modificatore_atteso(
-              undici, dict(regole_on, mod_difesa_portiere=0))["media"] == 6.35,
-          str(modificatore_atteso(undici,
-                                  dict(regole_on, mod_difesa_portiere=0))["media"]))
-    esito("⚠️ e in una lega che non lo usa non si conta niente",
-          modificatore_atteso(undici, dict(regole_on, mod_difesa=0)) is None)
-    # Una tabella su misura deve cambiare il risultato, o le soglie della lega non
-    # servirebbero a niente.
-    esito("le soglie della lega sono quelle che decidono",
-          modificatore_atteso(undici, dict(regole_on,
-                                           mod_difesa_soglie="6.7:9"))["pieni"] == 9.0)
-
-    # E il consiglio deve **ordinare** i moduli con quel numero dentro.
-    from data import consiglia_moduli as _moduli
-
-    def _val(ruolo, voto, pct, fm, nome):
-        return {"g": {"id": abs(hash(nome)) % 100000, "nome": nome,
-                      "ruolo_classic": ruolo, "media_voto": voto},
-                "stato": "titolare", "percentuale": pct,
-                "fascia": "sicuro", "fm": fm, "pezzi": [], "partite": 10,
-                "fidata": True, "convocato": True, "schierabile": True,
-                "atteso": round(pct / 100.0 * fm, 2)}
-
-    # Una rosa dove i difensori sono bravi e gli attaccanti no: senza modificatore
-    # vince il 3-4-3 (tre attaccanti da 6.0 contro due difensori in più da 5.5),
-    # col modificatore acceso il 5-3-2 recupera il reparto.
-    banco = ([_val("p", 6.5, 100, 6.0, "Por")]
-             + [_val("d", 7.0, 100, 5.5, f"Dif{n}") for n in range(5)]
-             + [_val("c", 6.0, 100, 6.0, f"Cen{n}") for n in range(5)]
-             + [_val("a", 6.0, 100, 7.0, f"Att{n}") for n in range(3)])
-    senza = _moduli(banco, ["3-4-3", "5-3-2"], 0, regole={"mod_difesa": 0})
-    con = _moduli(banco, ["3-4-3", "5-3-2"], 0, regole=regole_on)
-    vince = lambda cons: next(c["modulo"] for c in cons if c["migliore"])
-    esito("senza modificatore vince il modulo con più attaccanti",
-          vince(senza) == "3-4-3",
-          str([(c["modulo"], c["atteso"], c["totale"]) for c in senza]))
-    esito("⚠️ con il modificatore acceso il reparto difensivo conta, e vince il 5-3-2",
-          vince(con) == "5-3-2",
-          str([(c["modulo"], c["atteso"], c["mod"]["punti"], c["totale"])
-               for c in con]))
-    esito("⚠️ e il 3-4-3 prende +0 perché tre difensori non bastano",
-          next(c for c in con if c["modulo"] == "3-4-3")["mod"]["punti"] == 0.0)
-    esito("dove il modificatore è spento il totale è i soli punti attesi",
-          all(c["totale"] == c["atteso"] for c in senza))
-
-    # --- 17. chi esce dalla rosa esce anche dal campo ------------------------
-    # Decisione di Davide del 22/09/2026, sul baco trovato costruendo l'avviso:
-    # `fanta_roster` e `fanta_formazione` sono due tabelle e il DELETE sulla prima
-    # non toccava la seconda, quindi i titolari diventavano dieci in silenzio.
-    print("\n== 17. chi esce dalla rosa esce anche dal campo ==")
-
-    def in_campo(lega):
-        db = extensions.get_db()
-        fuori = {r["player_id"] for r in db.execute(
-            "SELECT player_id FROM fanta_formazione WHERE league_id=?", (lega,))}
-        db.close()
+                fuori.append(f"{codice[:50]} -> {str(e)[:40]}")
         return fuori
 
-    with app.test_client() as c5:
-        with c5.session_transaction() as s:
-            s["username"] = "davide"
-            s["role"] = "user"
-            s["user_id"] = ids["davide"]
-        db = extensions.get_db()
-        rid = db.execute("SELECT id FROM fanta_roster WHERE league_id=? AND "
-                         "player_id=1", (lid_al,)).fetchone()["id"]
-        db.close()
-        esito("si parte con quattro schierati", in_campo(lid_al) == {1, 2, 3, 4},
-              str(sorted(in_campo(lid_al))))
-        r = c5.post(f"/fantacalcio/lega/{lid_al}/rosa/{rid}/rimuovi",
-                    follow_redirects=True)
-        esito("la × di una riga lo toglie anche dal campo",
-              in_campo(lid_al) == {2, 3, 4}, str(sorted(in_campo(lid_al))))
-        esito("e il messaggio dice che era schierato",
-              "era schierato" in r.data.decode("utf-8", "replace"))
-        db = extensions.get_db()
-        rid2 = {r["player_id"]: r["id"] for r in db.execute(
-            "SELECT id, player_id FROM fanta_roster WHERE league_id=?", (lid_al,))}
-        db.close()
-        r = c5.post(f"/fantacalcio/lega/{lid_al}/rosa/modifica", data={
-            "togli": [str(rid2[2]), str(rid2[3])]}, follow_redirects=True)
-        esito("e il «togli in blocco» fa lo stesso per tutti quelli spuntati",
-              in_campo(lid_al) == {4}, str(sorted(in_campo(lid_al))))
-        esito("dicendo quanti di quelli tolti erano schierati",
-              "2 erano schierati" in r.data.decode("utf-8", "replace"),
-              r.data.decode("utf-8", "replace").count("erano schierati"))
+    pagine = {"elenco": "/fantacalcio/", "lega": f"/fantacalcio/lega/{lid}",
+              "campo": f"/fantacalcio/lega/{lid}/formazione",
+              "listone": "/fantacalcio/listone?spenti=1"}
+    for nome, url in pagine.items():
+        r = c.get(url)
+        testo = r.data.decode("utf-8", "replace")
+        esito(f"{nome}: si apre", r.status_code == 200, str(r.status_code))
+        if esprima is None:
+            esito("⚠️ senza `esprima` la sintassi non è provata", False, "pip install esprima")
+        else:
+            guai = rotti(testo)
+            esito(f"{nome}: nessuno script né handler rotto", not guai, str(guai[:3]))
+    anteprima = c.post(f"/fantacalcio/lega/{lid}/rosa/incolla", data={"testo": "N'Dri"})
+    esito("anteprima dell'incolla: si apre, e compila",
+          anteprima.status_code == 200 and (esprima is None or
+                                            not rotti(anteprima.data.decode("utf-8"))))
+    r = c.get("/fantacalcio/api/giocatore/31").get_json()
+    esito("la scheda porta la partita e le rose",
+          r["partita"]["avversario"] == "Lazio" and r["rose"], str(r.get("partita")))
+    elenco = c.get("/fantacalcio/").data.decode("utf-8")
+    esito("⚠️ l'attribuzione chiesta dai termini di football-data è in pagina",
+          F.ATTRIBUZIONE in elenco)
 
-    # ⚠️ Chi esce dal **listone** è un'altra cosa: resta in rosa, spento, col suo
-    # cartellino. Se questa prova fallisse vorrebbe dire che l'aggiornamento del
-    # mercato smonta le formazioni di gennaio.
+    # --- 9a. le probabili da guardare, e la pagina pulita ------------------------
+    # Dal 25/09/2026, su richiesta di Davide: le probabili si **guardano** accanto alla
+    # rosa, non si segna più niente. E nella pagina principale niente riquadro delle
+    # probabili, con «Aggiorna calendario» accanto a «Leggi i download».
+    print("\n== 9a. le probabili da guardare, e la pagina pulita ==")
+    r = c.get(f"/fantacalcio/lega/{lid}/chi-gioca")
+    testo = r.data.decode("utf-8", "replace")
+    esito("la pagina si apre, col riquadro delle probabili e la rosa",
+          r.status_code == 200 and "<iframe" in testo and B.LINK_PROBABILI in testo
+          and "Att Uno" in testo)
+    esito("⚠️ e non ci si segna più niente: né pulsanti, né la route che salvava",
+          'data-stato="' not in testo
+          and c.post("/fantacalcio/chi-gioca/segna",
+                     data={"player_id": 31, "stato": "titolare",
+                           "giornata": 6}).status_code == 404)
+    if esprima is not None:
+        guai = rotti(testo)
+        esito("e il suo JavaScript compila", not guai, str(guai[:3]))
+    esito("un altro utente non apre la pagina di una lega non sua",
+          b"Lega non trovata" in a.get(f"/fantacalcio/lega/{lid}/chi-gioca",
+                                       follow_redirects=True).data)
+    elenco = c.get("/fantacalcio/").data.decode("utf-8", "replace")
+    esito("⚠️ la pagina principale non ha più il riquadro delle probabili, ma il "
+          "pulsante in alto sì",
+          "Le probabili formazioni</div>" not in elenco and B.LINK_PROBABILI in elenco)
+    dl, cal = elenco.find("Leggi i download"), elenco.find("Aggiorna calendario")
+    esito("«Aggiorna calendario» sta accanto a «Leggi i download», e non più nel "
+          "riquadro del calendario",
+          0 < dl < cal < dl + 600 and "Aggiorna ora</button>" not in elenco,
+          f"{dl} {cal}")
+    esito("dentro la lega c'è il pulsante delle probabili",
+          f"/fantacalcio/lega/{lid}/chi-gioca" in
+          c.get(f"/fantacalcio/lega/{lid}").data.decode("utf-8", "replace"))
+    campo = c.get(f"/fantacalcio/lega/{lid}/formazione").data.decode("utf-8", "replace")
+    esito("⚠️ il consiglio non parla più di «non segnati» né di «in dubbio»",
+          "non segnat" not in campo and "in dubbio" not in campo
+          and (esprima is None or not rotti(campo)))
+
+    # --- 9. upload dalla pagina, e la lega che se ne va ------------------------------
+    print("\n== 9. il caricamento dalla pagina, e l'eliminazione ==")
+    meno = [g for g in GIOCATORI if g[0] != 15]          # Dif Cinque esce dal file
+    r = c.post("/fantacalcio/listone/carica", data={
+        "file_a": (io.BytesIO(file_quotazioni(meno)), "a.xlsx"),
+        "file_b": (io.BytesIO(file_statistiche(meno)), "b.xlsx")},
+        content_type="multipart/form-data", follow_redirects=True)
     db = extensions.get_db()
-    db.execute("INSERT OR REPLACE INTO fanta_formazione(league_id,player_id,"
-               "titolare,ordine,ruolo) VALUES(?,5,1,9,'c')", (lid_al,))
-    db.execute("INSERT INTO fanta_roster(league_id,player_id,prezzo) "
-               "VALUES(?,5,10)", (lid_al,))
-    db.execute("UPDATE fanta_players SET attivo=0 WHERE id=5")
-    db.commit()
+    riga = db.execute("SELECT attivo FROM fanta_players WHERE id=15").fetchone()
+    esito("chi non è più nel file resta, spento", riga and riga["attivo"] == 0)
+    esito("e resta nella rosa che lo nomina",
+          db.execute("SELECT 1 FROM fanta_roster WHERE league_id=? AND player_id=15",
+                     (lid,)).fetchone() is not None)
     db.close()
-    esito("⚠️ ma chi esce dal listone resta in rosa e in campo: è un'altra cosa",
-          5 in in_campo(lid_al), str(sorted(in_campo(lid_al))))
-
-
-    # --- 18. svuotare un reparto, o tutta la rosa ----------------------------
-    # Chiesto da Davide il 22/09/2026. ⚠️ La cosa che può rompersi in silenzio è
-    # sempre la stessa: `fanta_roster` e `fanta_formazione` sono due tabelle, e uno
-    # svuota che tocca solo la prima lascia in campo dei titolari che non sono più
-    # in rosa — a schermo non si vede niente, i titolari diventano dieci.
-    print("\n== 18. svuota reparto e svuota rosa ==")
+    pochi = GIOCATORI[:3]
+    c.post("/fantacalcio/listone/carica", data={
+        "file_a": (io.BytesIO(file_quotazioni(pochi)), "a.xlsx"),
+        "file_b": (io.BytesIO(file_statistiche(pochi)), "b.xlsx")},
+        content_type="multipart/form-data")
     db = extensions.get_db()
-    for pid, nome, ruolo in ((901, "PortSv", "p"), (902, "DifSv1", "d"),
-                             (903, "DifSv2", "d"), (904, "AttSv", "a")):
-        db.execute("INSERT INTO fanta_players(id,nome,squadra,ruolo_classic,qa,fvm,"
-                   "fantamedia,attivo,visto_il) VALUES(?,?,'SVU',?,10,10,6.0,1,"
-                   "'2026-09-22')", (pid, nome, ruolo))
-    db.execute("INSERT INTO fanta_leagues(user_id,nome,sistema,moduli) "
-               "VALUES(?,'Lega Svuota','classic','3-4-3')", (ids["davide"],))
-    lid_sv = db.execute("SELECT id FROM fanta_leagues WHERE nome='Lega Svuota'"
-                        ).fetchone()["id"]
-    for pid in (901, 902, 903, 904):
-        db.execute("INSERT INTO fanta_roster(league_id,player_id,prezzo) "
-                   "VALUES(?,?,10)", (lid_sv, pid))
-        db.execute("INSERT INTO fanta_formazione(league_id,player_id,titolare,"
-                   "ordine,ruolo) VALUES(?,?,1,0,'x')", (lid_sv, pid))
-    db.commit()
+    attivi = db.execute("SELECT COUNT(*) FROM fanta_players WHERE attivo=1").fetchone()[0]
     db.close()
-
-    def in_rosa_sv():
-        db = extensions.get_db()
-        fuori = {r["player_id"] for r in db.execute(
-            "SELECT player_id FROM fanta_roster WHERE league_id=?", (lid_sv,))}
-        db.close()
-        return fuori
-
-    with app.test_client() as c6:
-        with c6.session_transaction() as s:
-            s["username"] = "davide"
-            s["role"] = "user"
-            s["user_id"] = ids["davide"]
-        esito("si parte con quattro in rosa e quattro in campo",
-              in_rosa_sv() == {901, 902, 903, 904}
-              and in_campo(lid_sv) == {901, 902, 903, 904})
-        r = c6.post(f"/fantacalcio/lega/{lid_sv}/rosa/svuota",
-                    data={"ruolo": "d"}, follow_redirects=True)
-        esito("«svuota il reparto» toglie solo quel ruolo",
-              in_rosa_sv() == {901, 904}, str(sorted(in_rosa_sv())))
-        esito("⚠️ e li fa scendere anche dal campo",
-              in_campo(lid_sv) == {901, 904}, str(sorted(in_campo(lid_sv))))
-        esito("il messaggio dice quanti ne ha tolti e quanti erano schierati",
-              "2 tolti dalla rosa" in r.data.decode("utf-8", "replace")
-              and "2 erano schierati" in r.data.decode("utf-8", "replace"))
-        # ⚠️ Un ruolo che non esiste **non** deve diventare una query che non
-        # cancella niente e un messaggio che dice «fatto».
-        r = c6.post(f"/fantacalcio/lega/{lid_sv}/rosa/svuota",
-                    data={"ruolo": "z"}, follow_redirects=True)
-        esito("⚠️ un ruolo inventato viene rifiutato, non eseguito a vuoto",
-              in_rosa_sv() == {901, 904}
-              and "Non so quale parte" in r.data.decode("utf-8", "replace"))
-        r = c6.post(f"/fantacalcio/lega/{lid_sv}/rosa/svuota",
-                    data={"ruolo": "d"}, follow_redirects=True)
-        esito("e svuotare un reparto già vuoto lo dice",
-              "niente da togliere" in r.data.decode("utf-8", "replace"))
-
-    with app.test_client() as c7:
-        with c7.session_transaction() as s:
-            s["username"] = "altro"
-            s["role"] = "user"
-            s["user_id"] = ids["altro"]
-        r = c7.post(f"/fantacalcio/lega/{lid_sv}/rosa/svuota",
-                    data={"ruolo": "tutti"}, follow_redirects=True)
-        esito("⚠️ un altro utente non può svuotare la rosa di una lega non sua",
-              in_rosa_sv() == {901, 904} and b"Lega non trovata" in r.data)
-
-    with app.test_client() as c6:
-        with c6.session_transaction() as s:
-            s["username"] = "davide"
-            s["role"] = "user"
-            s["user_id"] = ids["davide"]
-        r = c6.post(f"/fantacalcio/lega/{lid_sv}/rosa/svuota",
-                    data={"ruolo": "tutti"}, follow_redirects=True)
-        esito("«svuota tutta la rosa» la svuota davvero",
-              in_rosa_sv() == set(), str(sorted(in_rosa_sv())))
-        esito("⚠️ e il campo resta vuoto con lei",
-              in_campo(lid_sv) == set(), str(sorted(in_campo(lid_sv))))
-
-    # --- 19. il listone da sfogliare, e la scheda di un giocatore ------------
-    print("\n== 19. il listone e la scheda ==")
-    with app.test_client() as c8:
-        with c8.session_transaction() as s:
-            s["username"] = "davide"
-            s["role"] = "user"
-            s["user_id"] = ids["davide"]
-        pagina = c8.get("/fantacalcio/listone").data.decode("utf-8", "replace")
-        esito("la pagina del listone si apre con i giocatori dentro",
-              "Sommer" in pagina and "Bastoni" in pagina)
-        # ⚠️ Chi ha lasciato la Serie A resta cercabile ma **non** in mezzo agli
-        # altri: mostrarlo come se fosse schierabile è il baco che il cartellino
-        # «fuori listone» esiste per evitare.
-        esito("⚠️ chi è uscito dalla Serie A non compare finché non lo si chiede",
-              "Uscito" not in pagina)
-        chiesti = c8.get("/fantacalcio/listone?spenti=1").data.decode("utf-8", "replace")
-        esito("e chiedendolo compare, dichiarato",
-              "Uscito" in chiesti and "fuori listone" in chiesti)
-        soli_p = c8.get("/fantacalcio/listone?ruolo=p").data.decode("utf-8", "replace")
-        esito("il filtro per ruolo tiene solo quel ruolo",
-              "Sommer" in soli_p and "Barella" not in soli_p)
-        cerca = c8.get("/fantacalcio/listone?q=asto").data.decode("utf-8", "replace")
-        esito("la ricerca per pezzo di nome trova Bastoni",
-              "Bastoni" in cerca and "Sommer" not in cerca)
-        # ⚠️ In SQLite un NULL in un ORDER BY ... DESC finisce **in cima**:
-        # ordinando per fantamedia i primi sarebbero quelli che non hanno mai
-        # giocato. Non dà errore, dà la classifica al contrario.
-        db = extensions.get_db()
-        db.execute("UPDATE fanta_players SET fantamedia=NULL WHERE id=901")
-        db.execute("UPDATE fanta_players SET fantamedia=7.5 WHERE id=902")
-        db.commit()
-        db.close()
-        ordinata = c8.get("/fantacalcio/listone?ordine=fantamedia&q=Sv"
-                          ).data.decode("utf-8", "replace")
-        esito("⚠️ ordinando per fantamedia, chi non ce l'ha sta in fondo",
-              ordinata.index("DifSv1") < ordinata.index("PortSv"))
-
-        # Bastoni in una rosa di Davide, per poter provare la parte «tua» della
-        # scheda: le altre prove gli hanno fatto e disfatto le rose più volte.
-        db = extensions.get_db()
-        db.execute("INSERT OR IGNORE INTO fanta_roster(league_id,player_id,prezzo) "
-                   "VALUES(?,2,20)", (lid,))
-        db.commit()
-        db.close()
-        dati = c8.get("/fantacalcio/api/giocatore/2").get_json()
-        esito("la scheda di un giocatore ha i suoi numeri",
-              dati["giocatore"]["nome"] == "Bastoni"
-              and dati["giocatore"]["qa"] == 18 and dati["giocatore"]["fvm"] == 120,
-              str(dati["giocatore"])[:80])
-        esito("e dice in quali tue rose si trova",
-              any(r["lega"] == "Lega Amici" for r in dati["rose"]),
-              str(dati["rose"]))
-        esito("un id che non esiste risponde 404, non una scheda vuota",
-              c8.get("/fantacalcio/api/giocatore/99999").status_code == 404)
-
-    with app.test_client() as c9:
-        with c9.session_transaction() as s:
-            s["username"] = "altro"
-            s["role"] = "user"
-            s["user_id"] = ids["altro"]
-        dati = c9.get("/fantacalcio/api/giocatore/2").get_json()
-        # ⚠️ Il listone è condiviso (e lo vede), le rose no: `fanta_roster` non ha
-        # un proprietario suo e lo eredita dalla lega, quindi questa è la query che
-        # nascerebbe scoperta (§1.1).
-        esito("⚠️ ma le rose degli altri non compaiono nella sua scheda",
-              dati["giocatore"]["nome"] == "Bastoni" and dati["rose"] == [],
-              str(dati["rose"]))
-
-    # --- 20. il calendario e il timer della giornata -------------------------
-    # Chiesto da Davide il 22/09/2026: «quanto tempo ho ancora per schierare».
-    # ⚠️ L'ora **non** sta nelle probabili: quel riquadro c'è ma è pieno di
-    # segnaposto (`1970-01-01`, `01:00`), e leggerli darebbe un orario invece di un
-    # errore. È la prova più importante di questa sezione.
-    print("\n== 20. il calendario e la scadenza ==")
-    from blueprints.fantacalcio import scadenza_giornata
-    import fanta_import as I
-
+    esito("⚠️ un file con un terzo dei giocatori viene rifiutato", attivi == len(meno),
+          f"{attivi} attivi")
+    c.post(f"/fantacalcio/lega/{lid}/elimina")
     db = extensions.get_db()
-    gt = db.execute("SELECT MAX(giornata) AS g FROM fanta_probabili_squadre"
-                    ).fetchone()["g"] or 6
+    esito("⚠️ la lega se ne va con la rosa **e** con la formazione",
+          not db.execute("SELECT 1 FROM fanta_roster WHERE league_id=?", (lid,)).fetchone()
+          and not db.execute("SELECT 1 FROM fanta_formazione WHERE league_id=?",
+                             (lid,)).fetchone())
     db.close()
-    # ⚠️ La giornata del calendario finto è **quella delle probabili nel DB di
-    # prova**: le pagine chiedono la scadenza della giornata che stanno mostrando,
-    # e un calendario di un'altra giornata darebbe «data non disponibile» — cioè
-    # la prova misurerebbe un disallineamento invece della cosa da provare.
-    vera_scarica, vera_eta = F.scarica, F.eta_cache
+
+    # --- 10. gli Excel presi dai download ----------------------------------------
+    print("\n== 10. gli Excel presi dalla cartella dei download ==")
+    import fanta_fonti as F
+
+    def metti(nome, dati, eta=0):
+        percorso = os.path.join(scaricati, nome)
+        with open(percorso, "wb") as f:
+            f.write(dati)
+        if eta:
+            os.utime(percorso, (time.time() - eta, time.time() - eta))
+        return percorso
+
+    def c_e(nome):
+        return os.path.exists(os.path.join(scaricati, nome))
+
+    esito("la cartella è quella della variabile", F.cartella_download() == scaricati)
+    Q, S = ("Quotazioni_Fantacalcio_Stagione_2026_27.xlsx",
+            "Statistiche_Fantacalcio_Stagione_2026_27.xlsx")
+    metti(Q, file_quotazioni())
+    pagina = c.get("/fantacalcio/", follow_redirects=True).data.decode("utf-8", "replace")
+    esito("con un file solo non importa, lo dice, e il file resta",
+          "manca quello delle statistiche" in pagina and c_e(Q))
+    metti(S, file_statistiche())
+    metti("Quotazioni_Fantacalcio_Stagione_2026_27 (1).xlsx",
+          file_quotazioni(GIOCATORI[:3]), eta=3600)
+    metti("Fantacalcio_mie_note.xlsx", xlsx({"Foglio1": [["a", "b"], [1, 2]]}))
+    metti("altro.xlsx", file_quotazioni())
+    pagina = c.get("/fantacalcio/", follow_redirects=True).data.decode("utf-8", "replace")
+    db = extensions.get_db()
+    riga = db.execute("SELECT attivo FROM fanta_players WHERE id=15").fetchone()
+    db.close()
+    esito("⚠️ con tutti e due importa il più recente (Dif Cinque torna attivo)",
+          "Listone caricato dai download" in pagina and riga and riga["attivo"] == 1)
+    esito("e cancella i due file, copia vecchia compresa",
+          not c_e(Q) and not c_e(S)
+          and not c_e("Quotazioni_Fantacalcio_Stagione_2026_27 (1).xlsx"))
+    esito("⚠️ ma non tocca gli altri: né un .xlsx col nome giusto e un altro contenuto, "
+          "né uno che non ha «fantacalcio» nel nome",
+          c_e("Fantacalcio_mie_note.xlsx") and c_e("altro.xlsx"))
+    metti(Q, file_quotazioni(GIOCATORI[:3]))
+    metti(S, file_statistiche(GIOCATORI[:3]))
+    pagina = c.get("/fantacalcio/", follow_redirects=True).data.decode("utf-8", "replace")
+    esito("⚠️ un import rifiutato (un terzo dei giocatori) lascia i file dove sono",
+          "Listone non caricato dai download" in pagina and c_e(Q) and c_e(S))
+    os.remove(os.path.join(scaricati, Q))
+    os.remove(os.path.join(scaricati, S))
+    esito("la pagina dice dove guarda, e ha il pulsante",
+          scaricati in pagina and "Leggi i download" in pagina)
+    r = c.post("/fantacalcio/listone/dai-download", follow_redirects=True)
+    esito("il pulsante, a cartella vuota: lo dice",
+          "Nessun Excel di fantacalcio.it" in r.data.decode("utf-8", "replace"))
+    metti(Q, file_quotazioni(meno))
+    metti(S, file_statistiche(meno))
+    r = c.post("/fantacalcio/listone/dai-download", follow_redirects=True)
+    db = extensions.get_db()
+    riga = db.execute("SELECT attivo FROM fanta_players WHERE id=15").fetchone()
+    db.close()
+    esito("⚠️ il pulsante importa (Dif Cinque di nuovo spento) e cancella",
+          "Listone caricato dai download" in r.data.decode("utf-8", "replace")
+          and riga["attivo"] == 0 and not c_e(Q) and not c_e(S))
+
+    casa = os.path.join(dove, "casa")
+    os.makedirs(os.path.join(casa, ".config"))
+    xdg = os.environ.pop("XDG_CONFIG_HOME", None)
     try:
-        F.scarica = lambda nome, forza=False, url=None: pagina_calendario_finta(
-            PARTITE_FINTE, gt)
-        partite, problemi = F.calendario(forza=False)
-        esito("le dieci partite si leggono con giornata, squadre e orario",
-              len(partite) == 10 and not problemi, f"{len(partite)} {problemi[:2]}")
-        prima = min(partite.values(), key=lambda v: v["inizio"])
-        esito("la prima è l'anticipo del venerdì",
-              prima["inizio"] == "2026-10-09 20:45"
-              and prima["squadra_casa_slug"] == "genoa", str(prima))
-        # ⚠️ Ogni partita è scritta due volte nella pagina (schermo largo e
-        # telefono): se le copie raddoppiassero, la giornata avrebbe venti partite
-        # e nessuno se ne accorgerebbe guardando il timer.
-        esito("⚠️ le due copie di ogni partita non la raddoppiano",
-              len({v["match_id"] for v in partite.values()}) == 10)
-
-        segnaposto = pagina_calendario_finta(
-            [dict(p, data="1970-01-01", ora="01:00") for p in PARTITE_FINTE], gt)
-        F.scarica = lambda nome, forza=False, url=None: segnaposto
-        vuote, guai = F.calendario(forza=False)
-        esito("⚠️ le date segnaposto della pagina probabili NON diventano orari",
-              all(v["inizio"] is None for v in vuote.values()) and len(guai) == 10,
-              f"{len(guai)} problemi")
-
-        db = extensions.get_db()
-        F.scarica = lambda nome, forza=False, url=None: pagina_calendario_finta(
-            PARTITE_FINTE, gt)
-        r = I.aggiorna_calendario(db, scarica=False, scrivi=True)
-        esito("l'import scrive la giornata intera",
-              r["ok"] and r["scritte"] == 10, str(r["motivo"] or r["giornate"]))
-        esito("e rifarlo non raddoppia niente",
-              I.aggiorna_calendario(db, scarica=False, scrivi=True)["scritte"] == 10
-              and db.execute("SELECT COUNT(*) FROM fanta_calendario").fetchone()[0] == 10)
-
-        # ⚠️ Mezza giornata **non si scrive**: la scadenza è il minimo degli
-        # orari, quindi basta che manchi l'anticipo del venerdì perché il timer
-        # dica «hai ancora un giorno» a giornata già cominciata.
-        F.scarica = lambda nome, forza=False, url=None: pagina_calendario_finta(
-            PARTITE_FINTE[:5], gt)
-        mezza = I.aggiorna_calendario(db, scarica=False, scrivi=True)
-        esito("⚠️ una giornata a metà viene rifiutata, non scritta",
-              not mezza["ok"] and "5 partite su 10" in (mezza["motivo"] or ""),
-              mezza["motivo"])
-        esito("e il calendario di prima resta dov'era",
-              db.execute("SELECT COUNT(*) FROM fanta_calendario").fetchone()[0] == 10)
-
-        s = scadenza_giornata(db, gt)
-        esito("la scadenza della giornata è il fischio della PRIMA partita",
-              s and s["inizio"] == "2026-10-09 20:45" and s["quante"] == 10,
-              str(s))
-        esito("e viene scritta anche in chiaro, senza dipendere dalla lingua del sistema",
-              s["quando"] == "09/10/2026 alle 20:45", s["quando"])
-        esito("una giornata che non c'è non inventa una scadenza",
-              scadenza_giornata(db, 99) is None)
-        db.close()
+        esito("Linux senza user-dirs.dirs: ~/Downloads",
+              F._download_linux(casa) == os.path.join(casa, "Downloads"))
+        with open(os.path.join(casa, ".config", "user-dirs.dirs"), "w",
+                  encoding="utf-8") as f:
+            f.write('# commento\nXDG_DESKTOP_DIR="$HOME/Scrivania"\n'
+                    'XDG_DOWNLOAD_DIR="$HOME/Scaricati"\n')
+        esito("⚠️ Linux in italiano: legge «Scaricati» da user-dirs.dirs",
+              F._download_linux(casa) == casa + "/Scaricati")
     finally:
-        F.scarica, F.eta_cache = vera_scarica, vera_eta
+        if xdg is not None:
+            os.environ["XDG_CONFIG_HOME"] = xdg
 
-    # --- e il timer arriva davvero nelle pagine ------------------------------
-    with app.test_client() as c10:
-        with c10.session_transaction() as s:
-            s["username"] = "davide"
-            s["role"] = "user"
-            s["user_id"] = ids["davide"]
-        elenco = c10.get("/fantacalcio/").data.decode("utf-8", "replace")
-        esito("l'elenco delle leghe mostra il conto alla rovescia",
-              'data-inizio="2026-10-09 20:45"' in elenco and "Schieri entro" in elenco)
-        campo = c10.get(f"/fantacalcio/lega/{lid}/formazione"
-                        ).data.decode("utf-8", "replace")
-        esito("e il campo pure, insieme al consiglio",
-              'data-inizio="2026-10-09 20:45"' in campo
-              and "Come viene scelto l'undici" in campo)
-        casa = c10.get("/").data.decode("utf-8", "replace")
-        esito("in Dashboard c'è l'anteprima del Fantacalcio con la stessa scadenza",
-              'data-inizio="2026-10-09 20:45"' in casa and "Lega Amici" in casa,
-              "riquadro in dashboard")
 
-    # ⚠️ Senza calendario il timer **dice che non lo sa**: un riquadro che sparisce
-    # farebbe pensare che non ci sia una scadenza, e uno fermo a zero che sia
-    # passata.
-    db = extensions.get_db()
-    db.execute("DELETE FROM fanta_calendario")
+def prova_unione(dove):
+    """La fusione del 25/09/2026, su un DB con **le due sezioni** come erano quel giorno.
+
+    Lo schema di prima è ridotto alle colonne che contano: la fusione copia quelle
+    che le due tabelle delle leghe hanno in comune, e il resto lo cancella.
+    """
+    import sqlite3
+    import extensions
+    print("\n== 11. la fusione delle due sezioni (25/09/2026) ==")
+    cartella = os.path.join(dove, "unione")
+    os.makedirs(cartella)
+    percorso = os.path.join(cartella, "prima.db")
+    db = sqlite3.connect(percorso)
+    db.executescript("""
+        CREATE TABLE users(id INTEGER PRIMARY KEY, username TEXT UNIQUE, password TEXT,
+            display_name TEXT, role TEXT DEFAULT 'user', sections TEXT);
+        CREATE TABLE fanta_players(id INTEGER PRIMARY KEY, nome TEXT NOT NULL);
+        CREATE TABLE fanta_leagues(id INTEGER PRIMARY KEY, user_id INTEGER,
+            nome TEXT NOT NULL, n_panchinari INTEGER DEFAULT 7,
+            mod_difesa_soglie TEXT, bonus_gol REAL DEFAULT 3, modulo_scelto TEXT);
+        CREATE TABLE fanta_roster(id INTEGER PRIMARY KEY,
+            league_id INTEGER REFERENCES fanta_leagues(id) ON DELETE CASCADE,
+            player_id INTEGER REFERENCES fanta_players(id), prezzo REAL, note TEXT);
+        CREATE TABLE fanta_formazione(
+            league_id INTEGER REFERENCES fanta_leagues(id) ON DELETE CASCADE,
+            player_id INTEGER REFERENCES fanta_players(id), titolare INTEGER,
+            ordine INTEGER, ruolo TEXT, PRIMARY KEY(league_id, player_id));
+        CREATE TABLE fanta_probabili(giornata INTEGER, player_id INTEGER);
+        CREATE TABLE fanta_probabili_squadre(giornata INTEGER, squadra_slug TEXT);
+        CREATE TABLE fanta_calendario(giornata INTEGER, match_id INTEGER);
+        CREATE TABLE fanta2_players(id INTEGER PRIMARY KEY, nome TEXT NOT NULL);
+        CREATE TABLE fanta2_leagues(id INTEGER PRIMARY KEY, user_id INTEGER,
+            nome TEXT NOT NULL, n_panchinari INTEGER DEFAULT 7,
+            mod_difesa_soglie TEXT, bonus_gol REAL DEFAULT 3, modulo_scelto TEXT);
+        CREATE TABLE fanta2_roster(id INTEGER PRIMARY KEY,
+            league_id INTEGER REFERENCES fanta2_leagues(id) ON DELETE CASCADE,
+            player_id INTEGER REFERENCES fanta2_players(id), prezzo REAL, note TEXT,
+            UNIQUE(league_id, player_id));
+        CREATE TABLE fanta2_formazione(
+            league_id INTEGER REFERENCES fanta2_leagues(id) ON DELETE CASCADE,
+            player_id INTEGER REFERENCES fanta2_players(id), titolare INTEGER,
+            ordine INTEGER, ruolo TEXT, PRIMARY KEY(league_id, player_id));
+        CREATE TABLE fanta2_calendario(match_id INTEGER PRIMARY KEY, giornata INTEGER);
+        CREATE TABLE fanta2_classifica(squadra_slug TEXT PRIMARY KEY);
+        CREATE TABLE fanta2_titolari(user_id INTEGER, giornata INTEGER,
+            player_id INTEGER, stato TEXT);
+        INSERT INTO users(id, username, sections) VALUES(1, 'davide', 'gaming,fantacalcio2');
+        INSERT INTO fanta_players VALUES(10, 'Dieci'), (11, 'Undici'), (12, 'Dodici');
+        INSERT INTO fanta2_players VALUES(10, 'Dieci'), (11, 'Undici');
+        INSERT INTO fanta_leagues(id, user_id, nome) VALUES(1, 1, 'In tutte e due');
+        INSERT INTO fanta_leagues(id, user_id, nome, n_panchinari, mod_difesa_soglie)
+            VALUES(2, 1, 'Solo nella vecchia', 14, '7:6, 6:1');
+        INSERT INTO fanta_roster(league_id, player_id, prezzo, note)
+            VALUES(1, 10, 5, NULL), (2, 10, 30, 'capitano'), (2, 11, 2, NULL),
+                  (2, 12, 1, NULL);
+        INSERT INTO fanta_formazione VALUES(1, 10, 1, 0, 'p');
+        INSERT INTO fanta2_leagues(id, user_id, nome) VALUES(1, 1, 'In tutte e due');
+        INSERT INTO fanta2_roster(league_id, player_id, prezzo) VALUES(1, 11, 7);
+        INSERT INTO fanta2_titolari VALUES(1, 6, 10, 'titolare');
+    """)
     db.commit()
     db.close()
-    with app.test_client() as c10:
-        with c10.session_transaction() as s:
-            s["username"] = "davide"
-            s["role"] = "user"
-            s["user_id"] = ids["davide"]
-        elenco = c10.get("/fantacalcio/").data.decode("utf-8", "replace")
-        esito("⚠️ senza calendario il timer dichiara di non sapere l'ora",
-              "data non disponibile" in elenco and "data-inizio" not in elenco)
+
+    vecchio = extensions.DB
+    extensions.DB = percorso
+    try:
+        c = extensions.get_db()
+        r = extensions._unisci_fantacalcio(c)
+        esito("porta solo la lega che la nuova non ha", r and r["leghe"] == ["Solo nella vecchia"],
+              str(r and r["leghe"]))
+        esito("⚠️ con la rosa, meno chi il listone nuovo non conosce (e lo conta)",
+              r["rosa"] == 2 and r["rosa_persa"] == 1, f"{r['rosa']} portati, {r['rosa_persa']} fuori")
+        nomi = {x[0] for x in c.execute("SELECT name FROM sqlite_master WHERE type='table'")}
+        esito("le tabelle vecchie e fanta2_titolari non ci sono più, le 2 hanno il nome",
+              not any(n.startswith("fanta2_") or n.startswith("fanta_probabili") for n in nomi)
+              and {"fanta_players", "fanta_leagues", "fanta_roster", "fanta_formazione",
+                   "fanta_calendario", "fanta_classifica"} <= nomi, str(sorted(nomi)))
+        portata = dict(c.execute("SELECT * FROM fanta_leagues WHERE nome='Solo nella vecchia'")
+                       .fetchone())
+        esito("le regole viaggiano con la lega", portata["n_panchinari"] == 14
+              and portata["mod_difesa_soglie"] == "7:6, 6:1" and portata["user_id"] == 1)
+        rosa = {(x["player_id"], x["prezzo"], x["note"]) for x in c.execute(
+            "SELECT * FROM fanta_roster WHERE league_id=?", (portata["id"],))}
+        esito("e la rosa con prezzi e note", rosa == {(10, 30, "capitano"), (11, 2, None)},
+              str(rosa))
+        esito("la lega che c'era già resta quella della 2 (la sua rosa, non la vecchia)",
+              [tuple(x) for x in c.execute(
+                  "SELECT r.player_id, r.prezzo FROM fanta_roster r JOIN fanta_leagues l "
+                  "ON l.id=r.league_id WHERE l.nome='In tutte e due'")] == [(11, 7)])
+        sql = c.execute("SELECT sql FROM sqlite_master WHERE name='fanta_roster'").fetchone()[0]
+        esito("⚠️ le chiavi esterne puntano ai nomi nuovi", "fanta2" not in sql
+              and "fanta_leagues" in sql and not c.execute("PRAGMA foreign_key_check").fetchall())
+        esito("il permesso «fantacalcio2» diventa «fantacalcio»",
+              c.execute("SELECT sections FROM users").fetchone()[0] == "gaming,fantacalcio")
+        esito("⚠️ la copia di sicurezza sta accanto al DB, non in data/archive/",
+              os.path.exists(os.path.join(cartella, "hub_pre-unione-fantacalcio.db")))
+        esito("rieseguita non fa niente", extensions._unisci_fantacalcio(c) is None)
+        c.close()
+        extensions.init_db()
+        c = extensions.get_db()
+        esito("e init_db() dopo la fusione non tocca le leghe",
+              c.execute("SELECT COUNT(*) FROM fanta_leagues").fetchone()[0] == 2)
+        c.close()
+    finally:
+        extensions.DB = vecchio
 
 
 def main():
@@ -2100,6 +753,7 @@ def main():
     dove = tempfile.mkdtemp(prefix="prova_fanta_")
     try:
         prove(dove)
+        prova_unione(dove)
     finally:
         if args.tieni:
             print(f"\ncartella tenuta: {dove}")

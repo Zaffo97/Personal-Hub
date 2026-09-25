@@ -87,14 +87,11 @@ ORDINE = [
     "arduino_projects", "python_topics", "pc_builds", "pc_components",
     "python_progress",
     # ⚠️ Fantacalcio: la rosa **dopo** la lega, perché la nomina. E il listone
-    # (`fanta_players`) non è in nessuno dei due export — si rifà con
-    # `scripts/importa_listone.py`, che va lanciato **prima** di questo ripristino,
-    # altrimenti le rose puntano a giocatori che non ci sono ancora.
+    # (`fanta_players`) non è in nessuno dei due export — si rifà dai due Excel
+    # (pagina del Fantacalcio o `scripts/importa_listone.py`), **prima** di questo
+    # ripristino, altrimenti le rose puntano a giocatori che non ci sono ancora.
     # ⚠️ La formazione **dopo** la rosa: nomina i giocatori che la rosa contiene.
     "fanta_leagues", "fanta_roster", "fanta_formazione",
-    # La Fantacalcio 2 (§4.6): stesso ordine, e il suo listone (`fanta2_players`)
-    # va ricaricato dai due Excel **prima**, per la stessa ragione.
-    "fanta2_leagues", "fanta2_roster", "fanta2_formazione",
     # ⚠️ Solo il backup `--completo` ce l'ha (§1.4, 18/09/2026). Con l'export
     # committabile questa riga fa solo comparire `regulations` fra le «tabelle non
     # presenti nell'export», che è la verità — prima non compariva affatto, ed è così
@@ -473,11 +470,8 @@ def main():
     # `esporta_dati.py` lo dichiarava da sempre («il listone va reimportato
     # prima»); quello che mancava era dirlo **qui**, dove serve.
     mancanti = {}
-    # La Fantacalcio 2 ha il suo listone, e le sue righe si guardano su quello.
     for tabella, listone in (("fanta_roster", "fanta_players"),
-                             ("fanta_formazione", "fanta_players"),
-                             ("fanta2_roster", "fanta2_players"),
-                             ("fanta2_formazione", "fanta2_players")):
+                             ("fanta_formazione", "fanta_players")):
         nuove = piani.get(tabella, ([],))[0]
         for riga in nuove:
             pid = riga.get("player_id")
@@ -493,10 +487,11 @@ def main():
         for tabella, ids in mancanti.items():
             print(f"     {tabella}: {len(ids)} ({', '.join(str(i) for i in sorted(ids)[:8])}"
                   f"{'…' if len(ids) > 8 else ''})")
-        print("    Il **listone** non sta nell'export di proposito — è una copia di")
-        print("    fantacalcio.it che si rifà in un minuto — ma la rosa e la")
-        print("    formazione lo nominano, quindi va importato PRIMA:")
-        print("        python scripts/importa_listone.py --scarica")
+        print("    Il **listone** non sta nell'export di proposito — è una copia dei")
+        print("    due Excel di fantacalcio.it che si rifà in un minuto — ma la rosa e")
+        print("    la formazione lo nominano, quindi va importato PRIMA, dalla pagina")
+        print("    del Fantacalcio oppure con:")
+        print("        python scripts/importa_listone.py QUOTAZIONI.xlsx STATISTICHE.xlsx")
         print("    INTERROTTO: niente scritto.")
         db.close()
         return 1

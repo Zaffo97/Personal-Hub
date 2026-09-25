@@ -508,41 +508,27 @@ Tutto il blueprint è chiuso da un `before_request`: una route nuova nasce prote
 > (`/pokemon/api/regulations` e `/pokemon/api/regulations/save`), ed è lì che i due
 > template puntano.
 
-### Fantacalcio — `blueprints/fantacalcio.py`
-| URL | Metodo | Descrizione |
-|-----|--------|-------------|
-| `/fantacalcio/` | GET | Le tue leghe, lo stato delle tre fonti (listone, probabili, **calendario**) e il timer «schieri entro» |
-| `/fantacalcio/listone` | GET | Il listone da sfogliare: filtri `q`/`ruolo`/`squadra`/`spenti`, otto ordinamenti (`ordine=`) |
-| `/fantacalcio/api/giocatore/<id>` | GET | La **scheda**: riga di listone (condivisa), probabile della giornata (condivisa), e in quali **tue** rose sta (filtrata) |
-| `/fantacalcio/api/giocatori?q=` | GET | La ricerca per aggiungere un giocatore alla rosa, max 25 |
-| `/fantacalcio/aggiorna/<listone\|probabili\|calendario>` | POST | «Aggiorna ora». ⚠️ POST perché scarica e riscrive: un GET si rifarebbe a ogni F5 |
-| `/fantacalcio/lega/salva` · `/lega/<id>/elimina` | POST | La lega e le sue regole |
-| `/fantacalcio/lega/<id>` | GET | Rosa, regole, probabili dei tuoi, avviso formazione, timer |
-| `/fantacalcio/lega/<id>/rosa/aggiungi` · `/rosa/<rid>/rimuovi` · `/rosa/modifica` · `/rosa/incolla`(+`/conferma`) · **`/rosa/svuota`** | POST | La rosa. ⚠️ Chi esce dalla rosa esce **anche dal campo** |
-| `/fantacalcio/lega/<id>/formazione` | GET | **Il campo e, sotto, il consiglio** (`#consiglio`, dettaglio con `?dettaglio=<modulo>`) |
-| `/fantacalcio/lega/<id>/formazione/salva` | POST | Validazione severa: quello che non torna non si salva |
-| `/fantacalcio/lega/<id>/consiglio` | GET | **Rimando** a `…/formazione#consiglio` (l'indirizzo resta per link e segnalibri) |
-| `/fantacalcio/lega/<id>/consiglio/applica` | POST | Porta un modulo consigliato nel campo, passando dalla stessa validazione |
-| `/fantacalcio/probabili` | GET | Le dieci partite della giornata, coi tuoi segnati |
-
-### Fantacalcio 2 — `blueprints/fantacalcio2.py` (dal 24/09/2026, §4.6)
-La stessa sezione con **fonti in regola** e **tabelle sue** (`fanta2_*`): listone dai due
-Excel che Davide scarica col suo login, calendario e classifica da football-data.org, le
-probabili solo come link. La logica sta in `fanta2.py`, le letture in `fanta2_fonti.py`.
-⚠️ Importa `REGOLE`, i valori ufficiali, `_prezzo()` e `_numeri()` da `blueprints/fantacalcio.py`.
+### Fantacalcio — `blueprints/fantacalcio.py` (§4.6)
+Dal 25/09/2026 è la sezione nata il 24/09 come «Fantacalcio 2»: la vecchia (che leggeva le
+pagine di fantacalcio.it, con `fantacalcio_it.py`, `fanta_import.py` e le probabili
+importate) è stata **tolta**, e questa ne ha preso nome, route, slug di permesso e tabelle.
+**Fonti in regola**: listone dai due Excel che Davide scarica col suo login, calendario e
+classifica da football-data.org, le probabili solo come link. La logica sta in `fanta.py`,
+le letture in `fanta_fonti.py`; `REGOLE`, i valori ufficiali, `_prezzo()` e `_numeri()`
+stanno nel blueprint.
 
 | URL | Metodo | Descrizione |
 |-----|--------|-------------|
-| `/fantacalcio2/` | GET | Entrando importa e **cancella** i due Excel che trova nei download (`fanta2_fonti.cartella_download()`, variabile `FANTA2_CARTELLA_DOWNLOAD`, dal 25/09/2026). Leghe, carica-listone, link alle probabili, calendario col timer, attribuzione di football-data |
-| `/fantacalcio2/listone/carica` | POST multipart | I due `.xlsx` (`file_a`, `file_b`, ordine libero): letti in memoria, **mai salvati** |
-| `/fantacalcio2/listone/dai-download` | POST | «Leggi i download»: lo stesso import-e-cancella dell'ingresso, a comando (25/09/2026) |
-| `/fantacalcio2/calendario/aggiorna` | POST | Partite e classifica da football-data.org (due chiamate) |
-| `/fantacalcio2/listone` · `/api/giocatore/<id>` · `/api/giocatori?q=` | GET | Come nella prima sezione; la scheda porta la **partita** della giornata invece della probabile |
-| `/fantacalcio2/lega/salva` · `/lega/<id>/elimina` | POST | La lega; l'eliminazione toglie rosa **e** formazione |
-| `/fantacalcio2/lega/<id>` | GET | Rosa con la partita di ognuno (avversario, classifica), avviso, timer |
-| `/fantacalcio2/lega/<id>/rosa/…` | POST | `aggiungi`, `<rid>/rimuovi`, `modifica`, `incolla`(+`/conferma`), `svuota`: come nella prima |
-| `/fantacalcio2/lega/<id>/chi-gioca` | GET | Le probabili di fantacalcio.it **in un iframe** accanto alla rosa, da leggere (pulsante «Probabili»). I tre stati da segnare sono stati tolti il 25/09/2026 |
-| `/fantacalcio2/lega/<id>/formazione` (+`/salva`) · `/consiglio/applica` | GET/POST | Il campo e il consiglio: prima chi può giocare, poi la **tua scelta**, poi la fantamedia della lega. `/salva` accetta la formazione **incompleta** (non quella sbagliata) e dice cosa manca, dal 25/09/2026; `applica` resta severo |
+| `/fantacalcio/` | GET | Entrando importa e **cancella** i due Excel che trova nei download (`fanta_fonti.cartella_download()`, variabile `FANTA_CARTELLA_DOWNLOAD`). Leghe, carica-listone, link alle probabili, calendario col timer, attribuzione di football-data |
+| `/fantacalcio/listone/carica` | POST multipart | I due `.xlsx` (`file_a`, `file_b`, ordine libero): letti in memoria, **mai salvati** |
+| `/fantacalcio/listone/dai-download` | POST | «Leggi i download»: lo stesso import-e-cancella dell'ingresso, a comando |
+| `/fantacalcio/calendario/aggiorna` | POST | Partite e classifica da football-data.org (due chiamate) |
+| `/fantacalcio/listone` · `/api/giocatore/<id>` · `/api/giocatori?q=` | GET | Il listone da sfogliare (filtri `q`/`ruolo`/`squadra`/`spenti`, otto ordinamenti); la scheda porta la **partita** della giornata |
+| `/fantacalcio/lega/salva` · `/lega/<id>/elimina` | POST | La lega; l'eliminazione toglie rosa **e** formazione |
+| `/fantacalcio/lega/<id>` | GET | Rosa con la partita di ognuno (avversario, classifica), avviso, timer |
+| `/fantacalcio/lega/<id>/rosa/…` | POST | `aggiungi`, `<rid>/rimuovi`, `modifica`, `incolla`(+`/conferma`), `svuota`. ⚠️ Chi esce dalla rosa esce **anche dal campo** |
+| `/fantacalcio/lega/<id>/chi-gioca` | GET | Le probabili di fantacalcio.it **in un iframe** accanto alla rosa, da leggere (pulsante «Probabili») |
+| `/fantacalcio/lega/<id>/formazione` (+`/salva`) · `/consiglio/applica` | GET/POST | Il campo e il consiglio: prima chi può giocare, poi la fantamedia della lega. `/salva` accetta la formazione **incompleta** (non quella sbagliata) e dice cosa manca; `applica` resta severo |
 
 ---
 
@@ -566,19 +552,13 @@ Tutte create da `init_db()` in `extensions.py`.
 | `pc_builds` | id, name, notes |
 | `pc_components` | id, build_id (FK), category, name, price, notes |
 | `regulations` | id TEXT PK, label, roster_file, moves_file, items_file, created_at |
-| `fanta_players` | id (**quello di fantacalcio.it**), nome, squadra/_slug, ruolo_classic/_mantra, qi/qa/fvm, partite_a_voto, media_voto, fantamedia, gol, assist, cartellini, rigori, **attivo**, visto_il |
+| `sessioni_ricordate` | id, **user_id**, **impronta** UNIQUE (sha256 del token, mai il token), creata_il, scade_il, usata_il, da (user-agent accorciato) |
+| `fanta_players` | id (**quello di fantacalcio.it**, lo stesso nei due Excel), nome, squadra (nome intero)/_slug, ruolo_classic/_mantra, qi/qa/fvm, statistiche, **autogol**, **ceduto**, attivo, visto_il |
 | `fanta_leagues` | id, **user_id**, nome, moduli, n_panchinari, mod_difesa(+portiere, soglie), nove fra bonus e malus, modulo_scelto, note |
 | `fanta_roster` | id, league_id (FK CASCADE), player_id, prezzo, note — UNIQUE(league_id, player_id) |
 | `fanta_formazione` | league_id (FK CASCADE), player_id, titolare, **ordine**, ruolo — PK(league_id, player_id) |
-| `fanta_probabili_squadre` | giornata, squadra_slug, squadra, modulo, avversario(_slug), in_casa, match_id — PK(giornata, squadra_slug) |
-| `fanta_probabili` | giornata, player_id, nome, squadra_slug, ruolo, titolare, percentuale — PK(giornata, player_id) |
-| `sessioni_ricordate` | id, **user_id**, **impronta** UNIQUE (sha256 del token, mai il token), creata_il, scade_il, usata_il, da (user-agent accorciato) |
-| `fanta_calendario` | giornata, match_id, squadra_casa(_slug), squadra_fuori(_slug), **inizio**, stadio — PK(giornata, match_id) |
-| `fanta2_players` | id (lo stesso di fantacalcio.it), nome, squadra (nome intero)/_slug, ruolo_classic/_mantra, qi/qa/fvm, statistiche, **autogol**, **ceduto**, attivo, visto_il |
-| `fanta2_leagues` · `fanta2_roster` · `fanta2_formazione` | Come `fanta_leagues`/`_roster`/`_formazione`; la lega ha `user_id`, le figlie lo ereditano |
-| `fanta2_calendario` | **match_id** PK, giornata, **stato** (`SCHEDULED` = ora approssimativa, `TIMED` = esatta), inizio (ora italiana), utc, casa/fuori(_slug), gol |
-| `fanta2_titolari` | ⚠️ **non più usata dal 25/09/2026** (tolte le scelte di «Chi gioca»), resta per le righe che ha. **user_id**, giornata, player_id, stato — PK(user_id, giornata, player_id). `cancella` in `TABELLE_UTENTE`, fuori dall'export |
-| `fanta2_classifica` | squadra_slug PK, squadra, posizione, punti, giocate, gol_fatti, gol_subiti — solo la classifica **totale** |
+| `fanta_calendario` | **match_id** PK, giornata, **stato** (`SCHEDULED` = ora approssimativa, `TIMED` = esatta), inizio (ora italiana), utc, casa/fuori(_slug), gol |
+| `fanta_classifica` | squadra_slug PK, squadra, posizione, punti, giocate, gol_fatti, gol_subiti — solo la classifica **totale** |
 
 > ⚠️ **`sessioni_ricordate` non contiene nessuna password, e non è un dato da salvare.**
 > È la spunta «resta collegato» (22/09/2026): nel cookie del browser va un numero
@@ -592,14 +572,17 @@ Tutte create da `init_db()` in `extensions.py`.
 > `FUORI_DAL_BACKUP` di `esporta_dati.py` per la stessa ragione, più una: su un PC
 > nuovo non c'è nessun dispositivo da ricordare, si rientra con la password.
 
-> ⚠️ **Di chi sono**: `fanta_players`, le due delle probabili e `fanta_calendario` sono
+> ⚠️ **Di chi sono**: `fanta_players`, `fanta_calendario` e `fanta_classifica` sono
 > **condivise** e rigenerabili dalla fonte, quindi non entrano nell'export.
+> Fino al 25/09/2026 queste tabelle si chiamavano `fanta2_*`, e le `fanta_*` erano quelle
+> della sezione vecchia: `_unisci_fantacalcio()` in `init_db()` fa la fusione una volta
+> sola (copia in `data/archive/hub_pre-unione-fantacalcio.db`).
 > `fanta_leagues` è **dell'utente**; `fanta_roster` e `fanta_formazione` il proprietario
 > lo **ereditano dalla lega** — una query che non passa di lì è scoperta (§1.1 del backlog).
 > ⚠️ `fanta_calendario.inizio` è `'YYYY-MM-DD HH:MM'` in **ora italiana senza fuso**: è la
 > scadenza del timer «schieri entro», e il conto alla rovescia lo fa il browser, che sta
-> nello stesso fuso della Serie A. Può essere `NULL` — la fonte a volte non ha l'orario —
-> e allora quella partita non conta per la scadenza.
+> nello stesso fuso della Serie A. La scadenza si fida **solo** delle partite `TIMED` (o
+> già cominciate): `SCHEDULED` ha una data approssimativa.
 
 > ⚠️ `teams.regulation_id` corrisponde a un `id` in `data/regulations.json` **e** nella tabella `regulations`.  
 > `init_db()` fa `ALTER TABLE teams ADD COLUMN regulation_id` con `except: pass` per compatibilità.
@@ -793,6 +776,7 @@ Di conseguenza tutto ciò che questa tabella dava per "funzionante" non era mai 
 
 | Data | Contenuto |
 |------|-----------|
+| 2026-09-25 | **Il Fantacalcio è uno solo: la 2 prende il posto della vecchia (§4.6).** Decisioni di Davide: via tutta la sezione vecchia (blueprint, `fantacalcio_it.py`, `fanta_import.py`, `importa_probabili.py`, `importa_calendario.py`, i suoi template e la sua prova), la 2 rinominata **per intero** (route `/fantacalcio`, slug `fantacalcio`, blueprint, `fanta.py`/`fanta_fonti.py`, template, tabelle `fanta_*`, `FANTA_CARTELLA_DOWNLOAD`), `fanta2_titolari` tolta, e il riquadro della Dashboard sulla sezione nuova (scadenza da `fanta.scadenza()`). La lega **Triplete**, che c'era solo nella vecchia, **portata** con la sua rosa (25 su 25, prezzi identici); la formazione vecchia no. Fusione in `extensions._unisci_fantacalcio()`, una volta sola. Tolti da `data.py` i ~420 righe del consiglio sulla titolarità, che usava solo la vecchia. Prove: `prova_fantacalcio.py` 88/88 (11 nuove sulla fusione), `prova_importa_dati.py` 28/28 (era 15/28 prima di cominciare), travaso 56/56, sweep 0 errori, `controlla_proprietario.py` 0 scoperte. Dettagli in `STORICO.md` |
 | 2026-09-25 | **Fantacalcio 2 ripulita, su richiesta di Davide (§4.6).** (1) «Aggiorna calendario» accanto a «Leggi i download», le due cose da rifare spesso; (2) via il riquadro delle probabili dalla pagina principale — restano il pulsante in alto e «👀 Probabili» dentro la lega e nel campo, che apre la pagina col riquadro; (3) **via le scelte titolare / in dubbio / non gioca**: route `segna`, pulsanti, ordinamento del consiglio e avviso tornano come prima di «Chi gioca» (tre template ripresi da `31dcc89`, che dopo non erano cambiati). `fanta2_titolari` resta nel DB, non usata. `prova_fantacalcio2.py` **80 su 80**, `prova_fantacalcio.py` **245 su 245**, sweep 0 errori, query 0 scoperte |
 | 2026-09-25 | **Fantacalcio 2: gli Excel dai download (§4.6).** Scaricati da Davide, trovati entrando nella sezione, importati e cancellati; il dato resta fino al download dopo. `fanta2_fonti.cartella_download()`: variabile `FANTA2_CARTELLA_DOWNLOAD`, altrimenti la cartella registrata da Windows o `XDG_DOWNLOAD_DIR` («Scaricati» su Debian in italiano). Pre-filtro sul nome («fantacalcio»), tipo dal contenuto, un file solo o un import rifiutato non cancellano niente. Prove e sweep isolati su una cartella temporanea. `_allerta()` prende la lega già verificata (query scoperta corretta). `prova_fantacalcio2.py` **87 su 87**, `prova_fantacalcio.py` **245 su 245**, sweep 0 errori, query 0 scoperte. Più il pulsante **«Leggi i download»**, chiesto da Davide |
 | 2026-09-25 | **Fantacalcio 2: la formazione si salva anche incompleta (§4.6).** Richiesta di Davide. Nuova `fanta2.controlla_formazione_larga()` → `(sbagli, mancano)`: gli sbagli (fuori rosa, doppioni, un ruolo oltre il modulo, panchina lunga, modulo illeggibile o non ammesso) fermano il salvataggio, le mancanze no e si dicono — flash `info` e riga «Non è completa» in `_fanta2_allerta.html`, contata anche in elenco (`_quanti()`). «Applica» e la prima sezione restano sulla validazione severa. `prova_fantacalcio2.py` **76 su 76**, `prova_fantacalcio.py` **245 su 245**, sweep 0 errori |

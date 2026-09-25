@@ -49,7 +49,10 @@ def esito(nome, ok, dettaglio=""):
     print(f"  {'OK ' if ok else 'NO '} {nome}" + (f"   {dettaglio}" if dettaglio else ""))
 
 
-def gira(db, *extra, file=EXPORT):
+def gira(db, *extra, file=None):
+    # `None` e non `EXPORT` come default: `main()` può sostituire l'export con la
+    # sua copia di prova, e un default si legge una volta sola, quando nasce.
+    file = file or EXPORT
     r = subprocess.run([sys.executable, IMPORTA, "--db", db, "--file", file, *extra],
                        capture_output=True, text=True, encoding="utf-8",
                        errors="replace", cwd=RADICE)
@@ -363,6 +366,29 @@ def app_regge(percorso_db):
         extensions.DB = vecchio
 
 
+def _export_con_formazione(dove):
+    """Se l'export vero non ha una formazione schierata, la prova ne mette **una**
+    nella sua copia, presa dalla prima riga di rosa.
+
+    ⚠️ Tre prove girano su `fanta_formazione` — l'unica tabella senza `id` — e con
+    la tabella vuota non proverebbero niente: è successo il 25/09/2026, quando la
+    fusione del Fantacalcio ha lasciato fuori la formazione della sezione vecchia e
+    l'export è rimasto senza. L'export vero non si tocca: si scrive una copia qui.
+    """
+    global EXPORT
+    dati = json.load(io_json(EXPORT))
+    if dati.get("fanta_formazione") or not dati.get("fanta_roster"):
+        return
+    r = dati["fanta_roster"][0]
+    dati["fanta_formazione"] = [{"league_id": r["league_id"], "player_id": r["player_id"],
+                                 "titolare": 1, "ordine": 0, "ruolo": "p"}]
+    copia = os.path.join(dove, "export_con_formazione.json")
+    with open(copia, "w", encoding="utf-8") as f:
+        json.dump(dati, f, ensure_ascii=False)
+    EXPORT = copia
+    print("(l'export non ha formazioni: la prova ne aggiunge una nella sua copia)\n")
+
+
 def main():
     ap = argparse.ArgumentParser()
     ap.add_argument("--tieni", action="store_true",
@@ -376,6 +402,7 @@ def main():
     dove = tempfile.mkdtemp(prefix="prova_importa_")
     print(f"Prove in {dove}\n")
     try:
+        _export_con_formazione(dove)
         prove(dove)
     finally:
         if args.tieni:

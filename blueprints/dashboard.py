@@ -3,11 +3,12 @@ from datetime import datetime
 from flask import Blueprint, render_template, Response, session
 from extensions import (get_db, login_required, sezioni_utente,
                         ambito_utente, utente_id, e_admin, password_di_default)
-# ⚠️ La scadenza per schierare si chiede **alla sezione Fantacalcio**, non si
+# ⚠️ La scadenza per schierare si chiede **al Fantacalcio** (`fanta.py`), non si
 # ricalcola qui: due query che rispondono alla stessa domanda possono rispondere
 # diverso, e quella sbagliata sarebbe questa — la Dashboard è la pagina che si
-# guarda di sfuggita.
-from blueprints.fantacalcio import scadenza_giornata
+# guarda di sfuggita. Dal 25/09/2026 è quella della sezione nata come
+# «Fantacalcio 2», dal calendario di football-data.org.
+import fanta
 
 bp = Blueprint("dashboard", __name__)
 
@@ -74,10 +75,10 @@ def dashboard():
               (SELECT COUNT(*) FROM fanta_roster r WHERE r.league_id=l.id) AS in_rosa
             FROM fanta_leagues l WHERE {cond_l} ORDER BY l.nome LIMIT 4""",
             par_l).fetchall()]
-        # ⚠️ La Dashboard **non** rilegge fantacalcio.it: mostra quello che c'è.
-        # Aprire la pagina di casa non può voler dire aspettare tre pagine da un
-        # mega, e il riquadro dice da quando è fermo il dato.
-        fanta_scadenza = scadenza_giornata(db)
+        # ⚠️ La Dashboard **non** richiama football-data.org: mostra il calendario
+        # che c'è. Aggiornarlo è della sezione, che lo fa entrando se ha più di un
+        # giorno; aprire la pagina di casa non può voler dire aspettare un'API.
+        fanta_scadenza = fanta.scadenza(db, fanta.giornata_corrente(db))
 
     recent_games = db.execute(
         f"SELECT * FROM games WHERE {cond} ORDER BY created_at DESC LIMIT 6",

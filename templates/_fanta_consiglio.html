@@ -1,39 +1,21 @@
-{# ── Il consiglio della giornata ──────────────────────────────────────────────
-   Sta **sotto il campo**, nella stessa pagina: richiesta di Davide del
-   22/09/2026 («non voglio cambiare schermata, voglio tutto insieme per essere
-   più rapido»). Fino a quel giorno era una pagina a sé.
-
-   È un `include` e non una macro di proposito: vuole una dozzina di variabili —
-   `consigli`, `dettaglio`, `per_ruolo`, `fasce`, `soglia`, `etichetta_fascia`… —
-   e un `include` eredita il contesto della pagina, mentre una macro importata
-   andrebbe chiamata passandogliele tutte a mano, cioè dodici occasioni di
-   passarne una sbagliata.
-
-   ⚠️ Metà di questo file è la **dichiarazione** di come il consiglio decide, e
-   non è un ornamento: il criterio non l'ha scelto il codice, e una fonte che dica
-   «schiera X» senza dire perché sarebbe l'oracolo non verificabile che questo
-   progetto evita per regola. Se si cambia l'ordinamento in `data.py`, questo
-   testo cambia con lui.
-
-   ⚠️ Lo stile di queste classi (`.fascia`, `.mod`, `.thin`, `.griglia-ruoli`)
-   sta nell'`extra_head` di `fanta_formazione.html`: qui dentro un `<style>`
-   finirebbe nel mezzo del `<body>`. #}
-{% if not giornata %}
+{# ── Il consiglio del Fantacalcio (§4.6) ─────────────────────────────────
+   Sotto il campo. Cambia il
+   criterio, ed e' per questo che meta' del file e' la sua dichiarazione: qui la
+   titolarita' **non si sa** (le probabili non vengono lette), e un consiglio che
+   non lo dicesse sembrerebbe sapere una cosa che non sa.
+   Se si cambia l'ordinamento in `fanta.py`, questo testo cambia con lui.
+   Lo stile delle classi sta nell'`extra_head` di `fanta_formazione.html`. #}
 <div class="card mb-3" style="border-color:var(--warning)">
   <div class="card-body text-sm">
-    <strong>&#9888; Le probabili formazioni non sono state importate.</strong>
-    Servono per sapere chi gioca, che è il primo criterio del consiglio. Aggiornale
-    dalla pagina del Fantacalcio e torna qui.
+    <strong>&#9888; Questo consiglio non sa chi è titolare.</strong>
+    Le probabili formazioni in questa sezione non vengono lette: prima di
+    schierare, <a href="{{ url_for('fantacalcio.chi_gioca', lid=lega.id) }}">apri le probabili</a> e controlla chi gioca
+    davvero.
+    {% if not calendario_c_e %}<br>E il calendario non è importato, quindi non sa
+    nemmeno quali squadre giocano.{% endif %}
   </div>
 </div>
-{% endif %}
 
-{# ── La dichiarazione ─────────────────────────────────────────────────────────
-   ⚠️ **Chiusa, ma presente.** Quando aveva una pagina sua stava aperta in cima:
-   qui sopra c'e' il campo, e un muro di testo fra il campo e l'undici consigliato
-   allontanerebbe proprio quello per cui si e' scesi fin qui. Resta a un clic, e
-   resta **nella pagina** - e' la dichiarazione di come il consiglio decide, e un
-   consiglio che non dice su cosa si basa vale zero. #}
 <div class="card mb-3">
   <details>
     <summary class="card-header" style="cursor:pointer;list-style:none">
@@ -41,67 +23,33 @@
       <span class="text-xs text-muted">il criterio, per esteso</span>
     </summary>
   <div class="card-body spiega">
-    <p>Il consiglio risponde a <strong>due domande, in quest'ordine</strong>: prima
-    <em>chi gioca</em>, poi <em>chi conviene schierare</em> fra quelli che giocano.
-    Le piattaforme di fantacalcio non pubblicano la formula con cui confrontano due
-    giocatori, quindi qui non c'è nessun punteggio nascosto: si usano le soglie di
-    titolarità delle probabili formazioni e la fantamedia ricalcolata con le regole
-    della tua lega.</p>
-
-    <p>Nel dettaglio:</p>
     <ol>
-      <li><strong>Gioca?</strong> Decide la percentuale di titolarità delle
-        probabili formazioni. Le fasce, con i nomi usati dalle fonti:
-        {# ⚠️ L'estremo alto di ogni fascia è quello della fascia di sopra meno uno,
-           e si ricava da `loop.previtem`: scriverlo a mano qui vorrebbe dire avere
-           due copie delle soglie, e la copia sbagliata sarebbe quella a schermo. #}
-        {% for minimo, chiave, testo in fasce %}
-          <span class="fascia fascia-{{ chiave }}">{%
-            if loop.first %}&ge;{{ minimo }}{%
-            elif minimo == 0 %}&lt;{{ loop.previtem[0] }}{%
-            else %}{{ minimo }}&ndash;{{ loop.previtem[0] - 1 }}{% endif %}
-            {{ testo }}</span>{% if not loop.last %} {% endif %}
-        {% endfor %}
-      </li>
-      <li><strong>Conviene?</strong> Decide la <strong>fantamedia ricalcolata con
-        le regole di questa lega</strong>, non quella pubblicata dal sito, che usa i
-        bonus standard. Nella stessa fascia viene schierato chi ha la fantamedia più
-        alta.</li>
-      <li>Sotto il <strong>{{ soglia }}%</strong> di titolarità un giocatore non
-        entra nell'undici, salvo quando il suo reparto non si può completare
-        altrimenti: in quel caso viene segnalato.</li>
-      <li>Quando viene schierato un giocatore in <strong>ballottaggio</strong>, il
-        primo posto in panchina va a un altro dello stesso ruolo, così la
-        sostituzione automatica può subentrare.</li>
+      <li><strong>Può giocare?</strong> Va in fondo chi di sicuro <em>non</em> gioca:
+        i <strong>ceduti</strong> e chi ha la squadra <strong>senza partita</strong>
+        in questa giornata (partita rinviata o annullata). Lo dice il calendario di
+        football-data.org. La titolarità non è considerata.</li>
+      <li><strong>Conviene?</strong> Decide la <strong>fantamedia ricalcolata con le
+        regole di questa lega</strong>, non quella pubblicata dal sito. Chi non ha
+        ancora partite a voto va dopo chi ne ha: il suo valore è assente, non zero.</li>
+      <li>La panchina segue lo stesso ordine, con al massimo tanti giocatori per ruolo
+        quanti ne schiera il modulo: un secondo portiere di riserva non subentra mai.</li>
     </ol>
-
     <p class="text-muted">
-      <strong>La titolarità conta prima della fantamedia</strong>: un titolare sicuro
-      con una fantamedia modesta viene schierato prima di un ballottaggio con una
-      fantamedia alta. È il criterio più prudente, ma non l'unico possibile: i casi
-      in cui i due criteri portano a scelte diverse sono elencati più sotto.
-    </p>
-    <p class="text-muted">
-      <strong>I punti attesi</strong> (<code>percentuale × fantamedia</code>) sono la
-      colonna a destra e servono a confrontare fra loro i <em>moduli</em>: non
-      determinano l'ordine dei giocatori.
+      <strong>L'avversario</strong> è mostrato accanto a ogni giocatore (posizione in
+      classifica, gol fatti e subiti) ma <strong>non pesa</strong> sulla scelta:
+      nessuna fonte pubblica quanto valga un avversario facile rispetto alla
+      fantamedia, e un peso scelto qui sarebbe un numero inventato.
     </p>
     <p class="text-muted">
       <strong>Cosa comprende la fantamedia ricalcolata</strong>: gol (rigori
-      compresi), assist, ammonizioni, espulsioni, gol subiti, rigori parati e rigori
-      sbagliati. Restano fuori porta inviolata e autogol, che le statistiche
-      pubblicate non riportano. Il calcolo è stato confrontato con i valori del sito
-      sui giocatori con partite a voto: <strong>407 su 414 coincidono</strong>, e le
-      differenze riguardano chi ha preso ammonizione ed espulsione nella stessa
-      partita, dove il regolamento si ferma a −1 (scarto massimo 0,5).
+      compresi), assist, ammonizioni, espulsioni, gol subiti, rigori parati, rigori
+      sbagliati e <strong>autogol</strong>. Resta fuori la porta inviolata, che
+      nessuna delle due fonti riporta. Confrontata con la fantamedia del file coi
+      valori standard: <strong>408 su 414</strong> coincidono.
     </p>
     <p class="text-muted">
-      <strong>Quando la fantamedia è affidabile</strong>: viene considerata
-      significativa <strong>dalla {{ minimo_partite }}ª partita a voto in poi</strong>.
-      Chi ne ha meno è segnalato, e chi non ha ancora giocato non ha fantamedia: il
-      valore è assente, non zero. A inizio stagione riguarda la maggior parte dei
-      giocatori, e in quel periodo il consiglio si basa soprattutto sulla
-      titolarità.
+      <strong>Quando la fantamedia è affidabile</strong>: dalla
+      {{ minimo_partite }}ª partita a voto in poi. Le righe più chiare ne hanno meno.
     </p>
   </div>
   </details>
@@ -116,12 +64,11 @@
 </div>
 {% else %}
 
-{# ── I moduli a confronto ────────────────────────────────────────────────── #}
 <div class="card mb-3">
   <div class="card-header">
     <div class="card-title">I moduli ammessi, a confronto</div>
     <span class="text-xs text-muted">
-      punti attesi dell'undici{% if lega.mod_difesa %} + modificatore di difesa{% endif %}
+      somma delle fantamedie dell'undici{% if lega.mod_difesa %} + modificatore di difesa{% endif %}
     </span>
   </div>
   <div class="card-body">
@@ -133,22 +80,18 @@
           {% if c.migliore %}<span class="badge badge-primary">migliore</span>{% endif %}
         </div>
         <div class="text-xs text-muted mt-1">
-          attesi <strong>{{ c.atteso if c.atteso is not none else '—' }}</strong>
-          {# Il modificatore vale su un **reparto**, non su un giocatore: sta
-             accanto ai punti attesi, non dentro, e il totale e' il numero su cui
-             i moduli si confrontano. Dove la lega non lo usa non compare niente. #}
+          fantamedie <strong>{{ c.somma if c.somma is not none else '—' }}</strong>
           {% if c.mod %}
             {% if c.mod.punti %}
               <br>difesa <strong>+{{ c.mod.punti }}</strong>
-              <span class="text-faint">(media {{ c.mod.media }} &rarr;
-                +{{ c.mod.pieni }} se giocano, {{ (c.mod.probabilita * 100)|round|int }}%)</span>
+              <span class="text-faint">(media {{ c.mod.media }}, se giocano)</span>
               <br>totale <strong>{{ c.totale }}</strong>
             {% else %}
               <br><span class="text-faint">difesa +0 &mdash; {{ c.mod.perche }}</span>
             {% endif %}
           {% endif %}
           {% if c.senza_fm %}<br>⚠️ {{ c.senza_fm }} senza fantamedia{% endif %}
-          {% if c.forzati %}<br>⚠️ {{ c.forzati|length }} forzati{% endif %}
+          {% if c.forzati %}<br>⚠️ {{ c.forzati|length }} che non giocano{% endif %}
         </div>
         <div class="flex gap-1 mt-2">
           <a class="btn btn-sm btn-secondary"
@@ -164,42 +107,35 @@
     </div>
     <div class="text-xs text-muted mt-2">
       {% if lega.mod_difesa %}
-      <strong>Il modificatore di difesa è una stima</strong>, calcolata così: il voto
-      atteso di ogni giocatore è la sua <strong>media voto</strong> (il voto senza
-      bonus e malus, quello che entra nel modificatore), la media è
+      <strong>Il modificatore di difesa è il valore pieno</strong>: la media voto
       {% if lega.mod_difesa_portiere %}del portiere e dei migliori 3 difensori{% else %}dei
-      migliori 4 difensori{% endif %} schierati, e servono <strong>4 difensori</strong>
-      che prendano voto: un modulo a tre difensori non raggiunge il minimo, a meno che
-      un quarto non subentri. I punti della tabella vengono poi moltiplicati per la
-      <strong>probabilità che quei quattro giochino</strong>, cioè il prodotto delle
-      loro percentuali di titolarità. Sono indicati entrambi i valori: quanto vale il
-      modificatore se giocano, e quanto se ne può attendere.
-      <br>
+      migliori 4 difensori{% endif %} schierati, <strong>se giocano tutti</strong>. Non è
+      moltiplicato per la probabilità che giocassero: quella probabilità qui non c'è.<br>
       {% endif %}
-      Il confronto fra moduli si basa sulla fantamedia: quando molti giocatori non
-      ce l'hanno ancora, il numero è poco affidabile.
       <strong>Applica</strong> scrive la formazione nel campo, dove puoi modificarla.
     </div>
   </div>
 </div>
 
 {% if dettaglio %}
-{# ── L'undici consigliato ────────────────────────────────────────────────── #}
 {% macro riga(v, posto) %}
+{% set p = v.partita %}
 <tr class="{% if not v.fidata %}thin{% endif %}">
   <td class="num text-muted">{{ posto }}</td>
   <td><span class="ruolo ruolo-{{ v.g.ruolo_classic }}">{{ v.g.ruolo_classic|upper }}</span></td>
   <td>
     <strong>{{ v.g.nome }}</strong>
     <span class="text-xs text-muted">{{ v.g.squadra or '—' }}</span>
-    {% if not v.g.attivo %}<span class="badge badge-warning">fuori listone</span>{% endif %}
   </td>
-  <td>
-    <span class="fascia fascia-{{ v.fascia or 'none' }}">
-      {% if v.percentuale %}{{ v.percentuale }}% {% endif %}{{ etichetta_fascia(v.fascia) }}
-    </span>
-    {% if v.stato == 'fuori' %}<span class="fascia fascia-panchina">non convocato</span>
-    {% elif v.stato == 'non_gioca' %}<span class="fascia fascia-none">non gioca</span>{% endif %}
+  <td class="text-xs">
+    {% if p.gioca %}
+      vs {{ p.avversario }} ({{ 'casa' if p.in_casa else 'fuori' }}){% if p.avv %},
+      {{ p.avv.posizione }}ª &middot; {{ p.avv.gol_fatti }}/{{ p.avv.gol_subiti }}{% endif %}
+    {% elif p.gioca is sameas false %}
+      <span class="fascia fascia-panchina">{{ p.perche }}</span>
+    {% else %}
+      <span class="fascia fascia-none">non so</span>
+    {% endif %}
   </td>
   <td class="num">
     {% if v.fm is not none %}{{ '%.2f'|format(v.fm) }}{% else %}
@@ -210,7 +146,6 @@
     {% if not v.fidata %}<span title="sotto il {{ minimo_partite }}º match la
       fantamedia non è un dato su cui appoggiarsi">⚠️</span>{% endif %}
   </td>
-  <td class="num">{{ v.atteso if v.atteso is not none else '—' }}</td>
 </tr>
 {% endmacro %}
 
@@ -218,17 +153,16 @@
   <div class="card-header">
     <div class="card-title">L'undici consigliato &mdash; {{ dettaglio.modulo }}</div>
     <span class="text-xs text-muted">
-      attesi {{ dettaglio.atteso if dettaglio.atteso is not none else '—' }}
+      fantamedie {{ dettaglio.somma if dettaglio.somma is not none else '—' }}
       {% if dettaglio.mod and dettaglio.mod.punti %}
-        &middot; difesa +{{ dettaglio.mod.punti }} &middot;
-        totale {{ dettaglio.totale }}
+        &middot; difesa +{{ dettaglio.mod.punti }} &middot; totale {{ dettaglio.totale }}
       {% endif %}</span>
   </div>
   <div style="overflow-x:auto">
     <table class="table">
       <thead><tr>
-        <th></th><th></th><th>Giocatore</th><th>Gioca?</th>
-        <th class="num">FM lega</th><th class="num">Pg</th><th class="num">Attesi</th>
+        <th></th><th></th><th>Giocatore</th><th>Avversario (posizione, gol fatti/subiti)</th>
+        <th class="num">FM lega</th><th class="num">Pg</th>
       </tr></thead>
       <tbody>
         {% for v in dettaglio.titolari %}{{ riga(v, loop.index) }}{% endfor %}
@@ -245,6 +179,7 @@
         {% endif %}
       </tbody>
     </table>
+    <div class="text-xs text-muted mt-1"><em>{{ attribuzione }}</em></div>
   </div>
 </div>
 
@@ -252,38 +187,16 @@
 <div class="card mb-3" style="border-color:var(--warning)">
   <div class="card-body text-sm">
     <strong>&#9888; {{ dettaglio.forzati|length }} posti riempiti per necessità.</strong>
-    Questi giocatori non sono convocati, oppure sono sotto il {{ soglia }}% di
-    titolarità: sono stati schierati solo perché il loro reparto non si poteva
-    completare altrimenti.
+    Questi giocatori non giocano questa giornata, e sono nell'undici solo perché il
+    loro reparto non si poteva completare altrimenti.
     <div class="text-xs text-muted mt-1">
-      {% for v in dettaglio.forzati %}{{ v.g.nome }}{% if not loop.last %}, {% endif %}{% endfor %}
+      {% for v in dettaglio.forzati %}{{ v.g.nome }} ({{ v.partita.perche }}){% if not loop.last %}, {% endif %}{% endfor %}
     </div>
   </div>
 </div>
 {% endif %}
-
-{% if dettaglio.contesi %}
-<div class="card mb-3" style="border-color:var(--primary)">
-  <div class="card-body text-sm">
-    <strong>Dove i due criteri non concordano.</strong>
-    Questi giocatori restano fuori pur avendo <em>punti attesi</em> più alti di un
-    titolare del loro ruolo: succede quando la titolarità e il prodotto
-    <code>percentuale × fantamedia</code> indicano scelte diverse. Se preferisci
-    l'altra opzione, puoi cambiarla dal campo.
-    <ul class="text-xs text-muted mt-1" style="margin-left:1rem">
-      {% for x in dettaglio.contesi %}
-      <li><strong>{{ x.fuori.g.nome }}</strong> ({{ x.fuori.percentuale }}%,
-        {{ etichetta_fascia(x.fuori.fascia) }}, attesi {{ x.fuori.atteso }}) resta fuori
-        per <strong>{{ x.dentro.g.nome }}</strong> ({{ x.dentro.percentuale }}%,
-        {{ etichetta_fascia(x.dentro.fascia) }}, attesi {{ x.dentro.atteso }})</li>
-      {% endfor %}
-    </ul>
-  </div>
-</div>
-{% endif %}
 {% endif %}
 
-{# ── La rosa intera, nell'ordine in cui il consiglio sceglie ─────────────── #}
 <div class="griglia-ruoli">
   {% for r in ordine %}
   <div class="card mb-0">
@@ -299,11 +212,10 @@
         <tr class="{% if not v.fidata %}thin{% endif %}">
           <td class="num text-muted">{{ loop.index }}</td>
           <td>{{ v.g.nome }}
-            <span class="text-xs text-muted">{{ v.g.squadra or '—' }}</span></td>
-          <td><span class="fascia fascia-{{ v.fascia or 'none' }}">{%
-            if v.percentuale %}{{ v.percentuale }}%{% else %}—{% endif %}</span></td>
+            <span class="text-xs text-muted">{{ v.g.squadra or '—' }}</span>
+            {% if v.gioca is sameas false %}<span class="fascia fascia-panchina">{{ v.partita.perche }}</span>{% endif %}</td>
           <td class="num">{% if v.fm is not none %}{{ '%.2f'|format(v.fm) }}{% else %}—{% endif %}</td>
-          <td class="num text-muted">{{ v.atteso if v.atteso is not none else '—' }}</td>
+          <td class="num text-muted">{{ v.partite }} pg</td>
         </tr>
         {% else %}
         <tr><td class="text-xs text-muted">Nessuno in rosa.</td></tr>

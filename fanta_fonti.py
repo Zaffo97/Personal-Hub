@@ -1,7 +1,7 @@
-"""Le fonti della Fantacalcio 2: **legge e basta**, come `fantacalcio_it.py`.
+"""Le fonti del Fantacalcio: **legge e basta**, come faceva `fantacalcio_it.py`.
 
-§4.6 del backlog, 24/09/2026. La Fantacalcio 2 esiste per provare delle fonti che
-si possono usare **senza leggere le pagine di fantacalcio.it**, che i suoi termini
+§4.6 del backlog, 24/09/2026. La sezione (fino al 25/09/2026 «Fantacalcio 2») è nata
+per provare delle fonti che si possono usare **senza leggere le pagine di fantacalcio.it**, che i suoi termini
 vietano (art. 3). Le fonti, e perché sono queste:
 
 - **i due file Excel** di fantacalcio.it — quotazioni e statistiche — che Davide
@@ -15,7 +15,7 @@ vietano (art. 3). Le fonti, e perché sono queste:
   un piano gratuito che copre la Serie A. ⚠️ La chiave **non va nel repository**
   (termini, §6.1): si legge da `FOOTBALL_DATA_API_KEY`. E la pagina che mostra i
   dati deve dire «Football data provided by the Football-Data.org API» (§7.1);
-- le **probabili formazioni** non hanno una fonte: la Fantacalcio 2 mette un link
+- le **probabili formazioni** non hanno una fonte: la sezione mette un link
   che le apre nel browser di chi guarda (decisione di Davide, strada «a»).
 
 Per leggere gli `.xlsx` basta la libreria standard: un `.xlsx` è uno zip di XML, e
@@ -136,7 +136,7 @@ def slug_squadra(nome):
 
 
 def _mantra(testo):
-    """`"M;C"` → `"m|c"`: la forma che il listone della prima sezione usa già."""
+    """`"M;C"` → `"m|c"`: la forma che il listone della sezione vecchia usava già."""
     pezzi = [p.strip().lower() for p in (testo or "").split(";") if p.strip()]
     return "|".join(pezzi) or None
 
@@ -164,9 +164,9 @@ def quotazioni(fogli):
     """`({id: voce}, problemi)` dal file delle quotazioni.
 
     ⚠️ **Il foglio `Ceduti` conta**: sono i giocatori che hanno lasciato la Serie A
-    (63 il 24/09/2026), e il file li tiene **separati** da quelli in rosa. La prima
-    sezione non lo sa — la pagina li elenca insieme agli altri, e nel suo listone
-    risultano tutti attivi. Qui entrano con `ceduto=1`, cioè spenti ma presenti:
+    (63 il 24/09/2026), e il file li tiene **separati** da quelli in rosa. La sezione
+    vecchia non lo sapeva — la pagina li elencava insieme agli altri, e nel suo
+    listone risultavano tutti attivi. Qui entrano con `ceduto=1`, cioè spenti ma presenti:
     possono essere nella rosa di qualcuno, e cancellarli porterebbe via quella riga.
     """
     tutti = _tabella(fogli.get("Tutti") or [])
@@ -207,7 +207,7 @@ def statistiche(fogli):
     I nomi delle colonne sono quelli del file: `Pv` partite a voto, `Mv` media voto,
     `Fm` fantamedia, `Gf`/`Gs` gol fatti e subiti, `Rp` rigori parati, `Rc` rigori
     calciati, `R+`/`R-` segnati e sbagliati, `Ass`, `Amm`, `Esp`, `Au` autogol.
-    ⚠️ I rigori si scrivono anche come `"R+ / Rc"`, la frazione della prima sezione:
+    ⚠️ I rigori si scrivono anche come `"R+ / Rc"`, la frazione della sezione vecchia:
     è quello che `fantamedia_regole()` sa leggere, e rifarla da capo sarebbe una
     seconda copia della stessa regola.
     """
@@ -248,7 +248,7 @@ def statistiche(fogli):
 #
 # ⚠️ **Nessun percorso scritto qui dentro**: l'hub oggi gira su Windows e un domani su
 # Debian, dove la cartella può chiamarsi «Scaricati». Nell'ordine:
-# 1. `FANTA2_CARTELLA_DOWNLOAD`, se c'è — è anche la strada per quando l'hub gira su
+# 1. `FANTA_CARTELLA_DOWNLOAD`, se c'è — è anche la strada per quando l'hub gira su
 #    un'altra macchina rispetto al browser: si punta a una cartella condivisa;
 # 2. Windows: la cartella «Download» come la registra Windows (può essere spostata
 #    su un altro disco), altrimenti `%USERPROFILE%\Downloads`;
@@ -293,7 +293,7 @@ def _download_linux(casa=None):
 
 def cartella_download():
     """Dove cercare i due Excel. Vedi sopra per l'ordine."""
-    scelta = (os.environ.get("FANTA2_CARTELLA_DOWNLOAD") or "").strip()
+    scelta = (os.environ.get("FANTA_CARTELLA_DOWNLOAD") or "").strip()
     if scelta:
         return os.path.expanduser(scelta)
     return _download_windows() if sys.platform == "win32" else _download_linux()

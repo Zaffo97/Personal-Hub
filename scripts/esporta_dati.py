@@ -80,19 +80,20 @@ TABELLE = [
     # ⚠️ Fantacalcio, dal 21/09/2026. Le **leghe** e le **rose** sono dati tuoi e
     # non li ricostruisce nessuna fonte: le regole di una lega e il prezzo pagato per
     # ogni giocatore esistono solo qui. `fanta_players` invece **non** c'è, ed è
-    # voluto: è il listone, cioè una copia di fantacalcio.it che si rifà in un minuto
-    # con `scripts/importa_listone.py` — stessa ragione per cui resta fuori la cache
-    # IGDB. ⚠️ La conseguenza da sapere: ripristinando su un DB vuoto, le rose
+    # voluto: è il listone, cioè una copia dei due Excel di fantacalcio.it che si rifà
+    # in un minuto ricaricandoli (dalla pagina o con `scripts/importa_listone.py`) —
+    # stessa ragione per cui resta fuori la cache IGDB. E i file li scarica Davide col
+    # suo login: un export che si committa non deve ripubblicarli. ⚠️ La conseguenza da sapere: ripristinando su un DB vuoto, le rose
     # puntano a giocatori che ancora non ci sono, quindi il listone va reimportato
     # **prima**.
     # ⚠️ E dal 21/09/2026 anche la **formazione schierata**: è una scelta tua, non
     # un dato che la fonte sappia rifare. Una sola per lega — Davide ha scelto così
     # — quindi non pesa, ma senza questa riga un ripristino rimetterebbe in piedi
     # leghe e rose e lascerebbe il campo vuoto **senza dire niente**.
+    # Dal 25/09/2026 sono le tabelle della sezione nata come «Fantacalcio 2», che ha
+    # preso il nome della vecchia: le chiavi `fanta2_*` degli export di prima non
+    # esistono più.
     "fanta_leagues", "fanta_roster", "fanta_formazione",
-    # La Fantacalcio 2 (§4.6, 24/09/2026): stesse ragioni, tabelle sue. Il suo
-    # listone (`fanta2_players`) resta fuori come l'altro: si rifà dai due Excel.
-    "fanta2_leagues", "fanta2_roster", "fanta2_formazione",
 ]
 
 # In più, solo con `--completo`. `regulations` è una **tabella morta** — la scrive solo
@@ -115,12 +116,6 @@ FUORI_DAL_BACKUP = {
     # da nessuna parte è indistinguibile da una dimenticata.
     "sessioni_ricordate": "sessioni «resta collegato»: permessi vivi, non dati — "
                           "su un PC nuovo si rientra con la password",
-    # Fantacalcio 2, 25/09/2026: chi gioca secondo te, per la giornata in corso.
-    # Invecchia in una settimana — la giornata dopo riparte da vuoto — e rifarlo sono
-    # una ventina di clic: in un export che si committa cambierebbe a ogni giornata
-    # senza portare niente che valga la pena ritrovare su un PC nuovo.
-    "fanta2_titolari": "chi gioca secondo te, giornata per giornata: vale una "
-                       "settimana, si rifà in un minuto",
 }
 
 

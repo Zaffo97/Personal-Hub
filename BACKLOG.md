@@ -38,10 +38,9 @@ Non sono storia: sono le cose che questo progetto ha già pagato e che tornano a
 | ⚠️ **Un parser HTML che chiude un blocco al primo tag di chiusura lo chiude a metà** | Dal 21/09/2026, scrivendo il lettore delle probabili. `_Probabili` chiudeva la partita al primo `</li>` incontrato dopo averla aperta — ma dentro una partita ci sono decine di `li` (i giocatori del campo, i separatori), quindi il primo separatore la chiudeva, e tutto quello che veniva dopo finiva fuori: il sintomo era che **le dieci squadre in trasferta restavano senza modulo**, esattamente dieci su venti, e **nessun errore**. La cura è contare gli annidamenti (`_liv_li`, `_liv_div`), non fidarsi del primo tag che passa. ⚠️ E il modo in cui è saltato fuori è la vera lezione: la stessa pagina era stata misurata **due volte con strumenti diversi** — una regex grezza contava 20 moduli, il parser ne dava 10 — e il numero che non tornava era il baco. Su una fonte nuova la prima misura va fatta due volte, da due strade |
 | ⚠️ **Una foreign key verso una tabella che l'export NON porta rompe il ripristino, ma solo quando la figlia ha righe** | Dal 21/09/2026. `fanta_roster` e `fanta_formazione` nominano `fanta_players`, e il listone **non è nell'export** di proposito (è una copia di fantacalcio.it che si rifà in un minuto). Finché la rosa era **vuota** il ripristino su un DB nuovo funzionava; è bastato **un** giocatore in rosa perché `importa_dati.py` si fermasse con «FOREIGN KEY constraint failed» — un messaggio che non dice né cosa manca né cosa fare. ⚠️ Il difetto era lì da quando la tabella è nata: non l'ha creato la riga in più, l'ha **rivelato**. Ora l'import controlla **prima di scrivere** che i giocatori nominati esistano, e se non ci sono dice di lanciare `importa_listone.py`; `prova_importa_dati.py` ha il caso, e il suo DB di prova semina i giocatori che l'export nomina. La regola generale: quando una tabella esportata punta a una **non** esportata, il caso «ripristino su DB nuovo» va provato con la figlia **piena**, non vuota |
 | ⚠️ **Aprire una pagina, da oggi, può SCARICARE — e la suite di prove va isolata** | Dal 21/09/2026, con l'aggiornamento automatico del Fantacalcio: le route rileggono la fonte da sé quando la copia in cache è vecchia. Conseguenza che non era prevista: `prova_fantacalcio.py`, che per regola «non tocca `hub.db` né la rete», ha cominciato a **scaricare davvero** a ogni `GET`. Il sintomo è stato una prova che trovava **482 convocati veri** in un DB temporaneo che doveva averne zero — cioè una prova che passava o falliva a seconda di come andava la linea. La cura sta in cima a `prove()`: `F.eta_cache` torna sempre `0.0` (l'automatico non scatta mai per caso) e `F.scarica` **solleva**, così una lettura di rete non voluta si vede come errore invece di riuscire in silenzio. **Chi aggiunge un automatismo in una route deve chiedersi cosa fa alle prove**, e vale per qualunque sezione |
-| ⚠️ **Un parametro che vale «vedi tutto» quando lo dimentichi** | Dal 21/09/2026. `fanta_import._rose()` nasceva con `ambito=None`, che voleva dire «conta le rose di tutti»: giusto per uno script da riga di comando, che una sessione non ce l'ha — **sbagliato** per il pulsante «Aggiorna», che una sessione ce l'ha, e che così diceva «2 dei giocatori usciti sono in una tua rosa» contando rose altrui. L'ha preso `controlla_proprietario.py`. La regola: quando la stessa funzione la chiamano il web e uno script, il «vedo tutto» **si scrive** (`TUTTE_LE_ROSE`), non si ottiene lasciando fuori un parametro. ⚠️ E lo strumento ha imparato un caso nuovo — una funzione che **riceve** la condizione invece di chiederla a `ambito_utente()` — con un criterio volutamente stretto: il parametro si chiama `ambito` **e** dev'essere letto nel corpo. Un primo tentativo più largo marcava filtrata l'intera funzione, rami senza filtro compresi: la scappatoia esatta che quello strumento esiste per chiudere |
+| ⚠️ **Un parametro che vale «vedi tutto» quando lo dimentichi** | Dal 21/09/2026 (il modulo è stato tolto il 25/09/2026 con la sezione vecchia, la regola resta, e `fanta._rose()` la segue). `fanta_import._rose()` nasceva con `ambito=None`, che voleva dire «conta le rose di tutti»: giusto per uno script da riga di comando, che una sessione non ce l'ha — **sbagliato** per il pulsante «Aggiorna», che una sessione ce l'ha, e che così diceva «2 dei giocatori usciti sono in una tua rosa» contando rose altrui. L'ha preso `controlla_proprietario.py`. La regola: quando la stessa funzione la chiamano il web e uno script, il «vedo tutto» **si scrive** (`TUTTE_LE_ROSE`), non si ottiene lasciando fuori un parametro. ⚠️ E lo strumento ha imparato un caso nuovo — una funzione che **riceve** la condizione invece di chiederla a `ambito_utente()` — con un criterio volutamente stretto: il parametro si chiama `ambito` **e** dev'essere letto nel corpo. Un primo tentativo più largo marcava filtrata l'intera funzione, rami senza filtro compresi: la scappatoia esatta che quello strumento esiste per chiudere |
 | ⚠️ **In italiano la virgola è ANCHE il separatore decimale** | Dal 21/09/2026, preso dalla prova al primo giro sulle soglie del modificatore di difesa. `"7,5:8, 6:2"` spezzato sulle virgole dà `7` e `5:8`: una tabella diversa da quella scritta, **senza nessun errore**. Ora le coppie `media:punti` si **cercano** con una regex invece di spezzare la riga, e se dopo averle tolte resta qualcosa che non è un separatore si torna allo standard — meglio un default dichiarato che tre righe su quattro. Vale per qualunque elenco di numeri scritto a mano in questo progetto |
 | ⚠️ **Il valore di partenza di un form non è il DEFAULT della tabella** | Dal 21/09/2026, trovato provando il JS in browser (lo sweep non poteva: era sintatticamente perfetto). Le tendine nuove delle regole precompilavano dai **valori ufficiali**, e le due voci che il regolamento non fissa — porta inviolata e autogol — non essendoci, partivano dal **primo valore della tendina**, cioè `0`. Una lega nuova nasceva con l'autogol che non toglie niente, mentre la tabella ha `DEFAULT -2`. Nessun errore, solo una regola sparita. Ora `VALORE_PARTENZA` è un dizionario **diverso** da `VALORE_UFFICIALE` e i due non si confondono. ⚠️ Fin quando il campo era vuoto il difetto non poteva esistere — era il DB a decidere: **dare un valore iniziale a un campo sposta la decisione dal DB al form**, e da lì in poi i due devono concordare |
-| ⚠️ **La cache delle probabili invecchia in ORE, non in mesi** | Dal 21/09/2026. Le tre pagine di fantacalcio.it stanno nella stessa cache, ma non hanno la stessa scadenza: il listone cambia a ogni mercato, le **probabili cambiano fino al fischio d'inizio** — un titolare diventa panchinaro il sabato mattina. Rileggere la cache e scrivere nel DB **non dà nessun errore**, dà una formazione vecchia con l'aria di essere quella di oggi. Per questo `importa_probabili.py` stampa **sempre** l'età della copia in ore e dice `--scarica`: praticamente ogni giro delle probabili vuole `--scarica`, al contrario del listone |
 | ⚠️ **`{{ nome|e }}` dentro un handler inline è un `SyntaxError` che aspetta un apostrofo** | Dal 22/09/2026, sul `confirm` che chiede se togliere un giocatore dalla rosa. L'escape HTML rende `N'Dicka` come `N&#39;Dicka`, e il browser **decodifica l'attributo prima** di passare il codice al parser JS: l'handler non compila, il `confirm` sparisce e **il form parte lo stesso**, cioè la conferma di una cosa irreversibile non c'è più. Nessun errore a schermo. E lo **sweep non lo vede finché il dato non ha l'apostrofo**: i nomi con l'apostrofo nel listone sono 2 su 597, e con nessuno dei due in rosa la pagina resa era pulita. La cura è `|tojson` con l'attributo fra **apici singoli** (regge anche le virgolette doppie); lo sweep prende solo ciò che la pagina resa contiene davvero, quindi il caso difficile va **messo nei dati di prova**. ⬜ Lo stesso handler è ancora in `admin_utenti.html:88` con `{{ u.username }}`: uno username con l'apostrofo lo romperebbe uguale |
 | ⚠️ **Lo sweep controlla il JavaScript, non che l'HTML sia ben formato** | Dal 21/09/2026, trovata da Davide cliccando «Fantacalcio» in sidebar e finendo sul PC Builder. Il blocco `{% if 'fantacalcio' … %}` era finito **dentro l'attributo `class`** del link PC Builder, che non veniva mai chiuso: il parser fonde i due `<a>` in uno solo, e resta un `href="/pcbuilder"` con scritto «Fantacalcio». `sweep_pagine.py` era a **0 errori** anche così, perché rende la pagina ed esegue `new Function()` sugli script e sugli handler — un tag mai chiuso non è JavaScript, quindi non lo guarda nessuno. Un link aggiunto a `base.html` va verificato **sulla pagina resa con un parser HTML** (href per href, e `<a>` aperti = chiusi), non a occhio sul template: l'errore si legge male proprio perché il pezzo giusto è tutto lì, solo nel posto sbagliato |
 | ⚠️ **Lo sweep guardava solo le pagine che si aprono con una `GET`** | Dal 21/09/2026, con l'anteprima della rosa incollata. `sweep_pagine.py` scorreva un elenco di URL e faceva `c.get()` su ognuno: una pagina che **esiste solo mandando un form** non era in nessun elenco, quindi lo sweep avrebbe detto «0 errori» senza averla mai resa — ed è una pagina piena di form, tendine e `<script>`, cioè esattamente quello che quello script esiste per controllare. È la stessa forma della trappola sulle tabelle nuove: un elenco scritto a mano che non si accorge di quello che non contiene. Ora c'è `PAGINE_POST` (URL + dati), e i dati di prova contengono di proposito un nome ambiguo e uno inesistente, perché la pagina resa abbia davvero dentro una tendina e una riga «non trovata». La regola: **una pagina nuova si aggiunge all'elenco giusto dei due nello stesso commit in cui nasce** |
@@ -354,7 +353,8 @@ Da incrociare con 1.5: online questo export deve girare **da solo sul server**.
 >   anche per uso personale. In più il `robots.txt` blocca `/probabiliformazioniseriea`
 >   (noi leggiamo la stessa pagina con i trattini). Il rischio pratico per un uso privato a
 >   bassa frequenza è basso, ma il divieto è scritto: la decisione su come proseguire è di
->   Davide. ✅ **Deciso il 23/09/2026: si mette in regola**, piano in §4.6
+>   Davide. ✅ **Deciso il 23/09/2026: si mette in regola**, piano in §4.6. ✅ **Dal
+>   25/09/2026 `fantacalcio_it.py` non c'è più**: tolto con la sezione vecchia
 > - **Serebii**: non ha termini d'uso pubblicati, solo la privacy e «All Content is ©
 >   Copyright of Serebii.net». Il `robots.txt` non blocca le pagine che leggiamo. Leggerle
 >   per uso personale non va contro niente di scritto; **ripubblicarle** sì
@@ -424,8 +424,8 @@ app non si sposta da sola: quelli non sono stati toccati.
 non potranno stare in variabili d'ambiente di Windows** (`setx`). Serve un'alternativa, da
 pensare. Oggi dall'ambiente si leggono `SECRET_KEY`, `STEAM_API_KEY`, `STEAM_ID`,
 `IGDB_CLIENT_ID`, `IGDB_CLIENT_SECRET`, `HUB_DEBUG`, `HUB_HOST`, `HUB_PORT` e, dalla §4.6,
-`FOOTBALL_DATA_API_KEY` e, dal 25/09/2026, `FANTA2_CARTELLA_DOWNLOAD` (facoltativa: dove la
-Fantacalcio 2 cerca gli Excel; senza, la cartella Download del sistema). Una strada già usata nel progetto è quella di `SECRET_KEY`: un file
+`FOOTBALL_DATA_API_KEY` e, dal 25/09/2026, `FANTA_CARTELLA_DOWNLOAD` (facoltativa: dove il
+Fantacalcio cerca gli Excel; senza, la cartella Download del sistema). Una strada già usata nel progetto è quella di `SECRET_KEY`: un file
 in `data/` escluso da git (`data/secret_key.txt`). Qualunque cosa si scelga, **deve restare
 fuori dal repository** (i termini di football-data.org lo chiedono esplicitamente, §6.1) e
 fuori da `hub_export.json`.
@@ -680,7 +680,6 @@ quattro cose richiedono **fonti diverse**:
 | ⬜ | **Due abilità senza effetto nel motore** | Trovate il 23/09/2026 riempiendo le abilità delle Mega di M-C. **Affilama** (Sharpness, di Mega Absol Z) ha `effect: none`, e dovrebbe potenziare le mosse **da taglio** — che da oggi hanno il flag `slicing`, quindi il motore potrebbe leggerlo. **Aura Guard** (Mega Lucario Z) è nuova e senza descrizione: l'effetto va cercato su una fonte prima di scriverlo. Il valore di Affilama va preso da Bulbapedia, non da memoria |
 | ✅ | **I flag delle mosse di Gen 8-9** | **Chiuso il 23/09/2026, decisione di Davide**: integrati da Bulbapedia con `scripts/integra_flag_mosse.py`. Il dump ha i flag di 748 mosse ma nessuna di Gen 8+: **95** mosse del catalogo, **84** completate (28 prendono `contact`, 3 prendono `punch` — Rage Fist, Jet Punch, Headlong Rush), 11 già complete. Solo aggiunte. Numeri in `STORICO.md` |
 | ✅ | **23 flag sbagliati che venivano da `moves_ma.json`** | **Tolti il 23/09/2026, decisione di Davide**, con `scripts/togli_flag_sbagliati.py`: `contact` da 19 mosse vecchie (Stone Edge, Rock Tomb, Seed Bomb, Bulk Up…) e da Aqua Cutter, Gigaton Hammer, Mountain Gale; `punch` da Storm Throw. La prova si ricontrolla a ogni giro (dump, o infobox di Bulbapedia per le Gen 9), e lo script si ferma se ne manca una. Numeri in `STORICO.md` |
-| ⬜ | **Eliminare una lega della prima sezione lascia la sua formazione** | Trovato il 24/09/2026 ricopiando la route nella Fantacalcio 2, **non corretto** (regola #1: la prima sezione non si tocca). `lega_elimina()` in `blueprints/fantacalcio.py` toglie a mano la rosa — il `ON DELETE CASCADE` SQLite lo applica solo coi foreign key accesi — ma **non** `fanta_formazione`: le righe della formazione restano orfane, invisibili a tutti. Oggi sono **0** (contato sul DB vero), perché nessuna lega è stata eliminata dopo aver schierato. Nella Fantacalcio 2 la stessa route toglie anche la formazione, e c'è la prova |
 
 ## 4. Voci minori, per sezione
 
@@ -764,392 +763,30 @@ non basta mai, e l'avviso a schermo lo dice.
   entrasse molto altro andrebbero rimisurate, non ritoccate a occhio
 
 
-### 4.2 ✅ Fantacalcio — tutto quello che era stato chiesto, dal 21/09/2026
+### 4.2 ✅ Fantacalcio, la sezione di prima — **tolta il 25/09/2026**
 
-Chiesta il 10/09/2026, **definita e iniziata il 21/09/2026**. Le quattro domande che
-stavano qui hanno una risposta, data da Davide:
+Aperta il 21/09/2026 leggendo le pagine di fantacalcio.it, sostituita dalla sezione nata
+come «Fantacalcio 2» (§4.6) e tolta per decisione di Davide il 25/09/2026. Il testo lungo —
+le fonti misurate, la ricerca sul consiglio per titolarità, i bachi del 21-22/09 — è in
+`git show 85f8c03:BACKLOG.md`, §4.2; una riga per lavoro in `STORICO.md`.
 
-- **cosa deve fare**: inserire la propria formazione avendo tutti i giocatori di
-  Serie A, vedere le probabili formazioni dei propri giocatori, avere un consiglio, e
-  ricordare le regole — **due leghe, quindi due regolamenti e due formazioni**
-- **i dati**: il listone di Fantagazzetta, cioè `fantacalcio.it`
-- **quanto è personale**: leghe e rose sono per utente, il listone è condiviso
-- **le regole**: **strutturate**, non un testo — così l'app può applicarle
-- **il sistema**: tutte e due le leghe **Classic**
+**Le decisioni di Davide di quei giorni che valgono ancora** per la sezione di oggi:
+due leghe, tutte e due **Classic** (il Mantra non serve); regole **in colonne**, gol +3
+per tutti; **una formazione per lega**, che si sovrascrive (quindi niente storico, e non
+si potrà misurare se il consiglio consigliava bene); copiare una formazione nell'altra lega
+non serve; chi esce dalla rosa esce anche dal campo. (L'avversario «non interessa» del
+22/09 è **superato** dal 24/09: si mostra e non si pesa, §4.6.)
 
-**✅ Le tre fonti, misurate il 21/09/2026 e tutte su un sito solo.** Le pagine di
-`fantacalcio.it` sono **renderizzate dal server**, quindi si leggono con `requests` +
-`HTMLParser` come la wiki, **senza login**. ⚠️ Il download Excel del listone invece
-**pretende un account**: `/api/v1/Excel/prices/21/1` risponde **401**, e per questo si
-leggono le pagine — evita anche di mettere credenziali nel progetto.
+**⬜ Due voci aperte lì che non sono del Fantacalcio**, e restano:
 
-| Pagina | Cosa dà | Misurato |
-|---|---|---|
-| `/quotazioni-fantacalcio` | ruolo Classic e Mantra, squadra, QI, QA, FVM | 597 giocatori |
-| `/statistiche-serie-a` | media voto, fantamedia, gol, assist, cartellini, rigori | 597, 11 colonne |
-| `/probabili-formazioni-serie-a` | giornata, modulo di ogni squadra, undici, panchina e **percentuale di titolarità** | 10 partite, 20 moduli, 482 convocati (220 titolari) |
-
-⚠️ **La riga delle probabili era misurata male**, e l'ha corretta il lavoro del
-21/09/2026 che l'ha letta davvero: «761 voci, 20 ballottaggi» contava tutti gli
-`a.player-name` della pagina — i 220 del campo disegnato, i 482 delle schede e una
-sessantina altrove — e i «ballottaggi» non esistono come marcatore. Quello che il
-sito dichiara è una **percentuale** per ogni convocato (da 1 a 90), ed è quella che
-viene salvata: un ballottaggio, se serve, si deduce da lì **dichiarando la soglia**,
-non si legge da un campo che non c'è.
-
-⚠️ **Si incrociano per `id`, non per nome.** Ogni giocatore porta il suo id numerico
-nell'URL (`/serie-a/squadre/inter/martinez-l/2764`), **uguale in tutte e tre** le
-pagine. Il nome è abbreviato (`Martinez L.`) e due squadre possono avere due
-`Martinez`: legare per nome qui è la stessa classe di baco già pagata sul catalogo
-Pokémon.
-
-**✅ Cosa c'è, dal 21/09/2026** — `fantacalcio_it.py` (legge e basta),
-`scripts/importa_listone.py` e `scripts/importa_probabili.py` (gli unici che
-scrivono), `blueprints/fantacalcio.py`, cinque template, e
-`scripts/prova_fantacalcio.py` (**245 prove su 245** al 22/09/2026, erano 156 il
-21/09):
-
-- il **listone in `hub.db`**: 597 giocatori, 20 squadre, con ruolo, quotazioni e
-  statistiche
-- le **probabili della giornata**: 10 partite, i moduli veri delle venti squadre di
-  Serie A e 482 convocati con la loro **percentuale di titolarità**, in due tabelle
-  con chiave `(giornata, …)`. La pagina `/fantacalcio/probabili` le mostra partita
-  per partita segnando i tuoi; quella della lega dice, per ogni giocatore in rosa,
-  quale dei **quattro** stati è il suo — titolare, panchina, **non convocato** (la
-  sua squadra gioca, lui non c'è) o **non gioca** (la sua squadra non è in questa
-  giornata). ⚠️ Le ultime due si confondono facilmente e non sono la stessa cosa:
-  scambiarle vorrebbe dire schierare qualcuno che non scende in campo
-- le **due leghe** con le regole in colonne: moduli ammessi, panchinari, modificatore
-  di difesa e dodici fra bonus e malus
-- la **rosa** per lega, con il prezzo pagato, e il conto di quali moduli sono
-  copribili
-- ⚠️ **l'aggiornamento del mercato**, che è la parte che Davide ha chiesto di mettere
-  subito: `importa_listone.py --scarica` è rieseguibile e chi esce dalla Serie A viene
-  **spento, non cancellato** — cancellarlo porterebbe via la riga di rosa che lo
-  nomina. Lo script dice quanti degli spenti sono in una tua rosa, che è l'unica cosa
-  che ti riguarda davvero, e la pagina della lega li mostra col cartellino «fuori
-  listone» invece di nasconderli
-
-**✅ L'aggiornamento senza riga di comando, dal 21/09/2026.** Chiesto da Davide: un
-pulsante, o meglio l'aggiornamento entrando nella sezione. Ci sono tutti e due —
-**«Aggiorna ora»** (un `POST`, perché scarica e riscrive: un `GET` si rifarebbe a
-ogni F5) e l'**automatico**, che scatta quando la copia in cache ha passato la sua
-soglia: **una settimana** per il listone, **tre ore** per le probabili
-(`fanta_import.VECCHIA_*`). Non a ogni visita, perché vorrebbe dire aspettare
-fantacalcio.it ogni volta che si apre la pagina. ⚠️ Se la fonte non risponde la
-sezione **si apre lo stesso**, col dato di prima e un avviso: una pagina che sa già
-cosa mostrare non può diventare un errore 500 perché la rete è lenta.
-
-⚠️ La logica sta in **`fanta_import.py`**, non negli script: la chiamano tutti e due
-e gli script sono ora solo il rivestimento che stampa il rapporto. Scriverla due
-volte era la strada facile, ed è lo stesso errore che ha tenuto in vita per un mese
-il difetto di `main` nel moveset.
-
-**✅ Le regole della lega, rifatte il 21/09/2026** su tre richieste di Davide:
-
-- **il gol è una casella sola.** Erano quattro (una per ruolo) e il regolamento dà
-  **+3 a chiunque segni**, portiere compreso: quattro caselle da riempire con lo
-  stesso numero erano quattro occasioni di sbagliarne una. La migrazione travasa il
-  valore e toglie le colonne vecchie, ma **solo se erano uguali fra loro** — dove non
-  lo fossero resterebbero, invece di perdere in silenzio una differenza voluta
-- **il modificatore di difesa ha la sua tabella**, e dal 22/09/2026 le sue fasce si
-  **aggiungono e si tolgono** (da 1 a 8) e arrivano ai **quarti di voto**: il
-  regolamento fissa *come* si fa la media, non in quanti scalini si traduce. ⚠️ Il
-  campo aveva `step="0.1"`, quindi `6.25` il **browser lo rifiutava senza dire
-  perché** mentre il server l'avrebbe salvato: ora è `0.01`, e ci sono due pulsanti
-  che riempiono la tabella — quella storica a tre fasce e quella a **sei fasce a
-  quarti** (6,00 → +1, 6,01-6,25 → +2, … 7,01+ → +6). ⚠️ Quei numeri **non** stanno
-  nel regolamento pubblico: §10.1 dice solo che la piattaforma «propone la versione
-  più diffusa» e la tabella vera sta dietro il login, quindi la fonte dichiarata è
-  `fantacalcio-online.com`, la stessa delle fasce di titolarità. ⚠️ E le soglie
-  restano «da X in su»: la fascia che la fonte scrive `6,01-6,25` qui si scrive
-  `6.01`, e le due letture danno **lo stesso punto** perché fra 6,25 e 6,26 non
-  esiste nessuna media — i voti hanno due decimali. La scheda della lega le mostra
-  comunque come intervalli («da 6,26 a 6,50 → +3»), che è come si leggono. ⚠️ **L'ultima riga non si toglie** e nessuna riga
-  leggibile vuol dire «tieni la tabella di prima», non «tabella vuota» — per non
-  avere nessun bonus si spegne il modificatore. La **struttura** viene dalla guida
-  ufficiale di Leghe Fantacalcio (letta il 21/09/2026): media aritmetica del
-  **portiere e dei migliori 3 difensori** — o dei **migliori 4 difensori** se il
-  portiere si esclude — **esclusi bonus e malus**, e serve che almeno **4 difensori**
-  portino voto. I **valori** invece la piattaforma li lascia cambiare, e quelli di
-  partenza sono i tre storici di FantaGazzetta: **+6** da 7, **+3** da 6.5, **+1** da
-  6, niente sotto il 6. La scheda della lega mostra la tabella, come si fa la media, e
-  qualche esempio
-- **ogni regola è una tendina** coi valori che si usano davvero, e il valore del
-  regolamento è segnato «(ufficiale)» — più «Altro…», che scopre la casella libera:
-  la scelta resta, ma non è più una casella vuota davanti a chi non ricorda se
-  l'ammonizione toglie mezzo punto o uno
-
-⚠️ **I valori dal regolamento sono SETTE, non tre** — corretto il 21/09/2026
-rileggendo `/regolamenti/leghe-private`, che li elenca per esteso: gol **+3**
-(rigori compresi), assist **+1** (da fermo +0,5), ammonizione **−0,5**, espulsione
-**−1**, gol subito **−1**, rigore parato **+3**, rigore sbagliato **−3**. La riga di
-prima ne dichiarava tre ed era una **misura incompleta**, non una regola diversa: la
-prima lettura si era fermata alla pagina sbagliata. I cartellini si fermano a −1
-comunque siano combinati. Restano fuori **porta inviolata e autogol**, che il
-regolamento davvero non fissa: quelli sono convenzionali e vanno decisi lega per
-lega. È il motivo per cui le regole stanno in colonne, e ora il valore ufficiale
-compare **accanto a ogni tendina**, non solo l'etichetta «(ufficiale)».
-
-**✅ La rosa si incolla, dal 21/09/2026.** Messa davanti al consiglio su scelta di
-Davide, e il motivo stava nel DB: con tutto il resto in piedi la rosa vera era ferma
-a **un giocatore su ~25**, perché si aggiungeva uno per volta con la ricerca — e
-formazione, copertura dei moduli e consiglio girano tutti su una rosa che non c'era.
-Si incolla la lista, si **guarda l'anteprima** e si scrive solo quello che si spunta.
-
-⚠️ **L'anteprima non è comodità, è la parte sicura**: un nome abbinato male non dà
-nessun errore, e sul listone del 21/09/2026 l'ambiguità ha tre forme misurate — **0**
-nomi identici fra due giocatori, **24 cognomi** condivisi (`Martinez L.`/`Martinez
-Jo.`, otto `De …`), e **5 nomi che sono anche il prefisso di un altro**: `Thuram`
-esiste **e** c'è `Thuram K.`, come `Colombo`, `Pessina`, `Rrahmani`, `Terracciano`.
-L'ultimo è il caso che si sbaglia in silenzio, perché l'abbinamento esatto **è**
-univoco: per questo un nome con omonimi non è mai «sicuro», è «da confermare» con
-l'altro in tendina, e una riga «da scegliere» nasce **senza niente selezionato**.
-Un nome scritto male **non viene indovinato** — niente distanza di edit.
-
-⚠️ E una cosa da sapere prima di toccare l'abbinamento: le regole che restringono
-(squadra, ruolo, iniziale del nome proprio) si applicano **solo se lasciano un
-candidato**, e quando non combaciano si **dichiarano** invece di sparire. Una riga
-che chiede `Bastoni JUV` e trova il Bastoni dell'Inter non è una riga sicura: o la
-sigla è sbagliata, o il giocatore giusto è un altro.
-
-✅ **Chiuso il 22/09/2026**: il prezzo si corregge e si toglie in blocco dal pannello
-«Correggi la rosa», con una conferma sola. Numeri in `STORICO.md`.
-
-✅ **Chiuse il 22/09/2026, secondo giro — le quattro «da fare subito» di Davide**
-(numeri e trappole in `STORICO.md`):
-
-- il **listone si sfoglia** (`/fantacalcio/listone`), con filtri, ordinamenti e la
-  **scheda** di ogni giocatore: tutti i suoi numeri, la probabile della giornata e
-  in quali tue rose sta;
-- **svuota il reparto** e **svuota la rosa**, con una conferma che dice quanti ne
-  toglie — e chi esce dalla rosa esce anche dal campo;
-- il **timer «schieri entro»** in Dashboard, nell'elenco, nella lega e sul campo,
-  con la sua fonte nuova: `fanta_calendario` e la quarta pagina di fantacalcio.it.
-  ⚠️ L'ora **non** era nelle probabili, dove c'è un riquadro pieno di segnaposto;
-- il **consiglio sotto il campo**, nella stessa schermata. `fanta_consiglio.html`
-  non esiste più: il corpo è `_fanta_consiglio.html`, e `/consiglio` rimanda a
-  `…/formazione#consiglio`.
-
-⚠️ Quello che il timer **dà per buono**, e che può smettere di funzionare in
-silenzio, sta in **§4.4**. Le altre richieste di quel giorno («per il futuro») sono
-in **§4.3**.
-
-✅ **Chiuso il 22/09/2026: le classi che non esistevano.** Erano `form-input` (10
-campi), `form-select` (3 punti nel Fantacalcio) e `form-label` (6, tolta perché il
-selettore `label` di `base.html` fa già quel lavoro); `items-end` mancava davvero ed è
-stata definita. ⬜ **Resta fuori dal Fantacalcio**: `form-select` è ancora usata da
-**4 tendine** — il selettore di sezione in `arduino.html`, `gaming.html`,
-`pcbuilder.html` e `pokemon.html` — e lì non è definita da nessuna parte. Sono senza
-stile come lo erano queste; si fa quando si tocca la grafica di quelle sezioni, non
-prima.
-
-**⬜ Due cose chieste da Davide il 22/09/2026, da fare quando il resto della
-sezione è finito:**
-
-- ✅ **I riquadri, fatti il 22/09/2026.** Campi e pulsanti **tondi** (pillola),
-  spunte col verde della sezione, riquadri con angoli più morbidi, ogni regola in
-  una sua pastiglia, righe della rosa che si accendono al passaggio. ⚠️ Tutto sta
-  in `static/css/fantacalcio.css` sotto `body.sez-fanta`, e non è pignoleria:
-  `.form-control`, `.btn` e le card stanno in `base.html` e le usano **tutte** le
-  sezioni — ritoccarle lì avrebbe cambiato Pokémon, Gaming, Arduino e PC Builder
-  senza che nessuno l'avesse chiesto. Il gancio è il blocco `body_class`, che
-  nasce vuoto per tutte le altre pagine. ⚠️ E i colori vengono dalle variabili del
-  tema, con l'accento dichiarato per **tutti e due** i temi: un verde fisso starebbe
-  bene sullo scuro e male sul chiaro, e non se ne accorgerebbe nessuno finché
-  qualcuno non cambia tema
-- ✅ ⚠️ **La modale della lega si tagliava su uno schermo basso — corretto il
-  22/09/2026.**
-  Segnalato da Davide il 22/09/2026 («in fantacalcio in un monitor piccolo non posso
-  scrollare le regole della lega») e **riprodotto**: a 1280×620 la `.modal-box` si
-  ferma a `max-height:92dvh` = **570 px** e dentro c'è un `<form>` alto **733 px**,
-  quindi gli ultimi ~160 px — le regole della lega **e il pulsante Salva** — sono
-  tagliati da `overflow:hidden` e non si raggiungono in nessun modo. ⚠️ La causa non
-  è `.modal-body`, che ha già `overflow-y:auto`: è che fra lui e `.modal-box` c'è il
-  `<form>`, che **non è un contenitore flex**, quindi il `flex:1` del body non
-  agisce e non c'è nessuna altezza limitata su cui scrollare. Corretto dando al form
-  lo stesso ruolo di colonna (`display:flex;flex-direction:column;flex:1;min-height:0`):
-  ora a 1280×620 il corpo mostra **474 px su 652** e scrolla, coi pulsanti
-  Salva/Annulla sempre in vista.
-  ⚠️ **Solo il Fantacalcio ha questo schema**: in `arduino.html` e `pcbuilder.html`
-  il form sta **dentro** `.modal-body`, e lì lo scroll funziona — quindi la cura non
-  va copiata a tappeto, va messa dove il form avvolge header e footer.
-  ⬜ E la richiesta più larga che Davide ha allegato: **rivedere lo scorrimento di
-  sezioni e sottosezioni** in generale, non solo di questa modale.
-
-- ✅ **I testi a schermo riscritti in forma generica, il 22/09/2026**: **29 testi**
-  nelle sei pagine e nell'avviso, che ora dicono **cosa fa** la pagina e **cosa
-  farci**. ⚠️ I **commenti** dei template e del codice restano come sono: lì il
-  ragionamento serve. ⚠️ E due prove della suite verificavano il *testo esatto* della
-  pagina del consiglio: riscritte sulle frasi nuove, e succederà di nuovo a ogni
-  ritocco — è il prezzo di provare ciò che l'utente legge davvero.
-  La richiesta, per memoria: Perimetro chiarito da
-  Davide il 22/09/2026: **i testi visibili**, non i commenti del codice. «È brutto
-  far leggere a qualcuno di esterno il nostro ragionamento, voglio qualcosa di
-  generico, preciso e che faccia comprendere bene il tutto». Oggi più di un testo
-  racconta **perché** una cosa è fatta così — la decisione, la data, il baco che
-  c'era prima — invece di dire **cosa fa** e **cosa deve farci l'utente**. I
-  commenti nei template e nel codice **restano come sono**: lì il ragionamento
-  serve, ed è quello che tiene in piedi il progetto
-
-**⬜ Cosa resta, in ordine di quanto è stato chiesto:**
-
-- ✅ **inserire la formazione** — fatta il 21/09/2026, com'è stata chiesta: **un
-  campo da gioco come quello dell'app Fantagazzetta**, dinamico, che cambia
-  disposizione al cambio di modulo, dove si schiera scegliendo dal **ruolo del
-  posto**. Sta dentro la lega: `/fantacalcio/lega/<id>/formazione`.
-
-  Le due decisioni di Davide, prese quel giorno: **una formazione per lega, che si
-  sovrascrive** (niente giornata, niente storico) e **validazione severa** — quello
-  che non torna non si salva, come per un modulo scritto male.
-
-  Come si comporta il campo, che è la parte che si sarebbe potuta fare peggio:
-  - al **cambio di modulo** i giocatori non si buttano via — ognuno resta se c'è
-    ancora un posto del suo ruolo, e chi avanza finisce **in panchina** invece di
-    sparire (da 3-4-3 a 3-5-2 il terzo attaccante deve pur andare da qualche parte);
-  - la **panchina è ordinata** e si riordina con le frecce: nel fantacalcio
-    l'ordine decide chi subentra, quindi è un dato, non una decorazione;
-  - accanto a ogni giocatore, in campo e nell'elenco da cui si sceglie, c'è la sua
-    **probabile** — titolare, panchina, non convocato, non gioca, con la
-    percentuale. È l'informazione che serve **mentre** si schiera, ed è tutto il
-    motivo per cui le probabili sono state fatte prima.
-
-  ⚠️ Il **ruolo lo decide la rosa, non il form**: un `ruolo` mandato dal browser
-  farebbe tornare i conti dei reparti dicendo che un attaccante è un difensore, e
-  la prova lo verifica.
-
-  ✅ **Il controllo quando le probabili cambiano, dal 22/09/2026.** Aprendo la
-  sezione, la formazione salvata viene confrontata con le probabili di adesso e
-  l'avviso dice **chi** e **perché**: titolari che non scendono in campo, titolari
-  sotto la soglia del ballottaggio, chi è schierato ma non è più in rosa, e — come
-  contorno — chi in panchina è invece dato titolare. Sta sulla scheda della lega,
-  sul campo, e come numero sull'elenco delle leghe, che è la pagina che si apre per
-  prima. ⚠️ «Automatico» qui vuol dire **quando apri la pagina**: non c'è niente
-  che giri in sottofondo, quindi nessun avviso arriva il venerdì sera da solo —
-  per quello servirebbe un processo schedulato, ed è un lavoro a sé.
-
-  ❌ **Copiare una formazione nell'altra lega: non serve** — deciso da Davide il
-  22/09/2026. Le due leghe restano indipendenti, com'è adesso.
-
-  ✅ **Chiuso il 22/09/2026, con la decisione di Davide: chi esce dalla rosa esce
-  anche dal campo.** `fanta_roster` e `fanta_formazione` sono due tabelle e il
-  `DELETE` sulla prima non toccava la seconda — il campo smetteva di disegnarlo,
-  quindi a schermo sembrava tutto normale, e i titolari diventavano dieci in
-  silenzio (misurata 1 riga orfana dopo un `rosa/rimuovi`). Ora lo fa
-  `_scendi_dal_campo()`, per la × di una riga e per il «togli in blocco», e il
-  messaggio lo dice («Tolto dalla rosa, ed era schierato»). ⚠️ **Chi esce dal
-  listone è un'altra cosa** e resta dov'è: spento, in rosa e in campo, col suo
-  cartellino — è la scelta del mercato di gennaio, e c'è una prova apposta perché
-  nessuno le confonda.
-
-- ✅ **le probabili formazioni** — fatte il 21/09/2026, vedi lo storico. Ci sono
-  `fantacalcio_it.probabili()`, `scripts/importa_probabili.py`, due tabelle per
-  giornata e la pagina `/fantacalcio/probabili`; la pagina della lega dice, per ogni
-  giocatore in rosa, se è titolare, in panchina, **non convocato** o se la sua
-  squadra **non gioca**. ❌ **L'archivio non si pota** — misurato e
-  deciso il 22/09/2026. `fanta_probabili` ha chiave `(giornata, player_id)`, quindi
-  una giornata nuova **si aggiunge** e la stessa giornata riletta si sovrascrive:
-  nessuno cancella mai niente. Il conto: oggi c'è **una** giornata (la 6, 483
-  convocati e 20 squadre), a fine stagione saranno 38 giornate, cioè **~18 000
-  righe, meno di 2 MB** su un DB che ne pesa 2,7 in tutto — e ogni query filtra per
-  giornata, quindi non rallenta niente. ⚠️ E c'è un motivo per **non** potare: le
-  probabili archiviate sono metà di ciò che servirebbe per rispondere a «il
-  consiglio ci aveva preso?», che è l'altra voce ancora aperta. La fonte pubblica
-  solo la giornata corrente, quindi una riga cancellata non torna più
-- ✅ **il consiglio — fatto il 21/09/2026**, e la parte lunga è stata **leggere**,
-  non scrivere. `/fantacalcio/lega/<id>/consiglio`, più «applica al campo».
-
-  **Cos'è venuto fuori dalla ricerca**, che è la risposta alla domanda di Davide
-  («quello che consigliano di più sulla piattaforma o altre fonti affidabili»):
-
-  - ⚠️ **una formula non la pubblica nessuno.** Il *Comparatore* di fantacalcio.it
-    («ti diremo quale dei due potrebbe rendere al meglio nel prossimo turno»)
-    confronta partite a voto, media voto, fantamedia, gol, assist e gol subiti ma
-    **non dichiara come li combina**, ed è premium; la pagina dell'*algoritmo delle
-    quotazioni* dice per esteso di non rivelare i coefficienti; il *FantaIndex* è
-    «un numero da 0 a 100» ricavato da «sette macroaree». Quindi il peso α che §4.2
-    chiedeva di andare a copiare **non esiste da nessuna parte**: la risposta alla
-    domanda era che la domanda non ha una fonte
-  - ✅ quello che le fonti **dichiarano davvero** è una **gerarchia con delle
-    soglie**, e quella è implementabile. L'*Indice di Titolarità* di fantacalcio.it
-    è «lo strumento imprescindibile per poter schierare al meglio», su scala 0–100;
-    le fasce le scrive `fantacalcio-online.com`: **≥90** «titolare, nessun dubbio»,
-    **60–89** «favorito in un ballottaggio», **40–59** «ballottaggio effettivo: è
-    qui che si decide una giornata», **<40** «parte dalla panchina». E dice che
-    titolarità e merito sono **due domande diverse** — «*se* gioca» e «*se conviene*
-    schierarlo» — da rispondere **in quest'ordine**
-  - ✅ più una **regola operativa** che qui si può eseguire perché la panchina è una
-    lista ordinata: sui ballottaggi, «schierare chi ha la percentuale più alta e
-    collocare l'altro **in cima alla panchina**», così la sostituzione automatica lo
-    fa subentrare
-  - ✅ e un **numero** che la piattaforma dichiara e che serviva: la fantamedia entra
-    nel suo algoritmo **dal quinto match in poi**. È da lì che viene la soglia
-    dell'avviso «poche partite», che prima era un 3 scelto a occhio
-
-  **Com'è fatto**: una porta e un ordinamento, non una media pesata. La percentuale
-  decide **chi può giocare** (sotto il 40% non entra, se il reparto si riempie
-  altrimenti), la fantamedia rifatta con le regole della lega decide **chi conviene**
-  fra quelli che giocano. I **punti attesi** (`percentuale × fantamedia`) sono una
-  **colonna** e servono a confrontare due moduli interi con un numero solo.
-  Chi ha meno di 5 partite a voto compare **pallido e con l'avviso**, chi non ne ha
-  nessuna porta scritto «dato insufficiente» al posto del numero: dichiarati, non
-  corretti, com'era la seconda decisione di Davide.
-
-  ⚠️ **La scelta di lettura è dichiarata, in pagina e nel codice**: la **fascia conta
-  prima della fantamedia**. Vuol dire che un titolare sicuro mediocre gioca prima di
-  un ballottaggio bravo. È il verso prudente, e non è l'unica risposta possibile —
-  per questo il consiglio elenca i **«contesi»**, cioè chi resta fuori pur avendo
-  punti attesi più alti di un titolare del suo ruolo. Chi tocca `_chiave_merito()`
-  in `data.py` cambia questa scelta, e deve cambiare anche la pagina.
-
-  ⚠️ **Il ricalcolo della fantamedia è verificato contro la fonte, non dedotto**:
-  eseguito coi valori standard e confrontato con la colonna del sito, **407
-  giocatori su 414 tornano esatti** entro 0.01 (tutti e 26 i portieri, tutti e 75
-  gli attaccanti). È la prova che le voci sono contate giuste — se `gol` non
-  comprendesse i rigori, gli attaccanti sarebbero sfasati in blocco — e che **la
-  porta inviolata non è dentro la fantamedia del sito**. I 7 che non tornano: sei
-  sono il **tetto dei cartellini** (ammonizione + espulsione nella stessa partita si
-  fermano a −1, e dai totali di stagione non si sa in quale partita siano capitati:
-  scarto ≤ 0,5), il settimo (Halhal) resta senza spiegazione e sta scritto nel
-  codice.
-
-  ⚠️ **Il tetto della panchina per ruolo non è una preferenza, è aritmetica**: con un
-  portiere in campo serve **un** sostituto portiere, mai due. Il primo giro non
-  l'aveva e su una rosa vera metteva **due portieri di riserva davanti al miglior
-  attaccante**.
-
-  ⬜ Quello che resta aperto qui:
-  - ❌ **l'avversario: non interessa** — deciso da Davide il 22/09/2026. Il
-    consiglio non guarda casa/trasferta né la forza della difesa che si affronta, e
-    resta così: i dati non sono nel DB (le probabili danno l'avversario, non il suo
-    rendimento) e sarebbe stato un lavoro a sé
-  - ✅ **il modificatore di difesa, dal 22/09/2026**: i moduli si confrontano sul
-    `totale` = punti attesi **più** modificatore stimato, e in una lega che lo usa
-    cambia la graduatoria. Il voto atteso è la `media_voto` del listone (il voto
-    **senza** bonus e malus, che è quello che il regolamento vuole nella media), la
-    media è del portiere e dei migliori 3 difensori o dei migliori 4, e servono
-    **4 difensori a voto** — quindi un modulo a tre difensori prende +0, e la
-    pagina dice perché. ⚠️ I punti della tabella sono poi **moltiplicati per la
-    probabilità che quei quattro giochino** (prodotto delle percentuali): senza,
-    un reparto di ballottaggi varrebbe come uno di titolari sicuri e vincerebbe
-    sempre il modulo con più difensori. La pagina mostra tutti e due i numeri.
-    ⬜ Resta che è una **stima**: suppone che i migliori per media voto siano
-    quelli che giocano, e non sa niente dell'avversario
-  - ❌ **lo storico del consiglio: non interessa** — deciso da Davide il
-    22/09/2026, «o va bene o va male». Resta la conseguenza, scritta perché non
-    venga riscoperta come un baco: non essendoci traccia di **cosa** il consiglio
-    aveva detto, non si potrà mai misurare se consigliava bene. È coerente con «una
-    formazione per lega, che si sovrascrive» (21/09/2026)
-  - `bonus_imbattibilita` e `malus_autogol` restano **colonne che nessuno legge**,
-    dichiaratamente: manca la statistica
-- ❌ **il secondo sistema: non serve** — deciso da Davide il 22/09/2026, le sue due
-  leghe sono Classic. La riga qui sotto resta perché il **dato** c'è comunque, e
-  chi un giorno volesse leggerlo deve sapere che non va importato, va solo usato.
-- ⬜ ~~**il secondo sistema**~~: il listone porta anche i ruoli **Mantra** e sono già nel
-  DB, ma oggi non li legge nessuno. Il giorno che una lega passasse a Mantra il dato
-  c'è
-- ⬜ **la licenza**: si legge un sito pubblico per uso personale, come già si fa con
-  Bulbapedia. Se la sezione uscisse di casa (§1.5) la domanda va riaperta
+- `form-select` è usata da **4 tendine** — il selettore di sezione in `arduino.html`,
+  `gaming.html`, `pcbuilder.html` e `pokemon.html` — e lì non è definita da nessuna parte.
+  Si fa quando si tocca la grafica di quelle sezioni
+- la richiesta di Davide del 22/09/2026 di **rivedere lo scorrimento di sezioni e
+  sottosezioni** in generale. ⚠️ Solo il Fantacalcio ha il `<form>` che avvolge header e
+  footer della modale (corretto lì con `display:flex;flex-direction:column`): in
+  `arduino.html` e `pcbuilder.html` il form sta dentro `.modal-body` e lo scroll funziona,
+  quindi la cura non va copiata a tappeto
 
 ### 4.3 ⬜ Le richieste di Davide del 22/09/2026 «per il futuro»
 
@@ -1293,118 +930,85 @@ sa dal codice, non un piano.
   iscritto. C'è una prova apposta (`prova_travaso_utente.py`, §7) perché nessuno la
   «corregga» credendola un baco.
 
-### 4.6 🟨 Mettere in regola le fonti del Fantacalcio — **la Fantacalcio 2 è in piedi dal 24/09/2026**
+### 4.6 🟨 Le fonti del Fantacalcio in regola — **dal 25/09/2026 è l'unica sezione**
 
 > Decisione di Davide del 23/09/2026: «voglio evitare problemi». I *Termini e condizioni*
 > di fantacalcio.it (art. 3) vietano di leggere le pagine con un programma, scraping
 > compreso, anche per uso personale; l'art. 9 permette solo di **visualizzare** i
-> contenuti. Oggi `fantacalcio_it.py` legge quattro pagine: si sostituiscono tutte, **una
-> fonte per dato**, e nessuna lettura automatica di fantacalcio.it deve restare. Citazioni
-> e contesto in §1.5.
+> contenuti. Citazioni e contesto in §1.5.
 
-> **Come, deciso da Davide il 24/09/2026: in una sezione nuova, «Fantacalcio 2»**, route
-> `/fantacalcio2`. La sezione di prima **non si tocca**: resta com'è, fonti comprese, per
-> poterci tornare se l'esperimento non convince. La 2 ha **tabelle sue per tutto**
-> (`fanta2_*`), **listone compreso**: all'inizio il listone doveva essere in comune, ma la
-> prima sezione lo riscrive da sola dal sito entrando e la 2 dagli Excel, e con una tabella
-> sola le due si sarebbero sovrascritte a vicenda (i 63 ceduti spenti da una e riaccesi
-> dall'altra) — Davide ha scelto «listone suo». Quando si sceglie quale tenere, l'altra si
-> spegne: la lista «cosa va toccato» in fondo vale per **quel** momento.
+> **Com'è andata.** Il 24/09/2026 Davide ha fatto provare le fonti nuove in una sezione a
+> parte, «Fantacalcio 2», con tabelle sue (`fanta2_*`), lasciando la vecchia com'era. Il
+> **25/09/2026 ha scelto la 2**: la vecchia è stata tolta per intero e la 2 ne ha preso
+> nome, route (`/fantacalcio`), slug di permesso, file e tabelle (`fanta_*`). La lega
+> «Triplete», che c'era solo nella vecchia, è stata portata con la sua rosa. La fusione nel
+> DB la fa `extensions._unisci_fantacalcio()` in `init_db()`, una volta sola, con la copia
+> in `data/archive/hub_pre-unione-fantacalcio.db`. Numeri in `STORICO.md`.
 
-**Cosa c'è, dal 24/09/2026** — `fanta2_fonti.py` (legge), `fanta2.py` (logica),
-`blueprints/fantacalcio2.py`, sette template (`fantacalcio2.html`, `fanta2_*.html`,
-`_fanta2_consiglio.html`, `_fanta2_allerta.html`), `scripts/importa_listone2.py` e
-`scripts/prova_fantacalcio2.py` (**76 su 76** dal 25/09/2026). Le fonti:
+**Cosa c'è** — `fanta_fonti.py` (legge), `fanta.py` (logica), `blueprints/fantacalcio.py`,
+sette template (`fantacalcio.html`, `fanta_*.html`, `_fanta_consiglio.html`,
+`_fanta_allerta.html`; `_fanta_timer.html` e `static/css/fantacalcio.css` c'erano già),
+`scripts/importa_listone.py` e `scripts/prova_fantacalcio.py` (**88 su 88** dal 25/09/2026).
+Le fonti:
 
 | Dato | Fonte | Come arriva |
 |---|---|---|
-| **Listone e statistiche** | i due Excel di fantacalcio.it | Davide li scarica **col suo login**; dal 25/09/2026 **l'hub li trova nei download — entrando nella sezione o col pulsante «Leggi i download» — li importa e li cancella** (o si caricano dalla pagina, o con `importa_listone2.py`). Letti in memoria, **mai salvati**: sono contenuti presi con un account, e non devono finire nel repository |
+| **Listone e statistiche** | i due Excel di fantacalcio.it | Davide li scarica **col suo login**; l'hub li trova nei download — entrando nella sezione o col pulsante «Leggi i download» — li importa e li cancella (o si caricano dalla pagina, o con `importa_listone.py`). Letti in memoria, **mai salvati**: non devono finire nel repository |
 | **Calendario e classifica** | football-data.org, piano gratuito | con la chiave, da solo entrando se la copia ha più di un giorno, o con «Aggiorna ora» |
-| **Probabili** | nessuna | un **link** che le apre nel browser di Davide (strada «a») |
+| **Probabili** | nessuna | un **link** e un riquadro che le apre nel browser di Davide (strada «a») |
 
-**Le probabili, dal 25/09/2026** — pagina `/lega/<id>/chi-gioca` (pulsante «👀 Probabili»
-nella lega e nel campo): le probabili di fantacalcio.it **in un riquadro** a sinistra (le
-carica il suo browser, nessun programma le legge) e la rosa a destra, **da leggere**. Il
-mattino del 25/09 c'erano anche tre stati da segnare per giocatore (titolare, in dubbio, non
-gioca); **tolti lo stesso giorno su richiesta di Davide** («non mi interessa segnarlo, basta
-che visualizzo le probabili»). La tabella `fanta2_titolari` **resta nel DB**, non più letta né
-scritta: toglierla vorrebbe dire cancellare le righe già segnate, e non l'ha chiesto. ⚠️ Il riquadro: fantacalcio.it il
-24/09 non mandava né `X-Frame-Options` né una CSP che lo vietasse, ma nel pannello browser di
-Claude è rimasto **bianco** (nessuna richiesta partita: è il pannello che non lo carica, non
-il sito). **Va provato nel Chrome di Davide**; se resta bianco c'è «Apri in una scheda». I
-termini, letti **per intero** il 25/09/2026, non parlano di iframe né di link: vedi la voce
-aperta sui termini qui sotto.
+**Le probabili** — pagina `/fantacalcio/lega/<id>/chi-gioca` (pulsante «👀 Probabili»): le
+probabili di fantacalcio.it **in un riquadro** a sinistra (le carica il browser, nessun
+programma le legge) e la rosa a destra, **da leggere**. Le scelte titolare / in dubbio /
+non gioca sono state tolte il 25/09/2026 su richiesta di Davide, e con loro, lo stesso
+giorno, la tabella `fanta2_titolari`. ⚠️ Il riquadro nel pannello browser di Claude è
+rimasto **bianco** (è il pannello che non lo carica, non il sito): **va provato nel Chrome
+di Davide**; se resta bianco c'è «Apri in una scheda».
 
 Il **consiglio** mette in fondo chi **di sicuro non gioca** (ceduto, squadra senza partita,
 partita rinviata: lo dice il calendario), poi ordina per **fantamedia della lega**, che
 comprende anche l'**autogol** (408 su 414 esatti coi valori standard). La titolarità **non la
-sa**, e lo dice in pagina. L'avviso sulla formazione segnala i titolari che non giocano per il
-calendario e cosa manca. L'**avversario** — posizione in classifica, gol fatti e subiti —
-si **mostra e non si pesa**: decisione di Davide del 24/09/2026, e ⚠️ **supera** quella del
-22/09 («l'avversario non interessa», che valeva per la prima sezione). Il **modificatore di
+sa**, e lo dice in pagina. L'**avversario** — posizione in classifica, gol fatti e subiti —
+si **mostra e non si pesa** (decisione di Davide del 24/09/2026). Il **modificatore di
 difesa** è il valore pieno: senza probabili non c'è la probabilità per cui moltiplicarlo.
+
+✅ **I termini e gli Excel, chiuso da Davide il 25/09/2026**: la lettura dei termini fatta
+quel giorno (art. 3, «elaborare» i Contenuti senza autorizzazione scritta; art. 9.3, la
+copia solo «su un disco (tuttavia non su un server)») diceva che gli Excel importati non
+erano puliti come credevamo, e proponeva di chiedere un permesso scritto a Fantacalcio S.r.l.
+**Davide ha deciso che per gli Excel l'autorizzazione scritta non gli serve.** Resta vero,
+ed è scritto perché non si riscopra: il riquadro delle probabili sta nell'uso personale
+dell'art. 9.3 **finché lo guarda solo Davide**; mostrato ad altri utenti no. Il testo
+completo della lettura è in `git show b61fa8e:BACKLOG.md`, §4.6.
 
 ⬜ **Resta aperto:**
 
-- ✅ **Chiarito con Davide il 25/09/2026**: il campo col consiglio sul modulo c'era già e va
-  bene così; la **titolarità la guarda lui** sulla pagina di fantacalcio.it. La pagina «Chi
-  gioca» resta, e i segni sono **facoltativi** — poi tolti del tutto nel pomeriggio.
-- ✅ **Formazione salvabile anche incompleta** — fatta il 25/09/2026, vedi `STORICO.md`.
-  Nella 2 il campo usa `fanta2.controlla_formazione_larga()`; la prima sezione resta severa.
-- ⚠️ ⬜ **I termini di fantacalcio.it letti per intero il 25/09/2026 (versione «Settembre
-  2026») — gli Excel non sono puliti come credevamo. Decisione di Davide.** Non un parere
-  legale, quello che c'è scritto. Gli articoli non hanno numero in pagina: contati in ordine,
-  Navigazione è il **3**, Proprietà intellettuale il **9** (le note di prima dicevano «art. 8»:
-  sbagliato, l'8 è Dati personali).
-  - **Art. 3, secondo divieto**: non si possono «copiare, riprodurre, alterare, modificare,
-    **elaborare**» i Contenuti senza autorizzazione scritta, e il divieto «si estend[e] anche
-    a qualsiasi elaborazione dei dati». I Contenuti comprendono per definizione (art. 3.2)
-    «statistiche, tabelle» e il **download**. Importare gli Excel in `fanta2_players` e
-    calcolarci sopra fantamedia e consiglio è **copia ed elaborazione**: il file scaricato
-    a mano sposta il problema dello scraping, non quello dell'uso.
-  - **Art. 9.3**: la copia è permessa solo «su un disco (tuttavia **non su un server** o su un
-    dispositivo di memorizzazione connesso ad una rete)», solo per supportare la fruizione
-    **del loro Ecosistema**, e con la «massima diligenza affinché nessun ulteriore programma
-    [...] possa recuperare e sfruttare i Contenuti». L'hub è esattamente un altro programma,
-    ed è un server: ⚠️ **portarlo su Debian** (come da §1.5) peggiora le cose, non le lascia
-    uguali.
-  - **Iframe e link: nessuna clausola.** Cercato: 0 occorrenze di iframe, frame, cornice,
-    incorporare, embed, link, collegamento. Resta l'art. 9.2, che vieta «la visualizzazione
-    [...] in qualsiasi forma» senza autorizzazione, temperato dal 9.3 (l'utente può
-    visualizzare «su p.c., tablet o smartphone» per sé). Il riquadro nell'hub usato **solo da
-    Davide** sta nel 9.3; mostrato ad altri utenti no. Il **link** è pulito.
-  - **La via pulita che i termini stessi indicano**: l'«autorizzazione scritta ed espressa di
-    Fantacalcio» (art. 3 e 9). Proposta: Davide scrive a Fantacalcio S.r.l. spiegando l'uso
-    (personale, non commerciale, dati dai loro Excel scaricati col suo account, niente
-    ripubblicazione) e chiede il permesso scritto. Finché non c'è, la 2 è **meno esposta**
-    della prima (niente lettura automatica) ma **non in regola** sugli Excel.
 - ⚠️ **Gli Excel dai download, su Debian** (25/09/2026). La cartella la trova da sola anche
   su Linux (`XDG_DOWNLOAD_DIR`, quindi «Scaricati» su un Debian in italiano), ma **funziona
   solo se il browser che scarica e l'hub stanno sulla stessa macchina**. Se l'hub diventa un
   server e scarichi dal PC o dal telefono, i file finiscono sul dispositivo, non sul server:
   serve una cartella condivisa (es. Samba) come cartella di download del browser, indicata
-  all'hub con `FANTA2_CARTELLA_DOWNLOAD`; altrimenti resta il caricamento dalla pagina.
+  all'hub con `FANTA_CARTELLA_DOWNLOAD`; altrimenti resta il caricamento dalla pagina.
 - **Provarla a mano in browser**, e soprattutto **il riquadro delle probabili nel Chrome di
-  Davide**. Le pagine sono provate dal test client e dallo sweep (0 errori su 6 pagine per
-  lingua); l'elenco delle leghe è stato visto in browser dopo il login di Davide il
-  25/09/2026, le altre pagine aspettano una lega con la rosa.
-- ⬜ **`fanta2_titolari` è una tabella morta dal 25/09/2026** (le scelte di «Chi gioca»
-  tolte). Resta perché ha righe dentro; la citano ancora `init_db()`, `TABELLE_UTENTE`
-  (`cancella`), `admin.py` e l'elenco degli esclusi di `esporta_dati.py`. Da togliere tutta
-  insieme **solo se Davide dice di sì**, con le righe che contiene. (La voce di prima, sul
-  messaggio della copia fra utenti che non la nominava, decade con lei.)
+  Davide**. Le pagine sono provate dal test client e dallo sweep (0 errori); la Dashboard
+  col riquadro nuovo è stata vista col test client il 25/09/2026 (giornata 6, due leghe),
+  non in browser: serve il login.
+- **La formazione di «La Liga Abajo» va rifatta**: quella salvata nella sezione vecchia (25
+  righe) **non è stata portata**, per decisione di Davide. È nella copia
+  `data/archive/hub_pre-unione-fantacalcio.db` e nella storia git dell'export.
+- ⚠️ **Un export di prima del 25/09/2026 non si ripristina più così com'è.** Ha le chiavi
+  `fanta_*` della sezione vecchia **e** le `fanta2_*`: cosa farebbe `importa_dati.py` **non
+  l'ho provato** — nel migliore dei casi le leghe vecchie nelle tabelle nuove e le `fanta2_*`
+  scartate. Un DB di prima invece va bene, provato:
+  la fusione lo sistema entrando. Per un ripristino da un export vecchio, prima si fa
+  girare quel DB, non l'export.
 - **Il ritardo del calendario gratuito** («Schedules delayed»): non misurato, serve una
   partita spostata da veder arrivare.
 - **La chiave su Debian**: oggi `FOOTBALL_DATA_API_KEY` si legge dall'ambiente e, su
   Windows, dal registro dell'utente (così `setx` basta senza riavviare l'hub da un terminale
   nuovo). Su Debian il registro non c'è: è la voce di §1.5.
-- **Scegliere quale sezione tenere**, e spegnere l'altra con le sue tabelle. ⚠️ Se si spegne
-  la **prima**: `blueprints/fantacalcio2.py` **importa** da `blueprints/fantacalcio.py`
-  `REGOLE`, i valori ufficiali, `_prezzo()` e `_numeri()` — vanno spostati prima, altrimenti
-  la 2 non parte più. E la Dashboard legge `scadenza_giornata()` della prima.
-- ⚠️ **I permessi**: la 2 è una sezione a sé (`fantacalcio2` in `SEZIONI`). Chi ha i permessi
-  «tutte» la vede da subito; un utente con un elenco di sezioni scelte no, finché un admin
-  non gliela spunta.
+- La cartella `data/cache/fantacalcio/` (cinque pagine di fantacalcio.it lette dalla
+  sezione vecchia, esclusa da git) non la scrive più nessuno: **si può cancellare a mano**.
 
 Le verifiche fatte prima di scrivere il codice, il 24/09/2026 — restano qui perché sono
 la ragione di ogni scelta sopra:
@@ -1438,12 +1042,12 @@ lette dalle pagine il 22/09):
 - il file delle quotazioni ha un foglio **`Ceduti`** con **63** giocatori, **separati** da quelli
   in rosa. ⚠️ **Nel DB di oggi quei 63 sono tutti `attivo=1`**: la sezione Fantacalcio attuale
   li mostra come disponibili, perché la pagina li elenca insieme agli altri. Oggi nessuno di loro
-  è in una rosa (contato: 0). Non l'ho corretto: la prima sezione non si tocca, e nella 2 si legge
-  il foglio `Ceduti`
+  è in una rosa (contato: 0). Non l'ho corretto: la prima sezione non si toccava, e nella 2 si
+  legge il foglio `Ceduti`. (Chiuso da solo il 25/09/2026: quel listone non c'è più.)
 - ⚠️ **i file non vanno nel repository.** Sono contenuti di fantacalcio.it scaricati col login:
-  metterli su GitHub vorrebbe dire ripubblicarli. Si caricano dalla pagina della Fantacalcio 2,
+  metterli su GitHub vorrebbe dire ripubblicarli. Si caricano dalla pagina del Fantacalcio,
   si leggono e basta; se serve una copia, in una cartella esclusa da git
-- `openpyxl` **non è installato**, e non è servito: `fanta2_fonti.leggi_xlsx()` legge i due
+- `openpyxl` **non è installato**, e non è servito: `fanta_fonti.leggi_xlsx()` legge i due
   file con `zipfile` e `xml` della libreria standard
 
 **football-data.org per il calendario, letto il 24/09/2026 (sito e documentazione, non l'API):**
@@ -1467,7 +1071,7 @@ lette dalle pagine il 22/09):
   arrivare. `lastUpdated` della giornata 6 è `2026-09-24T00:20:33Z`. Da riguardare alla prima
   partita spostata o rinviata
 - ⚠️ `utcDate` è in UTC, e su Windows `zoneinfo` **non trovava `Europe/Rome`** senza il
-  pacchetto `tzdata` (provato: `ZoneInfoNotFoundError`). ✅ `fanta2_fonti.ora_italiana()` usa
+  pacchetto `tzdata` (provato: `ZoneInfoNotFoundError`). ✅ `fanta_fonti.ora_italiana()` usa
   `zoneinfo` se c'è e altrimenti la **regola dell'ora legale europea** (ultima domenica di
   marzo e di ottobre, alle 01:00 UTC): nessuna dipendenza in più, provata sui due cambi
 - termini, letti nella pagina di registrazione: **§7.1** chiede di scrivere
@@ -1494,35 +1098,21 @@ Resta quindi il piano della tabella: fonti con un permesso (il file Excel scaric
 un'API con chiave), da verificare una per una. FantaLab e Fantagoat restano utili **come app**
 accanto all'hub, non come fonti.
 
-Cosa va toccato **il giorno che si spegne la prima sezione**, per non dimenticare niente:
-`fantacalcio_it.py` (le quattro letture),
-`fanta_import.py` (le due soglie e l'aggiornamento automatico entrando nella sezione, che
-**deve sparire** per le fonti non più automatiche), `scripts/importa_listone.py` e
-`importa_probabili.py`, il pulsante «Aggiorna ora», la cache in `data/cache/fantacalcio/`
-(da svuotare quando nessuno la scrive più), `prova_fantacalcio.py`. Il listone
-`fanta_players` resta fuori dall'export come oggi: si rifà dal file.
-
-⚠️ Il **timer** (§4.4) e il **consiglio** dipendono da calendario e probabili: cambiare
-fonte cambia quello che danno per buono, e la §4.4 va riletta insieme.
 
 ### 4.4 ⚠️ Quello che il timer della giornata dà per buono
 
-Aperto il 22/09/2026 col timer stesso, e scritto qui perché **non è un baco oggi**:
-è una cosa che può smettere di funzionare senza dare errore.
+Aperto il 22/09/2026 col timer stesso, **riscritto il 25/09/2026** quando la sezione
+vecchia (che leggeva calendario e probabili dalle pagine) è stata tolta. Non è un baco:
+è quello che può smettere di funzionare senza dare errore.
 
-- La scadenza esce da `fanta_calendario`, che si riempie leggendo
-  `/serie-a/calendario/<giornata>`. La giornata la dicono **le probabili**: se le
-  probabili non sono importate, il timer ripiega sulla prima partita non ancora
-  giocata che il calendario conosce, e se il calendario non ha quella giornata
-  **dichiara di non sapere l'ora**. Sono tre casi diversi e la pagina li dice
-  diversi: quello da non perdere di vista è il terzo, perché è silenzioso di natura.
-- ⚠️ La cache del calendario è **una per giornata** (`calendario-7.html`). Se un
-  giorno la fonte cambiasse la forma dell'URL, il lettore troverebbe una pagina
-  senza `match-pill` e si rifiuterebbe — il rifiuto c'è ed è provato. Quello che
-  nessuno controlla è che la giornata che si chiede **esista**: `/calendario/99`
-  risponde comunque una pagina.
-- ⚠️ E resta vero che «tre ore» e «un giorno» sono soglie scelte, non misurate:
-  `VECCHIA_PROBABILI` e `VECCHIA_CALENDARIO` in `fanta_import.py`.
+- La scadenza è `fanta.scadenza()`: la prima partita della giornata corrente con l'**ora
+  esatta** (`TIMED`, o già cominciata). La giornata è `fanta.giornata_corrente()`, la prima
+  con una partita ancora da giocare, **rinviate escluse**. Se la giornata non ha nessuna
+  partita con l'ora esatta, il timer **dichiara di non saperla**, e le partite senza ora le
+  conta in `senza_ora`. La Dashboard usa la stessa funzione e non richiama l'API.
+- ⚠️ «Un giorno» (`fanta.VECCHIO_CALENDARIO`) è una soglia scelta, non misurata; e il
+  ritardo del piano gratuito di football-data.org («Schedules delayed») non è misurato
+  (§4.6).
 
 ### 4.5 ✅ Il punto cieco di `controlla_proprietario.py` — chiuso il 22/09/2026
 

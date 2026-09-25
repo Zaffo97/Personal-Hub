@@ -1,3 +1,4 @@
+{# L'incolla della rosa del Fantacalcio (§4.6). #}
 {% extends "base.html" %}
 {#
   L'anteprima della rosa incollata (§4.2, 21/09/2026).
@@ -92,7 +93,7 @@ td.stretta{width:1%;white-space:nowrap}
               <option value="{{ c.id }}"
                       {% if r.scelto and c.id == r.scelto.id %}selected{% endif %}>
                 {{ c.nome }} &middot; {{ c.squadra or '?' }} &middot;
-                {{ ruoli.get(c.ruolo_classic, '?') }}{% if c.fvm %} &middot; FVM {{ c.fvm }}{% endif %}{% if not c.attivo %} (fuori listone){% endif %}
+                {{ ruoli.get(c.ruolo_classic, '?') }}{% if c.fvm %} &middot; FVM {{ c.fvm }}{% endif %}{% if not c.attivo %} (non in Serie A){% endif %}
               </option>
               {% endfor %}
             </select>
@@ -102,7 +103,7 @@ td.stretta{width:1%;white-space:nowrap}
             <span class="text-xs text-muted">
               {{ r.scelto.squadra or '?' }} &middot; {{ ruoli.get(r.scelto.ruolo_classic, '?') }}
               {% if r.scelto.fvm %}&middot; FVM {{ r.scelto.fvm }}{% endif %}
-              {% if not r.scelto.attivo %}&middot; <span class="badge badge-warning">fuori listone</span>{% endif %}
+              {% if not r.scelto.attivo %}&middot; <span class="badge badge-warning">non in Serie A</span>{% endif %}
             </span>
           {% else %}
             <span class="text-muted text-sm">nessun giocatore con questo nome</span>

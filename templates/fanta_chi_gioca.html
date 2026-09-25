@@ -1,6 +1,6 @@
 {% extends "base.html" %}
 {#
-  Le probabili accanto alla rosa — Fantacalcio 2 (§4.6).
+  Le probabili accanto alla rosa — Fantacalcio (§4.6).
 
   A sinistra le probabili di fantacalcio.it **in un riquadro**: è il browser di chi
   guarda a caricarle e mostrarle, nessun programma le legge. A destra la rosa, da
@@ -15,7 +15,7 @@
   vietasse, ma può cambiare), o il browser può bloccarlo. Da qui non si può sapere,
   quindi la pagina lo dice e mette il link per aprirla a parte.
 #}
-{% block title %}Probabili &ndash; {{ lega.nome }} (Fantacalcio 2){% endblock %}
+{% block title %}Probabili &ndash; {{ lega.nome }} (Fantacalcio){% endblock %}
 {% block topbar_title %}&#9917; Probabili &mdash; {{ lega.nome }}{% endblock %}
 {% block body_class %}sez-fanta{% endblock %}
 {% block extra_head %}
@@ -55,8 +55,8 @@
       </p>
     </div>
     <div class="flex gap-2">
-      <a class="btn btn-primary" href="{{ url_for('fantacalcio2.formazione', lid=lega.id) }}">&#9917; Al campo</a>
-      <a class="btn" href="{{ url_for('fantacalcio2.lega', lid=lega.id) }}">&larr; Rosa e regole</a>
+      <a class="btn btn-primary" href="{{ url_for('fantacalcio.formazione', lid=lega.id) }}">&#9917; Al campo</a>
+      <a class="btn" href="{{ url_for('fantacalcio.lega', lid=lega.id) }}">&larr; Rosa e regole</a>
     </div>
   </div>
 </div>

@@ -9,11 +9,14 @@
 
   ⚠️ La scheda si chiede al server (`/fantacalcio/api/giocatore/<id>`) invece di
   essere scritta in pagina per ognuno: le righe sono ~600 e ognuna ha venti campi,
-  più la probabile e le rose — stamparle tutte vorrebbe dire mandare al browser
-  mezzo megabyte di dati per mostrarne uno.
+  più la partita e le rose.
+
+  Fantacalcio (§4.6). Il listone viene dai due
+  Excel caricati dalla pagina della sezione, e la scheda mostra la **partita** della
+  giornata al posto della probabile.
 #}
 {% block title %}Listone &ndash; Fantacalcio{% endblock %}
-{% block topbar_title %}&#9917; Listone{% endblock %}
+{% block topbar_title %}&#9917; Listone &mdash; Fantacalcio{% endblock %}
 {% block body_class %}sez-fanta{% endblock %}
 {% block extra_head %}
 <link rel="stylesheet" href="{{ url_for('static', filename='css/fantacalcio.css') }}">
@@ -59,15 +62,11 @@
       <p class="text-muted text-sm">
         {{ righe|length }} giocator{{ 'e' if righe|length == 1 else 'i' }} nell'elenco
         {% if totali.attivi %}&middot; {{ totali.attivi }} attivi in Serie A{% endif %}
-        {% if totali.spenti %}&middot; {{ totali.spenti }} usciti{% endif %}
-        {% if totali.visto %}&middot; aggiornato il {{ totali.visto }}{% endif %}
+        {% if totali.spenti %}&middot; {{ totali.spenti }} ceduti o usciti{% endif %}
+        {% if totali.visto %}&middot; caricato il {{ totali.visto }}{% endif %}
       </p>
     </div>
     <div class="flex gap-2">
-      <form method="post" action="{{ url_for('fantacalcio.aggiorna', quale='listone') }}">
-        <input type="hidden" name="torna_a" value="/fantacalcio/listone">
-        <button class="btn btn-secondary" type="submit">&#8635; Aggiorna il listone</button>
-      </form>
       <a class="btn" href="{{ url_for('fantacalcio.fantacalcio') }}">&larr; Fantacalcio</a>
     </div>
   </div>
@@ -137,7 +136,7 @@
             <td><span class="ruolo ruolo-{{ g.ruolo_classic }}">{{ (g.ruolo_classic or '?')|upper }}</span></td>
             <td>
               <strong>{{ g.nome }}</strong>
-              {% if not g.attivo %}<span class="badge badge-warning">fuori listone</span>{% endif %}
+              {% if not g.attivo %}<span class="badge badge-warning">{{ 'ceduto' if g.ceduto else 'fuori listone' }}</span>{% endif %}
               {% if mie.get(g.id) %}
               <span class="badge badge-success" title="{{ mie[g.id]|map(attribute='nome')|join(', ') }}">in rosa</span>
               {% endif %}
@@ -170,7 +169,7 @@
     <div class="card-body" id="scheda_corpo">
       <div class="text-sm text-muted">
         Clicca un giocatore nell'elenco per vedere qui tutti i suoi dati:
-        quotazioni, medie, gol, assist, cartellini, la sua probabile di questa
+        quotazioni, medie, gol, assist, cartellini, la sua partita di questa
         giornata e in quali tue rose si trova.
       </div>
     </div>
@@ -184,8 +183,6 @@
    — è la stessa rete già messa alla ricerca della rosa. */
 (function(){
   var RUOLI = {p: 'Portiere', d: 'Difensore', c: 'Centrocampista', a: 'Attaccante'};
-  var STATI = {titolare: 'titolare', panchina: 'in panchina',
-               fuori: 'non convocato', non_gioca: 'la sua squadra non gioca'};
   var nome = document.getElementById('scheda_nome');
   var squadra = document.getElementById('scheda_squadra');
   var corpo = document.getElementById('scheda_corpo');
@@ -208,32 +205,29 @@
   }
 
   function disegna(dati){
-    var g = dati.giocatore, p = dati.probabile;
+    var g = dati.giocatore, p = dati.partita || {};
     nome.innerHTML = esc(g.nome) + (g.attivo ? '' :
-      ' <span class="badge badge-warning">fuori listone</span>');
+      ' <span class="badge badge-warning">' + (g.ceduto ? 'ceduto' : 'fuori listone') + '</span>');
     squadra.textContent = (g.squadra || '—') + ' · ' +
       (RUOLI[g.ruolo_classic] || '?') +
-      (g.ruolo_mantra_esteso ? ' · Mantra: ' + g.ruolo_mantra_esteso :
-       (g.ruolo_mantra ? ' · Mantra: ' + g.ruolo_mantra.toUpperCase() : ''));
+      (g.ruolo_mantra ? ' · Mantra: ' + g.ruolo_mantra.toUpperCase() : '');
 
-    var html = '';
-    if (p) {
-      var pct = (p.percentuale === null || p.percentuale === undefined)
-                ? '' : ' ' + p.percentuale + '%';
-      html += '<div class="mb-2"><span class="prob prob-' + p.stato + '">' +
-              esc((STATI[p.stato] || '—') + pct) + '</span> ' +
-              '<span class="text-xs text-muted">giornata ' + esc(p.giornata);
-      if (p.squadra) {
-        html += ' · ' + esc(p.squadra.avversario ?
-                 ('contro ' + p.squadra.avversario +
-                  (p.squadra.in_casa ? ' in casa' : ' in trasferta')) : '') +
-                (p.squadra.modulo ? ' · ' + esc(p.squadra.modulo) : '');
-      }
-      html += '</span></div>';
+    /* La partita della giornata, dal calendario: se la squadra gioca, contro chi e
+       com'è messo l'avversario. ⚠️ Non è la titolarità, che qui non si sa. */
+    var html = '<div class="mb-2 text-xs">';
+    if (p.gioca === true) {
+      html += '<span class="prob prob-titolare">la squadra gioca</span> ' +
+              '<span class="text-muted">giornata ' + esc(dati.giornata) + ' · contro ' +
+              esc(p.avversario) + (p.in_casa ? ' in casa' : ' in trasferta') +
+              (p.avv ? ' · ' + esc(p.avv.posizione) + 'ª, ' + esc(p.avv.gol_fatti) +
+                       ' gol fatti e ' + esc(p.avv.gol_subiti) + ' subiti' : '') +
+              '</span>';
+    } else if (p.gioca === false) {
+      html += '<span class="prob prob-non_gioca">' + esc(p.perche) + '</span>';
     } else {
-      html += '<div class="text-xs text-muted mb-2">Nessuna giornata di probabili ' +
-              'importata, quindi non si sa se gioca.</div>';
+      html += '<span class="text-muted">Calendario non importato: non so se gioca.</span>';
     }
+    html += '</div>';
 
     html += '<div class="scheda-dati">' +
       casella('Quotazione attuale', n(g.qa)) +
@@ -247,6 +241,7 @@
       casella('Rigori (segnati/tirati)', n(g.rigori)) +
       casella('Ammonizioni', n(g.ammonizioni)) +
       casella('Espulsioni', n(g.espulsioni)) +
+      casella('Autogol', n(g.autogol)) +
       '</div>';
     /* I due campi da portiere si mostrano solo ai portieri: «rigori parati: —» a
        un attaccante è una riga che non vuol dire niente. */
@@ -268,7 +263,7 @@
       html += '<div class="mt-3 text-xs text-muted">Non è in nessuna delle tue rose.</div>';
     }
     html += '<div class="text-xs text-muted mt-2">Dati del listone' +
-            (g.visto_il ? ' visti il ' + esc(g.visto_il) : '') + '.</div>';
+            (g.visto_il ? ' caricati il ' + esc(g.visto_il) : '') + '.</div>';
     corpo.innerHTML = html;
   }
 

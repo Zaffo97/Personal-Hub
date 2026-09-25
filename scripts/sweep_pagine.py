@@ -58,15 +58,12 @@ PAGINE = [
     # Fantacalcio, dal 21/09/2026. La pagina della lega chiede un id come
     # `/pokemon/team/1/edit`: se la lega 1 non c'e' la pagina redirige, e lo sweep
     # lo dice invece di fingere un ok.
-    "/fantacalcio/", "/fantacalcio/lega/1", "/fantacalcio/probabili",
-    # ⚠️ Dal 22/09/2026 il campo contiene **anche** il consiglio, che prima era
-    # una pagina a se': e' la pagina con piu' script del Fantacalcio, ed e' qui
-    # che questo sweep serve davvero. `/consiglio` non c'e' piu' nell'elenco
-    # perche' ora e' un rimando - lo sweep direbbe «302» e avrebbe ragione.
-    "/fantacalcio/lega/1/formazione", "/fantacalcio/listone",
-    # La Fantacalcio 2 (§4.6, 24/09/2026): le stesse pagine, con template suoi.
-    "/fantacalcio2/", "/fantacalcio2/lega/1", "/fantacalcio2/lega/1/formazione",
-    "/fantacalcio2/listone", "/fantacalcio2/lega/1/chi-gioca",
+    # ⚠️ Il campo contiene **anche** il consiglio: e' la pagina con piu' script del
+    # Fantacalcio, ed e' qui che questo sweep serve davvero.
+    # Dal 25/09/2026 sono le pagine della sezione nata come «Fantacalcio 2»: quella
+    # vecchia (con `/fantacalcio/probabili`) e' stata tolta.
+    "/fantacalcio/", "/fantacalcio/lega/1", "/fantacalcio/lega/1/formazione",
+    "/fantacalcio/listone", "/fantacalcio/lega/1/chi-gioca",
 ]
 
 # Le pagine che **si aprono con una POST**, aggiunte il 21/09/2026 con l'anteprima
@@ -82,8 +79,6 @@ PAGINE = [
 # «non trovata», invece della sola forma facile.
 PAGINE_POST = [
     ("/fantacalcio/lega/1/rosa/incolla",
-     {"testo": "Difensori\nThuram\nBastoni 22\nNomeCheNonEsiste 3"}),
-    ("/fantacalcio2/lega/1/rosa/incolla",
      {"testo": "Difensori\nThuram\nBastoni 22\nNomeCheNonEsiste 3"}),
 ]
 
@@ -169,9 +164,9 @@ def main():
 
     import extensions
     extensions.DB = copia                # ⚠️ prima di creare l'app, non dopo
-    # ⚠️ E una cartella dei download vuota: entrando nella Fantacalcio 2 l'hub importa
+    # ⚠️ E una cartella dei download vuota: entrando nel Fantacalcio l'hub importa
     # e **cancella** gli Excel che trova nei download veri di Davide (25/09/2026).
-    os.environ["FANTA2_CARTELLA_DOWNLOAD"] = tempfile.mkdtemp(prefix="sweep_download_")
+    os.environ["FANTA_CARTELLA_DOWNLOAD"] = tempfile.mkdtemp(prefix="sweep_download_")
     import app as modulo_app
     flask_app = modulo_app.create_app()
     flask_app.config.update(TESTING=True, SECRET_KEY="sweep")

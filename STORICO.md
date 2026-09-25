@@ -20,6 +20,30 @@ pagina ed esegue `new Function()` su ogni blocco `<script>` **e** su ogni handle
 
 ## 25/09/2026
 
+**Il Fantacalcio è uno solo: la 2 prende il posto della vecchia (§4.6)** — decisioni di
+Davide: via **tutta** la sezione vecchia (blueprint, `fantacalcio_it.py`, `fanta_import.py`,
+`importa_probabili.py`, `importa_calendario.py`, sei template e `prova_fantacalcio.py` da 245
+prove); la 2 **rinominata per intero** — route `/fantacalcio`, slug di permesso `fantacalcio`,
+`blueprints/fantacalcio.py`, `fanta.py`, `fanta_fonti.py`, template senza «2», tabelle
+`fanta_*`, `FANTA_CARTELLA_DOWNLOAD`, `importa_listone.py`, `prova_fantacalcio.py`; via
+`fanta2_titolari` (1 riga); il riquadro della Dashboard sulla sezione nuova, con la scadenza
+da `fanta.scadenza()` (visto col test client: giornata 6, 10/10 alle 15:00, due leghe). La
+fusione nel DB la fa `extensions._unisci_fantacalcio()`, **una volta sola**, in `init_db()`:
+copia in `data/archive/hub_pre-unione-fantacalcio.db`, poi in una transazione porta le leghe
+che la vecchia aveva e la nuova no, toglie 8 tabelle, rinomina 6 e il permesso
+`fantacalcio2`. Sul DB vero: **Triplete** portata con 25 giocatori su 25 (prezzi e regole
+identici, somma 497), `foreign_key_check` vuoto, `integrity_check` ok. La **formazione
+vecchia** di La Liga Abajo (25 righe) **non portata**, come deciso: l'export l'ha persa con
+`--anche-se-vuoto`, resta nella copia e nella storia git. Tolti da `data.py` ~420 righe del
+consiglio sulla titolarità, che usava solo la vecchia. Davide ha anche chiuso la voce sui
+termini: **per gli Excel non serve l'autorizzazione scritta**. Prove: `prova_fantacalcio.py`
+**88 su 88** (11 nuove sulla fusione), `prova_importa_dati.py` **28 su 28** (era **15 su 28
+già prima** di cominciare: la prova seminava i giocatori solo per `fanta_*`, e l'export aveva
+righe `fanta2_*`; ora mette una formazione nella sua copia se l'export non ne ha), travaso
+56/56, `prova_ricorda` 33/33, `prova_esporta_completo` 21/21, temi 11/11, sweep 0 errori,
+`controlla_proprietario.py` 0 scoperte (3 query della fusione dichiarate),
+`controlla_traduzioni.py` 0 mancanti.
+
 **Fantacalcio 2 ripulita (§4.6)** — su richiesta di Davide: «Aggiorna calendario» accanto a
 «Leggi i download»; via il riquadro delle probabili dalla pagina principale (restano il pulsante
 in alto e «👀 Probabili» dentro la lega); **via le scelte titolare / in dubbio / non gioca**

@@ -30,15 +30,11 @@ ETICHETTE = {
     "arduino_projects": "progetti Arduino",
     "pc_builds": "build del PC",
     "fanta_leagues": "leghe del Fantacalcio",
-    "fanta2_leagues": "leghe del Fantacalcio 2",
     "team_members": "Pokémon nei team",
     "pc_components": "pezzi del PC",
     "fanta_roster": "giocatori in rosa",
     "fanta_formazione": "giocatori schierati",
-    "fanta2_roster": "giocatori in rosa (Fantacalcio 2)",
-    "fanta2_formazione": "giocatori schierati (Fantacalcio 2)",
     "python_progress": "spunte di Python",
-    "fanta2_titolari": "titolari segnati (Fantacalcio 2)",
 }
 
 # Dal 12/08/2026 le password nuove nascono già con lo schema forte (scrypt con sale

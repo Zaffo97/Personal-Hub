@@ -238,8 +238,106 @@ def get_db():
     return db
 
 
+# --- La fusione del Fantacalcio (25/09/2026) ----------------------------------
+# Decisione di Davide: si tiene la sezione nata il 24/09 come «Fantacalcio 2», quella
+# vecchia (che leggeva le pagine di fantacalcio.it) se ne va, e la 2 ne prende il
+# nome. Nel DB vuol dire: le tabelle `fanta_*` vecchie via, le `fanta2_*` rinominate
+# `fanta_*`. Deve girare **prima** delle CREATE TABLE qui sotto: su un DB non ancora
+# fuso le `fanta_*` esistono già con lo schema vecchio, `IF NOT EXISTS` le lascerebbe
+# stare e il codice nuovo leggerebbe colonne che non ci sono.
+FANTA_VECCHIE = ("fanta_formazione", "fanta_roster", "fanta_leagues",
+                 "fanta_probabili", "fanta_probabili_squadre", "fanta_calendario",
+                 "fanta_players",
+                 # Le scelte di «Chi gioca», tolte il 25/09/2026 e morte da allora.
+                 "fanta2_titolari")
+FANTA_DA_RINOMINARE = ("players", "leagues", "roster", "formazione", "calendario",
+                       "classifica")
+
+
+def _unisci_fantacalcio(db):
+    """La fusione, **una volta sola**: se `fanta2_leagues` non c'è, è già fatta.
+
+    Torna il rapporto (`None` se non c'era niente da fare), e lo stampa.
+
+    ⚠️ Una lega che la sezione vecchia aveva e la nuova no — **stesso proprietario e
+    stesso nome** — si porta nelle tabelle nuove con la sua rosa, invece di sparire
+    con le tabelle: il 25/09/2026 era «Triplete», 25 giocatori (decisione di Davide).
+    La formazione vecchia **non** si porta, e nemmeno le righe di rosa di un giocatore
+    che il listone nuovo non ha: quelle si contano e si dicono.
+
+    ⚠️ Prima di toccare niente lascia una copia del DB: in `data/archive/` se il DB è
+    quello del progetto, accanto al DB se è un altro (una prova non deve sporcare la
+    cartella del repository). Tutto il resto è **una transazione**: una fusione a metà
+    — tabelle vecchie cancellate e nuove non ancora rinominate — non deve esistere.
+    """
+    tabelle = {r[0] for r in db.execute(
+        "SELECT name FROM sqlite_master WHERE type='table'")}
+    if "fanta2_leagues" not in tabelle:
+        return None
+    qui = os.path.dirname(os.path.abspath(__file__))
+    dove = os.path.dirname(os.path.abspath(DB))
+    cartella = os.path.join(DATA_DIR, "archive") if dove == qui else dove
+    os.makedirs(cartella, exist_ok=True)
+    copia = os.path.join(cartella, "hub_pre-unione-fantacalcio.db")
+    if not os.path.exists(copia):
+        dest = sqlite3.connect(copia)
+        db.backup(dest)
+        dest.close()
+
+    r = {"copia": copia, "leghe": [], "rosa": 0, "rosa_persa": 0, "tolte": []}
+    db.execute("BEGIN")
+    try:
+        if "fanta_leagues" in tabelle and "fanta_roster" in tabelle:
+            nuove = [c[1] for c in db.execute("PRAGMA table_info(fanta2_leagues)")]
+            for lega in db.execute("SELECT * FROM fanta_leagues ORDER BY id").fetchall():
+                gia = db.execute(
+                    "SELECT 1 FROM fanta2_leagues WHERE nome=? AND user_id IS ?",
+                    (lega["nome"], lega["user_id"])).fetchone()
+                if gia:
+                    continue
+                colonne = [c for c in lega.keys() if c != "id" and c in nuove]
+                nuovo = db.execute(
+                    f"INSERT INTO fanta2_leagues({', '.join(colonne)}) "
+                    f"VALUES({', '.join('?' for _ in colonne)})",
+                    [lega[c] for c in colonne]).lastrowid
+                prima = db.execute("SELECT COUNT(*) FROM fanta_roster WHERE league_id=?",
+                                   (lega["id"],)).fetchone()[0]
+                portate = db.execute(
+                    "INSERT INTO fanta2_roster(league_id, player_id, prezzo, note) "
+                    "SELECT ?, player_id, prezzo, note FROM fanta_roster "
+                    "WHERE league_id=? AND player_id IN (SELECT id FROM fanta2_players)",
+                    (nuovo, lega["id"])).rowcount
+                r["leghe"].append(lega["nome"])
+                r["rosa"] += portate
+                r["rosa_persa"] += prima - portate
+        for t in FANTA_VECCHIE:
+            if t in tabelle:
+                db.execute(f"DROP TABLE {t}")
+                r["tolte"].append(t)
+        for t in FANTA_DA_RINOMINARE:
+            if f"fanta2_{t}" in tabelle:
+                db.execute(f"ALTER TABLE fanta2_{t} RENAME TO fanta_{t}")
+        # Il permesso segue la sezione: chi aveva spuntato «Fantacalcio 2» la vede
+        # ancora. Chi aveva `fantacalcio` vede quella nuova, che ora si chiama così.
+        # Senza, `sezioni_utente()` scarterebbe lo slug sparito in silenzio.
+        if "users" in tabelle:
+            db.execute("UPDATE users SET sections=REPLACE(sections, 'fantacalcio2', "
+                       "'fantacalcio') WHERE sections LIKE '%fantacalcio2%'")
+        db.commit()
+    except Exception:
+        db.rollback()
+        raise
+    print(f"[DB] Fantacalcio unito: copia in {copia}. "
+          f"Leghe portate dalla sezione vecchia: {', '.join(r['leghe']) or 'nessuna'} "
+          f"({r['rosa']} in rosa"
+          + (f", {r['rosa_persa']} fuori dal listone nuovo e non portati" if r["rosa_persa"] else "")
+          + f"). Tabelle tolte: {len(r['tolte'])}.")
+    return r
+
+
 def init_db():
     db = get_db()
+    _unisci_fantacalcio(db)
     db.executescript("""
     CREATE TABLE IF NOT EXISTS users(
         id INTEGER PRIMARY KEY, username TEXT UNIQUE,
@@ -279,163 +377,21 @@ def init_db():
         id INTEGER PRIMARY KEY,
         build_id INTEGER REFERENCES pc_builds(id) ON DELETE CASCADE,
         category TEXT, name TEXT, price REAL DEFAULT 0, notes TEXT);
-    -- ── Fantacalcio (§4.2) ────────────────────────────────────────────────
+    -- ── Fantacalcio (§4.2, §4.6) ──────────────────────────────────────────
+    -- Fonti **in regola**: il listone dai due Excel che Davide scarica col suo
+    -- login, calendario e classifica da football-data.org. Fino al 25/09/2026 queste
+    -- tabelle si chiamavano `fanta2_*` e accanto c'era la sezione vecchia, che
+    -- leggeva le pagine di fantacalcio.it: la fusione in `_unisci_fantacalcio()` ha
+    -- tolto quella e dato a queste il nome.
     -- `fanta_players` e' il **listone**, ed e' un dato condiviso come il catalogo
     -- Pokemon: non ha un proprietario e non deve averlo. La chiave primaria e'
-    -- l'id di fantacalcio.it, non un progressivo nostro, perche' e' quello che
-    -- lega le tre pagine della fonte fra loro e i nostri dati alla fonte.
-    -- ⚠️ `attivo` esiste per il **mercato**: un giocatore che a gennaio lascia la
-    -- Serie A esce dal listone, ma puo' stare nella rosa di qualcuno. Si spegne,
-    -- non si cancella - cancellarlo porterebbe via la riga di rosa con se'.
+    -- l'id di fantacalcio.it, lo stesso nei due file.
+    -- ⚠️ `attivo` esiste per il **mercato**: un giocatore che lascia la Serie A esce
+    -- dal listone, ma puo' stare nella rosa di qualcuno. Si spegne, non si
+    -- cancella - cancellarlo porterebbe via la riga di rosa con se'.
+    -- `ceduto` e' il foglio «Ceduti» del file: chi ha lasciato la Serie A, spento e
+    -- non cancellato. `autogol` c'e' perche' il file delle statistiche lo porta.
     CREATE TABLE IF NOT EXISTS fanta_players(
-        id INTEGER PRIMARY KEY,
-        nome TEXT NOT NULL, slug TEXT,
-        squadra TEXT, squadra_slug TEXT,
-        ruolo_classic TEXT, ruolo_mantra TEXT, ruolo_mantra_esteso TEXT,
-        qi INTEGER, qa INTEGER, fvm INTEGER,
-        partite_a_voto INTEGER, media_voto REAL, fantamedia REAL,
-        gol INTEGER, gol_subiti INTEGER, rigori TEXT, rigori_parati INTEGER,
-        assist INTEGER, ammonizioni INTEGER, espulsioni INTEGER,
-        attivo INTEGER DEFAULT 1,
-        visto_il TEXT,
-        aggiornato_il TIMESTAMP DEFAULT CURRENT_TIMESTAMP);
-    -- Le leghe, con le loro regole. Sono **dati dell'utente**: ogni SELECT qui
-    -- sopra va filtrata con ambito_utente(), e una query nuova nasce scoperta.
-    -- ⚠️ Dei valori di default **sette** vengono dal regolamento ufficiale, che
-    -- `/regolamenti/leghe-private` elenca per esteso (riletto il 21/09/2026): gol
-    -- +3 rigori compresi, assist +1, ammonizione -0,5, espulsione -1, gol subito
-    -- -1, rigore parato +3, rigore sbagliato -3. I cartellini si fermano a -1
-    -- comunque siano combinati. Restano **convenzionali** solo `bonus_imbattibilita`
-    -- e `malus_autogol`, che il regolamento davvero non fissa perche' cambiano da
-    -- lega a lega: quelli sono un punto di partenza da correggere, ed e' il motivo
-    -- per cui queste regole stanno in colonne e non in un testo libero.
-    -- (Fino a quel giorno qui era scritto «solo TRE»: era la prima lettura, fatta
-    -- sulla pagina sbagliata, non una regola diversa.)
-    -- ⚠️ `bonus_gol` e' **uno solo**, dal 21/09/2026. Prima erano quattro colonne
-    -- (una per ruolo) e per il regolamento ufficiale di fantacalcio.it il gol vale
-    -- **+3 comunque**, chiunque lo segni: quattro caselle da riempire con lo stesso
-    -- numero erano quattro occasioni di sbagliarne una. La migrazione piu' sotto
-    -- travasa il vecchio valore e toglie le quattro colonne, ma **solo** se in ogni
-    -- lega erano uguali fra loro: dove non lo fossero, resterebbero li' invece di
-    -- perdere in silenzio una differenza voluta.
-    -- Il modificatore di difesa ha la **struttura** del regolamento ufficiale
-    -- (media del portiere + migliori 3 difensori, esclusi bonus e malus, e serve
-    -- che almeno 4 difensori portino voto) e i **valori** in `mod_difesa_soglie`,
-    -- perche' quelli la piattaforma li lascia personalizzare.
-    CREATE TABLE IF NOT EXISTS fanta_leagues(
-        id INTEGER PRIMARY KEY, user_id INTEGER,
-        nome TEXT NOT NULL,
-        sistema TEXT DEFAULT 'classic',
-        moduli TEXT DEFAULT '3-4-3,3-5-2,4-3-3,4-4-2,4-5-1,5-3-2,5-4-1',
-        n_panchinari INTEGER DEFAULT 7,
-        mod_difesa INTEGER DEFAULT 0,
-        mod_difesa_portiere INTEGER DEFAULT 1,
-        mod_difesa_soglie TEXT,
-        bonus_gol REAL DEFAULT 3,
-        bonus_assist REAL DEFAULT 1,
-        malus_amm REAL DEFAULT -0.5, malus_esp REAL DEFAULT -1,
-        malus_gol_subito REAL DEFAULT -1,
-        bonus_imbattibilita REAL DEFAULT 1,
-        bonus_rigore_parato REAL DEFAULT 3,
-        malus_rigore_sbagliato REAL DEFAULT -3,
-        malus_autogol REAL DEFAULT -2,
-        note TEXT,
-        created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP);
-    -- La rosa: quali giocatori sono miei, in quale lega, e a che prezzo.
-    -- ⚠️ Nessun ON DELETE CASCADE verso `fanta_players`: il listone si aggiorna,
-    -- la rosa no. Un giocatore spento resta in rosa e la pagina lo dichiara.
-    CREATE TABLE IF NOT EXISTS fanta_roster(
-        id INTEGER PRIMARY KEY,
-        league_id INTEGER REFERENCES fanta_leagues(id) ON DELETE CASCADE,
-        player_id INTEGER REFERENCES fanta_players(id),
-        prezzo REAL DEFAULT 0, note TEXT,
-        UNIQUE(league_id, player_id));
-    -- Le probabili formazioni, una giornata per volta. Dato **condiviso** come il
-    -- listone (le formazioni della Serie A non sono di nessun utente) e
-    -- **rigenerabile dalla fonte**: per questo non entra nell'export, esattamente
-    -- come `fanta_players`. Quello che l'export deve salvare sono le leghe e le
-    -- rose, che nessuna fonte sa ricostruire.
-    -- La chiave e' (giornata, squadra): la pagina si riscrive di continuo fino al
-    -- fischio d'inizio, quindi l'import **sovrascrive** la giornata che rilegge e
-    -- lascia stare le altre.
-    CREATE TABLE IF NOT EXISTS fanta_probabili_squadre(
-        giornata INTEGER NOT NULL,
-        squadra_slug TEXT NOT NULL,
-        squadra TEXT, modulo TEXT,
-        avversario TEXT, avversario_slug TEXT,
-        in_casa INTEGER, match_id INTEGER,
-        aggiornato_il TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
-        PRIMARY KEY(giornata, squadra_slug));
-    -- ⚠️ `player_id` **non** e' una foreign key verso `fanta_players`, ed e' una
-    -- scelta: il 21/09/2026 dodici convocati delle probabili non erano nel listone
-    -- (sono giocatori veri che la fonte non quota). Con il vincolo sarebbero stati
-    -- buttati via in silenzio; senza, entrano e l'import dice quanti sono. Chi
-    -- legge deve quindi fare una LEFT JOIN, non una JOIN.
-    -- Il `modulo` qui e' quello **vero della squadra di Serie A** (3-4-2-1, quattro
-    -- numeri): non ha niente a che vedere con i moduli del fantacalcio, che sono a
-    -- tre e stanno in `fanta_leagues.moduli`. Confonderli non darebbe errore.
-    CREATE TABLE IF NOT EXISTS fanta_probabili(
-        giornata INTEGER NOT NULL,
-        player_id INTEGER NOT NULL,
-        nome TEXT, squadra_slug TEXT, ruolo TEXT,
-        titolare INTEGER, percentuale INTEGER,
-        aggiornato_il TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
-        PRIMARY KEY(giornata, player_id));
-    CREATE INDEX IF NOT EXISTS ix_probabili_giocatore
-        ON fanta_probabili(player_id);
-    -- La formazione schierata, **una per lega**: decisione di Davide del
-    -- 21/09/2026, contro l'alternativa «una per giornata». Non c'e' quindi una
-    -- colonna `giornata`, ed e' voluto: la formazione della settimana prima non si
-    -- conserva. ⚠️ La conseguenza da sapere prima di scrivere il consiglio: senza
-    -- storico **non sara' verificabile a posteriori** se consigliava bene.
-    --
-    -- Il `modulo` sta in `fanta_leagues.modulo_scelto`, non qui: una formazione ha
-    -- **un** modulo, e tenerlo su ogni riga vorrebbe dire poterlo scrivere diverso
-    -- in undici posti. Una riga qui e' un posto occupato, niente di piu'.
-    --
-    -- `ordine` e' il posto in campo per i titolari e **l'ordine di subentro** per i
-    -- panchinari. ⚠️ Per i panchinari non e' una decorazione: nel fantacalcio e'
-    -- l'ordine che decide chi entra al posto di chi non gioca, quindi una panchina
-    -- salvata come insieme invece che come lista non permetterebbe mai di calcolare
-    -- le sostituzioni.
-    -- Il calendario: **quando** si gioca, cioe' entro quando va schierata la
-    -- formazione. Dato condiviso e rigenerabile come le probabili, quindi fuori
-    -- dall'export. Chiave (giornata, match_id): una partita rinviata cambia ora e
-    -- si riscrive, non si aggiunge.
-    -- ⚠️ `inizio` e' 'YYYY-MM-DD HH:MM' in **ora italiana**, come la scrive la
-    -- fonte: niente fuso, niente UTC. L'app gira in casa e il browser che la legge
-    -- sta nello stesso fuso della Serie A; scriverla come UTC sposterebbe il timer
-    -- di due ore senza dare nessun errore.
-    -- ⚠️ E puo' essere NULL: la fonte a volte non ha ancora l'orario. Un timer che
-    -- manca si dichiara, un timer sbagliato no.
-    CREATE TABLE IF NOT EXISTS fanta_calendario(
-        giornata INTEGER NOT NULL,
-        match_id INTEGER NOT NULL,
-        squadra_casa TEXT, squadra_casa_slug TEXT,
-        squadra_fuori TEXT, squadra_fuori_slug TEXT,
-        inizio TEXT, stadio TEXT,
-        aggiornato_il TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
-        PRIMARY KEY(giornata, match_id));
-    CREATE TABLE IF NOT EXISTS fanta_formazione(
-        league_id INTEGER REFERENCES fanta_leagues(id) ON DELETE CASCADE,
-        player_id INTEGER REFERENCES fanta_players(id),
-        titolare INTEGER NOT NULL,
-        ordine INTEGER NOT NULL,
-        ruolo TEXT,
-        PRIMARY KEY(league_id, player_id));
-    -- ── Fantacalcio 2 (§4.6, 24/09/2026) ─────────────────────────────────
-    -- La stessa sezione con **fonti in regola**: il listone dai due Excel che
-    -- Davide scarica col suo login, calendario e classifica da football-data.org.
-    -- ⚠️ **Tabelle sue, tutte**, per decisione di Davide: la prima sezione resta
-    -- com'e' per poterci tornare. Anche il listone, e non per scrupolo: la prima
-    -- sezione lo riscrive da sola dal sito entrando, questa dagli Excel, e con una
-    -- tabella in comune le due si sovrascriverebbero a vicenda (i 63 ceduti spenti
-    -- da una e riaccesi dall'altra). Quando si sceglie quale tenere, l'altra si
-    -- spegne con le sue tabelle.
-    -- `ceduto` e' il foglio «Ceduti» del file: chi ha lasciato la Serie A. Come
-    -- `attivo=0` nella prima sezione, spento e non cancellato. `autogol` c'e' qui e
-    -- non la': le pagine non lo pubblicavano, il file si'.
-    CREATE TABLE IF NOT EXISTS fanta2_players(
         id INTEGER PRIMARY KEY,
         nome TEXT NOT NULL,
         squadra TEXT, squadra_slug TEXT,
@@ -448,9 +404,25 @@ def init_db():
         attivo INTEGER DEFAULT 1,
         visto_il TEXT,
         aggiornato_il TIMESTAMP DEFAULT CURRENT_TIMESTAMP);
-    -- Leghe, rose e formazioni: stesse colonne della prima sezione, stessi
-    -- vincoli, stesso proprietario (`user_id` sulla lega, ereditato dalle figlie).
-    CREATE TABLE IF NOT EXISTS fanta2_leagues(
+    -- Le leghe, con le loro regole. Sono **dati dell'utente**: ogni SELECT qui
+    -- sopra va filtrata con ambito_utente(), e una query nuova nasce scoperta.
+    -- ⚠️ Dei valori di default **sette** vengono dal regolamento ufficiale, che
+    -- `/regolamenti/leghe-private` elenca per esteso (riletto il 21/09/2026): gol
+    -- +3 rigori compresi, assist +1, ammonizione -0,5, espulsione -1, gol subito
+    -- -1, rigore parato +3, rigore sbagliato -3. Restano **convenzionali** solo
+    -- `bonus_imbattibilita` e `malus_autogol`, che il regolamento non fissa perche'
+    -- cambiano da lega a lega: e' il motivo per cui queste regole stanno in colonne
+    -- e non in un testo libero.
+    -- ⚠️ `bonus_gol` e' **uno solo**, dal 21/09/2026: per il regolamento il gol vale
+    -- +3 chiunque lo segni, e quattro caselle uguali erano quattro occasioni di
+    -- sbagliarne una.
+    -- Il modificatore di difesa ha la **struttura** del regolamento ufficiale
+    -- (media del portiere + migliori 3 difensori, esclusi bonus e malus, e serve
+    -- che almeno 4 difensori portino voto) e i **valori** in `mod_difesa_soglie`,
+    -- perche' quelli la piattaforma li lascia personalizzare.
+    -- Il `modulo_scelto` e' quello della formazione schierata: sta qui e non su ogni
+    -- riga di `fanta_formazione` perche' una formazione ne ha **uno**.
+    CREATE TABLE IF NOT EXISTS fanta_leagues(
         id INTEGER PRIMARY KEY, user_id INTEGER,
         nome TEXT NOT NULL,
         sistema TEXT DEFAULT 'classic',
@@ -470,15 +442,24 @@ def init_db():
         modulo_scelto TEXT,
         note TEXT,
         created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP);
-    CREATE TABLE IF NOT EXISTS fanta2_roster(
+    -- La rosa: quali giocatori sono miei, in quale lega, e a che prezzo.
+    -- ⚠️ Nessun ON DELETE CASCADE verso `fanta_players`: il listone si aggiorna,
+    -- la rosa no. Un giocatore spento resta in rosa e la pagina lo dichiara.
+    CREATE TABLE IF NOT EXISTS fanta_roster(
         id INTEGER PRIMARY KEY,
-        league_id INTEGER REFERENCES fanta2_leagues(id) ON DELETE CASCADE,
-        player_id INTEGER REFERENCES fanta2_players(id),
+        league_id INTEGER REFERENCES fanta_leagues(id) ON DELETE CASCADE,
+        player_id INTEGER REFERENCES fanta_players(id),
         prezzo REAL DEFAULT 0, note TEXT,
         UNIQUE(league_id, player_id));
-    CREATE TABLE IF NOT EXISTS fanta2_formazione(
-        league_id INTEGER REFERENCES fanta2_leagues(id) ON DELETE CASCADE,
-        player_id INTEGER REFERENCES fanta2_players(id),
+    -- La formazione schierata, **una per lega**: decisione di Davide del
+    -- 21/09/2026, contro l'alternativa «una per giornata». Non c'e' quindi una
+    -- colonna `giornata`, ed e' voluto: senza storico **non e' verificabile a
+    -- posteriori** se il consiglio consigliava bene.
+    -- `ordine` e' il posto in campo per i titolari e **l'ordine di subentro** per i
+    -- panchinari: e' l'ordine che decide chi entra al posto di chi non gioca.
+    CREATE TABLE IF NOT EXISTS fanta_formazione(
+        league_id INTEGER REFERENCES fanta_leagues(id) ON DELETE CASCADE,
+        player_id INTEGER REFERENCES fanta_players(id),
         titolare INTEGER NOT NULL,
         ordine INTEGER NOT NULL,
         ruolo TEXT,
@@ -488,10 +469,11 @@ def init_db():
     -- quindi fuori dall'export come il listone.
     -- ⚠️ `stato` conta quanto l'ora: `SCHEDULED` vuol dire che l'ora e'
     -- **approssimativa**, e solo `TIMED` (o una partita gia' cominciata) ha l'ora
-    -- vera. `inizio` e' in ora italiana come in `fanta_calendario`.
+    -- vera. `inizio` e' 'YYYY-MM-DD HH:MM' in **ora italiana**, senza fuso: il
+    -- browser che fa il conto alla rovescia sta nello stesso fuso della Serie A.
     -- ⚠️ `casa_slug`/`fuori_slug` possono essere NULL: una squadra che non si
     -- abbina al listone resta senza, e la pagina lo dice invece di indovinare.
-    CREATE TABLE IF NOT EXISTS fanta2_calendario(
+    CREATE TABLE IF NOT EXISTS fanta_calendario(
         match_id INTEGER PRIMARY KEY,
         giornata INTEGER, stato TEXT,
         inizio TEXT, utc TEXT,
@@ -502,22 +484,7 @@ def init_db():
     -- La classifica **totale**: l'unica del piano gratuito (niente casa/trasferta,
     -- `form` vuoto). Serve a mostrare l'avversario accanto al giocatore, non a
     -- pesarlo: decisione di Davide del 24/09/2026.
-    -- Chi gioca, **secondo te** (25/09/2026): la titolarita' la segna Davide guardando
-    -- le probabili, perche' nessun programma le legge. Una riga per utente, giornata
-    -- e giocatore: vale per **tutte** le tue leghe (un giocatore titolare lo e' in
-    -- ognuna), e la giornata dopo riparte da vuoto da sola.
-    -- ⚠️ Ha un `user_id` suo, e non per abitudine: due utenti possono pensarla
-    -- diversamente sullo stesso giocatore. In `TABELLE_UTENTE` e' `cancella`: e' stato
-    -- personale, non contenuto — passarlo a un altro vorrebbe dire scrivere che ha
-    -- deciso cose che non ha deciso.
-    CREATE TABLE IF NOT EXISTS fanta2_titolari(
-        user_id INTEGER NOT NULL,
-        giornata INTEGER NOT NULL,
-        player_id INTEGER NOT NULL,
-        stato TEXT NOT NULL,
-        aggiornato_il TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
-        PRIMARY KEY(user_id, giornata, player_id));
-    CREATE TABLE IF NOT EXISTS fanta2_classifica(
+    CREATE TABLE IF NOT EXISTS fanta_classifica(
         squadra_slug TEXT PRIMARY KEY,
         squadra TEXT, posizione INTEGER, punti INTEGER, giocate INTEGER,
         gol_fatti INTEGER, gol_subiti INTEGER,
@@ -748,45 +715,6 @@ def init_db():
     except Exception:
         pass
 
-    # ── Fantacalcio: le regole della lega, rifatte il 21/09/2026 ─────────────
-    # Le due colonne nuove del modificatore di difesa. Come sopra: la CREATE TABLE
-    # vale solo per i DB nuovi, qui c'e' gia' una lega vera.
-    for colonna, tipo in (("mod_difesa_portiere", "INTEGER DEFAULT 1"),
-                          ("mod_difesa_soglie", "TEXT"),
-                          ("bonus_gol", "REAL DEFAULT 3"),
-                          # Il modulo della formazione schierata. Sta qui e non su
-                          # ogni riga di `fanta_formazione` perche' una formazione
-                          # ne ha **uno**: sulle righe si potrebbe scrivere diverso
-                          # in undici posti senza che nessuno se ne accorga.
-                          ("modulo_scelto", "TEXT")):
-        try:
-            db.execute(f"ALTER TABLE fanta_leagues ADD COLUMN {colonna} {tipo}")
-            db.commit()
-        except Exception:
-            pass
-    # ⚠️ Il travaso dei quattro bonus gol in uno. La regola e' **non perdere in
-    # silenzio**: se in qualche lega i quattro valori erano diversi fra loro, quella
-    # differenza era voluta, quindi le colonne vecchie **restano dove sono** e il
-    # travaso non si fa. Dove invece erano uguali - il caso normale, ed e' quello
-    # che il regolamento ufficiale prevede - il valore si sposta e le quattro
-    # colonne se ne vanno.
-    try:
-        vecchie = [r[1] for r in db.execute("PRAGMA table_info(fanta_leagues)")]
-        if "bonus_gol_a" in vecchie:
-            diverse = db.execute(
-                "SELECT COUNT(*) FROM fanta_leagues WHERE bonus_gol_p<>bonus_gol_d "
-                "OR bonus_gol_d<>bonus_gol_c OR bonus_gol_c<>bonus_gol_a").fetchone()[0]
-            if not diverse:
-                db.execute("UPDATE fanta_leagues SET bonus_gol=COALESCE(bonus_gol_a,3) "
-                           "WHERE bonus_gol IS NULL")
-                for colonna in ("bonus_gol_p", "bonus_gol_d", "bonus_gol_c",
-                                "bonus_gol_a"):
-                    db.execute(f"ALTER TABLE fanta_leagues DROP COLUMN {colonna}")
-                db.commit()
-    except Exception:
-        # Un DROP COLUMN che non passa (SQLite vecchio) non deve impedire l'avvio:
-        # le colonne restano, e il codice legge `bonus_gol` che ormai c'e'.
-        pass
     db.commit()
     db.close()
 
@@ -981,12 +909,7 @@ TABELLE_UTENTE = {
     "arduino_projects": "passa",
     "pc_builds": "passa",
     "fanta_leagues": "passa",
-    # La Fantacalcio 2 (§4.6): stesse regole della prima, per la stessa ragione.
-    "fanta2_leagues": "passa",
     "python_progress": "cancella",
-    # Chi gioca secondo te, giornata per giornata: stato personale come le spunte di
-    # Python, quindi si cancella e si dice quante erano (25/09/2026).
-    "fanta2_titolari": "cancella",
     # ⚠️ `cancella` qui non è ordine, è **sicurezza**, e la rete si è fatta trovare
     # subito: questa tabella è nata il 22/09/2026 e `tabelle_senza_regola()` l'ha
     # messa davanti prima che servisse ricordarsene. Se fosse `passa`, eliminare un
@@ -1017,8 +940,6 @@ FIGLIE_DI = {
     "pc_builds": (("pc_components", "build_id"),),
     "fanta_leagues": (("fanta_roster", "league_id"),
                       ("fanta_formazione", "league_id")),
-    "fanta2_leagues": (("fanta2_roster", "league_id"),
-                       ("fanta2_formazione", "league_id")),
 }
 
 

@@ -1,7 +1,8 @@
+{# Il campo del Fantacalcio (§4.6): nato come copia di quello della sezione vecchia, col calendario al posto delle probabili. #}
 {% extends "base.html" %}
 {% from "_fanta_allerta.html" import avviso as allerta_formazione %}
 {% from "_fanta_timer.html" import timer %}
-{% block title %}Formazione &ndash; {{ lega.nome }}{% endblock %}
+{% block title %}Formazione &ndash; {{ lega.nome }} (Fantacalcio){% endblock %}
 {% block topbar_title %}&#9917; Formazione &mdash; {{ lega.nome }}{% endblock %}
 {% block body_class %}sez-fanta{% endblock %}
 {% block extra_head %}
@@ -39,6 +40,8 @@
 .pallino{display:inline-block;width:.42rem;height:.42rem;border-radius:50%;margin-right:.18rem}
 .pal-titolare{background:#22c55e}.pal-panchina{background:#f59e0b}
 .pal-fuori{background:#ef4444}.pal-non_gioca{background:#9ca3af}
+/* Fantacalcio: la squadra gioca, non gioca, o il giocatore e' ceduto. */
+.pal-gioca{background:#22c55e}.pal-ceduto{background:#ef4444}
 .posto-pct{font-size:.55rem;color:rgba(255,255,255,.8)}
 
 /* La panchina: una lista **ordinata**, perché l'ordine decide chi subentra. */
@@ -69,12 +72,7 @@
 .scelta-voce.gia{opacity:.45}
 .avvisi li{margin-bottom:.15rem}
 
-/* ── Il consiglio, qui sotto ───────────────────────────────────────────────
-   ⚠️ Queste classi erano nell'`extra_head` di `fanta_consiglio.html`, la pagina
-   che dal 22/09/2026 non esiste più: il consiglio sta sotto il campo. `.ruolo`
-   **non** è stata ricopiata — questa pagina ce l'ha già, appena più piccola, e
-   due definizioni della stessa classe nello stesso file vogliono dire che vince
-   l'ultima, non che sono d'accordo. */
+/* ── Il consiglio, qui sotto (`_fanta_consiglio.html`) ─────────────────── */
 .fascia{font-size:.64rem;font-weight:700;padding:.05rem .32rem;border-radius:20px;white-space:nowrap}
 .fascia-sicuro{background:var(--success-dim);color:var(--success)}
 .fascia-favorito{background:rgba(22,163,74,.12);color:#16a34a}
@@ -103,10 +101,11 @@
       <p class="text-muted text-sm">
         {{ lega.nome }} &middot; {{ rosa|length }} in rosa &middot;
         {{ lega.n_panchinari }} panchinari
-        {% if giornata %}&middot; probabili della giornata {{ giornata }}{% endif %}
+        {% if giornata %}&middot; giornata {{ giornata }}{% endif %}
       </p>
     </div>
     <div class="flex gap-2">
+      <a class="btn" href="{{ url_for('fantacalcio.chi_gioca', lid=lega.id) }}">&#128064; Probabili</a>
       <a class="btn" href="#consiglio">&#129504; Il consiglio &darr;</a>
       <a class="btn" href="{{ url_for('fantacalcio.lega', lid=lega.id) }}">&larr; Rosa e regole</a>
     </div>
@@ -157,12 +156,12 @@
   <div>
     <div class="campo" id="campo"></div>
     <div class="text-xs text-muted mt-2" id="legenda">
-      <span class="pallino pal-titolare"></span>titolare &middot;
-      <span class="pallino pal-panchina"></span>in panchina &middot;
-      <span class="pallino pal-fuori"></span>non convocato &middot;
-      <span class="pallino pal-non_gioca"></span>la sua squadra non gioca
-      {% if giornata %}<br>Dati della giornata {{ giornata }}: le probabili
-      formazioni cambiano fino al fischio d'inizio.{% endif %}
+      <span class="pallino pal-gioca"></span>la sua squadra gioca &middot;
+      <span class="pallino pal-non_gioca"></span>la sua squadra non gioca &middot;
+      <span class="pallino pal-ceduto"></span>ceduto
+      <br>La titolarità qui non si sa:
+      <a href="{{ url_for('fantacalcio.chi_gioca', lid=lega.id) }}">apri le probabili</a>
+      prima di salvare.
     </div>
   </div>
 
@@ -200,8 +199,10 @@
 </div>
 
 <script>
-/* La rosa e le probabili, dal server: qui non si chiede niente a nessuno, la
-   pagina ha già tutto quello che le serve per disegnare il campo. */
+/* La rosa e la partita di ognuno, dal server: qui non si chiede niente a nessuno,
+   la pagina ha già tutto quello che le serve per disegnare il campo.
+   `stato` è `gioca`, `non_gioca`, `ceduto` o vuoto quando non si sa, e `testo` è
+   quello che si legge accanto al nome. */
 const ROSA = {{ rosa|map(attribute='id')|list|tojson }};
 const DATI = {
   {% for g in rosa %}
@@ -209,8 +210,9 @@ const DATI = {
     nome: {{ g.nome|tojson }}, squadra: {{ (g.squadra or '—')|tojson }},
     ruolo: {{ (g.ruolo_classic or '')|tojson }}, attivo: {{ g.attivo or 0 }},
     fm: {{ g.fantamedia if g.fantamedia is not none else 'null' }},
-    stato: {{ (probabili.get(g.id, {}).get('stato') or '')|tojson }},
-    pct: {{ probabili.get(g.id, {}).get('percentuale') if probabili.get(g.id, {}).get('percentuale') is not none else 'null' }}
+    {% set p = partita.get(g.id, {}) %}
+    stato: {{ ('ceduto' if p.perche == 'ceduto' else 'gioca' if p.gioca else 'non_gioca' if p.gioca is sameas false else '')|tojson }},
+    testo: {{ (('vs ' ~ p.avversario ~ (' (c)' if p.in_casa else ' (f)')) if p.gioca else (p.perche or ''))|tojson }}
   }{% if not loop.last %},{% endif %}
   {% endfor %}
 };
@@ -259,10 +261,7 @@ function cambiaModulo(nuovo){
 
 function statoDi(id){
   const d = DATI[id];
-  if (!d || !d.stato) return '';
-  const testo = {titolare: 'titolare', panchina: 'panchina',
-                 fuori: 'non convocato', non_gioca: 'non gioca'}[d.stato] || '';
-  return testo + (d.pct !== null && d.pct !== undefined ? ' ' + d.pct + '%' : '');
+  return (d && d.testo) || '';
 }
 
 function disegna(){
@@ -392,7 +391,7 @@ function apriScelta(ruolo, posto){
       '<span class="ruolo ruolo-' + d.ruolo + '">' + d.ruolo.toUpperCase() + '</span>' +
       '<span style="flex:1;min-width:0">' +
         '<div class="text-sm font-600">' + d.nome +
-          (d.attivo ? '' : ' <span class="badge badge-warning">fuori listone</span>') +
+          (d.attivo ? '' : ' <span class="badge badge-warning">ceduto</span>') +
         '</div>' +
         '<div class="text-xs text-muted">' + d.squadra +
           (d.fm !== null ? ' · FM ' + d.fm : '') +
@@ -451,8 +450,7 @@ document.getElementById('scelta').addEventListener('click', function(e){
   <div class="flex items-center justify-between flex-wrap gap-2 mb-2">
     <h2 style="font-size:1.05rem;margin:0">&#129504; Il consiglio per questa giornata</h2>
     <span class="text-xs text-muted">
-      {% if giornata %}giornata {{ giornata }}{% else %}nessuna giornata importata{% endif %}
-      {% if probabili_aggiornate %}&middot; probabili del {{ probabili_aggiornate }}{% endif %}
+      {% if giornata %}giornata {{ giornata }}{% else %}calendario non importato{% endif %}
       &middot; {{ rosa|length }} in rosa
     </span>
   </div>

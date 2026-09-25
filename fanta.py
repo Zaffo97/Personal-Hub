@@ -1,15 +1,15 @@
-"""La logica della Fantacalcio 2: import, calendario e consiglio, **in un posto solo**.
+"""La logica del Fantacalcio: import, calendario e consiglio, **in un posto solo**.
 
-È `fanta_import.py` più la parte di `data.py` che la prima sezione usa per il
-consiglio, rifatte per le fonti nuove (`fanta2_fonti.py`). La chiamano il blueprint
-e lo script `scripts/importa_listone2.py`: la stessa logica scritta due volte è il
+Era `fanta_import.py` più la parte di `data.py` che la sezione vecchia (spenta il
+25/09/2026) usava per il consiglio, rifatte per le fonti nuove (`fanta_fonti.py`).
+La chiamano il blueprint e lo script `scripts/importa_listone.py`: la stessa logica scritta due volte è il
 modo in cui una delle due resta indietro, e questo progetto l'ha già pagato.
 
 Ogni funzione che scrive **non stampa niente**: torna un rapporto, e `scrivi=False`
 è il `--dry-run`. Davanti ai numeri che sono il sintomo di un file sbagliato si
 rifiuta, con `ok=False` e il motivo scritto.
 
-⚠️ **Cosa cambia rispetto alla prima sezione**, e va detto a schermo, non scoperto:
+⚠️ **Cosa cambiava rispetto alla sezione vecchia**, e va detto a schermo, non scoperto:
 
 - **niente probabili lette da un programma.** Davide le **guarda** (pagina «Chi
   gioca», un riquadro accanto alla rosa) e la titolarità la decide lui schierando: il
@@ -25,11 +25,11 @@ rifiuta, con `ok=False` e il motivo scritto.
 """
 from datetime import datetime
 
-import fanta2_fonti as F
+import fanta_fonti as F
 from data import (ORDINE_RUOLI_FANTA, MINIMO_PARTITE_FIDATO, scomponi_modulo,
                   nome_ruolo, fantamedia_regole, soglie_mod_difesa, modificatore_difesa)
 
-# Il calendario invecchia in un giorno, come nella prima sezione, e per la stessa
+# Il calendario invecchia in un giorno, come nella sezione vecchia, e per la stessa
 # ragione: da lì esce la scadenza del timer, e un anticipo spostato cambia l'ora.
 # Qui l'aggiornamento automatico è permesso — è un'API con chiave, non una pagina.
 VECCHIO_CALENDARIO = 24
@@ -46,22 +46,22 @@ CAMPI_STATISTICHE = ("partite_a_voto", "media_voto", "fantamedia", "gol",
 # Quanto può calare il listone prima che sia un sintomo invece di un mercato.
 SOGLIA_CALO = 0.70
 
-# Come in `fanta_import`: per contare le rose di tutti bisogna scriverlo.
+# Come faceva `fanta_import`: per contare le rose di tutti bisogna scriverlo.
 TUTTE_LE_ROSE = ("1=1", [])
 
 
 def _rose(db, ids, ambito):
     """Quante volte ognuno di quegli id è in una rosa **visibile da `ambito`**.
 
-    Il filtro passa dalla lega: `fanta2_roster` non ha un proprietario suo.
+    Il filtro passa dalla lega: `fanta_roster` non ha un proprietario suo.
     """
     if not ids:
         return {}
     cond, par = ambito
     segni = ",".join("?" * len(ids))
     return {r["player_id"]: r["quante"] for r in db.execute(
-        f"SELECT r.player_id, COUNT(*) AS quante FROM fanta2_roster r "
-        f"JOIN fanta2_leagues l ON l.id=r.league_id "
+        f"SELECT r.player_id, COUNT(*) AS quante FROM fanta_roster r "
+        f"JOIN fanta_leagues l ON l.id=r.league_id "
         f"WHERE r.player_id IN ({segni}) AND {cond} GROUP BY r.player_id",
         list(ids) + list(par))}
 
@@ -95,11 +95,11 @@ def leggi_i_due_file(file_a, file_b):
 
 def importa_listone(db, fogli_q, fogli_s, scrivi=True, forza=False,
                     ambito=TUTTE_LE_ROSE):
-    """Porta i due Excel in `fanta2_players`. Torna il rapporto.
+    """Porta i due Excel in `fanta_players`. Torna il rapporto.
 
     ⚠️ **Le quotazioni comandano**: un giocatore che sta solo nelle statistiche non
     entra (lo si dice), e le statistiche aggiungono numeri, non giocatori. È la
-    stessa regola della prima sezione.
+    stessa regola della sezione vecchia.
 
     Chi non è più nel file viene **spento, non cancellato**, e chi è nel foglio
     «Ceduti» entra spento: in tutti e due i casi può essere nella rosa di qualcuno.
@@ -132,7 +132,7 @@ def importa_listone(db, fogli_q, fogli_s, scrivi=True, forza=False,
     r["letti"] = len(voci)
     r["ceduti"] = sum(1 for v in voci.values() if v["ceduto"])
 
-    prima = {x["id"]: dict(x) for x in db.execute("SELECT * FROM fanta2_players")}
+    prima = {x["id"]: dict(x) for x in db.execute("SELECT * FROM fanta_players")}
     attivi_prima = sum(1 for x in prima.values() if x["attivo"])
     in_rosa_ora = r["letti"] - r["ceduti"]
     if attivi_prima and in_rosa_ora < attivi_prima * SOGLIA_CALO and not forza:
@@ -167,13 +167,13 @@ def importa_listone(db, fogli_q, fogli_s, scrivi=True, forza=False,
     aggiorna = ", ".join(f"{c}=excluded.{c}" for c in CAMPI_LISTONE)
     for pid, v in voci.items():
         db.execute(
-            f"INSERT INTO fanta2_players(id, {colonne}, attivo, visto_il, aggiornato_il) "
+            f"INSERT INTO fanta_players(id, {colonne}, attivo, visto_il, aggiornato_il) "
             f"VALUES(?, {segni}, ?, ?, CURRENT_TIMESTAMP) "
             f"ON CONFLICT(id) DO UPDATE SET {aggiorna}, attivo=excluded.attivo, "
             "visto_il=excluded.visto_il, aggiornato_il=CURRENT_TIMESTAMP",
             [pid] + [v.get(c) for c in CAMPI_LISTONE] + [0 if v["ceduto"] else 1, oggi])
     if r["spenti"]:
-        db.executemany("UPDATE fanta2_players SET attivo=0, "
+        db.executemany("UPDATE fanta_players SET attivo=0, "
                        "aggiornato_il=CURRENT_TIMESTAMP WHERE id=?",
                        [(x["id"],) for x in r["spenti"]])
     db.commit()
@@ -185,7 +185,7 @@ def importa_listone(db, fogli_q, fogli_s, scrivi=True, forza=False,
 
 def eta_calendario(db):
     """Da quante ore il calendario non si aggiorna, o `None` se non c'è."""
-    r = db.execute("SELECT MAX(aggiornato_il) AS q FROM fanta2_calendario").fetchone()
+    r = db.execute("SELECT MAX(aggiornato_il) AS q FROM fanta_calendario").fetchone()
     if not r or not r["q"]:
         return None
     # `CURRENT_TIMESTAMP` di SQLite è **UTC**: confrontarlo con l'ora locale
@@ -214,7 +214,7 @@ def aggiorna_calendario(db, scrivi=True):
         r["motivo"] = "football-data.org non ha restituito nessuna partita."
         return r
     squadre_listone = {x["squadra_slug"] for x in db.execute(
-        "SELECT DISTINCT squadra_slug FROM fanta2_players WHERE attivo=1 "
+        "SELECT DISTINCT squadra_slug FROM fanta_players WHERE attivo=1 "
         "AND squadra_slug IS NOT NULL")}
     nomi = {p["casa"] for p in partite} | {p["fuori"] for p in partite}
     abbinate, sole = F.abbina_squadre(sorted(n for n in nomi if n), squadre_listone)
@@ -224,17 +224,17 @@ def aggiorna_calendario(db, scrivi=True):
     r["ok"] = True
     if not scrivi:
         return r
-    db.execute("DELETE FROM fanta2_calendario")
+    db.execute("DELETE FROM fanta_calendario")
     db.executemany(
-        "INSERT INTO fanta2_calendario(match_id, giornata, stato, inizio, utc, casa, "
+        "INSERT INTO fanta_calendario(match_id, giornata, stato, inizio, utc, casa, "
         "casa_slug, fuori, fuori_slug, gol_casa, gol_fuori, aggiornata_fonte) "
         "VALUES(?,?,?,?,?,?,?,?,?,?,?,?)",
         [(p["match_id"], p["giornata"], p["stato"], p["inizio"], p["utc"],
           p["casa"], abbinate.get(p["casa"]), p["fuori"], abbinate.get(p["fuori"]),
           p["gol_casa"], p["gol_fuori"], p["aggiornata"]) for p in partite])
-    db.execute("DELETE FROM fanta2_classifica")
+    db.execute("DELETE FROM fanta_classifica")
     db.executemany(
-        "INSERT INTO fanta2_classifica(squadra_slug, squadra, posizione, punti, "
+        "INSERT INTO fanta_classifica(squadra_slug, squadra, posizione, punti, "
         "giocate, gol_fatti, gol_subiti) VALUES(?,?,?,?,?,?,?)",
         [(abbinate.get(t["squadra"]) or F.slug_squadra(t["squadra"]), t["squadra"],
           t["posizione"], t["punti"], t["giocate"], t["gol_fatti"], t["gol_subiti"])
@@ -251,7 +251,7 @@ def giornata_corrente(db):
     destinarsi terrebbe la sezione ferma alla 3 per mesi.
     """
     segni = ",".join("?" * len(F.DA_GIOCARE))
-    r = db.execute(f"SELECT MIN(giornata) AS g FROM fanta2_calendario "
+    r = db.execute(f"SELECT MIN(giornata) AS g FROM fanta_calendario "
                    f"WHERE stato IN ({segni})", tuple(F.DA_GIOCARE)).fetchone()
     return r["g"] if r and r["g"] else None
 
@@ -266,7 +266,7 @@ def scadenza(db, giornata):
     if not giornata:
         return None
     righe = [dict(x) for x in db.execute(
-        "SELECT * FROM fanta2_calendario WHERE giornata=? ORDER BY inizio",
+        "SELECT * FROM fanta_calendario WHERE giornata=? ORDER BY inizio",
         (giornata,))]
     con_ora = [x for x in righe if x["stato"] in F.CON_ORA and x["inizio"]]
     if not con_ora:
@@ -288,7 +288,7 @@ def partite_della_giornata(db, giornata):
     if not giornata:
         return {}
     fuori = {}
-    for x in db.execute("SELECT * FROM fanta2_calendario WHERE giornata=? "
+    for x in db.execute("SELECT * FROM fanta_calendario WHERE giornata=? "
                         "ORDER BY inizio", (giornata,)):
         x = dict(x)
         gioca = x["stato"] not in F.NON_SI_GIOCA
@@ -305,7 +305,7 @@ def partite_della_giornata(db, giornata):
 
 def classifica(db):
     return {x["squadra_slug"]: dict(x) for x in db.execute(
-        "SELECT * FROM fanta2_classifica ORDER BY posizione")}
+        "SELECT * FROM fanta_classifica ORDER BY posizione")}
 
 
 def partita_di(g, partite, tabella, calendario_c_e):
@@ -339,7 +339,7 @@ def partita_di(g, partite, tabella, calendario_c_e):
 def fantamedia_lega(g, regole):
     """La fantamedia rifatta con le regole della lega, **autogol compreso**.
 
-    È `fantamedia_regole()` della prima sezione più l'autogol, che lì non c'era
+    È `fantamedia_regole()` di `data.py` più l'autogol, che lì non c'era
     perché le pagine non lo pubblicavano: il file delle statistiche sì (`Au`).
     """
     fm, pezzi = fantamedia_regole(g, regole)
@@ -396,7 +396,7 @@ def modificatore(titolari, regole):
     """Il modificatore di difesa di questo undici **se giocano tutti**. `None` se la
     lega non lo usa.
 
-    Stessa struttura della prima sezione (portiere + migliori 3, o migliori 4, e
+    Stessa struttura della sezione vecchia (portiere + migliori 3, o migliori 4, e
     servono 4 difensori a voto). ⚠️ Là il numero veniva moltiplicato per la
     probabilità che quei quattro giochino; qui la probabilità non c'è, e la pagina
     lo dice: è il valore **pieno**, cioè il massimo.
@@ -429,7 +429,7 @@ def consiglia_formazione(valutazioni, modulo, n_panchinari=7, regole=None):
     - `forzati`: titolari che **non giocano** ma servono a riempire il reparto — con
       due portieri di cui uno ceduto e l'altro senza partita, un portiere lo schieri
       lo stesso. La pagina lo dichiara;
-    - la panchina segue la stessa regola della prima sezione: al massimo quanti ne
+    - la panchina segue la stessa regola della sezione vecchia: al massimo quanti ne
       gioca il modulo per ruolo (un secondo portiere di riserva non entra mai), e
       quello che avanza rientra solo se restano posti.
     """
@@ -473,14 +473,14 @@ def consiglia_moduli(valutazioni, moduli, n_panchinari=7, regole=None):
 
 
 def controlla_schierati(schierati, valutazioni, nomi, in_rosa):
-    """Cosa non torna nella formazione salvata. Stessa forma della prima sezione.
+    """Cosa non torna nella formazione salvata. Stessa forma di quella della sezione vecchia.
 
     - `fuori`: titolari che **non giocano** — ceduti, squadra senza partita, partita
       rinviata. È un fatto del calendario, non un'opinione di una redazione;
     - `occasioni`: panchinari che giocano con una fantamedia più alta di un titolare
       dello stesso ruolo **che non gioca**. Solo in quel caso: «in panchina c'è uno
       più bravo» non è un guaio, è la tua scelta;
-    - `spariti`: schierati ma non più in rosa (la rete, come nella prima sezione).
+    - `spariti`: schierati ma non più in rosa (la rete, come nella sezione vecchia).
 
     `incerti` resta vuoto e c'è solo perché il riquadro abbia la stessa forma: qui
     non c'è una percentuale che possa mettere in dubbio un titolare (dal 25/09/2026
@@ -510,7 +510,7 @@ def controlla_schierati(schierati, valutazioni, nomi, in_rosa):
 
 
 def controlla_formazione_larga(modulo, titolari, panchinari, rosa, n_panchinari=None):
-    """La validazione della Fantacalcio 2: `(sbagli, mancano)`, due liste di frasi.
+    """La validazione del Fantacalcio: `(sbagli, mancano)`, due liste di frasi.
 
     Richiesta di Davide del 25/09/2026: la formazione si salva **anche incompleta**,
     perché si costruisce saltando fra una pagina e l'altra. Quindi due elenchi:
@@ -521,8 +521,8 @@ def controlla_formazione_larga(modulo, titolari, panchinari, rosa, n_panchinari=
     - `mancano`: una formazione **a metà**, che si salva e si dice — «mancano 2
       difensori», la panchina non piena.
 
-    ⚠️ È la gemella larga di `data.controlla_formazione()`, che resta severa per la
-    prima sezione e non si tocca. Il modulo **ammesso dalla lega** lo guarda chi
+    ⚠️ È la gemella larga di `data.controlla_formazione()`, che resta severa per
+    «applica il consiglio» e non si tocca. Il modulo **ammesso dalla lega** lo guarda chi
     chiama, come lì.
     """
     serve = scomponi_modulo(modulo)
