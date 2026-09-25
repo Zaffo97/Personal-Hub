@@ -3,14 +3,22 @@
    Stessa forma di `_fanta_allerta.html`, ma il confronto non e' con le probabili
    (qui non ci sono): e' col **calendario** e con **le tue scelte** di «Chi gioca».
    Dice chi e' schierato titolare e non gioca (ceduto, squadra senza partita, partita
-   rinviata, o segnato «non gioca»), e chi hai segnato in dubbio.
+   rinviata, o segnato «non gioca»), chi hai segnato in dubbio, e — dal 25/09/2026,
+   da quando si salva anche a meta' — cosa **manca** per completarla.
    Si usa con `{% from "_fanta2_allerta.html" import avviso %}`. #}
 {% macro avviso(allerta, giornata, url_campo=None) %}
-{% if allerta and (allerta.fuori or allerta.incerti or allerta.spariti) %}
+{% if allerta and (allerta.fuori or allerta.incerti or allerta.spariti or allerta.mancano) %}
 <div class="card mb-3" style="border-color:#d97706">
   <div style="padding:.8rem 1rem" class="text-sm">
-    <strong>&#9888; {% if allerta.fuori or allerta.spariti %}Nella formazione schierata c'è chi non gioca{% else %}Nella formazione schierata c'è chi è in dubbio{% endif %}</strong>
+    <strong>&#9888; {% if allerta.fuori or allerta.spariti %}Nella formazione schierata c'è chi non gioca{% elif allerta.incerti %}Nella formazione schierata c'è chi è in dubbio{% else %}La formazione schierata non è completa{% endif %}</strong>
     <span class="text-xs text-muted">(giornata {{ giornata or '—' }})</span>
+
+    {% if allerta.mancano %}
+    <div class="mt-2">
+      <strong>Non è completa</strong>:
+      <span class="text-muted">{{ allerta.mancano|join(', ') }}</span>
+    </div>
+    {% endif %}
 
     {% if allerta.spariti %}
     <div class="mt-2">

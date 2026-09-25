@@ -26,7 +26,7 @@ from datetime import datetime
 
 import fanta2_fonti as F
 from data import (ORDINE_RUOLI_FANTA, MINIMO_PARTITE_FIDATO, scomponi_modulo,
-                  fantamedia_regole, soglie_mod_difesa, modificatore_difesa)
+                  nome_ruolo, fantamedia_regole, soglie_mod_difesa, modificatore_difesa)
 
 # Il calendario invecchia in un giorno, come nella prima sezione, e per la stessa
 # ragione: da lì esce la scadenza del timer, e un anticipo spostato cambia l'ora.
@@ -534,3 +534,63 @@ def controlla_schierati(schierati, valutazioni, nomi, in_rosa):
             "incerti": sorted(incerti, key=lambda x: x["nome"]),
             "occasioni": sorted(occasioni, key=lambda x: -(x["fm"] or 0)),
             "spariti": sorted(spariti, key=lambda x: x["nome"])}
+
+
+def controlla_formazione_larga(modulo, titolari, panchinari, rosa, n_panchinari=None):
+    """La validazione della Fantacalcio 2: `(sbagli, mancano)`, due liste di frasi.
+
+    Richiesta di Davide del 25/09/2026: la formazione si salva **anche incompleta**,
+    perché si costruisce saltando fra una pagina e l'altra. Quindi due elenchi:
+
+    - `sbagli`: una formazione **sbagliata**, che non si salva — modulo illeggibile,
+      giocatore non in rosa, doppione, più giocatori di un ruolo di quanti il modulo
+      ne vuole (un attaccante al posto di un difensore), panchina oltre il limite;
+    - `mancano`: una formazione **a metà**, che si salva e si dice — «mancano 2
+      difensori», la panchina non piena.
+
+    ⚠️ È la gemella larga di `data.controlla_formazione()`, che resta severa per la
+    prima sezione e non si tocca. Il modulo **ammesso dalla lega** lo guarda chi
+    chiama, come lì.
+    """
+    serve = scomponi_modulo(modulo)
+    if not serve:
+        return ([f"«{modulo or '—'}» non è un modulo: i dieci di movimento devono "
+                 "fare 10."], [])
+    sbagli = []
+    tutti = list(titolari) + list(panchinari)
+    fuori_rosa = [p for p in tutti if p not in rosa]
+    if fuori_rosa:
+        sbagli.append(f"{len(fuori_rosa)} giocatore non è in questa rosa."
+                      if len(fuori_rosa) == 1 else
+                      f"{len(fuori_rosa)} giocatori non sono in questa rosa.")
+    visti, doppi = set(), []
+    for p in tutti:
+        if p in visti:
+            doppi.append(p)
+        visti.add(p)
+    if doppi:
+        sbagli.append("Un giocatore è schierato due volte."
+                      if len(doppi) == 1 else
+                      f"{len(doppi)} giocatori sono schierati due volte.")
+    if sbagli:
+        return sbagli, []
+
+    per_ruolo = {}
+    for p in titolari:
+        per_ruolo[rosa[p]] = per_ruolo.get(rosa[p], 0) + 1
+    mancano = []
+    for ruolo in ORDINE_RUOLI_FANTA:
+        ha, vuole = per_ruolo.get(ruolo, 0), serve[ruolo]
+        if ha > vuole:
+            sbagli.append(f"Hai {ha} {nome_ruolo(ruolo, ha)} in campo, il {modulo} "
+                          f"ne vuole {vuole}.")
+        elif ha < vuole:
+            manca = vuole - ha
+            mancano.append(f"{'manca' if manca == 1 else 'mancano'} {manca} "
+                           f"{nome_ruolo(ruolo, manca)}")
+    if n_panchinari is not None and len(panchinari) > n_panchinari:
+        sbagli.append(f"In panchina ce ne sono {len(panchinari)}, questa lega ne "
+                      f"ammette {n_panchinari}.")
+    elif n_panchinari and len(panchinari) < n_panchinari:
+        mancano.append(f"panchina {len(panchinari)} su {n_panchinari}")
+    return sbagli, mancano

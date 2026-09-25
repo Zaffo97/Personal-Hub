@@ -383,6 +383,42 @@ def prove(dove):
     esito("«applica» scrive una formazione da 11", tit == 11,
           f"{tit} titolari")
 
+    # La formazione si salva anche a metà (25/09/2026), mai sbagliata.
+    def salvata():
+        db = extensions.get_db()
+        righe = db.execute("SELECT player_id, titolare FROM fanta2_formazione "
+                           "WHERE league_id=? ORDER BY titolare DESC, ordine",
+                           (lid,)).fetchall()
+        db.close()
+        return ([r["player_id"] for r in righe if r["titolare"]],
+                [r["player_id"] for r in righe if not r["titolare"]])
+    ruolo = {v["g"]["id"]: v["g"]["ruolo_classic"] for v in ctx["valutazioni"]}
+    difensori = [i for i in titolari if ruolo[i] == "d"]
+    nove = [i for i in titolari if i not in difensori[:2]]
+    r = c.post(f"/fantacalcio2/lega/{lid}/formazione/salva",
+               data={"modulo": "4-4-2", "titolare": nove, "panchinaro": []},
+               follow_redirects=True)
+    pagina = r.data.decode("utf-8", "replace")
+    esito("⚠️ una formazione da 9, panchina vuota, si salva e si rilegge uguale",
+          salvata() == (nove, []), str(salvata()))
+    esito("e dice cosa manca, nel messaggio e nell'avviso sopra il campo",
+          "Non è ancora completa: mancano 2 difensori" in pagina
+          and "<strong>Non è completa</strong>" in pagina)
+    r = c.post(f"/fantacalcio2/lega/{lid}/formazione/salva",
+               data={"modulo": "4-4-2", "titolare": nove[:-1],
+                     "panchinaro": [nove[0]]}, follow_redirects=True)
+    esito("un doppione invece non si salva, e la formazione di prima resta",
+          "schierato due volte" in r.data.decode("utf-8", "replace")
+          and salvata() == (nove, []))
+    attaccanti = [i for i in ruolo if ruolo[i] == "a"]
+    r = c.post(f"/fantacalcio2/lega/{lid}/formazione/salva",
+               data={"modulo": "4-4-2", "titolare": attaccanti[:3]},
+               follow_redirects=True)
+    esito("né un attaccante in più di quanti il modulo ne vuole",
+          "ne vuole 2" in r.data.decode("utf-8", "replace")
+          and salvata() == (nove, []), f"{len(attaccanti)} attaccanti in rosa")
+    c.post(f"/fantacalcio2/lega/{lid}/consiglio/applica", data={"modulo": "4-4-2"})
+
     # --- 7. l'avviso e il campo ----------------------------------------------------
     print("\n== 7. l'avviso sulla formazione e chi esce dalla rosa ==")
     db = extensions.get_db()

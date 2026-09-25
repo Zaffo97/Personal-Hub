@@ -20,6 +20,16 @@ pagina ed esegue `new Function()` su ogni blocco `<script>` **e** su ogni handle
 
 ## 25/09/2026
 
+**Fantacalcio 2: la formazione si salva anche incompleta (§4.6)** — richiesta di Davide, per
+costruirla saltando fra una pagina e l'altra. `fanta2.controlla_formazione_larga()` separa ciò
+che è **sbagliato** (modulo illeggibile o non ammesso, fuori rosa, doppioni, più giocatori di un
+ruolo di quanti il modulo ne vuole, panchina oltre il limite: non si salva) da ciò che **manca**
+(reparti non pieni, panchina corta: si salva e si dice, nel messaggio e nell'avviso sopra il
+campo, che conta anche nell'elenco delle leghe). «Applica» e la prima sezione restano severi,
+`data.controlla_formazione()` non toccata. `prova_fantacalcio2.py` **76 su 76** (4 nuove: la
+formazione da 9 si rilegge uguale, il doppione e l'attaccante in più rifiutati),
+`prova_fantacalcio.py` **245 su 245**, sweep 0 errori.
+
 **Fantacalcio 2: «Chi gioca» (§4.6)** — decisione di Davide: la titolarità la segna lui, con le
 probabili di fantacalcio.it in un riquadro accanto alla rosa (le carica il suo browser) e tre
 stati per giocatore salvati a ogni clic (`fanta2_titolari`, per utente e giornata). Il consiglio

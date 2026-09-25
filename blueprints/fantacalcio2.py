@@ -175,7 +175,23 @@ def _allerta(db, lid, rosa, valutazioni):
             mancanti).fetchall()})
     allerta = G.controlla_schierati(schierati, valutazioni, nomi,
                                     {g["id"] for g in rosa})
-    return allerta if quanti_guai(allerta) else None
+    # La formazione si salva anche a metà (25/09/2026): quello che manca si dice qui,
+    # contando solo chi è ancora in rosa — chi se n'è andato è già fra gli `spariti`.
+    lega = db.execute("SELECT modulo_scelto, n_panchinari FROM fanta2_leagues "
+                      "WHERE id=?", (lid,)).fetchone()
+    ruoli = {g["id"]: g["ruolo_classic"] for g in rosa}
+    in_rosa = [(p, r) for p, r in schierati.items() if p in ruoli]
+    _, allerta["mancano"] = G.controlla_formazione_larga(
+        lega["modulo_scelto"] if lega else None,
+        [p for p, r in in_rosa if r.get("titolare")],
+        [p for p, r in in_rosa if not r.get("titolare")],
+        ruoli, lega["n_panchinari"] if lega else None)
+    return allerta if _quanti(allerta) else None
+
+
+def _quanti(allerta):
+    """Le cose da guardare: quelle della prima sezione più quello che **manca**."""
+    return quanti_guai(allerta) + len((allerta or {}).get("mancano") or ())
 
 
 @bp.route("/")
@@ -206,7 +222,7 @@ def fantacalcio2():
     guai_lega = {}
     for l in leghe:
         rosa_l = _rosa_della_lega(db, l["id"])
-        quanti = quanti_guai(_allerta(db, l["id"], rosa_l, _valuta(db, l, rosa_l, ctx)))
+        quanti = _quanti(_allerta(db, l["id"], rosa_l, _valuta(db, l, rosa_l, ctx)))
         if quanti:
             guai_lega[l["id"]] = quanti
     eta = G.eta_calendario(db)
@@ -573,7 +589,8 @@ def _scrivi_formazione(db, lid, modulo, titolari, panchinari, rosa):
 @bp.route("/lega/<int:lid>/formazione/salva", methods=["POST"])
 @login_required
 def formazione_salva(lid):
-    """Salva la formazione **se torna**: il ruolo lo decide la rosa, non il form."""
+    """Salva la formazione anche **incompleta**, mai **sbagliata** (25/09/2026).
+    Il ruolo lo decide la rosa, non il form."""
     db = get_db()
     lega = _lega_mia(db, lid)
     if lega is None:
@@ -589,8 +606,9 @@ def formazione_salva(lid):
     if ammessi and modulo not in ammessi:
         guai.append(f"Il modulo {modulo or '—'} non è fra quelli ammessi da questa "
                     f"lega ({', '.join(ammessi)}).")
-    guai += controlla_formazione(modulo, titolari, panchinari, rosa,
-                                 lega.get("n_panchinari"))
+    sbagli, mancano = G.controlla_formazione_larga(modulo, titolari, panchinari, rosa,
+                                                   lega.get("n_panchinari"))
+    guai += sbagli
     if guai:
         db.close()
         for g in guai:
@@ -601,6 +619,8 @@ def formazione_salva(lid):
         return _torna()
     flash(f"Formazione salvata: {modulo}, {len(titolari)} titolari e "
           f"{len(panchinari)} in panchina", "success")
+    if mancano:
+        flash("Non è ancora completa: " + ", ".join(mancano) + ".", "info")
     return redirect(url_for("fantacalcio2.formazione", lid=lid))
 
 

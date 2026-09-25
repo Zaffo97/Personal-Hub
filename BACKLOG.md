@@ -1313,7 +1313,7 @@ sa dal codice, non un piano.
 **Cosa c'è, dal 24/09/2026** — `fanta2_fonti.py` (legge), `fanta2.py` (logica),
 `blueprints/fantacalcio2.py`, sette template (`fantacalcio2.html`, `fanta2_*.html`,
 `_fanta2_consiglio.html`, `_fanta2_allerta.html`), `scripts/importa_listone2.py` e
-`scripts/prova_fantacalcio2.py` (**57 su 57**). Le fonti:
+`scripts/prova_fantacalcio2.py` (**76 su 76** dal 25/09/2026). Le fonti:
 
 | Dato | Fonte | Come arriva |
 |---|---|---|
@@ -1348,25 +1348,8 @@ difesa** è il valore pieno: senza probabili non c'è la probabilità per cui mo
 - ✅ **Chiarito con Davide il 25/09/2026**: il campo col consiglio sul modulo c'era già e va
   bene così; la **titolarità la guarda lui** sulla pagina di fantacalcio.it. La pagina «Chi
   gioca» resta, e i segni sono **facoltativi**.
-- ⬜ **Da fare alla prossima sessione — salvare la formazione anche incompleta** (Fantacalcio 2).
-  Richiesta di Davide del 25/09/2026: «devo poter salvare la formazione in qualsiasi modo,
-  anche se mancano i titolari o la panchina, perché se devo ballare tra una pagina e l'altra
-  mi serve questo». Oggi `formazione_salva()` usa la **validazione severa** di
-  `controlla_formazione()` (scelta di Davide del 21/09 per la prima sezione): meno di 11
-  titolari o un reparto che non torna **non si salva**. ⚠️ Nella 2 va allentata, e la prima
-  **non si tocca**. Proposta da confermare con lui prima di scriverla:
-  - **si salva sempre** una formazione incompleta: meno di 11 titolari, reparti non pieni,
-    panchina vuota;
-  - **restano rifiutati** solo i casi che non sono «incompleta» ma **sbagliata**: un giocatore
-    che non è in rosa, lo stesso giocatore due volte, un ruolo in un posto che il modulo non ha
-    (un attaccante sul posto di un difensore), un modulo che la lega non ammette, e una panchina
-    **più lunga** del limite della lega;
-  - quello che manca **si dice** dopo il salvataggio e nell'avviso sopra il campo («mancano 2
-    difensori»), invece di impedire il salvataggio — altrimenti una formazione a metà sembra
-    una formazione finita;
-  - «Applica» del consiglio resta com'è: produce sempre una formazione completa.
-  Prova da aggiungere a `prova_fantacalcio2.py`: una formazione da 9 si salva e si rilegge
-  uguale, un doppione no.
+- ✅ **Formazione salvabile anche incompleta** — fatta il 25/09/2026, vedi `STORICO.md`.
+  Nella 2 il campo usa `fanta2.controlla_formazione_larga()`; la prima sezione resta severa.
 - **Provarla a mano in browser**, e soprattutto **il riquadro delle probabili nel Chrome di
   Davide**. Le pagine sono provate dal test client e dallo sweep (0 errori su 6 pagine per
   lingua); l'elenco delle leghe è stato visto in browser dopo il login di Davide il
