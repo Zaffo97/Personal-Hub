@@ -20,6 +20,16 @@ pagina ed esegue `new Function()` su ogni blocco `<script>` **e** su ogni handle
 
 ## 25/09/2026
 
+**Un export di prima della fusione del Fantacalcio ora si ripristina** (§4.6). Prima
+`importa_dati.py` rimetteva le `fanta_*` della sezione **tolta** (2 leghe, 50 in rosa, 25 in
+formazione) nelle tabelle della nuova e scartava le `fanta2_*` fra le chiavi sconosciute: i dati
+sbagliati, senza errori. `fondi_fantacalcio_vecchio()` rifà in memoria la regola di
+`_unisci_fantacalcio()` (vincono le `fanta2_*`, la lega che c'è solo nella vecchia entra con la
+rosa, la formazione vecchia no). Oracolo: l'export di `65494ae` convertito è **identico riga per
+riga** a quello di `89a3397` (le altre tabelle fra i due sono uguali); gli `id` della rosa
+combaciano solo ordinandola per `player_id`, perché sul DB la `SELECT` scorreva l'indice
+`UNIQUE`. `prova_importa_dati.py` **32 su 32** (4 nuove; col codice di prima 3 cadono).
+
 **PC Builder: l'import DxDiag che salvava nomi che non sono pezzi** — deciso da Davide dopo
 averlo trovato provando la compatibilità. Verificato su un DxDiag **vero**, generato sul suo PC
 (`dxdiag /t`, 100 KB): il modello della scheda madre **non c'è** — solo `System Manufacturer:

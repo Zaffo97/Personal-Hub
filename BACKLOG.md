@@ -399,10 +399,6 @@ la sa**, e lo dice. Il **modificatore di difesa** è il valore pieno.
 - **Il ritardo del calendario gratuito** («Schedules delayed»): serve una partita spostata
   da veder arrivare
 - **I ruoli Mantra** sono nel DB e non li legge nessuno (le leghe sono Classic)
-- ⚠️ **Un export di prima del 25/09/2026 non si ripristina così com'è**: ha le chiavi
-  `fanta_*` della sezione vecchia **e** le `fanta2_*`, e cosa farebbe `importa_dati.py`
-  **non è provato**. Un DB di prima invece va bene, provato: la fusione lo sistema entrando.
-  Per un export vecchio, prima si fa girare quel DB
 - ⚠️ **Gli Excel dai download, su Debian**: la cartella la trova anche su Linux
   (`XDG_DOWNLOAD_DIR`), ma solo se browser e hub stanno **sulla stessa macchina**. Se l'hub
   diventa un server, serve una cartella condivisa (es. Samba) indicata con

@@ -313,6 +313,59 @@ def sovrascrivi_riga(db, tabella, riga):
     return cur.rowcount
 
 
+# --- Un export di prima della fusione del Fantacalcio (25/09/2026) ---------------
+# Fino al 24/09 le sezioni erano due, e l'export le portava tutte e due: le `fanta_*`
+# della sezione **tolta** e le `fanta2_*` di quella tenuta. Letto così com'è, questo
+# script ripristinava le leghe della sezione vecchia — con la sua formazione — nelle
+# tabelle della nuova, e scartava le `fanta2_*` fra le «chiavi che non conosce»:
+# **i dati sbagliati, nel posto giusto, senza nessun errore**. La fusione del DB
+# (`extensions._unisci_fantacalcio()`) qui non passa, perché lavora sulle tabelle.
+FANTA_PRIMA = ("leagues", "roster", "formazione")
+
+
+def fondi_fantacalcio_vecchio(dati):
+    """Rifà sull'export, in memoria, quello che `_unisci_fantacalcio()` fa sul DB.
+
+    Torna il rapporto (`None` se l'export è già di dopo la fusione). Le regole sono
+    le stesse, apposta: vincono le `fanta2_*`; una lega vecchia che le nuove non hanno
+    — **stesso proprietario e stesso nome** — entra con un `id` nuovo e la sua rosa;
+    la formazione vecchia **non** entra. Gli `id` nuovi sono il massimo + 1, cioè
+    quelli che la fusione ha dato sul DB vero: misurato sugli export dei commit
+    `65494ae` (prima) e `89a3397` (dopo), che così combaciano riga per riga.
+
+    ⚠️ La fusione scarta anche le righe di rosa di un giocatore che il listone nuovo
+    non ha. Qui il listone non c'è: quelle righe restano, e se nel DB manca il
+    giocatore le ferma il controllo del listone più sotto, **dicendolo**.
+    """
+    if not any(k.startswith("fanta2_") for k in dati):
+        return None
+    vecchie = {t: dati.get(f"fanta_{t}") or [] for t in FANTA_PRIMA}
+    nuove = {t: list(dati.get(f"fanta2_{t}") or []) for t in FANTA_PRIMA}
+    r = {"leghe": [], "rosa": 0, "formazione_lasciata": len(vecchie["formazione"])}
+    colonne = set().union(*(l.keys() for l in nuove["leagues"])) if nuove["leagues"] else None
+    for lega in sorted(vecchie["leagues"], key=lambda l: l["id"]):
+        if any(l["nome"] == lega["nome"] and l.get("user_id") == lega.get("user_id")
+               for l in nuove["leagues"]):
+            continue
+        nuovo_id = max((l["id"] for l in nuove["leagues"]), default=0) + 1
+        nuove["leagues"].append({**{c: v for c, v in lega.items()
+                                    if colonne is None or c in colonne},
+                                 "id": nuovo_id})
+        # Per `player_id`, non per `id`: sul DB la `SELECT` senza `ORDER BY` scorre
+        # l'indice `UNIQUE(league_id, player_id)`, e gli `id` nuovi li ha dati così.
+        for riga in sorted((x for x in vecchie["roster"] if x["league_id"] == lega["id"]),
+                           key=lambda x: x["player_id"]):
+            nuove["roster"].append({
+                **riga, "league_id": nuovo_id,
+                "id": max((x["id"] for x in nuove["roster"]), default=0) + 1})
+            r["rosa"] += 1
+        r["leghe"].append(lega["nome"])
+    for t in FANTA_PRIMA:
+        dati.pop(f"fanta2_{t}", None)
+        dati[f"fanta_{t}"] = nuove[t]
+    return r
+
+
 def main():
     ap = argparse.ArgumentParser()
     ap.add_argument("--dry-run", action="store_true",
@@ -334,6 +387,7 @@ def main():
 
     with io.open(args.file, encoding="utf-8") as f:
         dati = json.load(f)
+    fusione = fondi_fantacalcio_vecchio(dati)
 
     db = sqlite3.connect(args.db)
     db.row_factory = sqlite3.Row
@@ -366,6 +420,12 @@ def main():
 
     print(f"Export:  {leggibile(args.file)}")
     print(f"DB:      {leggibile(args.db)}\n")
+    if fusione:
+        print("  Export di prima della fusione del Fantacalcio (25/09/2026): le `fanta2_*`")
+        print("  prendono il posto delle `fanta_*`, come ha fatto `init_db()` sul DB.")
+        print(f"  Leghe portate dalla sezione vecchia: {', '.join(fusione['leghe']) or 'nessuna'}"
+              f" ({fusione['rosa']} in rosa). Formazione vecchia lasciata fuori: "
+              f"{fusione['formazione_lasciata']} righe.\n")
     print(f"  {'tabella':<18} {'nuove':>7} {'già uguali':>12} {'in conflitto':>14}")
     for tabella in ORDINE:
         if tabella not in piani:

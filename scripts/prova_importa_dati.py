@@ -326,6 +326,66 @@ def prove(dove):
     esito("   e anche qui non ha scritto niente",
           conta(pulito, "games") == 0, f"games={conta(pulito, 'games')}")
 
+    # --- 9. un export di prima della fusione del Fantacalcio (25/09/2026) ---
+    # ⚠️ Fino al 24/09 l'export portava le `fanta_*` della sezione **tolta** e le
+    # `fanta2_*` di quella tenuta, e lo script ripristinava le prime ignorando le
+    # seconde: le leghe sbagliate nelle tabelle giuste, senza errori. Qui l'export
+    # «di prima» si costruisce da quello di oggi: la prima lega sta in tutte e due le
+    # sezioni (vince la nuova), le altre solo nella vecchia (entrano con la rosa), e
+    # la vecchia ha una formazione che **non** deve entrare.
+    leghe = export.get("fanta_leagues") or []
+    if len(leghe) < 2:
+        print("  --  export di prima della fusione: servono due leghe, l'export ne ha "
+              f"{len(leghe)} (prova saltata)")
+    else:
+        prima = leghe[0]["id"]
+        rosa = export.get("fanta_roster") or []
+        form = export.get("fanta_formazione") or []
+        sua = [r for r in rosa if r["league_id"] == prima]
+        vecchio_export = {k: v for k, v in export.items() if not k.startswith("fanta_")}
+        vecchio_export.update({
+            "fanta2_leagues": [leghe[0]],
+            "fanta2_roster": sua,
+            "fanta2_formazione": [r for r in form if r["league_id"] == prima],
+            "fanta_leagues": leghe,
+            "fanta_roster": rosa,
+            "fanta_formazione": [{"league_id": prima, "player_id": r["player_id"],
+                                  "titolare": 1, "ordine": i, "ruolo": "x"}
+                                 for i, r in enumerate(sua[:3])],
+        })
+        percorso = os.path.join(dove, "export_prima_fusione.json")
+        with open(percorso, "w", encoding="utf-8") as f:
+            json.dump(vecchio_export, f, ensure_ascii=False)
+        fuso = db_vergine(dove, "prima_fusione.db")
+        rc, out = gira(fuso, file=percorso)
+        esito("export di prima della fusione -> leghe e rose tutte dentro",
+              rc == 0 and conta(fuso, "fanta_leagues") == len(leghe)
+              and conta(fuso, "fanta_roster") == len(rosa),
+              f"leghe={conta(fuso, 'fanta_leagues')}/{len(leghe)} "
+              f"rosa={conta(fuso, 'fanta_roster')}/{len(rosa)}")
+        esito("   la formazione della sezione tolta non entra",
+              valore(fuso, "SELECT COUNT(*) FROM fanta_formazione WHERE ruolo='x'") == 0
+              and "Formazione vecchia lasciata fuori" in out)
+        esito("   e le `fanta2_*` non finiscono fra le chiavi sconosciute",
+              not any("non conosce" in riga and "fanta2_" in riga
+                      for riga in out.splitlines()))
+
+    # L'oracolo vero, se la storia git c'è: l'export del commit prima della fusione
+    # (`65494ae`), convertito, deve dare **esattamente** quello del commit dopo
+    # (`89a3397`) — le altre tabelle fra i due sono identiche.
+    from importa_dati import fondi_fantacalcio_vecchio
+    storia = [subprocess.run(["git", "show", f"{c}:data/backup/hub_export.json"],
+                             capture_output=True, cwd=RADICE)
+              for c in ("65494ae", "89a3397")]
+    if all(s.returncode == 0 for s in storia):
+        prima_git, dopo_git = (json.loads(s.stdout.decode("utf-8")) for s in storia)
+        fondi_fantacalcio_vecchio(prima_git)
+        esito("export del 65494ae convertito == export del 89a3397, riga per riga",
+              prima_git == dopo_git)
+    else:
+        print("  --  confronto coi commit 65494ae/89a3397: storia git non disponibile "
+              "(prova saltata)")
+
 
 def io_json(percorso):
     import io as _io
