@@ -286,6 +286,21 @@ def prove(dove):
           "como" not in loghi and "venezia" not in loghi)
     esito("la scadenza porta gli stemmi delle due squadre della prima partita",
           "casa_stemma" in sc and "fuori_stemma" in sc, str(sc))
+    # ⚠️ Gli stemmi che mancano si dicono (25/09/2026): senza, un'API che smette di
+    # dare `crest` lascerebbe le pagine coi soli nomi e nessun avviso. Nel banco ne
+    # mancano due su quattro (Como scartato, Venezia senza).
+    esito("il conto degli stemmi: 2 su 4", r.get("stemmi") == (2, 4), str(r.get("stemmi")))
+    from blueprints.fantacalcio import _aggiorna_calendario
+    msg, cat = _aggiorna_calendario(db)
+    esito("⚠️ stemmi mancanti -> «Aggiorna calendario» lo dice, e non come successo",
+          cat == "error" and "Stemmi: 2 su 4" in msg, msg)
+    F.classifica = lambda chiave: [dict(t, stemma=f"https://crests.football-data.org/{i}.png")
+                                   for i, t in enumerate(CLASSIFICA)]
+    msg, cat = _aggiorna_calendario(db)
+    esito("   con tutti gli stemmi il messaggio torna un successo senza avviso",
+          cat == "success" and "Stemmi" not in msg, msg)
+    F.classifica = lambda chiave: CLASSIFICA
+    G.aggiorna_calendario(db)
     F.chiave_api = lambda: None
     F.partite = F.classifica = _niente_rete
     db.close()
@@ -518,6 +533,8 @@ def prove(dove):
     elenco = c.get("/fantacalcio/").data.decode("utf-8")
     esito("⚠️ l'attribuzione chiesta dai termini di football-data è in pagina",
           F.ATTRIBUZIONE in elenco)
+    esito("⚠️ il riquadro del calendario dice quanti stemmi mancano",
+          "Stemmi: <strong>2 su 4</strong>" in elenco)
 
     # --- 9a. le probabili da guardare, e la pagina pulita ------------------------
     # Dal 25/09/2026, su richiesta di Davide: le probabili si **guardano** accanto alla

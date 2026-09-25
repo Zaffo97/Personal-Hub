@@ -20,6 +20,15 @@ pagina ed esegue `new Function()` su ogni blocco `<script>` **e** su ogni handle
 
 ## 25/09/2026
 
+**Fantacalcio: gli stemmi che mancano si dicono** (§4.6), richiesta di Davide. Se
+football-data.org smettesse di dare `crest`, le pagine tornavano ai soli nomi senza avviso.
+`fanta.conto_stemmi()` → `(con, tutte)`; «Aggiorna calendario» (e l'aggiornamento automatico)
+avvisa con «Stemmi: N su M», e il riquadro del calendario lo ripete finché mancano. Sul DB vero
+20 su 20, quindi l'avviso non si vede. `prova_fantacalcio.py` **111 su 111** (4 nuove), sweep 0
+errori, query 0 scoperte (la nuova dichiarata come dato condiviso). Lo stesso giorno Davide ha
+provato a mano il riquadro delle probabili nel suo Chrome e rifatto la formazione di «La Liga
+Abajo», gli stemmi sul campo pieno compresi: tutto a posto.
+
 **Un export di prima della fusione del Fantacalcio ora si ripristina** (§4.6). Prima
 `importa_dati.py` rimetteva le `fanta_*` della sezione **tolta** (2 leghe, 50 in rosa, 25 in
 formazione) nelle tabelle della nuova e scartava le `fanta2_*` fra le chiavi sconosciute: i dati

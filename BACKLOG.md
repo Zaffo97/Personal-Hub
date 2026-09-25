@@ -104,8 +104,8 @@ Non sono storia: sono le cose che questo progetto ha già pagato e che tornano a
 
 > **Il PC Builder (§4.7)** ha la sua prima parte dal 25/09/2026: restano le prove nel
 > Chrome di Davide e le voci aperte lì.
-> Il Fantacalcio (§4.6) è in piedi: quello che resta sono prove a mano e misure che
-> aspettano un evento (una partita spostata), non codice.
+> Il Fantacalcio (§4.6) è in piedi e provato a mano da Davide (25/09/2026): resta solo una
+> misura che aspetta un evento (una partita spostata), non codice.
 
 Le decisioni che valgono ancora: la sezione Pokémon si finisce prima delle altre (14/09),
 il collaudo va alla fine, le guide dopo il collaudo, e **mettere l'app online per ultimo**
@@ -113,10 +113,9 @@ il collaudo va alla fine, le guide dopo il collaudo, e **mettere l'app online pe
 
 1. §4 — le sezioni: **PC Builder** (§4.7, il resto), poi Stampa 3D, Tinkercad, Python, Log
 2. I residui Pokémon: le due abilità senza effetto (§3), Kingambit e Game8 (§4.3)
-3. §4.6 — le prove a mano del Fantacalcio
-4. §5 — il giro di collaudo, l'inventario del codice morto
-5. §1.6 — le due guide, **dopo** il collaudo
-6. §1.5 — l'app online
+3. §5 — il giro di collaudo, l'inventario del codice morto
+4. §1.6 — le due guide, **dopo** il collaudo
+5. §1.5 — l'app online
 
 ---
 
@@ -366,7 +365,9 @@ Quello che serve a chi tocca lo script è nelle trappole.
 che si sovrascrive (niente storico, quindi non si può misurare se il consiglio consigliava
 bene); chi esce dalla rosa esce anche dal campo; l'avversario **si mostra e non si pesa**;
 le probabili sono **un link**, niente scelte titolare/dubbio; per gli Excel
-**l'autorizzazione scritta non serve**.
+**l'autorizzazione scritta non serve**; la **porta inviolata** del portiere non si cerca
+(25/09/2026: «freghiamocene» — il file delle statistiche non la porta, e ricavarla dal
+calendario darebbe un numero falso a ogni secondo portiere).
 
 **Cosa c'è** — `fanta_fonti.py` (legge), `fanta.py` (logica), `blueprints/fantacalcio.py`, i
 template `fantacalcio.html` e `fanta_*.html`, `scripts/importa_listone.py` e
@@ -384,18 +385,6 @@ la sa**, e lo dice. Il **modificatore di difesa** è il valore pieno.
 
 **⬜ Resta aperto:**
 
-- **Provarla a mano in browser**, e soprattutto **il riquadro delle probabili nel Chrome di
-  Davide**: nel pannello browser di Claude è rimasto bianco (è il pannello, non il sito); se
-  resta bianco c'è «Apri in una scheda». La Dashboard col riquadro nuovo l'ha vista solo il
-  test client
-- **Gli stemmi vanno visti sul campo pieno**: nessuna lega aveva una formazione salvata. E
-  vengono da `crest` di football-data.org: se l'API smettesse di darlo, le pagine
-  tornerebbero ai soli nomi **senza dirlo**
-- **La formazione di «La Liga Abajo» va rifatta**: non è stata portata, per decisione di
-  Davide. È in `data/archive/hub_pre-unione-fantacalcio.db` e nella storia git dell'export
-- **La porta inviolata del portiere non c'è**: il file delle statistiche non la porta, e dal
-  calendario si saprebbe solo che la **squadra** non ha preso gol — un numero plausibile e
-  falso per ogni secondo portiere. Serve una fonte con le presenze partita per partita
 - **Il ritardo del calendario gratuito** («Schedules delayed»): serve una partita spostata
   da veder arrivare
 - **I ruoli Mantra** sono nel DB e non li legge nessuno (le leghe sono Classic)

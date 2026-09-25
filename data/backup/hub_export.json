@@ -1113,8 +1113,8 @@
       "nome": "La Liga Abajo",
       "sistema": "classic",
       "moduli": "3-4-3,3-5-2,4-3-3,4-4-2,4-5-1,5-3-2,5-4-1",
-      "n_panchinari": 7,
-      "mod_difesa": 0,
+      "n_panchinari": 14,
+      "mod_difesa": 1,
       "mod_difesa_portiere": 1,
       "mod_difesa_soglie": "7:6, 6.5:3, 6:1",
       "bonus_gol": 3.0,
@@ -1511,8 +1511,22 @@
       "league_id": 1,
       "player_id": 1850,
       "titolare": 1,
-      "ordine": 0,
+      "ordine": 3,
       "ruolo": "c"
+    },
+    {
+      "league_id": 1,
+      "player_id": 2137,
+      "titolare": 1,
+      "ordine": 1,
+      "ruolo": "a"
+    },
+    {
+      "league_id": 1,
+      "player_id": 2788,
+      "titolare": 1,
+      "ordine": 9,
+      "ruolo": "d"
     },
     {
       "league_id": 1,
@@ -1520,6 +1534,153 @@
       "titolare": 0,
       "ordine": 0,
       "ruolo": "p"
+    },
+    {
+      "league_id": 1,
+      "player_id": 4177,
+      "titolare": 0,
+      "ordine": 5,
+      "ruolo": "d"
+    },
+    {
+      "league_id": 1,
+      "player_id": 4220,
+      "titolare": 0,
+      "ordine": 10,
+      "ruolo": "c"
+    },
+    {
+      "league_id": 1,
+      "player_id": 4777,
+      "titolare": 1,
+      "ordine": 6,
+      "ruolo": "c"
+    },
+    {
+      "league_id": 1,
+      "player_id": 4807,
+      "titolare": 0,
+      "ordine": 4,
+      "ruolo": "d"
+    },
+    {
+      "league_id": 1,
+      "player_id": 4856,
+      "titolare": 0,
+      "ordine": 7,
+      "ruolo": "c"
+    },
+    {
+      "league_id": 1,
+      "player_id": 5680,
+      "titolare": 1,
+      "ordine": 5,
+      "ruolo": "c"
+    },
+    {
+      "league_id": 1,
+      "player_id": 5851,
+      "titolare": 1,
+      "ordine": 7,
+      "ruolo": "d"
+    },
+    {
+      "league_id": 1,
+      "player_id": 5877,
+      "titolare": 1,
+      "ordine": 8,
+      "ruolo": "d"
+    },
+    {
+      "league_id": 1,
+      "player_id": 5946,
+      "titolare": 0,
+      "ordine": 8,
+      "ruolo": "c"
+    },
+    {
+      "league_id": 1,
+      "player_id": 6217,
+      "titolare": 0,
+      "ordine": 2,
+      "ruolo": "d"
+    },
+    {
+      "league_id": 1,
+      "player_id": 6344,
+      "titolare": 0,
+      "ordine": 1,
+      "ruolo": "p"
+    },
+    {
+      "league_id": 1,
+      "player_id": 6434,
+      "titolare": 0,
+      "ordine": 13,
+      "ruolo": "a"
+    },
+    {
+      "league_id": 1,
+      "player_id": 6632,
+      "titolare": 0,
+      "ordine": 3,
+      "ruolo": "d"
+    },
+    {
+      "league_id": 1,
+      "player_id": 6646,
+      "titolare": 1,
+      "ordine": 0,
+      "ruolo": "a"
+    },
+    {
+      "league_id": 1,
+      "player_id": 6752,
+      "titolare": 0,
+      "ordine": 12,
+      "ruolo": "a"
+    },
+    {
+      "league_id": 1,
+      "player_id": 6783,
+      "titolare": 0,
+      "ordine": 9,
+      "ruolo": "c"
+    },
+    {
+      "league_id": 1,
+      "player_id": 6875,
+      "titolare": 1,
+      "ordine": 4,
+      "ruolo": "c"
+    },
+    {
+      "league_id": 1,
+      "player_id": 6966,
+      "titolare": 1,
+      "ordine": 10,
+      "ruolo": "p"
+    },
+    {
+      "league_id": 1,
+      "player_id": 7023,
+      "titolare": 1,
+      "ordine": 2,
+      "ruolo": "a"
+    },
+    {
+      "league_id": 1,
+      "player_id": 7294,
+      "titolare": 0,
+      "ordine": 6,
+      "ruolo": "d"
+    },
+    {
+      "league_id": 1,
+      "player_id": 7347,
+      "titolare": 0,
+      "ordine": 11,
+      "ruolo": "a"
     }
   ]
 }

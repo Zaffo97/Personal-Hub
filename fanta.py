@@ -243,6 +243,7 @@ def aggiorna_calendario(db, scrivi=True):
          for t in tabella])
     db.commit()
     r["scritto"] = True
+    r["stemmi"] = conto_stemmi(db)
     return r
 
 
@@ -335,6 +336,19 @@ def stemmi(db):
     return {x["squadra_slug"]: x["stemma"] for x in db.execute(
         "SELECT squadra_slug, stemma FROM fanta_classifica "
         "WHERE stemma IS NOT NULL AND squadra_slug IS NOT NULL")}
+
+
+def conto_stemmi(db):
+    """`(con lo stemma, squadre in classifica)`, o `None` se la classifica è vuota.
+
+    ⚠️ Serve a rompere un silenzio: se football-data.org smettesse di dare `crest`
+    (o lo desse in una forma che `_stemma_buono()` scarta), le pagine tornerebbero ai
+    soli nomi **senza nessun errore** — la macro senza indirizzo non stampa niente.
+    Con questo conto la pagina lo dice (richiesta di Davide del 25/09/2026).
+    """
+    r = db.execute("SELECT COUNT(*) AS tutte, COUNT(stemma) AS con "
+                   "FROM fanta_classifica").fetchone()
+    return (r["con"], r["tutte"]) if r["tutte"] else None
 
 
 def partita_di(g, partite, tabella, calendario_c_e):

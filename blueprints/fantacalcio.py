@@ -231,6 +231,11 @@ def _aggiorna_calendario(db):
     if r.get("senza_listone"):
         return (testo + ". ⚠️ Il listone è vuoto, quindi le squadre non sono "
                 "abbinate: carica i due Excel e riaggiorna il calendario."), "error"
+    # ⚠️ Senza questo, stemmi spariti = pagine coi soli nomi e nessun avviso.
+    con, tutte = r.get("stemmi") or (0, 0)
+    if con < tutte:
+        return (testo + f". ⚠️ Stemmi: {con} su {tutte} — football-data.org non li "
+                "ha dati tutti, e dove mancano resta il nome da solo."), "error"
     return testo, "success"
 
 
@@ -317,9 +322,10 @@ def fantacalcio():
         if quanti:
             guai_lega[l["id"]] = quanti
     eta = G.eta_calendario(db)
+    stemmi_conto = G.conto_stemmi(db)
     db.close()
     return render_template(
-        "fantacalcio.html", leghe=leghe, listone=dict(listone) if listone else {},
+        "fantacalcio.html", stemmi_conto=stemmi_conto, leghe=leghe, listone=dict(listone) if listone else {},
         regole=REGOLE, ufficiali=UFFICIALI, valore_ufficiale=VALORE_UFFICIALE,
         valore_partenza=VALORE_PARTENZA, soglie_standard=MOD_DIFESA_SOGLIE,
         soglie_quarti=MOD_DIFESA_SOGLIE_QUARTI,

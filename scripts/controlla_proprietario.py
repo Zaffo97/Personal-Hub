@@ -369,6 +369,9 @@ ECCEZIONI = {
     ('fanta.py', 'stemmi',
      'SELECT squadra_slug, stemma FROM fanta_classifica WHERE stemma IS NOT NULL AND squadra_slug IS NOT NULL'):
         'gli stemmi delle squadre di Serie A, dalla classifica: dato condiviso',
+    ('fanta.py', 'conto_stemmi',
+     'SELECT COUNT(*) AS tutte, COUNT(stemma) AS con FROM fanta_classifica'):
+        'quanti stemmi ha la classifica della Serie A: dato condiviso',
 }
 
 

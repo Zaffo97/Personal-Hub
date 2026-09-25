@@ -125,6 +125,14 @@
     </div>
     {% endif %}
     {{ timer(scadenza, 'scadenza_elenco') }}
+    {# Gli stemmi vengono da `crest` di football-data.org: se smettesse di darlo, le
+       pagine tornerebbero ai soli nomi senza dirlo. Qui lo si dice (25/09/2026). #}
+    {% if stemmi_conto and stemmi_conto[0] < stemmi_conto[1] %}
+    <div class="text-sm mt-2" style="color:var(--warning)">
+      &#9888; Stemmi: <strong>{{ stemmi_conto[0] }} su {{ stemmi_conto[1] }}</strong>.
+      football-data.org non li ha dati tutti: dove mancano resta il nome da solo.
+    </div>
+    {% endif %}
     <div class="text-xs text-muted mt-2">
       {% if eta_calendario is not none %}
         Letto da football-data.org {{ eta_calendario|round(1) }} ore fa.
