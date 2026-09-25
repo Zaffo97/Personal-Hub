@@ -20,6 +20,12 @@ pagina ed esegue `new Function()` su ogni blocco `<script>` **e** su ogni handle
 
 ## 25/09/2026
 
+**Termini di fantacalcio.it letti per intero** (versione «Settembre 2026») — nessuna clausola
+su iframe o link; ma l'art. 3 vieta anche di copiare ed **elaborare** i Contenuti e l'art. 9.3
+permette la copia solo su un disco non in rete e senza altri programmi che la sfruttino: gli
+Excel importati nella 2 non sono in regola senza un'autorizzazione scritta. Corretti i
+riferimenti «art. 8» → 9. Decisione aperta in `BACKLOG.md` §4.6.
+
 **Fantacalcio 2: la formazione si salva anche incompleta (§4.6)** — richiesta di Davide, per
 costruirla saltando fra una pagina e l'altra. `fanta2.controlla_formazione_larga()` separa ciò
 che è **sbagliato** (modulo illeggibile o non ammesso, fuori rosa, doppioni, più giocatori di un

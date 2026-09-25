@@ -348,7 +348,7 @@ Da incrociare con 1.5: online questo export deve girare **da solo sul server**.
 > - **fantacalcio.it** (Fantacalcio S.r.l., Napoli), *Termini e condizioni*, art. 3:
 >   vieta di «usare programmi software o altri meccanismi automatici o manuali per copiare
 >   o accedere alle pagine della Piattaforma o al loro Contenuto (ivi compresi sistemi atti
->   a effettuare il c.d. scraping)»; art. 8: a fini personali e non commerciali l'utente può
+>   a effettuare il c.d. scraping)»; art. 9 (non 8: l'8 è la privacy, ricontato il 25/09/2026): a fini personali e non commerciali l'utente può
 >   «esclusivamente visualizzare» i contenuti. **La lettura di listone, statistiche,
 >   probabili e calendario che fa `fantacalcio_it.py` è quindi contraria ai loro termini**,
 >   anche per uso personale. In più il `robots.txt` blocca `/probabiliformazioniseriea`
@@ -1296,7 +1296,7 @@ sa dal codice, non un piano.
 
 > Decisione di Davide del 23/09/2026: «voglio evitare problemi». I *Termini e condizioni*
 > di fantacalcio.it (art. 3) vietano di leggere le pagine con un programma, scraping
-> compreso, anche per uso personale; l'art. 8 permette solo di **visualizzare** i
+> compreso, anche per uso personale; l'art. 9 permette solo di **visualizzare** i
 > contenuti. Oggi `fantacalcio_it.py` legge quattro pagine: si sostituiscono tutte, **una
 > fonte per dato**, e nessuna lettura automatica di fantacalcio.it deve restare. Citazioni
 > e contesto in §1.5.
@@ -1329,9 +1329,9 @@ salvano a ogni clic. Una riga per utente, giornata e giocatore (`fanta2_titolari
 tutte le sue leghe e la giornata dopo riparte da vuoto. ⚠️ Il riquadro: fantacalcio.it il
 24/09 non mandava né `X-Frame-Options` né una CSP che lo vietasse, ma nel pannello browser di
 Claude è rimasto **bianco** (nessuna richiesta partita: è il pannello che non lo carica, non
-il sito). **Va provato nel Chrome di Davide**; se resta bianco c'è «Apri in una scheda». E i
-termini sono stati letti solo per gli art. 3 e 8: un divieto esplicito di incorniciare la
-pagina, se c'è, starebbe altrove.
+il sito). **Va provato nel Chrome di Davide**; se resta bianco c'è «Apri in una scheda». I
+termini, letti **per intero** il 25/09/2026, non parlano di iframe né di link: vedi la voce
+aperta sui termini qui sotto.
 
 Il **consiglio** mette in fondo chi **di sicuro non gioca** (ceduto, squadra senza partita,
 partita rinviata, o segnato «non gioca»), poi ordina per **tua scelta** — titolare, in dubbio,
@@ -1350,6 +1350,33 @@ difesa** è il valore pieno: senza probabili non c'è la probabilità per cui mo
   gioca» resta, e i segni sono **facoltativi**.
 - ✅ **Formazione salvabile anche incompleta** — fatta il 25/09/2026, vedi `STORICO.md`.
   Nella 2 il campo usa `fanta2.controlla_formazione_larga()`; la prima sezione resta severa.
+- ⚠️ ⬜ **I termini di fantacalcio.it letti per intero il 25/09/2026 (versione «Settembre
+  2026») — gli Excel non sono puliti come credevamo. Decisione di Davide.** Non un parere
+  legale, quello che c'è scritto. Gli articoli non hanno numero in pagina: contati in ordine,
+  Navigazione è il **3**, Proprietà intellettuale il **9** (le note di prima dicevano «art. 8»:
+  sbagliato, l'8 è Dati personali).
+  - **Art. 3, secondo divieto**: non si possono «copiare, riprodurre, alterare, modificare,
+    **elaborare**» i Contenuti senza autorizzazione scritta, e il divieto «si estend[e] anche
+    a qualsiasi elaborazione dei dati». I Contenuti comprendono per definizione (art. 3.2)
+    «statistiche, tabelle» e il **download**. Importare gli Excel in `fanta2_players` e
+    calcolarci sopra fantamedia e consiglio è **copia ed elaborazione**: il file scaricato
+    a mano sposta il problema dello scraping, non quello dell'uso.
+  - **Art. 9.3**: la copia è permessa solo «su un disco (tuttavia **non su un server** o su un
+    dispositivo di memorizzazione connesso ad una rete)», solo per supportare la fruizione
+    **del loro Ecosistema**, e con la «massima diligenza affinché nessun ulteriore programma
+    [...] possa recuperare e sfruttare i Contenuti». L'hub è esattamente un altro programma,
+    ed è un server: ⚠️ **portarlo su Debian** (come da §1.5) peggiora le cose, non le lascia
+    uguali.
+  - **Iframe e link: nessuna clausola.** Cercato: 0 occorrenze di iframe, frame, cornice,
+    incorporare, embed, link, collegamento. Resta l'art. 9.2, che vieta «la visualizzazione
+    [...] in qualsiasi forma» senza autorizzazione, temperato dal 9.3 (l'utente può
+    visualizzare «su p.c., tablet o smartphone» per sé). Il riquadro nell'hub usato **solo da
+    Davide** sta nel 9.3; mostrato ad altri utenti no. Il **link** è pulito.
+  - **La via pulita che i termini stessi indicano**: l'«autorizzazione scritta ed espressa di
+    Fantacalcio» (art. 3 e 9). Proposta: Davide scrive a Fantacalcio S.r.l. spiegando l'uso
+    (personale, non commerciale, dati dai loro Excel scaricati col suo account, niente
+    ripubblicazione) e chiede il permesso scritto. Finché non c'è, la 2 è **meno esposta**
+    della prima (niente lettura automatica) ma **non in regola** sugli Excel.
 - **Provarla a mano in browser**, e soprattutto **il riquadro delle probabili nel Chrome di
   Davide**. Le pagine sono provate dal test client e dallo sweep (0 errori su 6 pagine per
   lingua); l'elenco delle leghe è stato visto in browser dopo il login di Davide il
@@ -1376,7 +1403,7 @@ la ragione di ogni scelta sopra:
 
 | Dato | Chi lo usa oggi | Fonte nuova proposta | Da verificare |
 |---|---|---|---|
-| **Listone** (quotazioni, ruoli) | rose, listone sfogliabile, consiglio | **il file Excel che fantacalcio.it offre agli utenti**, scaricato **da Davide** a mano e **caricato** nell'hub: nessun programma legge il sito. Le quotazioni sono le loro, e le due leghe usano quelle: un'altra fonte non darebbe gli stessi numeri | che il file ci sia ancora e da dove si scarica; che abbia gli stessi campi che `importa_listone.py` usa oggi (nome, squadra, ruolo Classic, quotazioni); che i termini permettano di tenerlo sul proprio dispositivo (l'art. 8 parla di salvataggio locale «al solo fine di supportare la fruizione») |
+| **Listone** (quotazioni, ruoli) | rose, listone sfogliabile, consiglio | **il file Excel che fantacalcio.it offre agli utenti**, scaricato **da Davide** a mano e **caricato** nell'hub: nessun programma legge il sito. Le quotazioni sono le loro, e le due leghe usano quelle: un'altra fonte non darebbe gli stessi numeri | che il file ci sia ancora e da dove si scarica; che abbia gli stessi campi che `importa_listone.py` usa oggi (nome, squadra, ruolo Classic, quotazioni); che i termini permettano di tenerlo sul proprio dispositivo (l'art. 9 parla di salvataggio locale «al solo fine di supportare la fruizione») |
 | **Calendario** (orari: serve al timer, §4.4) | timer della giornata | un'**API ufficiale** con chiave: **football-data.org**, piano gratuito | che copra la Serie A con data **e ora** e i rinvii; limiti di chiamate; termini |
 | **Statistiche** | scheda del giocatore, consiglio | un'API con piano gratuito (es. **API-Football**), **oppure toglierle** se il consiglio può farne a meno | quanto le usa davvero il consiglio (misurare prima); copertura dei giocatori di Serie A; limiti e termini |
 | **Probabili formazioni** | campo, consiglio | **nessuna fonte gratuita e pulita**: sono contenuto editoriale di tutti (fantacalcio.it, Gazzetta, Sky). ✅ **Scelta di Davide del 24/09/2026: (a), un link** che apre la pagina nel suo browser. Scartate (b) l'incolla e (c) la lettura automatica | con (a) o (b) il consiglio perde l'aggiornamento automatico: va detto a schermo, non lasciato scoprire |

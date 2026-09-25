@@ -40,7 +40,7 @@ import fanta2_fonti as F
 bp = Blueprint("fantacalcio2", __name__, url_prefix="/fantacalcio2")
 
 # Dove si guardano le probabili: la pagina **si apre nel browser** di chi guarda,
-# che è l'uso che i termini di fantacalcio.it permettono (art. 8, «visualizzare»).
+# che è l'uso che i termini di fantacalcio.it permettono (art. 9.3, «visualizzare»).
 LINK_PROBABILI = "https://www.fantacalcio.it/probabili-formazioni-serie-a"
 # Dove si scaricano i due file, per chi non se lo ricorda: servono il login.
 LINK_QUOTAZIONI = "https://www.fantacalcio.it/quotazioni-fantacalcio"
