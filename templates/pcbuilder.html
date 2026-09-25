@@ -72,6 +72,28 @@
   </form>
 </div>
 
+{% if novita and (novita.n_nuovi or novita.n_tolti) %}
+<details class="card mb-3" style="padding:.6rem 1rem">
+  <summary class="text-sm" style="cursor:pointer"><strong>&#127381; Novità nel catalogo</strong>
+    <span class="text-muted">rispetto all'aggiornamento del {{ novita.da }}:
+      {{ novita.n_nuovi }} entrati{% for g in novita.nuovi %}{{ ' (' if loop.first else ', ' }}{{ g.quanti }} {{ g.cat }}{{ ')' if loop.last }}{% endfor %}{% if novita.n_tolti %}, {{ novita.n_tolti }} usciti{% endif %}</span></summary>
+  <p class="text-xs text-muted mt-2">«Entrato» vuol dire aggiunto a OpenDB, non appena uscito sul mercato: l'anno, quando il catalogo lo sa, è quello che li distingue.</p>
+  {% for g in novita.nuovi %}
+  <div class="text-xs font-700 text-muted mt-2 mb-1" style="text-transform:uppercase">{{ g.cat }} &middot; {{ g.quanti }}</div>
+  <ul class="avvisi-lista">
+    {% for x in g.pezzi %}<li>{{ x.nome }}{% if x.anno %}<span class="text-muted">{{ x.anno }}</span>{% endif %}</li>{% endfor %}
+    {% if g.altri %}<li class="text-muted">e altri {{ g.altri }}</li>{% endif %}
+  </ul>
+  {% endfor %}
+  {% for cat, nomi in novita.tolti.items() %}
+  <div class="text-xs font-700 text-muted mt-2 mb-1" style="text-transform:uppercase">Usciti &middot; {{ cat }} &middot; {{ nomi|length }}</div>
+  <ul class="avvisi-lista">{% for nome in nomi %}<li class="text-muted">{{ nome }}</li>{% endfor %}</ul>
+  {% endfor %}
+</details>
+{% elif novita %}
+<p class="text-xs text-muted mb-3">&#127381; Nessun pezzo entrato o uscito rispetto all'aggiornamento del {{ novita.da }}.</p>
+{% endif %}
+
 {% if avvisi.obiettivo or avvisi.ricontrollare %}
 <div class="card mb-3">
   <div class="card-header"><span class="card-title">&#128276; Da guardare</span>
@@ -153,6 +175,7 @@
           <td><span class="font-600">{{ c.name }}</span>
             {% if c.stato %}<div class="text-xs text-muted">{{ c.stato }}</div>{% endif %}
             {% if c.opendb_nome %}<div class="text-xs text-muted" title="Il modello del catalogo usato per i controlli">&#128230; {{ c.opendb_nome }}</div>
+            {% elif c.opendb_perso %}<div class="text-xs" style="color:var(--error)">&#128230; il modello collegato non è più nel catalogo: cercalo di nuovo</div>
             {% elif c.opendb_id %}<div class="text-xs text-muted">&#128230; collegato, ma il catalogo non è scaricato</div>{% endif %}</td>
           <td style="text-align:right;color:var(--primary);font-weight:700;white-space:nowrap">
             {% if c.price %}&euro; {{ "%.2f"|format(c.price) }}{% else %}&mdash;{% endif %}
@@ -185,6 +208,7 @@
         {% if k.da_verificare %} &middot; {{ k.da_verificare }} da verificare a mano{% endif %}
       </div>
       <div class="text-xs text-muted mb-1">Sulla configurazione dopo gli acquisti: il pezzo desiderato prende il posto del posseduto della stessa categoria, i venduti non ci sono.
+        Gli SSD invece si sommano tutti, e più kit di RAM con lo stesso stato si sommano fra loro.
         {% if k.doppi %}Più pezzi in: {{ k.doppi|join(', ') }} — controllato il primo.{% endif %}</div>
       <ul class="avvisi-lista">
         {% for e in k.controlli %}
@@ -193,6 +217,7 @@
         {% endfor %}
       </ul>
       <p class="text-xs text-muted mt-1">Alimentatore: somma dei TDP di CPU e GPU più il {{ margine }}%, una regola pratica e non un dato del produttore.
+        Non controllati: la velocità degli slot M.2 e le porte SATA che alcune schede spengono quando si usa un M.2.
         Dati dei componenti: <a href="{{ fonte.url }}" target="_blank" rel="noopener noreferrer">{{ fonte.nome }}</a>,
         licenza <a href="{{ fonte.licenza_url }}" target="_blank" rel="noopener noreferrer">{{ fonte.licenza }}</a>.</p>
       {% endif %}
@@ -332,7 +357,7 @@ function addRow(c) {
     + '<input class="form-control cerca-catalogo" type="search" placeholder="&#128230; Cerca nel catalogo" list="dl_' + (++righeCreate) + '" autocomplete="off" title="Scegli il modello esatto: i controlli di compatibilità usano i suoi dati">'
     + '<datalist id="dl_' + righeCreate + '"></datalist>'
     + inp('comp_opendb', c.opendb_id, 'type="hidden"')
-    + '<div class="text-xs text-muted esito-catalogo" style="grid-column:1/-1">' + (c.opendb_id ? '&#128230; ' + v(c.opendb_nome || 'collegato (catalogo non scaricato)') + ' <a href="#" class="scollega">scollega</a>' : '') + '</div>'
+    + '<div class="text-xs text-muted esito-catalogo" style="grid-column:1/-1">' + (c.opendb_id ? '&#128230; ' + v(c.opendb_nome || (c.opendb_perso ? 'non più nel catalogo: al salvataggio si scollega' : 'collegato (catalogo non scaricato)')) + ' <a href="#" class="scollega">scollega</a>' : '') + '</div>'
     + inp('comp_price_prev', c.price || '', 'type="hidden"')
     + inp('comp_price_date', c.prezzo_data, 'type="hidden"')
     + inp('comp_usato_prev', c.valore_usato, 'type="hidden"')

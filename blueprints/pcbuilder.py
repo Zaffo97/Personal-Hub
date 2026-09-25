@@ -30,6 +30,7 @@ def pcbuilder():
     # `?utente=` per isolarne una; gli altri vedono le proprie.
     di = _i(request.args.get("utente")) or None
     cond, par = ambito_utente(di=di)
+    catalogo = (pc_catalogo.carica() or {}).get("_meta")
     for b in db.execute(
             f"SELECT * FROM pc_builds WHERE {cond} ORDER BY created_at DESC", par).fetchall():
         comps = db.execute("SELECT * FROM pc_components WHERE build_id=? ORDER BY category",
@@ -42,9 +43,11 @@ def pcbuilder():
         for c in componenti:
             # Il nome del pezzo di catalogo, per vederlo in tabella e nel modulo. Se il
             # catalogo non c'è (mai scaricato, o cache cancellata) il collegamento resta:
-            # si ritrova al prossimo «Aggiorna catalogo».
+            # si ritrova al prossimo «Aggiorna catalogo». Se il catalogo c'è e il pezzo no,
+            # è uscito da OpenDB con un aggiornamento: detto così, non «non scaricato».
             v = pc_catalogo.pezzo(c.get("opendb_id"))
             c["opendb_nome"] = v["nome"] if v else None
+            c["opendb_perso"] = bool(c.get("opendb_id") and not v and catalogo)
         link = {c["id"]: pc_negozi.link(c) for c in componenti}
         # Il totale è quello che la build costa o è costata: un pezzo venduto non c'è più.
         # Stessa regola della Dashboard.
@@ -74,7 +77,7 @@ def pcbuilder():
                            nomi_utenti=nomi_utenti, avvisi=pc_negozi.avvisi(mie),
                            stati=pc_negozi.STATI,
                            giorni_promemoria=pc_negozi.GIORNI_PROMEMORIA,
-                           catalogo=(pc_catalogo.carica() or {}).get("_meta"),
+                           catalogo=catalogo, novita=pc_catalogo.novita(),
                            cat_catalogo=sorted(set(pc_catalogo.CATEGORIE.values())),
                            fonte={"nome": pc_catalogo.FONTE, "url": pc_catalogo.FONTE_URL,
                                   "licenza": pc_catalogo.LICENZA,
@@ -118,7 +121,7 @@ def pcbuilder_save():
                           utente_id()))
         bid = cur.lastrowid
     db.execute("DELETE FROM pc_components WHERE build_id=?", (bid,))
-    oggi = date.today(); scartati = []; scartati_cat = []
+    oggi = date.today(); scartati = []; scartati_cat = []; usciti = []
     for riga in zip(*(colonne[k] for k in CAMPI_RIGA)):
         r = dict(zip(CAMPI_RIGA, riga))
         name = r["comp_name"]
@@ -135,10 +138,16 @@ def pcbuilder_save():
         # Il collegamento al catalogo si tiene solo se il pezzo esiste ed è della stessa
         # categoria: una RAM collegata a una scheda madre darebbe controlli senza senso.
         # Senza catalogo non si può verificare, e il collegamento di prima si lascia com'è.
+        # Un pezzo che il catalogo non ha più (uscito da OpenDB con un aggiornamento) si
+        # scollega anche lui, ma con la sua spiegazione: «non è della stessa categoria»
+        # sarebbe falso.
         opendb = r["comp_opendb"].strip() or None
         if opendb and pc_catalogo.carica():
             v = pc_catalogo.pezzo(opendb)
-            if not v or v["cat"] != r["comp_cat"]:
+            if not v:
+                usciti.append(name.strip())
+                opendb = None
+            elif v["cat"] != r["comp_cat"]:
                 scartati_cat.append(name.strip())
                 opendb = None
         # ⚠️ Le date dei prezzi passano dal form: questa funzione ricrea i pezzi a ogni
@@ -164,6 +173,9 @@ def pcbuilder_save():
     if scartati_cat:
         flash("Collegamento al catalogo tolto perché il pezzo non è della stessa categoria: "
               + ", ".join(scartati_cat), "error")
+    if usciti:
+        flash("Collegamento al catalogo tolto perché il modello non è più in OpenDB: "
+              + ", ".join(usciti) + ". Cercalo di nuovo nel catalogo", "error")
     return redirect(url_for("pcbuilder.pcbuilder"))
 
 
@@ -190,7 +202,10 @@ def catalogo_aggiorna():
     except Exception as e:                      # rete, zip, o conti che non tornano
         flash(f"Catalogo non aggiornato: {e}. Quello di prima resta com'era.", "error")
     else:
-        flash("Catalogo aggiornato: " + ", ".join(f"{n} {c}" for c, n in conti.items()),
+        nv = pc_catalogo.novita()
+        flash("Catalogo aggiornato: " + ", ".join(f"{n} {c}" for c, n in conti.items())
+              + (f" · rispetto al {nv['da']}: {nv['n_nuovi']} nuovi, {nv['n_tolti']} usciti"
+                 if nv else " · primo scaricamento, niente con cui confrontarlo"),
               "success")
     return redirect(url_for("pcbuilder.pcbuilder"))
 

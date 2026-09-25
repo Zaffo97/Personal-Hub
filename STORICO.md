@@ -20,6 +20,30 @@ pagina ed esegue `new Function()` su ogni blocco `<script>` **e** su ogni handle
 
 ## 25/09/2026
 
+**PC Builder: connettori della GPU, slot M.2, più kit di RAM e le novità del catalogo (§4.7)**
+— chiesto da Davide. Prima misurato il dump: **uno zero nei connettori non è un dato** (855
+alimentatori su 3297 senza connettori PCIe, 275 da 750 W in su; 1005 GPU su 3862 senza, 697
+sopra i 75 W dello slot), e **602 slot M.2 hanno chiave E** (Wi-Fi). Tre controlli nuovi in
+`pc_catalogo.py`, da 10 a 12 più «Più kit di RAM insieme»: connettori GPU / alimentatore
+(12VHPWR senza nativo = «da verificare» con l'adattatore, scelta di Davide), SSD M.2 / slot
+(quanti, misura, NVMe o SATA, con un abbinamento vero fra SSD e slot), e i kit di RAM che si
+sommano. Categoria `Storage` di OpenDB → «Storage SSD». Regola di Davide: **gli SSD si
+aggiungono**, la RAM desiderata sostituisce la posseduta, più kit dello stesso stato si
+sommano. ⚠️ Provato su tutte le 3701 schede con un NVMe 2280: la prima versione dava «no» alla
+MSI X570 Gaming Pro Carbon (il dump le dà solo 2242 e 2260) e a 2734 schede per un SSD SATA (la
+B450 Prime Plus vi risulta senza SATA, e ce l'ha): ora un SSD più corto della misura massima,
+o SATA in uno slot che non nomina SATA, è «da verificare». Esito finale: 2943 ok, 751 non noti,
+3 da verificare, 4 no. **Le novità**: `aggiorna()` confronta l'indice nuovo col vecchio e
+tiene entrati e usciti, solo nelle categorie che il vecchio aveva (i 3495 SSD non sono «nuovi»);
+riquadro in pagina, conteggio nel messaggio. Un pezzo collegato che OpenDB toglie ora si dice
+«non è più nel catalogo» (prima «non scaricato») e al salvataggio si scollega col suo motivo
+(prima «altra categoria»). ⚠️ Preso dalle prove: la cache di `carica()` guardava solo l'mtime,
+e su Windows due scritture a pochi ms hanno lo stesso: ora mtime + dimensione, e `aggiorna()`
+mette in cache ciò che scrive. `prova_pcbuilder.py` **100 su 100** (31 nuove), sweep 0 errori,
+query 0 scoperte. Indice vero rigenerato: dalle 12:53 un pezzo entrato (un dissipatore MSI del
+2026). Sulla build vera i controlli dicono **2 no**: il 7800X3D è AM5/DDR5, la scheda collegata
+(Asus B450 Prime Plus) AM4/DDR4. Keepa, riprovato con l'ASIN della 4070 Ti: ancora anti-bot.
+
 **Fantacalcio: gli stemmi che mancano si dicono** (§4.6), richiesta di Davide. Se
 football-data.org smettesse di dare `crest`, le pagine tornavano ai soli nomi senza avviso.
 `fanta.conto_stemmi()` → `(con, tutte)`; «Aggiorna calendario» (e l'aggiornamento automatico)

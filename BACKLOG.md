@@ -102,8 +102,8 @@ Non sono storia: sono le cose che questo progetto ha già pagato e che tornano a
 
 ## 📌 L'ordine, aggiornato il 25/09/2026
 
-> **Il PC Builder (§4.7)** ha la sua prima parte dal 25/09/2026: restano le prove nel
-> Chrome di Davide e le voci aperte lì.
+> **Il PC Builder (§4.7)** è fatto (25/09/2026), controlli e novità del catalogo compresi:
+> restano la scheda madre vera di Davide, le prove nel suo Chrome e le voci aperte lì.
 > Il Fantacalcio (§4.6) è in piedi e provato a mano da Davide (25/09/2026): resta solo una
 > misura che aspetta un evento (una partita spostata), non codice.
 
@@ -296,7 +296,7 @@ Tutti gli altri bachi elencati qui fino al 23/09/2026 sono chiusi: vedi `STORICO
 
 | Sezione | Voce |
 |---|---|
-| 💻 **PC Builder** | 🟨 Wishlist, prezzi, link ai negozi, avvisi e **compatibilità** fatti il 25/09/2026: vedi §4.7 · ⬜ gestire l'uscita di nuovi pezzi nel tempo |
+| 💻 **PC Builder** | 🟨 Wishlist, prezzi, link ai negozi, avvisi, **compatibilità** e **novità del catalogo** fatti il 25/09/2026: vedi §4.7 |
 | 🖨️ **Stampa 3D** | ⬜ Sezione nuova, sul modello di Arduino: richiamo a un sito per disegnare e salvataggio dei progetti |
 | 🤖 **Arduino** | ⬜ Richiamo a Tinkercad per disegnare il progetto e verificare i connettori. ⚠️ **Guardato il 25/09/2026**: il campo «Tinkercad URL» e il pulsante che lo apre **ci sono già** (`arduino.html:62`), quindi resta da capire con Davide cosa vuol dire «verificare i connettori» (anteprima incorporata? tabella piedini e collegamenti coi controlli? solo un pulsante «nuovo circuito»?): domanda posta e rimasta aperta. ⬜ **E un baco trovato lì**: `tinkercad_url` finisce in un `href` **senza controllo** — un `javascript:` salvato lì girerebbe al clic. Oggi 0 progetti, quindi nessun danno; la cura è quella di `pc_negozi.link_valido()` (solo http(s) di tinkercad.com) |
 | 🐍 **Python** | ⬜ Spazio per inserire i propri progetti e testarli · ⬜ idee per rendere la sezione più utile |
@@ -434,48 +434,64 @@ riquadro «Da guardare» all'apertura. Logica in `pc_negozi.py`, prova `prova_pc
 **⬜ Resta aperto:**
 
 - **Provarlo nel Chrome di Davide**: il link «eBay venduti» nel pannello di Claude rimanda al
-  login (serve essere collegati a eBay), e **Keepa** lì mostra un controllo anti-bot — il
-  dominio 8 = amazon.it è confermato da due fonti, ma la pagina non l'ho vista aprirsi
+  login (serve essere collegati a eBay), e **Keepa** lì mostra un controllo anti-bot (riprovato
+  il 25/09 con l'ASIN della 4070 Ti, `keepa.com/#!product/8-B0BNWFM7MZ`: ancora anti-bot). Il
+  dominio 8 = amazon.it è confermato da due fonti, ma la pagina non l'ho vista aprirsi. La
+  prova: incollare in un pezzo la sua pagina amazon.it (con `/dp/`), salvare, cliccare
+  «Keepa». L'avviso di prezzo si imposta **dentro Keepa** (account gratuito, «Traccia
+  prodotto»), non nell'hub: l'API di Keepa costa 49 €/mese
+- ⬜ **Da decidere: il link Keepa senza incollare niente.** OpenDB ha l'**ASIN di amazon.it**
+  di molti pezzi (`identifiers.retailer_listings`, `source: amazon`, `channel: it`; per la
+  4070 Ti di Davide `B0BNWFM7MZ`, `verified: true`). Per un pezzo collegato al catalogo l'hub
+  potrebbe dare Keepa e la pagina Amazon esatta senza link incollato. Non misurato quanti
+  pezzi ce l'hanno, non fatto: fuori da quello che è stato chiesto
 - **La ricerca di BPM-Power**: il formato non si è potuto vedere, quindi senza un link incollato
-  si apre la **home**, e il link lo dice. Se Davide fa una ricerca e mi passa l'indirizzo, il
-  link diventa una ricerca vera
-- ⚠️ **I pezzi salvati prima del 25/09 non hanno uno stato** (`NULL`, «non indicato»): gli
-  avvisi li ignorano finché non si segna posseduto o desiderato. La build vera di Davide ha 5
-  componenti, tutti così
+  si apre la **home**, e il link lo dice. Il 25/09 Davide ha passato
+  `bpm-power.com/it/online/componenti-pc/schede-video/scheda-nvidia-gigabyte-gigabyte-b2277634`:
+  è una **pagina prodotto**, non una ricerca (va bene nel campo «Link BPM-Power» di un pezzo).
+  Per la ricerca serve l'indirizzo che compare dopo aver scritto qualcosa nella casella di
+  ricerca del sito
 - **`GIORNI_PROMEMORIA = 14`** è una soglia scelta, non misurata: si cambia in un punto solo,
   in `pc_negozi.py`
 - **L'intervallo di prezzo degli usati da eBay** (API Browse, con account sviluppatore gratuito
   e chiave fuori dal repo): rimandato da Davide, «prima solo i link»
 - **Notifiche vere** (email, telefono, a PC spento): per Amazon le fa Keepa, per eBay le
   ricerche salvate. L'hub avvisa solo quando lo apri
-- **L'uscita di pezzi nuovi**: la voce vecchia, non toccata. Ora ha una base — il catalogo
-  OpenDB si aggiorna col pulsante, e confrontando due indici si vedrebbe cosa è entrato
+- ⚠️ **Le novità del catalogo sono rispetto all'aggiornamento precedente**, non «da quando le
+  hai guardate»: premere «Aggiorna catalogo» due volte di fila e la seconda dice «niente di
+  nuovo», perdendo l'elenco della prima. E «entrato» vuol dire aggiunto a OpenDB, non uscito
+  sul mercato: l'anno c'è per l'88% delle CPU, il 31% delle GPU, il 4% degli alimentatori
 
 **✅ La compatibilità, fatta il 25/09/2026** (numeri in `STORICO.md`). Fonte: **BuildCores
 OpenDB**, licenza ODC-By 1.0, scaricata col pulsante «Aggiorna catalogo» (zip da 46 MB, indice
 da 3,9 MB in `data/cache/`). Scartati UserBenchmark (ne vieta ogni uso senza permesso) e
 PCPartPicker (nessuna API: quella che circola è scraping). Ogni pezzo si **collega** al suo
-modello dal modulo; i dieci controlli girano sulla configurazione **dopo gli acquisti** e
+modello dal modulo; i controlli (dodici, più «Più kit di RAM insieme», dal 25/09 anche
+connettori GPU e slot M.2) girano sulla configurazione **dopo gli acquisti** e
 dicono ✓ / ✗ / non noto / da verificare, con la percentuale sui soli verificabili. Scelte di
 Davide: elenco più percentuale, alimentatore a **+30%** sulla somma dei TDP, aggiornamento a
 pulsante. Logica in `pc_catalogo.py`.
 
 **⬜ Della compatibilità resta:**
 
-- ⚠️ **Collegare i pezzi veri di Davide**: nessuno è collegato, e il catalogo va scaricato
-  una prima volta col pulsante. I nomi salvati **prima** del 25/09 restano quelli vecchi
-  («System Product Name», «32768MB RAM», la Radeon integrata come GPU): l'import corretto vale
-  per i DxDiag nuovi, i pezzi già salvati si sistemano a mano o reimportando
-- **Il modello della scheda madre il DxDiag non lo ha** (verificato sul PC di Davide: solo
-  `System Manufacturer: ASUS` e il segnaposto «System Product Name»). Va scritto a mano
+- ⚠️ **La scheda madre di Davide è quasi certamente sbagliata.** Il 25/09 Davide ha collegato
+  i quattro pezzi (CPU, 4070 Ti, scheda, RAM, tutti posseduti; la Radeon integrata tolta), e
+  i controlli danno **2 no su 5**: il 7800X3D è **AM5 / DDR5**, la scheda collegata «Asus B450
+  PRIME B450-PLUS» è **AM4 / DDR4**. Un 7800X3D su una B450 non si monta: il modello vero va
+  letto sulla scheda o nel BIOS (il DxDiag non lo riporta) e ricollegato. Non toccato: è un dato
+  di Davide
 - **Quello che il catalogo non sa**, ed è dichiarato a schermo: l'altezza massima del
   dissipatore c'è solo per **1 case su 3** (36%), l'altezza dei dissipatori per il 70%;
   **LGA 1151** dà «da verificare» (due generazioni incompatibili sullo stesso socket), e su
-  **AM4** una CPU recente può chiedere un BIOS aggiornato, che nessun dato dice
-- **Non controllati**: i connettori di alimentazione della GPU (8 pin, 12VHPWR) contro quelli
-  dell'alimentatore, e gli slot M.2 — i dati ci sono, non sono stati chiesti
-- **Più pezzi della stessa categoria** (due kit di RAM, due GPU): si controlla il primo e la
-  pagina lo dice. Sommare due kit di RAM non è stato fatto
+  **AM4** una CPU recente può chiedere un BIOS aggiornato, che nessun dato dice. Negli slot M.2
+  il dump è **avaro** di misure e del supporto SATA (per questo più corto o SATA è «da
+  verificare»), e 751 schede su 3701 non hanno slot M.2 indicati; gli zeri nei connettori di
+  GPU e alimentatori sono quasi sempre dati mancanti
+- **Non controllati**: la velocità degli slot M.2 (un PCIe 5.0 in uno slot 4.0 va, più lento),
+  le porte SATA che alcune schede spengono usando un M.2, i connettori EPS della CPU. Il
+  campo `storage_devices` delle schede non è usabile: la B450 Prime Plus vi ha **0** porte SATA
+- **Più GPU, case, alimentatori…**: si controlla il primo e la pagina lo dice. Si sommano solo
+  SSD e kit di RAM
 
 ---
 

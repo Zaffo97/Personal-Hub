@@ -130,38 +130,76 @@ PEZZI_FINTI = {
                           "metadata": {"name": "AMD Ryzen 7 7800X3D"}},
     ("CPU", "cpu-9700k"): {"socket": "LGA 1151", "specifications": {"tdp": 95, "memory": {"types": ["DDR4"]}},
                            "metadata": {"name": "Intel Core i7-9700K"}},
+    # Uno slot M.2 per SSD e uno con chiave E (il Wi-Fi), che non deve contare.
     ("Motherboard", "mb-b650"): {"socket": "AM5", "form_factor": "Micro ATX",
                                  "memory": {"ram_type": "DDR5", "slots": 4, "max": 192},
-                                 "metadata": {"name": "ASUS TUF GAMING B650M-E WIFI"}},
+                                 "m2_slots": [{"size": "2280", "key": "M", "interface": "PCIe 4.0 x4"},
+                                              {"size": "2230", "key": "E", "interface": "PCIe"}],
+                                 "metadata": {"name": "ASUS TUF GAMING B650M-E WIFI", "releaseYear": 2023}},
     ("Motherboard", "mb-h270"): {"socket": "LGA 1151", "form_factor": "Thin Mini-ITX",
                                  "memory": {"ram_type": "DDR4", "slots": 2, "max": 32},
-                                 "metadata": {"name": "Scheda H270 Thin"}},
+                                 "m2_slots": [], "metadata": {"name": "Scheda H270 Thin"}},
+    ("Motherboard", "mb-sata"): {"socket": "AM4", "form_factor": "ATX",
+                                 "m2_slots": [{"size": "2242/2260/2280", "key": "M", "interface": "SATA3 6.0 Gb/s"}],
+                                 "metadata": {"name": "Scheda con M.2 solo SATA"}},
     ("RAM", "ram-ddr5"): {"ram_type": "DDR5", "modules": {"quantity": 2}, "capacity": 32,
                           "metadata": {"name": "Kit DDR5 32GB (2x16GB)"}},
     ("RAM", "ram-ddr4"): {"ram_type": "DDR4", "modules": {"quantity": 4}, "capacity": 64,
                           "metadata": {"name": "Kit DDR4 64GB (4x16GB)"}},
     ("GPU", "gpu-4070ti"): {"length": 308, "tdp": 285,
-                            "metadata": {"name": "MSI GeForce RTX 4070 Ti VENTUS 3X"}},
+                            "power_connectors": {"pcie_6_pin": 0, "pcie_8_pin": 0,
+                                                 "pcie_12VHPWR": 1, "pcie_12V_2x6": 0},
+                            "metadata": {"name": "MSI GeForce RTX 4070 Ti VENTUS 3X", "releaseYear": 2023}},
     ("GPU", "gpu-lunga"): {"length": 360, "tdp": 285,
                            "metadata": {"name": "ZOTAC GeForce RTX 4070 Ti lunghissima"}},
+    ("GPU", "gpu-3x8"): {"length": 300, "tdp": 320,
+                         "power_connectors": {"pcie_6_pin": 0, "pcie_8_pin": 3,
+                                              "pcie_12VHPWR": 0, "pcie_12V_2x6": 0},
+                         "metadata": {"name": "Radeon con tre 8 pin"}},
+    ("GPU", "gpu-zero-70w"): {"length": 170, "tdp": 70,
+                              "power_connectors": {"pcie_6_pin": 0, "pcie_8_pin": 0,
+                                                   "pcie_12VHPWR": 0, "pcie_12V_2x6": 0},
+                              "metadata": {"name": "GPU piccola da 70 W"}},
     ("PCCase", "case-north"): {"supported_motherboard_form_factors": ["ATX", "Micro ATX", "Mini-ITX"],
                                "max_video_card_length": 355, "max_cpu_cooler_height": 170,
                                "metadata": {"name": "Fractal Design North"}},
     ("PCCase", "case-ignoto"): {"supported_motherboard_form_factors": ["ATX"],
                                 "max_video_card_length": 400, "max_cpu_cooler_height": None,
                                 "metadata": {"name": "Case senza altezza"}},
-    ("PSU", "psu-750"): {"wattage": 750, "metadata": {"name": "Alimentatore 750W"}},
-    ("PSU", "psu-500"): {"wattage": 500, "metadata": {"name": "Alimentatore 500W"}},
+    ("PSU", "psu-750"): {"wattage": 750, "connectors": {"pcie_6_plus_2_pin": 4, "pcie_12vhpwr": 1},
+                         "metadata": {"name": "Alimentatore 750W"}},
+    ("PSU", "psu-500"): {"wattage": 500, "connectors": {"pcie_6_plus_2_pin": 2, "pcie_12vhpwr": 0},
+                         "metadata": {"name": "Alimentatore 500W"}},
+    # 855 alimentatori veri sono così, anche da 750 W: lo zero è un dato che manca.
+    ("PSU", "psu-zero"): {"wattage": 850, "connectors": {"pcie_6_plus_2_pin": 0, "pcie_12vhpwr": 0},
+                          "metadata": {"name": "Alimentatore senza connettori nel catalogo"}},
     ("CPUCooler", "dis-ak400"): {"height": 155, "cpu_sockets": ["AM4", "AM5", "LGA 1700"],
                                  "metadata": {"name": "Deepcool AK400"}},
+    ("Storage", "ssd-nvme"): {"form_factor": "M.2-2280", "interface": "M.2 PCIe 4.0 x4",
+                              "metadata": {"name": "SSD NVMe 2280"}},
+    ("Storage", "ssd-nvme-2"): {"form_factor": "M.2-2280", "interface": "M.2 PCIe 5.0 x4",
+                                "metadata": {"name": "Secondo SSD NVMe 2280"}},
+    ("Storage", "ssd-sata-m2"): {"form_factor": "M.2-2280", "interface": "M.2 SATA",
+                                 "metadata": {"name": "SSD M.2 SATA"}},
+    ("Storage", "ssd-2242"): {"form_factor": "M.2-2242", "interface": "M.2 PCIe 3.0 x4",
+                              "metadata": {"name": "SSD corto 2242"}},
+    ("Storage", "ssd-22110"): {"form_factor": "M.2-22110", "interface": "M.2 PCIe 4.0 x4",
+                               "metadata": {"name": "SSD lungo 22110"}},
+    ("Storage", "hdd"): {"form_factor": "3.5\"", "interface": "SATA 6.0 Gb/s",
+                         "metadata": {"name": "Disco 4TB"}},
+    ("RAM", "ram-ddr5-b"): {"ram_type": "DDR5", "modules": {"quantity": 2}, "capacity": 64,
+                            "metadata": {"name": "Secondo kit DDR5 64GB (2x32GB)"}},
 }
 
 
-def zip_finto():
+def zip_finto(togli=(), aggiungi=None):
+    """Lo zip finto; `togli` e `aggiungi` simulano un aggiornamento di OpenDB."""
     import zipfile
     buf = io.BytesIO()
+    pezzi = {k: v for k, v in PEZZI_FINTI.items() if k[1] not in togli}
+    pezzi.update(aggiungi or {})
     with zipfile.ZipFile(buf, "w") as z:
-        for (cat, pid), d in PEZZI_FINTI.items():
+        for (cat, pid), d in pezzi.items():
             z.writestr(f"buildcores-open-db-main/open-db/{cat}/{pid}.json",
                        json.dumps({"opendb_id": pid, **d}))
         z.writestr("buildcores-open-db-main/open-db/Chair/sedia.json",
@@ -184,8 +222,12 @@ def prove_catalogo(dove):
     C.MINIMI = {c: 1 for c in C.MINIMI}
     conti = C.aggiorna()
     esito("coi minimi abbassati l'indice si scrive, e la sedia resta fuori",
-          os.path.exists(C.INDICE) and conti == {"CPU": 2, "Motherboard": 2, "RAM": 2, "GPU": 2,
-                                                   "Case": 2, "PSU": 2, "CPU Cooler": 1}, str(conti))
+          os.path.exists(C.INDICE) and conti == {"CPU": 2, "Motherboard": 3, "RAM": 3, "GPU": 4,
+                                                   "Case": 2, "PSU": 3, "CPU Cooler": 1,
+                                                   "Storage SSD": 6}, str(conti))
+    esito("   primo scaricamento: nessuna novità, non «tutto nuovo»", C.novita() is None)
+    esito("lo slot M.2 con chiave E (Wi-Fi) non entra fra quelli per SSD",
+          len(C.pezzo("mb-b650")["m2"]) == 1)
     esito("la ricerca vuole tutte le parole", [x["id"] for x in C.cerca("GPU", "4070 ventus")] == ["gpu-4070ti"])
     esito("   e resta nella categoria", C.cerca("CPU", "4070") == [])
 
@@ -197,9 +239,10 @@ def prove_catalogo(dove):
     def per(k):
         return {e["controllo"]: e for e in k["controlli"]}
 
-    k = C.controlli(conf("cpu-7800", "mb-b650", "ram-ddr5", "gpu-4070ti", "case-north", "psu-750", "dis-ak400"))
-    esito("la configurazione buona: 10 su 10, 100%",
-          (k["ok"], k["verificabili"], k["percentuale"], k["non_noti"]) == (10, 10, 100, 0),
+    k = C.controlli(conf("cpu-7800", "mb-b650", "ram-ddr5", "gpu-4070ti", "case-north", "psu-750",
+                         "dis-ak400", "ssd-nvme"))
+    esito("la configurazione buona: 12 su 12, 100%",
+          (k["ok"], k["verificabili"], k["percentuale"], k["non_noti"], k["da_verificare"]) == (12, 12, 100, 0, 0),
           str([(e["controllo"], e["esito"]) for e in k["controlli"] if e["esito"] != "ok"]))
     k = per(C.controlli(conf("cpu-7800", "mb-b650", "ram-ddr4")))
     esito("RAM DDR4 su scheda e CPU DDR5: due «no»",
@@ -226,6 +269,98 @@ def prove_catalogo(dove):
     esito("un pezzo venduto non entra nella configurazione", k["collegati"] == 1)
     k = C.controlli(conf("gpu-lunga", "gpu-4070ti", "case-north"))
     esito("due GPU possedute: si dice, e si controlla la prima", k["doppi"] == ["GPU"])
+
+    print("\n== 14. i connettori della GPU ==")
+    G = "Connettori GPU / alimentatore"
+    e = per(C.controlli(conf("gpu-4070ti", "psu-750")))[G]
+    esito("12VHPWR contro un alimentatore che ce l'ha: ok", e["esito"] == "ok", e["dettaglio"])
+    e = per(C.controlli(conf("gpu-4070ti", "psu-500")))[G]
+    esito("12VHPWR senza il nativo: «da verificare», con l'adattatore nel dettaglio",
+          e["esito"] == "verifica" and "adattatore" in e["dettaglio"], e["dettaglio"])
+    e = per(C.controlli(conf("gpu-3x8", "psu-500")))[G]
+    esito("tre 8 pin contro due 6+2: no", e["esito"] == "no", e["dettaglio"])
+    e = per(C.controlli(conf("gpu-3x8", "psu-750")))[G]
+    esito("tre 8 pin contro quattro 6+2: ok", e["esito"] == "ok", e["dettaglio"])
+    e = per(C.controlli(conf("gpu-4070ti", "psu-zero")))[G]
+    esito("alimentatore con zero connettori nel catalogo: «non noto», mai «no»", e["esito"] == "non_noto")
+    e = per(C.controlli(conf("gpu-zero-70w", "psu-500")))[G]
+    esito("GPU da 70 W senza connettori: «da verificare», non «ok»", e["esito"] == "verifica", e["dettaglio"])
+    e = per(C.controlli(conf("gpu-lunga", "psu-750")))[G]
+    esito("GPU senza il campo: «non noto»", e["esito"] == "non_noto")
+
+    print("\n== 15. gli SSD M.2 ==")
+    esito("le misure scritte in modi diversi si leggono",
+          C.misure_m2("2242-2280") == {"2242", "2260", "2280"}
+          and C.misure_m2("2260/ 2280") == {"2260", "2280"}
+          and C.misure_m2("2280-22110") == {"2280", "22110"}
+          and C.misure_m2("2580-25110") == {"2580", "25110"} and C.misure_m2(None) == set())
+    M = "SSD M.2 / slot della scheda madre"
+    esito("un NVMe 2280 in uno slot 2280 PCIe: ok",
+          per(C.controlli(conf("mb-b650", "ssd-nvme")))[M]["esito"] == "ok")
+    e = per(C.controlli(conf("mb-b650", "ssd-nvme", "ssd-nvme-2")))[M]
+    esito("due SSD e un solo slot per SSD (quello del Wi-Fi non conta): no",
+          e["esito"] == "no" and "2 SSD M.2, 1 slot" in e["dettaglio"], e["dettaglio"])
+    e = per(C.controlli(conf("mb-b650", "ssd-sata-m2")))[M]
+    esito("SSD SATA in uno slot che dice solo PCIe: «da verificare» (il catalogo è avaro sul SATA)",
+          e["esito"] == "verifica" and "SATA" in e["dettaglio"], e["dettaglio"])
+    e = per(C.controlli(conf("mb-sata", "ssd-nvme")))[M]
+    esito("NVMe in uno slot dichiarato solo SATA: no", e["esito"] == "no", e["dettaglio"])
+    e = per(C.controlli(conf("mb-sata", "ssd-sata-m2")))[M]
+    esito("   e lì un SSD SATA: ok", e["esito"] == "ok", e["dettaglio"])
+    e = per(C.controlli(conf("mb-b650", "ssd-22110")))[M]
+    esito("SSD 22110 in uno slot 2280: no", e["esito"] == "no")
+    e = per(C.controlli(conf("mb-b650", "ssd-2242")))[M]
+    esito("SSD 2242 in uno slot che dichiara solo 2280: «da verificare», non «no»",
+          e["esito"] == "verifica" and "più corto" in e["dettaglio"], e["dettaglio"])
+    e = per(C.controlli(conf("mb-h270", "ssd-nvme")))[M]
+    esito("scheda senza slot M.2 nel catalogo: «non noto»", e["esito"] == "non_noto")
+    esito("un disco da 3,5\" non entra nel controllo M.2",
+          M not in per(C.controlli(conf("mb-b650", "hdd"))))
+
+    print("\n== 16. più pezzi della stessa categoria ==")
+    k = C.controlli(conf("mb-b650", "ssd-nvme") + conf("ssd-nvme-2", stato="desiderato"))
+    esito("un SSD posseduto e uno desiderato si SOMMANO: 2 su 1 slot, no",
+          per(k)[M]["esito"] == "no" and not k["doppi"], per(k)[M]["dettaglio"])
+    k = per(C.controlli(conf("mb-b650", "ram-ddr5", "ram-ddr5-b")))
+    esito("due kit posseduti si sommano: 2 + 2 = 4 moduli, 32 + 64 = 96 GB",
+          k["Moduli di RAM / slot"]["dettaglio"] == "2 + 2 = 4 moduli, 4 slot"
+          and k["Capacità RAM / massimo della scheda"]["dettaglio"] == "32 + 64 = 96 GB su 192 GB",
+          k["Moduli di RAM / slot"]["dettaglio"] + " | " + k["Capacità RAM / massimo della scheda"]["dettaglio"])
+    esito("   e due kit insieme sono «da verificare»", k["Più kit di RAM insieme"]["esito"] == "verifica")
+    k = per(C.controlli(conf("mb-b650", "ram-ddr4") + conf("ram-ddr5", stato="desiderato")))
+    esito("un kit desiderato prende il posto del posseduto: DDR5 su DDR5, un kit solo",
+          k["Tipo di RAM / scheda madre"]["esito"] == "ok" and "Più kit di RAM insieme" not in k,
+          k["Tipo di RAM / scheda madre"]["dettaglio"])
+    k = per(C.controlli(conf("mb-b650", "ram-ddr5", "ram-ddr4")))
+    esito("due kit, uno DDR4: il tipo è «no»", k["Tipo di RAM / scheda madre"]["esito"] == "no",
+          k["Tipo di RAM / scheda madre"]["dettaglio"])
+
+    print("\n== 17. le novità del catalogo ==")
+    nuovo = {("GPU", "gpu-nuova"): {"length": 330, "tdp": 360,
+                                    "metadata": {"name": "GPU uscita adesso", "releaseYear": 2026}},
+             ("GPU", "gpu-vecchia-aggiunta"): {"length": 200, "tdp": 120,
+                                               "metadata": {"name": "GPU vecchia appena aggiunta", "releaseYear": 2016}}}
+    C.scarica = lambda: zip_finto(togli=("dis-ak400",), aggiungi=nuovo)
+    C.MINIMI["CPU Cooler"] = 0
+    C.aggiorna()
+    n = C.novita()
+    esito("un aggiornamento dice cosa è entrato e cosa è uscito",
+          n and n["n_nuovi"] == 2 and n["n_tolti"] == 1
+          and n["tolti"] == {"CPU Cooler": ["Deepcool AK400"]}, str(n and (n["n_nuovi"], n["n_tolti"], n["tolti"])))
+    esito("   i nuovi dal più recente", n and [x["nome"] for x in n["nuovi"][0]["pezzi"]]
+          == ["GPU uscita adesso", "GPU vecchia appena aggiunta"])
+    # Un indice di prima **senza** una categoria: quella non è «tutta nuova».
+    doc = json.load(open(C.INDICE, encoding="utf-8"))
+    del doc["_meta"]["conti"]["Storage SSD"]
+    doc["pezzi"] = {k: v for k, v in doc["pezzi"].items() if v["cat"] != "Storage SSD"}
+    json.dump(doc, open(C.INDICE, "w", encoding="utf-8"))
+    C.aggiorna()
+    n = C.novita()
+    esito("una categoria che l'indice di prima non aveva non conta fra i nuovi",
+          n is not None and n["n_nuovi"] == 0, str(n and n["nuovi"]))
+    C.scarica = zip_finto
+    C.MINIMI["CPU Cooler"] = 1
+    C.aggiorna()
 
 
 # Le righe che contano di un DxDiag vero, quello del PC di Davide del 25/09/2026, senza
@@ -387,6 +522,24 @@ def prove_web(dove):
               "Lunghezza GPU / case" in testo and "100%" in testo and "ODC-By" in testo
               and "github.com/buildcores/buildcores-open-db" in testo)
         esito("   e il nome del modello collegato", "MSI GeForce RTX 4070 Ti VENTUS 3X" in testo)
+        esito("le novità dell'ultimo aggiornamento sono nella pagina, coi pezzi usciti",
+              "Novità nel catalogo" in testo and "GPU uscita adesso" in testo and "Usciti" in testo)
+
+        # Un pezzo collegato che OpenDB ha tolto: la pagina non deve dire «non scaricato».
+        d = extensions.get_db()
+        d.execute("UPDATE pc_components SET opendb_id='gpu-nuova' WHERE name='Nvidia GeForce RTX 4070'")
+        d.commit(); d.close()
+        testo = c.get("/pcbuilder/").get_data(as_text=True)
+        esito("un modello uscito dal catalogo si dice così, non «catalogo non scaricato»",
+              "non è più nel catalogo" in testo and "il catalogo non è scaricato" not in testo)
+        r = c.post("/pcbuilder/save", data=form("Il mio PC", [
+            riga("GPU", "Nvidia GeForce RTX 4070", "600", "desiderato", opendb="gpu-nuova"),
+            riga("Case", "Il case", "90", "posseduto", opendb="case-north"),
+        ], bid=bid), follow_redirects=True)
+        testo = r.get_data(as_text=True)
+        esito("   e al salvataggio si scollega col suo motivo, non «altra categoria»",
+              pezzi()["Nvidia GeForce RTX 4070"]["opendb_id"] is None
+              and "non è più in OpenDB" in testo and "non è della stessa categoria" not in testo)
 
         import pc_catalogo as C
         prima = open(C.INDICE, encoding="utf-8").read()
@@ -400,6 +553,8 @@ def prove_web(dove):
         C.scarica = zip_finto
         testo = c.post("/pcbuilder/catalogo/aggiorna", follow_redirects=True).get_data(as_text=True)
         esito("aggiornamento riuscito: lo dice coi numeri", "Catalogo aggiornato: 2 CPU" in testo)
+        esito("   e rispetto a prima: niente di nuovo, detto",
+              "0 nuovi, 0 usciti" in testo and "Nessun pezzo entrato o uscito" in testo)
 
         r = c.post("/pcbuilder/import_dxdiag", data={"dxdiag_text": DXDIAG_VERO}).get_json()
         esito("la route dell'import manda anche le note",
