@@ -13,6 +13,7 @@ from extensions import (get_db, verifica_password, hash_password, COOKIE_RICORDA
                         GIORNI_RICORDA, crea_sessione_ricordata, dimentica_sessione,
                         COOKIE_LINGUA, preferenze_utente, salva_preferenza, TEMI,
                         LINGUE)
+import log_hub
 
 bp = Blueprint("auth", __name__)
 
@@ -56,6 +57,8 @@ def login():
                 token = crea_sessione_ricordata(
                     db, utente["id"], request.headers.get("User-Agent", ""))
                 db.commit()
+            log_hub.registra("accesso", f"Login di «{utente['username']}»"
+                             + (" con «resta collegato»" if token else ""))
             tema, lingua = preferenze_utente(db, utente["id"])
             db.close()
             risposta = make_response(redirect(url_for("dashboard.dashboard")))
@@ -72,6 +75,14 @@ def login():
                                     samesite="Lax")
             return risposta
         db.close()
+        # ⚠️ Il nome tentato si scrive, la password **mai**. Il nome è tagliato: chi
+        # sbaglia campo ci scrive dentro la password, e 64 caratteri bastano a
+        # riconoscere un nome senza farne un archivio di quello che si digita.
+        # Il motivo distingue «non esiste» da «password sbagliata», che a schermo non
+        # si dice di proposito: qui lo legge solo un amministratore.
+        log_hub.registra("accesso", "Login fallito", livello="avviso",
+                         tentato=(request.form.get("username") or "")[:64],
+                         motivo="password errata" if utente else "utente inesistente")
         flash("Credenziali errate", "error")
     return render_template("login.html")
 
@@ -122,6 +133,8 @@ def logout():
     # ⚠️ Prima `session.clear()`, ma anche la riga: un logout che lascia viva la
     # sessione ricordata rimetterebbe dentro al primo `F5`, ed è esattamente il
     # contrario di quello che uno chiede premendo «esci».
+    if "username" in session:
+        log_hub.registra("accesso", f"Logout di «{session['username']}»")
     token = request.cookies.get(COOKIE_RICORDA)
     if token:
         db = get_db()

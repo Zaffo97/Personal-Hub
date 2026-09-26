@@ -55,6 +55,8 @@ PAGINE = [
     "/pokemon/regulation/ma", "/pokemon/regulation/ma/contenuto",
     "/gaming/", "/gaming/new", "/gaming/1/edit", "/gaming/uscite", "/gaming/steam",
     "/arduino/", "/python/", "/pcbuilder/", "/admin/utenti",
+    # Il log, dal 26/09/2026, nello stesso commit in cui nasce.
+    "/admin/log",
     # Stampa 3D, dal 25/09/2026, nello stesso commit in cui nasce.
     "/stampa3d/",
     # Il progetto Python chiede un id come la lega: se il progetto 1 non c'è, la pagina

@@ -2,7 +2,7 @@
 
 > **Qui c'è solo ciò che è aperto.** Le voci chiuse stanno in [`STORICO.md`](STORICO.md),
 > una riga per lavoro con la data e i numeri della verifica.
-> Aggiornato: **25/09/2026** (potatura: da 1310 righe; il testo di prima è
+> Aggiornato: **26/09/2026** (potatura: da 1310 righe; il testo di prima è
 > `git show 513c082:BACKLOG.md`). Fonte storica: `Nuove implementazioni.docx`.
 
 Legenda: ⬜ da fare · 🟨 parziale · ✅ chiuso (resta il titolo, perché il codice cita il
@@ -96,6 +96,7 @@ Non sono storia: sono le cose che questo progetto ha già pagato e che tornano a
 | ⚠️ **Un id scelto a tavolino non è una prova di proprietà** | Pagata il 16/08/2026 (§4.1). La cache IGDB vera usa `igdb_release_id` fra **486664 e 954196**; uno script di prova che cancellava «il suo intervallo» 900000-910000 si è portato via **497 righe vere**. Un test che condivide lo stato coi dati veri misura anche quelli: la prova del calendario gira su una **copia** di `hub.db` |
 | ⚠️ **`controlla_proprietario.py` riconosce il filtro in modo volutamente stretto** | Dal 22/09/2026 (§4.5). `nomi_innestati()` torna un nome solo se il segnaposto è un nome e basta: `{cond[0]}`, `{" ".join(...)}` o una condizione passata da un parametro **non** vengono riconosciuti, e quella query finisce fra le **scoperte**. È il verso giusto in cui sbagliare, ma una riscrittura innocua può far comparire una scoperta nuova: prima di dichiararla con un'eccezione, guardare se il filtro c'è davvero. La catena `cond` → `mia` → query si segue solo attraverso assegnazioni a un nome da una f-string |
 | ⚠️ **Un indirizzo che un sito dichiara non è un indirizzo che funziona** | Dal 25/09/2026, sul PC Builder. Versus dichiara nella pagina (dati strutturati `SearchAction`) la ricerca `versus.com/it/search?q={query}`: aperta, **ignora la query** e mostra i risultati di un'altra ricerca. Un link costruito su quella dichiarazione avrebbe aperto sempre la pagina sbagliata, senza nessun errore. Ogni formato di link verso un sito esterno va **aperto e guardato** prima di scriverlo nel codice; quelli verificati sono scritti in cima a `pc_negozi.py` (la ricerca di BPM-Power, che Cloudflare nasconde a Claude, l'ha presa Davide da una ricerca vera) |
+| ⚠️ **Il log sta accanto al DB, e un evento riceve numeri, non il form** | Dal 26/09/2026 (§4.11). `log_hub.cartella()` è `logs/` **accanto a `extensions.DB`**, letto a ogni scrittura: è così che le prove e lo sweep, che spostano `extensions.DB` in una cartella temporanea, non sporcano il log vero — senza che nessuna prova se ne debba ricordare. Chi «semplifica» con un percorso fisso lo rompe **in silenzio**: le prove passano lo stesso, e il log di Davide si riempie di login finti. `prova_log.py` controlla che il `logs/` vero non cambi. ⚠️ E chi aggiunge un evento passa a `registra()` **numeri e nomi**, mai `request.form` o un payload: dentro ci sono le password. La prova cerca quattro password nel file, ma solo sulle route che conosce. L'avvio si scrive in `app.py` (`__main__`) e `wsgi.py`, **non** in `create_app()`, che creano anche le prove |
 | ⚠️ **Scelte che sembrano bachi, e non vanno «corrette»** | **L'hover del tema scuro** (`--primary-h: #9488f7`, bianco sopra a **2.95**, sotto la soglia di 3.0) resta com'è per decisione di Davide del 22/09/2026: `prova_temi.py` lo tiene in `DICHIARATE` e lo ristampa a ogni giro. **Il travaso fra utenti non è rieseguibile**: premuto due volte lascia tutto in doppio, la conferma lo dice coi numeri, e `prova_travaso_utente.py` c'è apposta. **In italiano il calcolatore scrive `Privazione`**, non `Knock Off`: se si vuole l'inglese anche in italiano si cambia in un punto solo, `nomeVis` nel `<head>` di `base.html` |
 
 ---
@@ -111,9 +112,9 @@ Le decisioni che valgono ancora: la sezione Pokémon si finisce prima delle altr
 il collaudo va alla fine, le guide dopo il collaudo, e **mettere l'app online per ultimo**
 («caricare il sito da qualche parte lo voglio tenere come una delle ultime cose»).
 
-1. §4 — le sezioni: **Log** (prima la domanda: cosa intende Davide per «log», §4). Stampa 3D (§4.8), Arduino (§4.9) e Python (§4.10) sono
-   fatte; restano le prove nel Chrome di Davide (Arduino: rimandata da lui il 25/09) e ciò
-   che aspetta la stampante
+1. §4 — le sezioni sono fatte: Stampa 3D (§4.8), Arduino (§4.9), Python (§4.10) e il
+   **Log** (§4.11, 26/09). Restano le prove nel Chrome di Davide (Arduino: rimandata da lui
+   il 25/09; il Log: aprire `/admin/log` sull'hub vero) e ciò che aspetta la stampante
 2. I residui Pokémon: le due abilità senza effetto (§3), Kingambit e Game8 (§4.3)
 3. §5 — il giro di collaudo, l'inventario del codice morto
 4. §1.6 — le due guide, **dopo** il collaudo
@@ -328,7 +329,7 @@ Tutti gli altri bachi elencati qui fino al 23/09/2026 sono chiusi: vedi `STORICO
 | 🖨️ **Stampa 3D** | 🟨 Progetti con link, file allegati e inventario bobine **fatti il 25/09/2026**: vedi §4.8 |
 | 🤖 **Arduino** | 🟨 Anteprima di Tinkercad e Wokwi, «nuovo circuito» e tabella dei piedini coi controlli **fatti il 25/09/2026**, e il baco del `href` senza controllo chiuso: vedi §4.9 |
 | 🐍 **Python** | 🟨 Progetti con file (scritti, caricati, da GitHub), esecuzione nel browser e sul PC, note per argomento e frammenti **fatti il 25/09/2026**: vedi §4.10 |
-| 💾 **Log** | ⬜ Aggiungere una funzione di salvataggio log. ⚠️ **Domanda posta il 25/09/2026 e rimandata da Davide alla prossima sessione**: cosa vuol dire «log»? Tre letture proposte — (1) i **log dell'hub** (errori, avvii, accessi, import fatti), (2) un **diario** di Davide (note datate), (3) **salvare su file** quello che oggi va solo in console. Si riparte da qui, non da un'ipotesi |
+| 💾 **Log** | 🟨 Il **log dell'hub** (avvii, accessi, utenti, import, errori) con la pagina `/admin/log`, **fatto il 26/09/2026**: Davide ha scelto la lettura (1) fra le tre proposte. Vedi §4.11 |
 | 🎨 **Grafica** | ⬜ `form-select` è usata da **4 tendine** (selettore di sezione in `arduino.html`, `gaming.html`, `pcbuilder.html`, `pokemon.html`) e non è definita da nessuna parte · ⬜ rivedere **lo scorrimento di sezioni e sottosezioni** (richiesta del 22/09/2026). ⚠️ Solo il Fantacalcio ha il `<form>` che avvolge header e footer della modale; in `arduino.html` e `pcbuilder.html` il form sta dentro `.modal-body` e lo scroll funziona, quindi la cura del Fantacalcio non va copiata a tappeto |
 
 ### 4.1 🟨 Gaming — il calendario delle uscite
@@ -625,6 +626,36 @@ progetto↔argomenti). Numeri in `STORICO.md`, prova `prova_python.py`.
 - **Il legame progetto↔argomenti** (idea «a»): proposto, non scelto
 - **L'editor è un `<textarea>`**: niente colori della sintassi né completamento. Un editor
   vero (CodeMirror) sarebbe un'altra libreria in `static/vendor/`
+
+### 4.11 🟨 Il log dell'hub (26/09/2026)
+
+Nel docx: «una funzione di salvataggio log». Il 26/09 Davide ha chiarito che intende il
+**registro di quello che fa l'app**, non un diario e non la console su file. Numeri in
+`STORICO.md`, prova `prova_log.py`.
+
+| Pezzo | Dove |
+|---|---|
+| Scrittura (una riga JSON per evento, rotazione a 1 MB × 5 file, non solleva mai) e lettura coi filtri | `log_hub.py` → `logs/hub.log`, fuori da git |
+| La pagina, solo admin: categoria, livello, ricerca, traceback e dettagli apribili | `/admin/log`, `templates/admin_log.html`, voce «Log» in sidebar |
+| **Avvii** | `app.py` (`__main__`, una volta anche col reloader) e `wsgi.py` |
+| **Accessi**: login riuscito, fallito (nome tentato e motivo, mai la password), rientro con «resta collegato», logout, sezione non permessa | `blueprints/auth.py`, `app.py` |
+| **Utenti**: creato, permessi, password cambiata, dispositivi dimenticati, copia, eliminazione | `blueprints/admin.py` |
+| **Import**: Steam (import, fine giro di generi e tag), uscite IGDB (fine giro), listone e calendario del Fantacalcio (anche quelli automatici), Pokémon da PokéAPI, aggiornamento del Pokédex, catalogo del PC Builder | i blueprint delle sezioni |
+| **Errori**: ogni eccezione che arriva a Flask, col traceback, dal segnale `got_request_exception` | `app.py` |
+
+**⬜ Resta aperto:**
+
+- **La prova sull'hub vero**: aprire `/admin/log` dal Chrome di Davide. La pagina è provata
+  sul test client e guardata nel pannello (anche a 375 px), ma sull'hub vero il log ha per
+  ora solo l'avvio del 26/09
+- **Gli script da riga di comando non scrivono nel log**: `importa_dati.py` (il ripristino),
+  `importa_listone.py`, `esporta_dati.py`. Sarebbero «import eseguiti» a tutti gli effetti;
+  non chiesto, e uno script con `--db` dovrebbe scrivere accanto a **quel** DB
+- **Le cancellazioni di contenuti** (un gioco, un team, una lega, una voce del catalogo)
+  non sono nel log: fuori dalle quattro categorie scelte
+- ⚠️ **Online (§1.5) l'indirizzo sarà quello del proxy** per tutti: `remote_addr` va letto
+  con `ProxyFix`, e solo dietro un proxy vero (vedi `_chi_e_da_dove()`)
+- **1 MB × 5 file** è un tetto scelto, non misurato sul traffico vero dell'hub
 
 ---
 

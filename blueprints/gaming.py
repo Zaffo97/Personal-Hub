@@ -13,6 +13,7 @@ from flask import Blueprint, render_template, request, redirect, url_for, flash,
 from extensions import (get_db, login_required, _i, _f, t, tf,
                         ambito_utente, solo_mie, utente_id, e_admin)
 from data import GAME_STATUSES, GAME_PLATFORMS
+import log_hub
 
 bp = Blueprint("gaming", __name__, url_prefix="/gaming")
 
@@ -277,6 +278,8 @@ def steam_importa():
                  utente_id()))
             nuovi += 1
     db.commit(); db.close()
+    log_hub.registra("import", f"Steam: {nuovi} giochi nuovi, {aggiornati} con le ore "
+                               "aggiornate", nuovi=nuovi, aggiornati=aggiornati)
     return jsonify({"nuovi": nuovi, "aggiornati": aggiornati})
 
 
@@ -338,6 +341,13 @@ def steam_arricchisci():
     rimasti = db.execute("SELECT COUNT(*) FROM games WHERE steam_appid IS NOT NULL"
                          f" AND (genre IS NULL OR genre='') AND {cond}", par).fetchone()[0]
     db.close()
+    # Lavora a lotti da 15 e il client lo richiama finché ne restano: una riga per
+    # lotto sarebbe rumore, quindi nel log vanno solo l'intoppo e la fine del giro.
+    if errore_rete:
+        log_hub.registra("import", f"Generi da Steam interrotti: {errore_rete}",
+                         livello="avviso", fatti=fatti, rimasti=rimasti)
+    elif da_fare and not rimasti:
+        log_hub.registra("import", "Generi da Steam: completati")
     if errore_rete and not fatti:
         return jsonify({"errore": errore_rete, "rimasti": rimasti}), 502
     return jsonify({"fatti": fatti, "senza_genere": falliti,
@@ -419,6 +429,12 @@ def steam_arricchisci_tag():
     rimasti = db.execute("SELECT COUNT(*) FROM games WHERE steam_appid IS NOT NULL"
                          f" AND (steam_tags IS NULL OR steam_tags='') AND {cond}", par).fetchone()[0]
     db.close()
+    # Come i generi: l'intoppo e la fine del giro, non ogni lotto.
+    if errore_rete:
+        log_hub.registra("import", f"Tag da SteamSpy interrotti: {errore_rete}",
+                         livello="avviso", fatti=fatti, rimasti=rimasti)
+    elif da_fare and not rimasti:
+        log_hub.registra("import", "Tag da SteamSpy: completati")
     if errore_rete and not fatti:
         return jsonify({"errore": errore_rete, "rimasti": rimasti}), 502
     return jsonify({"fatti": fatti, "senza_tag": senza,
@@ -1066,11 +1082,12 @@ def uscite_aggiorna():
              f"where date > {adesso} & date < {fino_a}; "
              f"sort id asc; limit {IGDB_LOTTO}; offset {offset};")
     dati, errore = igdb_query("release_dates", query)
+    if not errore and not isinstance(dati, list):
+        errore = "IGDB non ha restituito un elenco"
     if errore:
+        log_hub.registra("import", f"Uscite da IGDB interrotte: {errore}",
+                         livello="avviso", offset=offset)
         return jsonify({"errore": errore, "offset": offset}), 502
-    if not isinstance(dati, list):
-        return jsonify({"errore": "IGDB non ha restituito un elenco",
-                        "offset": offset}), 502
 
     db = get_db()
     nuovi = aggiornati = 0
@@ -1119,6 +1136,11 @@ def uscite_aggiorna():
     db.close()
 
     presi = len(dati)
+    # A lotti come i generi di Steam: nel log va la fine del giro, col totale letto
+    # (l'offset **è** il conto delle uscite già passate nei lotti prima).
+    if presi < IGDB_LOTTO:
+        log_hub.registra("import", f"Uscite da IGDB aggiornate: {offset + presi} "
+                                   "lette in tutto", lette=offset + presi)
     return jsonify({
         "presi": presi, "nuovi": nuovi, "aggiornati": aggiornati,
         "scarti": scarti,

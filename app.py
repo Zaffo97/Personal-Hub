@@ -30,6 +30,14 @@ def create_app():
     with app.app_context():
         init_db()
 
+    # Ogni eccezione che arriva fino a Flask finisce nel log con il traceback (vedi
+    # `log_hub.registra_eccezione`, e perché è un segnale e non un gestore).
+    # `weak=False`: il ricevitore è una funzione di modulo, ma blinker tiene i
+    # collegamenti deboli per default e non vale la pena scoprire il giorno che smette.
+    from flask import got_request_exception
+    import log_hub
+    got_request_exception.connect(log_hub.registra_eccezione, app, weak=False)
+
     # La lingua attiva serve a ogni pagina: il pulsante sta in base.html e le
     # tendine di Pokémon, mosse e oggetti sono renderizzate dal server.
     @app.context_processor
@@ -97,6 +105,9 @@ def create_app():
             session["display_name"] = r["display_name"]
             session["role"] = r["role"]
             session["user_id"] = r["uid"]
+            import log_hub
+            log_hub.registra("accesso", f"Rientro di «{r['username']}» con "
+                                        "«resta collegato»")
         return None
 
     @app.before_request
@@ -108,6 +119,9 @@ def create_app():
             return None                     # non è una sezione, o ci pensa login_required
         if slug in sezioni_utente():
             return None
+        import log_hub
+        log_hub.registra("accesso", f"Sezione non permessa: {slug} ({request.path})",
+                         livello="avviso")
         # Una risposta JSON a chi chiama un'API, una pagina a chi naviga: rispondere
         # con un redirect a una fetch() darebbe un errore di parsing invece di un 403.
         if request.blueprint == "api_pokemon" or request.path.startswith("/api/") \
@@ -160,6 +174,15 @@ if __name__ == "__main__":
     debug = os.environ.get("HUB_DEBUG") == "1"
     if debug:
         print("⚠️  HUB_DEBUG=1: debugger acceso. Solo in locale, mai su una rete pubblica.")
-    app.run(host=os.environ.get("HUB_HOST", "0.0.0.0"),
-            port=int(os.environ.get("HUB_PORT", "5000")),
-            debug=debug)
+    host = os.environ.get("HUB_HOST", "0.0.0.0")
+    port = int(os.environ.get("HUB_PORT", "5000"))
+    # L'avvio si scrive **qui** e in `wsgi.py`, non in `create_app()`: l'app la creano
+    # anche le prove e gli script che importano `app`, e ognuno sarebbe un «avvio»
+    # che non è mai successo. Con `debug` il reloader esegue questo blocco **due
+    # volte** (il processo che sorveglia e quello che serve): conta solo il secondo.
+    if not debug or os.environ.get("WERKZEUG_RUN_MAIN") == "true":
+        import log_hub
+        log_hub.registra("avvio", f"Hub avviato col server di sviluppo su {host}:{port}"
+                                  + (" (debug acceso)" if debug else ""),
+                         livello="avviso" if debug else "info", pid=os.getpid())
+    app.run(host=host, port=port, debug=debug)

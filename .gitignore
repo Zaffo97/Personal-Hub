@@ -35,6 +35,10 @@ data/stampa3d/
 # con `python scripts/scarica_pyodide.py`. three.js invece è versionato: 2 MB.
 static/vendor/pyodide-*/
 
+# Il log dell'hub (`log_hub.py`): nomi tentati al login, indirizzi, traceback. Sta
+# accanto al DB e ha la stessa ragione per restare fuori — e non e' un dato da salvare.
+logs/
+
 # Il backup `--completo` di scripts/esporta_dati.py: contiene gli hash delle
 # password, come hub.db. Lo script si **rifiuta** gia' di scriverlo dentro una
 # cartella versionata, e quella e' la rete vera; questa e' la seconda, per il

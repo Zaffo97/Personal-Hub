@@ -8,6 +8,7 @@ le spunte non compaiono: sarebbero una promessa che il codice non mantiene.
 **Vuoto vale «tutte»**: è la scelta che tiene al sicuro chi c'era prima, perché la
 colonna nasce vuota su tutti gli utenti esistenti.
 """
+import json
 import re
 
 from flask import (Blueprint, render_template, request, redirect, url_for, flash,
@@ -17,6 +18,7 @@ from data import SEZIONI, SEZIONI_SLUG
 from extensions import (get_db, login_required, NESSUNA_SEZIONE, hash_password,
                         TABELLE_UTENTE, tabelle_senza_regola, figlie_senza_regola,
                         copia_dati_utente, conteggi_utente, dimentica_tutte)
+import log_hub
 
 bp = Blueprint("admin", __name__, url_prefix="/admin")
 
@@ -150,6 +152,7 @@ def utente_nuovo():
                 (request.form.get("display_name") or username).strip(),
                 ruolo, "" if ruolo == "admin" else _sezioni_dal_form()))
     db.commit(); db.close()
+    log_hub.registra("utenti", f"Utente «{username}» creato", ruolo=ruolo)
     flash(f"Utente «{username}» creato.", "success")
     return redirect(url_for("admin.utenti"))
 
@@ -176,9 +179,11 @@ def utente_permessi(uid):
             db.close(); flash("Deve restare almeno un amministratore.", "error")
             return redirect(url_for("admin.utenti"))
 
-    db.execute("UPDATE users SET role=?, sections=? WHERE id=?",
-               (ruolo, "" if ruolo == "admin" else _sezioni_dal_form(), uid))
+    sezioni = "" if ruolo == "admin" else _sezioni_dal_form()
+    db.execute("UPDATE users SET role=?, sections=? WHERE id=?", (ruolo, sezioni, uid))
     db.commit(); db.close()
+    log_hub.registra("utenti", f"Permessi di «{r['username']}» aggiornati", ruolo=ruolo,
+                     sezioni=sezioni or "tutte")
     flash(f"Permessi di «{r['username']}» aggiornati.", "success")
     return redirect(url_for("admin.utenti"))
 
@@ -206,6 +211,8 @@ def utente_password(uid):
                       f"«resta collegato» " +
                       ("è stato disconnesso" if cadute == 1 else "sono stati disconnessi")
                       + ": la password nuova vale da subito ovunque.")
+    log_hub.registra("utenti", f"Password di «{r['username']}» cambiata",
+                     dispositivi_disconnessi=cadute)
     flash(messaggio, "success")
     return redirect(url_for("admin.utenti"))
 
@@ -220,6 +227,8 @@ def utente_dimentica(uid):
         return redirect(url_for("admin.utenti"))
     cadute = dimentica_tutte(db, uid)
     db.commit(); db.close()
+    log_hub.registra("utenti", f"«Resta collegato» revocato a «{r['username']}»",
+                     dispositivi_disconnessi=cadute)
     if cadute:
         flash(f"«{r['username']}»: {cadute} dispositiv"
               f"{'o disconnesso' if cadute == 1 else 'i disconnessi'}. "
@@ -278,6 +287,8 @@ def utente_copia(uid):
     except Exception as e:
         db.rollback()
         db.close()
+        log_hub.registra("utenti", f"Copia da «{sorgente['username']}» a "
+                         f"«{destinatario['username']}» fallita: {e}", livello="errore")
         flash(f"Non ho copiato niente, il DB è com'era: {e}", "error")
         return redirect(url_for("admin.utenti"))
     saltate = db.execute("SELECT COUNT(*) FROM python_progress WHERE user_id=?",
@@ -297,6 +308,8 @@ def utente_copia(uid):
         # 22/09/2026), e un dato lasciato fuori in silenzio somiglia a un dato perso.
         messaggio += (f" Le {saltate} spunte di Python non sono state copiate: "
                       "quelle sono di chi le mette.")
+    log_hub.registra("utenti", f"Copiati i contenuti di «{sorgente['username']}» su "
+                     f"«{destinatario['username']}»", copiate=fatte)
     flash(messaggio, "success")
     return redirect(url_for("admin.utenti"))
 
@@ -362,6 +375,8 @@ def utente_elimina(uid):
         # dicesse. Meglio un messaggio che nomina l'errore: è il sintomo di una
         # tabella che `TABELLE_UTENTE` non copre come crede.
         db.rollback(); db.close()
+        log_hub.registra("utenti", f"Eliminazione di «{r['username']}» fallita: {e}",
+                         livello="errore")
         flash(f"Utente «{r['username']}» non eliminato, e il DB è com'era: {e}",
               "error")
         return redirect(url_for("admin.utenti"))
@@ -376,5 +391,32 @@ def utente_elimina(uid):
         quali = ", ".join(f"{q} in {t}" for t, q in cancellate.items())
         pezzi.append(f"Righe cancellate perché sono lo stato personale di chi se "
                      f"ne va, non contenuto: {quali}.")
+    log_hub.registra("utenti", f"Utente «{r['username']}» eliminato",
+                     righe_passate=passati, righe_cancellate=cancellate)
     flash(" ".join(pezzi), "success")
     return redirect(url_for("admin.utenti"))
+
+
+@bp.route("/log")
+def log():
+    """Il log dell'hub, dal più recente. I filtri stanno nell'URL, così un filtro si
+    ricarica e si condivide come una pagina qualunque."""
+    categoria = request.args.get("categoria") or None
+    if categoria not in log_hub.CATEGORIE:
+        categoria = None
+    livello = request.args.get("livello") or None
+    if livello not in log_hub.LIVELLI:
+        livello = None
+    testo = (request.args.get("q") or "").strip()
+    esito = log_hub.leggi(categoria=categoria, livello=livello, testo=testo)
+    # Il traceback a parte (va in un blocco suo, a larghezza fissa), il resto dei
+    # dati scritto qui con gli accenti: `|tojson` nel template li renderebbe `à`.
+    for r in esito["righe"]:
+        dati = dict(r.get("dati") or {})
+        r["traceback"] = dati.pop("traceback", None)
+        r["dati_testo"] = (json.dumps(dati, ensure_ascii=False, indent=1, default=str)
+                           if dati else "")
+    return render_template("admin_log.html", esito=esito, categoria=categoria,
+                           livello=livello, testo=testo,
+                           categorie=log_hub.CATEGORIE, livelli=log_hub.LIVELLI,
+                           cartella=log_hub.cartella())

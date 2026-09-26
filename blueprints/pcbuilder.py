@@ -6,6 +6,7 @@ from extensions import (get_db, login_required, _i, _f,
 from data import PC_CATEGORIES
 import pc_catalogo
 import pc_negozi
+import log_hub
 
 bp = Blueprint("pcbuilder", __name__, url_prefix="/pcbuilder")
 
@@ -202,13 +203,17 @@ def catalogo_aggiorna():
     try:
         conti = pc_catalogo.aggiorna()
     except Exception as e:                      # rete, zip, o conti che non tornano
+        log_hub.registra("import", f"PC Builder — catalogo non aggiornato: "
+                                   f"{type(e).__name__}: {e}", livello="errore")
         flash(f"Catalogo non aggiornato: {e}. Quello di prima resta com'era.", "error")
     else:
         nv = pc_catalogo.novita()
-        flash("Catalogo aggiornato: " + ", ".join(f"{n} {c}" for c, n in conti.items())
-              + (f" · rispetto al {nv['da']}: {nv['n_nuovi']} nuovi, {nv['n_tolti']} usciti"
-                 if nv else " · primo scaricamento, niente con cui confrontarlo"),
-              "success")
+        messaggio = ("Catalogo aggiornato: " + ", ".join(f"{n} {c}" for c, n in conti.items())
+                     + (f" · rispetto al {nv['da']}: {nv['n_nuovi']} nuovi, "
+                        f"{nv['n_tolti']} usciti"
+                        if nv else " · primo scaricamento, niente con cui confrontarlo"))
+        log_hub.registra("import", "PC Builder — " + messaggio)
+        flash(messaggio, "success")
     return redirect(url_for("pcbuilder.pcbuilder"))
 
 

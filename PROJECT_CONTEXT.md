@@ -56,6 +56,7 @@ personal-hub/
 ├── app.py                   # Entry point — create_app(), registra 8 blueprint
 ├── data.py                  # Costanti statiche, CHAMPIONS_BST da pokemon_catalog.json
 ├── extensions.py            # DB, login_required, _i(), _f(), calc_stat_champions()
+├── log_hub.py               # Il log dell'hub → logs/hub.log (fuori da git), pagina /admin/log
 ├── requirements.txt
 ├── hub.db                   # SQLite — NON committare
 │
@@ -766,6 +767,9 @@ copie della stessa tabella sono ciò che qui è già andato storto con `TYPE_CHA
 - Editor regulation-aware: `reg = request.args.get('reg', 'ma')`
 - Helper numerici: usare sempre `_i()` e `_f()` da `extensions.py`
 - Import da altri moduli: sempre da `extensions` o `data`, mai import ciclici tra blueprint
+- Un evento da tenere (import, azione di un admin, accesso): `log_hub.registra(categoria,
+  messaggio, livello="info"|"avviso"|"errore", **dati)`. Nei `dati` numeri e nomi, **mai**
+  `request.form` o un payload intero: dentro ci sono le password
 
 ### Slug PokéAPI
 Usare `SLUG_OVERRIDES` da `data.py` per tutte le forme speciali (regionali, Rotom, Aegislash, Palafin, Meowstic, Basculegion, ecc.) prima di chiamare la PokéAPI.
@@ -832,6 +836,7 @@ Di conseguenza tutto ciò che questa tabella dava per "funzionante" non era mai 
 
 | Data | Contenuto |
 |------|-----------|
+| 2026-09-26 | **Il log dell'hub (§4.11).** Davide sceglie i log dell'app fra le tre letture. `log_hub.py` (JSON a righe in `logs/`, accanto al DB, rotazione 1 MB × 5), agganci in `app.py`, `wsgi.py`, `auth.py`, `admin.py` e negli import di Gaming, Fantacalcio, Pokémon e PC Builder; eccezioni dal segnale `got_request_exception`. Pagina `/admin/log` (`admin_log.html`), voce in sidebar, `/admin/log` nello sweep, `logs/` in `.gitignore`. `prova_log.py` **36 su 36**, le altre dieci suite passate, sweep 0 errori, query 0 scoperte; guardata nel pannello anche a 375 px |
 | 2026-09-25 | **Python: progetti, esecuzione, note e frammenti (§4.10).** `python_esegui.py`, `python_sorgenti.py`, `scripts/scarica_pyodide.py` (Pyodide 314.0.7, sha256 controllato, fuori da git), `static/js/python-worker.js` e `python-esegui.js`, `_python_esegui.html`, `python_progetto.html`, `python.html` a linguette; quattro tabelle `python_*` in tutti gli elenchi (utenti, figlie, controlli, export/import, sweep); l'import si ferma anche con **note** su argomenti disallineati. `prova_python.py` **50 su 50**, ripristino 35/35, travaso 58/58, sweep 0, query 0 scoperte. In browser: Pyodide in 2,5 s, numpy dal CDN, ciclo infinito fermato a 30 s con la pagina viva; preso e corretto il secondo «Esegui» che si rompeva sulla cartella `/progetto` |
 | 2026-09-25 | **Arduino: Tinkercad, Wokwi e la tabella dei piedini (§4.9).** `arduino_circuito.py` (nuovo), `scripts/importa_piedini_wokwi.py` → `data/arduino_piedini.json` (5 schede, 43 componenti, dalle fonti con controlli incrociati), colonne `wokwi_url` e `wokwi_diagramma`, route e template riscritti per anteprime, «nuovo circuito» e piedini. Chiuso il `href` senza controllo di `tinkercad_url`. `prova_arduino.py` **50 su 50** (2 difetti presi al primo giro: `3.3V` letto come piedino 3, scheda sconosciuta non nominata), sweep 0 errori, query 0 scoperte; provata in browser su un banco (finestre, form, 375 px). Gli iframe si provano nel Chrome di Davide |
 | 2026-09-25 | **Due bachi di §3.** Conferma di eliminazione utente con `|tojson` (prova col nome `d'amico "bis"`: travaso **58/58**). Ripristino su PC nuovo fermo sul tema dell'admin: `DA_COMPLETARE` in `importa_dati.py` (vuoto nel DB → si completa dall'export; valore diverso → conflitto), `piano_tabella()` torna un sesto elemento. `prova_importa_dati.py` **34/34** (era 19/32), completo 21/21, sweep 0 errori |

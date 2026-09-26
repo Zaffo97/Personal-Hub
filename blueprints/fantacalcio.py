@@ -33,6 +33,7 @@ from data import (RUOLI_FANTA, ORDINE_RUOLI_FANTA, nome_ruolo, scomponi_modulo,
                   MINIMO_PARTITE_FIDATO)
 import fanta as G
 import fanta_fonti as F
+import log_hub
 
 bp = Blueprint("fantacalcio", __name__, url_prefix="/fantacalcio")
 
@@ -216,11 +217,22 @@ def _calendario_se_vecchio(db):
 
 
 def _aggiorna_calendario(db):
+    """La chiamano il pulsante e l'aggiornamento automatico entrando: il log sta
+    qui dentro, così li prende tutti e due. Sull'eccezione il log ha il testo intero,
+    che a schermo non si mostra (lì basta il tipo)."""
     try:
         r = G.aggiorna_calendario(db)
     except Exception as e:
+        log_hub.registra("import", f"Fantacalcio — football-data.org: "
+                                   f"{type(e).__name__}: {e}", livello="errore")
         return (f"Non sono riuscito a leggere football-data.org ({type(e).__name__}). "
                 "Il calendario di prima è rimasto com'era."), "error"
+    messaggio, categoria = _esito_calendario(r)
+    _registra_messaggi([(messaggio, categoria)])
+    return messaggio, categoria
+
+
+def _esito_calendario(r):
     if not r["ok"]:
         return f"Calendario non aggiornato: {r['motivo']}", "error"
     testo = (f"Calendario aggiornato: {r['partite']} partite, {r['con_ora']} con "
@@ -360,7 +372,9 @@ def carica_listone():
     r = G.importa_listone(db, fq, fs, forza=bool(request.form.get("forza")),
                           ambito=ambito_utente("l.user_id"))
     db.close()
-    for testo, categoria in _messaggi_import(r):
+    messaggi = _messaggi_import(r)
+    _registra_messaggi(messaggi)
+    for testo, categoria in messaggi:
         flash(testo, categoria)
     return _torna()
 
@@ -379,6 +393,15 @@ def listone_dai_download():
     for testo, categoria in messaggi:
         flash(testo, categoria)
     return _torna()
+
+
+def _registra_messaggi(messaggi):
+    """I messaggi di un import, gli stessi che vede chi l'ha lanciato, nel log.
+    `success`/`info` sono informazioni, `error` un avviso: un listone rifiutato non
+    è un guasto dell'hub, è l'hub che fa il suo mestiere."""
+    for testo, categoria in messaggi:
+        log_hub.registra("import", "Fantacalcio — " + testo,
+                         livello="avviso" if categoria == "error" else "info")
 
 
 def _messaggi_import(r, da=""):
@@ -424,6 +447,7 @@ def _listone_dai_download(db):
                           ambito=ambito_utente("l.user_id"))
     messaggi = _messaggi_import(r, " dai download")
     if not r["ok"]:
+        _registra_messaggi(messaggi)
         return messaggi
     rimasti = []
     for voce in q + s:
@@ -434,6 +458,10 @@ def _listone_dai_download(db):
     if rimasti:
         messaggi.append((f"Importati, ma non sono riuscito a cancellare: "
                          f"{', '.join(rimasti)}.", "error"))
+    # ⚠️ Solo qui, dopo un import tentato: questa funzione gira a **ogni** ingresso
+    # nella sezione, e l'avviso «c'è un file solo» scritto a ogni visita riempirebbe
+    # il log della stessa riga.
+    _registra_messaggi(messaggi)
     return messaggi
 
 

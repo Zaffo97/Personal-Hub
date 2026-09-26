@@ -1,0 +1,95 @@
+{% extends "base.html" %}
+{% block title %}Log – Hub{% endblock %}
+{% block topbar_title %}&#128220; Log{% endblock %}
+{% block content %}
+<style>
+  .log-filtri{display:flex;flex-wrap:wrap;gap:.6rem;align-items:flex-end}
+  .log-filtri .form-group{margin:0}
+  .log-scorre{overflow-x:auto}
+  /* Senza un minimo, sul telefono la tabella stringe le colonne invece di scorrere,
+     e un traceback diventa una colonna di tre lettere. */
+  .log-tab{min-width:720px}
+  .log-tab td{vertical-align:top}
+  .log-tab .quando{white-space:nowrap;font-variant-numeric:tabular-nums}
+  .log-tab details{margin-top:.3rem}
+  .log-tab summary{cursor:pointer;font-size:.72rem;color:var(--text-muted)}
+  .log-tab pre{margin:.3rem 0 0;padding:.5rem .6rem;border-radius:var(--radius-md);
+    background:var(--surface-off);border:1px solid var(--border);font-size:.72rem;
+    white-space:pre-wrap;word-break:break-word;max-height:360px;overflow:auto}
+</style>
+
+<div class="page-header">
+  <div><h1>&#128220; Log dell'hub</h1>
+    <p class="text-muted text-sm">Avvii, accessi, azioni sugli utenti, import ed errori, dal pi&ugrave; recente</p></div>
+</div>
+
+<div class="card mb-3">
+  <div class="card-body">
+    <form method="GET" action="/admin/log" class="log-filtri">
+      <div class="form-group"><label>Categoria</label>
+        <select name="categoria" class="form-control">
+          <option value="">tutte</option>
+          {% for chiave, etichetta in categorie.items() %}
+          <option value="{{ chiave }}" {% if chiave == categoria %}selected{% endif %}>{{ etichetta }}</option>
+          {% endfor %}
+        </select></div>
+      <div class="form-group"><label>Livello</label>
+        <select name="livello" class="form-control">
+          <option value="">tutti</option>
+          {% for l in livelli %}
+          <option value="{{ l }}" {% if l == livello %}selected{% endif %}>{{ l }}</option>
+          {% endfor %}
+        </select></div>
+      <div class="form-group" style="flex:1;min-width:180px"><label>Cerca</label>
+        <input name="q" class="form-control" value="{{ testo }}" placeholder="nome, indirizzo, parola del messaggio"></div>
+      <button class="btn btn-primary btn-sm" type="submit">Filtra</button>
+      {% if categoria or livello or testo %}<a href="/admin/log" class="btn btn-secondary btn-sm">Togli i filtri</a>{% endif %}
+    </form>
+    <div class="text-xs text-muted" style="margin-top:.5rem">
+      {% if esito.trovate > esito.righe|length %}
+        Mostrati i {{ esito.righe|length }} pi&ugrave; recenti su {{ esito.trovate }}.
+      {% else %}
+        {{ esito.trovate }} event{{ 'o' if esito.trovate == 1 else 'i' }}.
+      {% endif %}
+      File in <code style="word-break:break-all">{{ cartella }}</code>{% if esito.file_letti > 1 %} ({{ esito.file_letti }} letti, i pi&ugrave; vecchi ruotati){% endif %}.
+    </div>
+    {% if esito.illeggibili %}
+    <div class="text-xs" style="margin-top:.35rem;color:var(--warning)">
+      &#9888;&#65039; {{ esito.illeggibili }} righe del file non si leggono (troncate o toccate a mano): non sono mostrate.
+    </div>
+    {% endif %}
+  </div>
+</div>
+
+{% if esito.righe %}
+<div class="card">
+  <div class="log-scorre">
+    <table class="table log-tab">
+      <thead><tr><th>Quando</th><th>Livello</th><th>Categoria</th><th>Evento</th><th>Chi</th></tr></thead>
+      <tbody>
+      {% for r in esito.righe %}
+        <tr>
+          <td class="quando">{{ r.quando }}</td>
+          <td>
+            {% if r.livello == 'errore' %}<span class="badge badge-error">errore</span>
+            {% elif r.livello == 'avviso' %}<span class="badge badge-warning">avviso</span>
+            {% else %}<span class="badge badge-neutral">info</span>{% endif %}
+          </td>
+          <td>{{ categorie.get(r.categoria, r.categoria) }}</td>
+          <td>{{ r.messaggio }}
+            {% if r.dati_testo %}<details><summary>dettagli</summary><pre>{{ r.dati_testo }}</pre></details>{% endif %}
+            {% if r.traceback %}<details><summary>traceback</summary><pre>{{ r.traceback }}</pre></details>{% endif %}
+          </td>
+          <td class="text-sm">{{ r.utente or '—' }}{% if r.ip %}<div class="text-xs text-muted">{{ r.ip }}</div>{% endif %}</td>
+        </tr>
+      {% endfor %}
+      </tbody>
+    </table>
+  </div>
+</div>
+{% else %}
+<div class="card"><div class="card-body text-muted text-sm">
+  {% if categoria or livello or testo %}Nessun evento con questi filtri.{% else %}Il log &egrave; ancora vuoto: si riempie da solo, dal prossimo avvio o accesso.{% endif %}
+</div></div>
+{% endif %}
+{% endblock %}

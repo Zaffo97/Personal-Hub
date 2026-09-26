@@ -16,6 +16,7 @@ from data import (
     NATURE_EFFECTS,
     CHAMPIONS_BST,
 )
+import log_hub
 
 # Le abilità stanno nel catalogo, come gli altri tre database. Il vecchio
 # data/abilities.json resta leggibile come fallback finché non è dismesso.
@@ -1580,6 +1581,9 @@ def api_catalogo_importa():
         else:
             aggiunte_a[reg["id"]] = "non migrata al filtro: elenco non scritto"
 
+    log_hub.registra("import", f"Pokémon da PokéAPI: {len(voci)} voci scritte"
+                               + (f", {len(presenti)} sovrascritte" if presenti else ""),
+                     voci=sorted(voci), regulation=aggiunte_a or None)
     return jsonify({"ok": True, "scritte": sorted(voci), "totale": len(catalogo),
                     "sovrascritte": sorted(presenti), "problemi": problemi,
                     "regulation": aggiunte_a,
@@ -1606,6 +1610,12 @@ def api_catalogo_aggiorna_applica():
     import pokedex_aggiorna
     esito = pokedex_aggiorna.applica()
     esito.pop("_costruiti", None)
+    if esito.get("ok"):
+        log_hub.registra("import", f"Pokédex aggiornato dalla fonte: "
+                                   f"{esito.get('scritte', 0)} voci nuove scritte")
+    else:
+        log_hub.registra("import", f"Pokédex non aggiornato: {esito.get('errore')}",
+                         livello="avviso")
     return jsonify(esito), (200 if esito.get("ok") else 409)
 
 

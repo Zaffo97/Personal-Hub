@@ -252,7 +252,8 @@ function tipoVis(tipo){
 <div class="sidebar-section" style="margin-top:.6rem">Tools</div>
 <a href="/export" class="nav-item"><em>💾</em> Esporta JSON</a>
 {% if e_admin %}
-<a href="/admin/utenti" class="nav-item {% if request.blueprint=='admin' %}active{% endif %}"><em>👥</em> Utenti</a>
+<a href="/admin/utenti" class="nav-item {% if request.endpoint and request.endpoint.startswith('admin.utent') %}active{% endif %}"><em>👥</em> Utenti</a>
+<a href="/admin/log" class="nav-item {% if request.endpoint == 'admin.log' %}active{% endif %}"><em>📜</em> Log</a>
 {% endif %}
   </div>
   <div class="sidebar-bottom">

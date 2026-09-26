@@ -16,6 +16,13 @@ aspettano di trovare. `app` è lo stesso oggetto, per chi scrive `wsgi:app`.
 mano no — vedi la trappola sulle scritture concorrenti in `BACKLOG.md`. Finché quella
 resta aperta, si sta a **un worker solo** (`--threads` va bene, i processi no).
 """
+import os
+
+import log_hub
 from app import app
 
 application = app
+
+# L'avvio con un server vero. Qui e non in `create_app()`: vedi il commento in fondo
+# ad `app.py`.
+log_hub.registra("avvio", "Hub avviato con un server WSGI (wsgi.py)", pid=os.getpid())

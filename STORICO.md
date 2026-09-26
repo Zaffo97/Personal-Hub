@@ -18,6 +18,28 @@ pagina ed esegue `new Function()` su ogni blocco `<script>` **e** su ogni handle
 
 ---
 
+## 26/09/2026
+
+**Il log dell'hub (§4.11)** — la domanda rimandata il 25/09: Davide sceglie i **log
+dell'hub** (non un diario, non la console su file). `log_hub.py`: una riga JSON per evento
+in `logs/hub.log` (fuori da git), **accanto al DB** così prove e sweep scrivono nella loro
+cartella temporanea; su file e non in `hub.db` perché l'errore da registrare è spesso una
+richiesta morta col lucchetto di SQLite in mano. Rotazione a 1 MB × 5, `registra()` non
+solleva mai (se non scrive lo dice in `stderr`). Avvii (`__main__` e `wsgi.py`, non
+`create_app()`), accessi (login riuscito/fallito col nome tentato, rientro «resta
+collegato», logout, sezione non permessa), sei azioni sugli utenti, gli import di Steam,
+IGDB, Fantacalcio, PokéAPI, Pokédex e catalogo PC, e ogni eccezione col traceback dal
+segnale `got_request_exception`. Pagina `/admin/log` con filtri e voce in sidebar.
+`prova_log.py` **36 su 36** (quattro password cercate nel file: zero; `logs/` vero
+intatto; rotazione a 5 file letta dal più recente; riga troncata contata). Al primo giro
+in browser la tabella a 375 px schiacciava il traceback in una colonna di tre lettere:
+ora ha un minimo e scorre dentro la card. Suite rilanciate: ricorda 33, travaso 58,
+fantacalcio 111, pcbuilder 105, preferenze 17, python 50, stampa3d 43, arduino 50,
+ripristino 35, completo 21 — tutte passate; sweep 0 errori (con `/admin/log`), query 0
+scoperte.
+
+---
+
 ## 25/09/2026
 
 **Python: progetti, esecuzione nel browser e sul PC, note e frammenti (§4.10)** — dal docx,
