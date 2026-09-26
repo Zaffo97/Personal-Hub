@@ -147,6 +147,12 @@ def da_elenco(voci, flag, args):
     Misurato quel giorno su tutte le liste: mancavano solo queste sei (e cinque di
     `bullet`, lasciate fuori perché nessuno l'aveva chiesto). Aggiunge e non toglie,
     come il giro normale; un nome della lista che il catalogo non ha si **dice**.
+
+    ⚠️ `--togli` toglie anche il flag alle mosse che la lista **non** ha. Si usa solo
+    dopo aver guardato una **seconda** fonte, mossa per mossa: la lista di Bulbapedia
+    da sola non è una smentita (trappola «un'assenza da una pagina»). Primo uso, il
+    26/09/2026: Muddy Water aveva `pulse`, che né Bulbapedia né Serebii (le mosse di
+    Megalancio) le danno — e accendendo Megalancio sarebbe stata potenziata a torto.
     """
     titolo = next((t for t, f in ELENCHI.items() if f == flag), None)
     if not titolo:
@@ -168,7 +174,10 @@ def da_elenco(voci, flag, args):
     for n in fuori:
         print(f"? {n}: nella lista, non nel catalogo (non la invento)")
     for chiave in senza_lista:
-        print(f"≠ {chiave}: ha `{flag}` ma non è nella lista (resta)")
+        print(f"≠ {chiave}: ha `{flag}` ma non è nella lista "
+              + ("(lo tolgo: --togli)" if args.togli else "(resta)"))
+    if args.togli:
+        da_scrivere += senza_lista
     if not da_scrivere:
         print("Niente da fare.")
         return 0
@@ -176,7 +185,9 @@ def da_elenco(voci, flag, args):
         print("--dry-run: file non toccato.")
         return 0
     for chiave in da_scrivere:
-        voci[chiave]["flags"] = sorted(set(voci[chiave].get("flags") or []) | {flag})
+        prima = set(voci[chiave].get("flags") or [])
+        voci[chiave]["flags"] = sorted(prima - {flag} if chiave in senza_lista
+                                       else prima | {flag})
     salva_catalogo("moves", voci)
     print("Scritto data/catalog/moves.json (copia precedente in data/archive/).")
     return 0
@@ -188,6 +199,9 @@ def main():
     ap.add_argument("--aggiorna", action="store_true", help="riscarica le pagine di Bulbapedia")
     ap.add_argument("--da-elenco", metavar="FLAG",
                     help="porta il flag di una pagina-elenco su tutto il catalogo (es. slicing)")
+    ap.add_argument("--togli", action="store_true",
+                    help="con --da-elenco: toglie il flag alle mosse fuori dalla lista "
+                         "(solo dopo una seconda fonte)")
     args = ap.parse_args()
 
     voci = voci_catalogo("moves")

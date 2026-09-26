@@ -373,8 +373,10 @@ function calcDamage(){
   let abilityDmgMult = ateBoost;   // le "-ate" portano gia' il loro ×1.2
 
   // ATTACCANTE
-  if (aFx.type === 'tough_claws' && contact)                 abilityDmgMult *= (aFx.value || 1.3);
-  if (aFx.type === 'technician'  && bp <= 60)                abilityDmgMult *= 1.5;
+  // ⚠️ Unghiedure, Tecnico e `flag_boost` non stanno qui: sono modificatori della
+  // POTENZA (Bulbapedia), e stanno in `modAbilitaPotenza`, accanto agli oggetti.
+  // Fino al 26/09/2026 le prime due erano qui, sul danno, e il roll alto poteva
+  // venire di 1-2 PS più alto del gioco.
   if (aFx.type === 'sheer_force')                            abilityDmgMult *= 1.3;
   if (aFx.type === 'tinted_lens' && typeEff < 1)             abilityDmgMult *= 2.0;
   if (aFx.type === 'spread_boost' && spread < 1)             abilityDmgMult *= (aFx.value || 1.3);
@@ -410,6 +412,22 @@ function calcDamage(){
   // Regole da Bulbapedia, una pagina per oggetto; l'elenco degli effetti e cosa
   // vogliono dire sta in scripts/assegna_categorie_oggetti.py. Tre posti diversi,
   // come nei giochi: la potenza (bpEff), la stat (A / D) e il danno finale.
+  //
+  // ⚠️ La potenza si calcola **in un passo solo**, abilità e oggetto insieme
+  // (26/09/2026): nei giochi i modificatori di potenza si concatenano e si
+  // arrotondano una volta. Arrotondati uno dopo l'altro darebbero un numero diverso:
+  // Pugnofuoco (75) con Ferropugno e Guantone fa 99 (×1.32, Bulbapedia) e non 98.
+  // Le abilità (Bulbapedia, pagina per pagina): Unghiedure ×1.3 sul contatto,
+  // Tecnico ×1.5 fino a 60 di potenza, `flag_boost` sul flag della mossa — Affilama
+  // `slicing` ×1.5, Ferropugno `punch` ×1.2, Ferromascella `bite` ×1.5, Megalancio
+  // `pulse` ×1.5. Il flag si legge dalla mossa scelta dall'elenco, come `pugno`: una
+  // mossa scritta a mano non ha flag, e l'abilità resta ferma invece di indovinare.
+  let modAbilitaPotenza = 1.0;
+  if (aFx.type === 'tough_claws' && contact)  modAbilitaPotenza *= (aFx.value || 1.3);
+  if (aFx.type === 'technician'  && bp <= 60) modAbilitaPotenza *= 1.5;
+  if (aFx.type === 'flag_boost' && aFx.flag && (mossa?.flags || []).includes(aFx.flag))
+    modAbilitaPotenza *= (aFx.value || 1.0);
+  let modOggPotenza = 1.0;
   let bpEff = bp;
   let atkOggAttivo = false;
   let atkOggNota = '';
@@ -418,7 +436,7 @@ function calcDamage(){
     const fx = atkOgg.effect;
     const tipoBoost = fx.startsWith('boost_') ? TIPI_EN_IT[fx.slice(6)] : null;
     // mvType e' gia' quello dopo le "-ate": Folletto con Pixilate prende Piuma fatata
-    const potenza = () => { bpEff = Math.floor(bp * atkOgg.mod); atkOggAttivo = true; };
+    const potenza = () => { modOggPotenza = atkOgg.mod; atkOggAttivo = true; };
     const stat    = () => { A = Math.floor(A * atkOgg.mod); atkOggAttivo = true; };
     if (tipoBoost) {
       if (mvType === tipoBoost) potenza();
@@ -495,15 +513,10 @@ function calcDamage(){
   const fuocoBloccato = weather === 'heavyrain' ||
     (meteoFonte ? (ABILITIES_DATA[meteoFonte] || {}).fire_blocked === true : false);
 
-  // ── Abilità sulla POTENZA: flag_boost ({flag:'slicing', value:1.5}, Affilama) ──
-  // Dal 26/09/2026. Nei giochi Affilama moltiplica la potenza, non il danno finale,
-  // e i due posti non danno lo stesso numero: Incineroar con Nottesferza (70) su
-  // Amoonguss fa 90-106 così e 90-108 sul danno finale. Per questo sta qui, accanto
-  // alla potenza degli oggetti, e non in `abilityDmgMult` come Unghiedure.
-  // Il flag si legge dalla mossa scelta dall'elenco, come `pugno`: una mossa scritta
-  // a mano non ha flag, e l'abilità resta ferma invece di indovinare.
-  if (aFx.type === 'flag_boost' && aFx.flag && (mossa?.flags || []).includes(aFx.flag))
-    bpEff = Math.floor(bpEff * (aFx.value || 1.0));
+  // ── La potenza, abilità e oggetto insieme (vedi sopra, «in un passo solo») ─────
+  // +1e-9 per la stessa ragione di `finaleAtk`: 50 × 1.2 in virgola mobile può fare
+  // 59.999…, e il floor darebbe 59.
+  bpEff = Math.floor(bp * modOggPotenza * modAbilitaPotenza + 1e-9);
 
   // ── Formula danno base Gen 9 ──────────────────────────────────────────────────
   const base = Math.floor(Math.floor(Math.floor(2 * parseInt(aLvl) / 5 + 2) * bpEff * A / D) / 50) + 2;

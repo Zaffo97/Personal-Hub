@@ -42,7 +42,7 @@ scoperte.
 Absol Z): mosse da taglio ×1.5 sulla **potenza** (Serebii, Bulbapedia); **Aura Guard** (Mega
 Lucario Z): contatto ×0.5 sul danno (Nintendo of America, Pokémon Champions, Serebii).
 Effetti nuovi del motore `flag_boost` e `contact_guard`, dati scritti da
-`scripts/effetti_abilita_mc.py` con `_save_abilities()`. Il flag `slicing` mancava a **6
+`scripts/effetti_abilita.py` con `_save_abilities()`. Il flag `slicing` mancava a **6
 mosse** su 31 della lista di Bulbapedia (Aerial Ace, Behemoth Blade, Metal Claw, Razor
 Leaf, Sacred Sword, Secret Sword): il giro normale di `integra_flag_mosse.py` guarda solo
 Gen 8+, ora c'è `--da-elenco slicing`. Provate nel calcolatore su un hub di prova (porta
@@ -61,6 +61,24 @@ rimozioni) lo danno legale; la notizia ufficiale di pokemon.com annuncia 24 aggi
 nessuna rimozione. Resta nel roster, com'era: nessun dato cambiato. «Confronta» continua a
 stamparlo, di proposito (le due fonti del modulo non concordano); il verdetto è scritto
 in `regulation_fonti.py`.
+
+**Le sorelle di Affilama, la potenza in un passo solo, i flag (§3)** — Ferropugno ×1.2
+(`punch`), Ferromascella ×1.5 (`bite`), Megalancio ×1.5 (`pulse`): Serebii e Bulbapedia
+concordi, dati da `scripts/effetti_abilita.py` (lo script del mattino, rinominato).
+**Unghiedure e Tecnico** passano dal danno finale alla **potenza**, e la potenza di
+abilità e oggetto si concatena in un passo (`modAbilitaPotenza` × `modOggPotenza`): è
+Bulbapedia a dire che Ferropugno e Guantone fanno ×1.32. Flag: `pulse` **tolto** a Muddy
+Water (nessuna delle due fonti lo dà, e Megalancio l'avrebbe potenziata), `bullet` dato a
+Barrage, Beak Blast, Electro Ball, Gyro Ball, Shadow Ball (Bulbapedia e Serebii), con
+`integra_flag_mosse.py --da-elenco … [--togli]`. Nel calcolatore su un hub di prova, 17
+casi calcolati prima da un calcolatore scritto a parte: regola #8 **85-102**; Scizor
+Pugnoscarica Tecnico **63-75** (prima 64-76); Barbaracle Conchilama Unghiedure **52-62**
+(prima 53-63); Conkeldurr Fuocopugno 100-118, Ferropugno **118-140**, Guantone 108-128,
+tutti e due **130-154**; Tyrantrum Sgranocchio 47-56 → **71-84**; Clawitzer Neropulsar
+56-67 → **84-99**, Idropulsar 31-37 → **47-56**, Fanghiglia **47-56 con e senza**
+Megalancio. Il primo giro di Clawitzer non tornava: era il banco (SP totali 66, la Dif. Sp.
+aveva 2 e non 32). Sweep 0 errori, `controlla_abilita.py` pulito, champions 40/40,
+catalogo vivo 11/11, moveset 19/19.
 
 ---
 

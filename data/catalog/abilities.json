@@ -947,7 +947,9 @@
       "desc": "La robusta mascella del Pokémon permette morsi molto potenti.",
       "category": "other",
       "effect": {
-        "type": "none"
+        "type": "flag_boost",
+        "flag": "bite",
+        "value": 1.5
       },
       "nome_it": "Ferromascella",
       "nome_en": "Strong Jaw"
@@ -956,7 +958,9 @@
       "desc": "Potenzia le mosse che utilizzano pugni.",
       "category": "other",
       "effect": {
-        "type": "none"
+        "type": "flag_boost",
+        "flag": "punch",
+        "value": 1.2
       },
       "nome_it": "Ferropugno",
       "nome_en": "Iron Fist"
@@ -1760,7 +1764,9 @@
       "desc": "Potenzia le mosse “pulsar” e altre come Ondasana.",
       "category": "other",
       "effect": {
-        "type": "none"
+        "type": "flag_boost",
+        "flag": "pulse",
+        "value": 1.5
       },
       "nome_it": "Megalancio",
       "nome_en": "Mega Launcher"
