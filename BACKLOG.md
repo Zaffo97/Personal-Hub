@@ -218,6 +218,35 @@ ricontrollare che ci sia ancora. Il filesystem effimero non dà errore, la pagin
     col giro di collaudo
   - i percorsi del progetto usano `os.path.join` e la radice ricavata da `__file__`: non
     dovrebbero cambiare, ma **va provato** sulla macchina vera, non dedotto
+- ⬜ **Windows e Linux insieme** (richiesta di Davide del 26/09/2026): «clonare tutto il
+  programma, per mantenerlo utilizzabile via Windows, e una copia per Linux/Debian/Proxmox —
+  oppure un'idea per cambiare sistema senza problemi». **La proposta, da decidere con lui:
+  un codice solo, non due copie.** Due copie divergono: ogni correzione andrebbe fatta due
+  volte, e quella dimenticata è la trappola «due copie della stessa domanda» di questo
+  progetto. Invece:
+  1. **Lo stesso repository su tutti e due**, stesso branch, `git pull` per aggiornare. Il
+     codice sceglie da sé il ramo del sistema — lo fa già in tre punti (sopra) — e quelli
+     che mancano si scrivono lì, non in una copia a parte
+  2. **Ciò che è della macchina esce dal codice e dal sistema**: un file di configurazione
+     non versionato (le chiavi, la porta, la cartella dei download), letto all'avvio allo
+     stesso modo su Windows e su Linux, come oggi `data/secret_key.txt`. Finiscono `setx`
+     e il registro, che sono l'unica cosa davvero legata a Windows (voce «le chiavi», sotto)
+  3. **I dati si spostano con l'export**: `esporta_dati.py --completo` da una parte,
+     `importa_dati.py` dall'altra, più la cartella `data/stampa3d/`. `hub.db` è SQLite, e un
+     file SQLite si copia fra sistemi senza conversioni. Cambiare sistema diventa: clone,
+     configurazione, import — la stessa procedura della guida «PC nuovo» (§1.6), che è
+     giusto scrivere **una volta** per tutti e due
+  4. ⚠️ **Un hub vero alla volta.** Due hub accesi con due `hub.db` divergono, e non c'è
+     niente che li rimetta d'accordo. La forma che propongo: il **Proxmox** (un container
+     LXC Debian, sempre acceso, `gunicorn` con un servizio systemd) è l'hub vero, e il **PC
+     Windows** resta la macchina dove si lavora sul codice, con un DB di prova o una copia
+  5. **Le prove girano su tutti e due**: la suite `prova_*.py` è la rete che dice se il
+     ramo Linux funziona davvero (oggi `prova_python.py` controlla i processi figli solo su
+     Windows: va completata)
+
+  L'alternativa considerata è **Docker**: la stessa immagine ovunque, ma su Windows vuol
+  dire Docker Desktop (pesante, WSL2 sotto), e su Proxmox un container LXC fa lo stesso
+  lavoro con meno strati. Da riprendere se un giorno l'hub dovesse girare anche altrove
 - **Le chiavi su Debian** (segnato da Davide il 24/09/2026): un domani l'hub girerà su
   Debian, e le chiavi non potranno stare in variabili d'ambiente di Windows (`setx`, e il
   registro che il Fantacalcio legge per `FOOTBALL_DATA_API_KEY`). Oggi dall'ambiente si
