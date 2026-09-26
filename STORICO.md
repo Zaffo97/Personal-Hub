@@ -97,6 +97,18 @@ senza Antiproiettile, Palla Ombra 45-54 → **bloccata**; «● Ondascudo» nell
 0 errori (calcolatori, mosse, abilità), traduzioni 0 mancanti, champions 40/40, catalogo
 vivo 11/11, moveset 19/19.
 
+**I dubbi Pokémon rimasti (§2.3, §3)** — (1) **Nessuna regulation di Champions vieta
+mosse**: regolamento di Bulbapedia identico in M-A/M-B/M-C, MetaVGC concorde per M-C;
+chiusa la voce «differenza fra M-A e M-B». (2) Le tre mosse contese per Forza Bruta non
+toccano nessun numero: Order Up e Zippy Zap non le impara nessuno in Champions, Electro
+Shot solo Archaludon, senza Forza Bruta. (3) **Gli oggetti di MC contro MetaVGC**: i suoi
+166 sono 81 Megapietre (da noi nella `mega_map`: 82 Mega, perché Meowstic maschio e
+femmina hanno una pietra sola) e **85 oggetti identici ai nostri 85**, a meno della grafia
+(King’s Rock, Large Leek). (4) **Il roster di MC contro MetaVGC**: combacia su tutte le
+specie tranne tre sue voci, smentite da Bulbapedia **e** Serebii — «Patrat» al posto di
+Watchog (un'etichetta sbagliata: Watchog nel suo elenco non c'è) e le forme di Galar di
+Farfetch'd e Mr. Mime (le due fonti danno le forme normali). Nessun dato cambiato.
+
 ---
 
 ## 25/09/2026

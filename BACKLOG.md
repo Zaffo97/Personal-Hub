@@ -323,13 +323,15 @@ attive irraggiungibili: le abilità di Champions decise fuori — se il numero c
 effetto è finito dalla parte sbagliata). ⬜ Il fallback `data/abilities.json` non è
 riallineato (ha ancora `Megasolar` inerte): va con §5.3.
 
-### 2.3 ⬜ Mosse per regulation — quello che richiede una fonte
+### 2.3 🟨 Mosse per regulation — quello che richiede una fonte
 
 Il meccanismo è chiuso; dove manca il dato, manca la **fonte**:
 
-- ⬜ **La differenza fra M-A e M-B**: nel dump c'è un solo version group `champions`, quindi
-  se le due regulation **bandiscono** mosse diverse, quella differenza non è in nessun dato
-  che abbiamo. (MA 492 e MB 494 differiscono per il **roster**, non per un divieto)
+- ✅ **La differenza fra M-A e M-B** (chiusa il 26/09/2026): **nessuna regulation di
+  Champions vieta mosse**. Il regolamento di Bulbapedia è identico in M-A, M-B e M-C (solo
+  il roster, niente oggetti doppi, una Megaevoluzione per partita, i timer), e MetaVGC
+  conferma per M-C: nessun divieto di mosse, clausole solo su specie e oggetti. Quindi le
+  liste mosse ricavate dal roster sono **tutto** il dato: non manca niente
 - **Le 9 Mega di Leggende Z-A** (Darkrai, Heatran, Zeraora, Zygarde Complete, le due
   Magearna, i tre Tatsugiri) restano senza lista, ed è **giusto**: sono reali ma in
   Champions non ci sono
@@ -347,7 +349,7 @@ mancante e **lo si dichiara**. Non si riempie a stima.
 
 | | Baco | Stato |
 |---|---|---|
-| ⚠️ | **Tre mosse senza `sheer_force`, per disaccordo fra le fonti** | Dal 26/09/2026. Electro Shot e Order Up le dà solo Bulbapedia, Zippy Zap solo Showdown: restano **senza** flag, e Forza Bruta non le potenzia. È una lacuna dichiarata, non un baco — `flag_forza_bruta.py` le ristampa a ogni giro, e una terza fonte che ne sposti una la chiude |
+| ⚠️ | **Tre mosse senza `sheer_force`, per disaccordo fra le fonti** | Dal 26/09/2026. Electro Shot e Order Up le dà solo Bulbapedia, Zippy Zap solo Showdown: restano **senza** flag. **Non cambia nessun numero vero**, misurato lo stesso giorno: Order Up e Zippy Zap non le impara **nessuno** in Champions, Electro Shot solo **Archaludon**, che Forza Bruta non ce l'ha. (Serebii, che guarda solo Champions, dà Order Up sì e le altre due no.) Da riguardare solo se una di queste combinazioni diventa possibile |
 
 Tutti gli altri bachi elencati qui fino al 26/09/2026 sono chiusi: vedi `STORICO.md`.
 
