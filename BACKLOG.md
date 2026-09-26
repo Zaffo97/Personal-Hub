@@ -696,8 +696,10 @@ sovrascriveva senza chiedere, lo Speed Tier che ricadeva su una lista statica �
 lavoro fatto dopo può rimetterli in piedi.
 
 ⚠️ **Prima di iniziare**: `graphify-out/` va rifatto (`/graphify . --update`)
-**obbligatoriamente** prima di 5.1 e 5.3. L'ultimo giro è del 21/09/2026 (1321 nodi, 2291
-archi), e da allora è cambiato molto (M-C, il Fantacalcio intero).
+**obbligatoriamente** prima di 5.1 e 5.3. ✅ Rifatto il 26/09/2026 (`--update`, 131 file
+cambiati dal 21/09): **2337 nodi, 4677 archi, 183 comunità**, salute pulita. Il report
+segnala **118 nodi debolmente collegati**: è il primo indizio per 5.3. Se fra il 26/09 e il
+collaudo cambia altro codice, va rifatto di nuovo.
 
 ### 5.1 ⬜ Il giro completo della web app
 
