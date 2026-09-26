@@ -178,6 +178,7 @@
   "Rolls:": "Rolls:",
   "{tipo} → Immune (0×) su {tipiDif}": "{tipo} → Immune (0×) against {tipiDif}",
   "{tipo} → Wonder Guard: bloccata (solo le super efficaci passano)": "{tipo} → Wonder Guard: blocked (only super effective moves get through)",
+  "{mossa} → bloccata da {abilita}": "{mossa} → blocked by {abilita}",
   "{n} mosse di {pkmn} in {reg}": "{n} moves of {pkmn} in {reg}",
   "⚠️ Nessun elenco mosse per {pkmn} in {reg}: sono mostrate tutte": "⚠️ No move list for {pkmn} in {reg}: showing all of them",
   "⚠️ {mossa} non è fra le mosse di {pkmn} in {reg}": "⚠️ {mossa} is not among {pkmn}'s moves in {reg}",

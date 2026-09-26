@@ -287,6 +287,12 @@ function calcDamage(){
       if ((dFx.type === 'immunity' || dFx.type === 'absorb') && dFx.move_type === mvType) {
         typeEff = 0;
       }
+      // Immunità per flag della mossa: Antiproiettile (`bullet`), dal 26/09/2026 —
+      // Bulbapedia e Serebii. Il flag si legge dalla mossa scelta dall'elenco, come per
+      // le abilità che potenziano: una mossa scritta a mano non viene bloccata.
+      const bloccoFlag = dFx.type === 'flag_immunity' && dFx.flag
+        && (mossa?.flags || []).includes(dFx.flag);
+      if (bloccoFlag) typeEff = 0;
       // Palloncino: immune alle mosse Terra finche' non viene colpito (Bulbapedia)
       const palloncino = defOgg?.effect === 'air_balloon' && mvType === 'Terra';
       if (palloncino) typeEff = 0;
@@ -295,9 +301,17 @@ function calcDamage(){
         const res = document.getElementById('dmg_result');
         if (res) res.style.display = 'block';
         const el = (id) => document.getElementById(id);
+        const nomeAbilDif = () => {
+          const k = risolviChiave(ABILITIES_DATA, defAbilityName);
+          return nomeVis(ABILITIES_DATA[k], k);
+        };
         if (el('dmg_line'))  el('dmg_line').textContent  = wonderGuardBlock
           ? tf('{tipo} → Wonder Guard: bloccata (solo le super efficaci passano)',
                {tipo: tipoVis(mvType)})
+          : bloccoFlag
+          ? tf('{mossa} → bloccata da {abilita}',
+               {mossa: document.getElementById('mv_name').value || t('Mossa'),
+                abilita: nomeAbilDif()})
           : tf('{tipo} → Immune (0×) su {tipiDif}',
                {tipo: tipoVis(mvType), tipiDif: effectiveDefTypes.map(tipoVis).join('/')})
             + (palloncino ? ` @ ${defOgg.nome}` : '');
@@ -370,14 +384,13 @@ function calcDamage(){
   // (mossa Fuoco da contatto -> x0.5 * x2 = x1). Applicato piu' sotto su `dmg`.
 
   // ── Moltiplicatori finali sul danno (non sulle stat) ────────────────────────
-  let abilityDmgMult = ateBoost;   // le "-ate" portano gia' il loro ×1.2
+  let abilityDmgMult = 1.0;
 
   // ATTACCANTE
-  // ⚠️ Unghiedure, Tecnico e `flag_boost` non stanno qui: sono modificatori della
-  // POTENZA (Bulbapedia), e stanno in `modAbilitaPotenza`, accanto agli oggetti.
-  // Fino al 26/09/2026 le prime due erano qui, sul danno, e il roll alto poteva
-  // venire di 1-2 PS più alto del gioco.
-  if (aFx.type === 'sheer_force')                            abilityDmgMult *= 1.3;
+  // ⚠️ Le «-ate», Unghiedure, Tecnico, Forza Bruta e `flag_boost` non stanno qui:
+  // sono modificatori della POTENZA (Bulbapedia), e stanno in `modAbilitaPotenza`,
+  // accanto agli oggetti. Fino al 26/09/2026 le «-ate», Unghiedure, Tecnico e Forza
+  // Bruta erano qui, sul danno, e il roll alto poteva venire di 1-2 PS più alto.
   if (aFx.type === 'tinted_lens' && typeEff < 1)             abilityDmgMult *= 2.0;
   if (aFx.type === 'spread_boost' && spread < 1)             abilityDmgMult *= (aFx.value || 1.3);
   if (aFx.type === 'type_boost_weather' && mvType === aFx.move_type && weather === aFx.weather)
@@ -422,7 +435,13 @@ function calcDamage(){
   // `slicing` ×1.5, Ferropugno `punch` ×1.2, Ferromascella `bite` ×1.5, Megalancio
   // `pulse` ×1.5. Il flag si legge dalla mossa scelta dall'elenco, come `pugno`: una
   // mossa scritta a mano non ha flag, e l'abilità resta ferma invece di indovinare.
-  let modAbilitaPotenza = 1.0;
+  // Le «-ate» ×1.2 (4915/4096) e Forza Bruta ×1.3 (5325/4096), dal 26/09/2026.
+  // ⚠️ Forza Bruta vale **solo** sulle mosse col flag `sheer_force`, cioè con un effetto
+  // aggiuntivo: fino a quel giorno valeva su tutte, Terremoto e Zuffa compresi. Il
+  // flag lo scrive `scripts/flag_forza_bruta.py` dove Bulbapedia e Showdown concordano.
+  let modAbilitaPotenza = ateBoost;
+  if (aFx.type === 'sheer_force' && (mossa?.flags || []).includes('sheer_force'))
+    modAbilitaPotenza *= 1.3;
   if (aFx.type === 'tough_claws' && contact)  modAbilitaPotenza *= (aFx.value || 1.3);
   if (aFx.type === 'technician'  && bp <= 60) modAbilitaPotenza *= 1.5;
   if (aFx.type === 'flag_boost' && aFx.flag && (mossa?.flags || []).includes(aFx.flag))

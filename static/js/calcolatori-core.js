@@ -55,7 +55,7 @@ const EFFETTI_SUL_DANNO = new Set([
   'multiscale','marvel_scale','fur_coat','technician','sheer_force','tinted_lens',
   'purifying_salt','stab_multiplier','guts','stat_mult','spread_boost',
   'type_boost_weather','weather_def_boost','weather_spdef_boost','immunity','absorb',
-  'flag_boost','contact_guard'
+  'flag_boost','contact_guard','flag_immunity'
 ]);
 function abilityIncideSulDanno(name) {
   return EFFETTI_SUL_DANNO.has(abilityEffect(name).type);

@@ -17,8 +17,10 @@ le tre sorelle di Affilama e il nome generico.
   **Dual Chop**, Bulbapedia no: una fonte sola, resta fuori.
 - **Aura Guard** (Mega Lucario Z): il danno delle mosse **da contatto** ×0.5. Fonti:
   gli account ufficiali di Nintendo of America e di Pokémon Champions, e Serebii.
-  ⚠️ Il **nome italiano** non l'ha dato nessuna delle fonti lette: la voce resta
-  senza `nome_it`, e a schermo si legge il nome inglese. Non si inventa.
+  Il **nome italiano**, **Ondascudo**, dal pomeriggio dello stesso giorno: la tabella
+  delle lingue di Bulbapedia (che sulla stessa tabella dà Affilama, cioè il nostro) e
+  Pokémon Central Wiki. ⚠️ La **chiave** resta `Aura Guard`: le chiavi non si
+  rinominano, il nome a schermo lo decide `nome_it`
 - **Ferropugno** (*Iron Fist*): le mosse **pugno** ×1.2 (4915/4096) — Serebii e
   Bulbapedia, che aggiunge: si somma al Guantone, ×1.32 in tutto. È il motivo per cui
   il motore concatena la potenza di abilità e oggetto in un passo solo
@@ -28,8 +30,14 @@ le tre sorelle di Affilama e il nome generico.
   aveva il flag `pulse`, che nessuna delle due fonti le dà: tolto lo stesso giorno con
   `integra_flag_mosse.py --da-elenco pulse --togli`, prima di accendere questa
 
-I flag delle tre (25 `punch`, 10 `bite`, 7 `pulse`) combaciano con le liste di
-Bulbapedia, misurato il 26/09/2026.
+- **Antiproiettile** (*Bulletproof*): immune alle mosse **palla e bomba** (`bullet`) —
+  Bulbapedia e Serebii. Effetto nuovo del motore, `flag_immunity`
+
+I flag delle quattro (25 `punch`, 10 `bite`, 7 `pulse`, 26 `bullet`) combaciano con le
+liste di Bulbapedia in tutti e due i versi, misurato il 26/09/2026.
+
+⚠️ **Sincrodanza** (*Dancer*) resta `none`, e non è una lacuna: copia le danze degli
+altri, non tocca il danno di nessuna mossa.
 
 Le descrizioni sono in italiano per scelta (13/08/2026). Dove la voce ne ha già una
 italiana e giusta, `desc` qui manca e quella resta.
@@ -59,7 +67,9 @@ VOCI = {
     "Aura Guard": {
         "effect": {"type": "contact_guard", "value": 0.5},
         "desc": "Dimezza il danno subito dalle mosse che comportano un contatto.",
+        "nome_it": "Ondascudo",
     },
+    "Antiproiettile": {"effect": {"type": "flag_immunity", "flag": "bullet"}},
     "Ferropugno": {"effect": {"type": "flag_boost", "flag": "punch", "value": 1.2}},
     "Ferromascella": {"effect": {"type": "flag_boost", "flag": "bite", "value": 1.5}},
     "Megalancio": {"effect": {"type": "flag_boost", "flag": "pulse", "value": 1.5}},
@@ -84,7 +94,9 @@ def main():
             return 1
         attuale = voce.get("effect") or {"type": "none"}
         desc = nuova.get("desc", voce.get("desc"))
-        if attuale == nuova["effect"] and voce.get("desc") == desc:
+        nome_it = nuova.get("nome_it", voce.get("nome_it"))
+        if (attuale == nuova["effect"] and voce.get("desc") == desc
+                and voce.get("nome_it") == nome_it):
             print(f"= {chiave}: già a posto")
             continue
         if attuale.get("type") != "none" and attuale != nuova["effect"]:
@@ -92,6 +104,8 @@ def main():
                   "Va guardato a mano prima di sovrascriverlo.")
             return 1
         print(f"+ {chiave}: effect {attuale} -> {nuova['effect']}")
+        if nome_it != voce.get("nome_it"):
+            print(f"  {'':{len(chiave)}}  nome_it  {voce.get('nome_it')!r} -> {nome_it!r}")
         if desc != voce.get("desc"):
             print(f"  {'':{len(chiave)}}  desc  {voce.get('desc')!r} -> {desc!r}")
         da_fare.append((voce, nuova))
@@ -105,6 +119,8 @@ def main():
     for voce, nuova in da_fare:
         voce["effect"] = dict(nuova["effect"])
         voce["desc"] = nuova.get("desc", voce.get("desc"))
+        if "nome_it" in nuova:
+            voce["nome_it"] = nuova["nome_it"]
     _save_abilities(dati)
     print("Scritto data/catalog/abilities.json (copia precedente in data/archive/).")
     return 0

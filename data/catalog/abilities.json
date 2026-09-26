@@ -245,7 +245,8 @@
       "desc": "Protegge da alcune mosse a base di proiettili e bombe.",
       "category": "other",
       "effect": {
-        "type": "none"
+        "type": "flag_immunity",
+        "flag": "bullet"
       },
       "nome_it": "Antiproiettile",
       "nome_en": "Bulletproof"
@@ -3661,7 +3662,8 @@
         "type": "contact_guard",
         "value": 0.5
       },
-      "nome_en": "Aura Guard"
+      "nome_en": "Aura Guard",
+      "nome_it": "Ondascudo"
     }
   }
 }

@@ -80,6 +80,23 @@ Megalancio. Il primo giro di Clawitzer non tornava: era il banco (SP totali 66, 
 aveva 2 e non 32). Sweep 0 errori, `controlla_abilita.py` pulito, champions 40/40,
 catalogo vivo 11/11, moveset 19/19.
 
+**Le code del §3** — (1) **Forza Bruta** vale solo sulle mosse con un effetto aggiuntivo:
+flag `sheer_force` su **207 mosse** dove Bulbapedia (209) e il `moves.ts` di Showdown (208)
+concordano, `scripts/flag_forza_bruta.py`; Electro Shot, Order Up e Zippy Zap in
+disaccordo, senza flag. Serebii letto e scartato come fonte: elenca solo Champions e non ha
+Fake Out. (2) **Le «-ate» e Forza Bruta** sulla potenza. (3) **Antiproiettile**: immunità
+alle mosse `bullet` (Bulbapedia, Serebii), effetto `flag_immunity` e riga «bloccata da»,
+tradotta. (4) Flag: `bullet` tolto a Water Pulse, `dance` a Rain Dance (Bulbapedia e
+Serebii d'accordo); le sei liste ora coincidono in tutti e due i versi. (5) Aura Guard ha
+il nome italiano **Ondascudo** (Bulbapedia, Pokémon Central Wiki), chiave invariata.
+Sincrodanza resta `none` di proposito: non tocca il danno. Calcolatore su un hub di prova,
+casi calcolati a parte: regola #8 **85-102**; Sylveon Granvoce Pellefolletto **53-63**
+(prima 54-63); Conkeldurr Gelopugno 100-118 → **126-150** con Forza Bruta (prima
+128-152), Zuffa **59-69** con e senza; Clawitzer su Chesnaught Neropulsar **22-27** con e
+senza Antiproiettile, Palla Ombra 45-54 → **bloccata**; «● Ondascudo» nella tendina. Sweep
+0 errori (calcolatori, mosse, abilità), traduzioni 0 mancanti, champions 40/40, catalogo
+vivo 11/11, moveset 19/19.
+
 ---
 
 ## 25/09/2026

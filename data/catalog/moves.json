@@ -20,7 +20,10 @@
     "nome_en": "Acid",
     "stat_changes": {
       "spd": -1
-    }
+    },
+    "flags": [
+      "sheer_force"
+    ]
   },
   "Acid Spray": {
     "bp": 40,
@@ -29,7 +32,8 @@
     "effect_chance": 100,
     "desc": "Chi la usa attacca il bersaglio con un acido altamente corrosivo. Il fluido riduce di molto la Difesa Speciale del bersaglio.",
     "flags": [
-      "bullet"
+      "bullet",
+      "sheer_force"
     ],
     "accuracy": 100,
     "nome_it": "Acidobomba",
@@ -79,6 +83,7 @@
     "effect_chance": 30,
     "desc": "Chi la usa attacca con un vento tagliente che squarcia il cielo. Può anche far tentennare il Pokémon colpito.",
     "flags": [
+      "sheer_force",
       "slicing"
     ],
     "accuracy": 95,
@@ -118,7 +123,10 @@
       "spa": 1,
       "spd": 1,
       "spe": 1
-    }
+    },
+    "flags": [
+      "sheer_force"
+    ]
   },
   "Apple Acid": {
     "bp": 90,
@@ -131,7 +139,10 @@
     "nome_en": "Apple Acid",
     "stat_changes": {
       "spd": -1
-    }
+    },
+    "flags": [
+      "sheer_force"
+    ]
   },
   "Aqua Cutter": {
     "bp": 70,
@@ -176,7 +187,8 @@
       "contact",
       "dance",
       "mirror",
-      "protect"
+      "protect",
+      "sheer_force"
     ],
     "accuracy": 100,
     "nome_it": "Idroballetto",
@@ -223,7 +235,8 @@
     "effect_chance": 30,
     "desc": "Chi la usa attacca il bersaglio emettendo un verso terrificante. Può anche farlo tentennare.",
     "flags": [
-      "contact"
+      "contact",
+      "sheer_force"
     ],
     "accuracy": 100,
     "nome_it": "Sgomento",
@@ -260,7 +273,10 @@
     "nome_en": "Aurora Beam",
     "stat_changes": {
       "atk": -1
-    }
+    },
+    "flags": [
+      "sheer_force"
+    ]
   },
   "Aurora Veil": {
     "category": "status",
@@ -403,8 +419,9 @@
     "effect_chance": 30,
     "desc": "Il bersaglio viene morso da denti affilatissimi che possono farlo tentennare.",
     "flags": [
+      "bite",
       "contact",
-      "bite"
+      "sheer_force"
     ],
     "accuracy": 100,
     "nome_it": "Morso",
@@ -417,7 +434,8 @@
     "effect_chance": 10,
     "desc": "Chi la usa tira un calcio. Probabile brutto colpo. Può anche scottare il bersaglio.",
     "flags": [
-      "contact"
+      "contact",
+      "sheer_force"
     ],
     "accuracy": 90,
     "nome_it": "Calciardente",
@@ -431,7 +449,10 @@
     "desc": "Colpisce i nemici intorno con una tremenda tempesta di ghiaccio che può anche congelarli.",
     "accuracy": 70,
     "nome_it": "Bora",
-    "nome_en": "Blizzard"
+    "nome_en": "Blizzard",
+    "flags": [
+      "sheer_force"
+    ]
   },
   "Body Press": {
     "bp": 80,
@@ -452,7 +473,8 @@
     "effect_chance": 30,
     "desc": "Chi la usa carica il bersaglio con tutto il corpo. Può causarne anche la paralisi.",
     "flags": [
-      "contact"
+      "contact",
+      "sheer_force"
     ],
     "accuracy": 100,
     "nome_it": "Corposcontro",
@@ -478,7 +500,8 @@
     "desc": "Colpisce il bersaglio con una possente carica elettrica e può anche paralizzarlo.",
     "accuracy": 85,
     "flags": [
-      "contact"
+      "contact",
+      "sheer_force"
     ],
     "nome_it": "Lucesiluro",
     "nome_en": "Bolt Strike"
@@ -489,7 +512,9 @@
     "type": "ground",
     "effect_chance": 10,
     "desc": "Questa mossa non può essere usata. È consigliabile farla dimenticare al Pokémon. Tuttavia, una volta dimenticata, non potrà più essere ricordata.",
-    "flags": [],
+    "flags": [
+      "sheer_force"
+    ],
     "accuracy": 85,
     "nome_it": "Ossoclava",
     "nome_en": "Bone Club"
@@ -580,7 +605,10 @@
     "nome_en": "Bubble Beam",
     "stat_changes": {
       "spe": -1
-    }
+    },
+    "flags": [
+      "sheer_force"
+    ]
   },
   "Bug Bite": {
     "bp": 60,
@@ -601,6 +629,7 @@
     "effect_chance": 10,
     "desc": "Chi la usa crea un’onda sonora che infligge danni. Può anche ridurre la Difesa Speciale del bersaglio.",
     "flags": [
+      "sheer_force",
       "sound"
     ],
     "accuracy": 100,
@@ -633,7 +662,10 @@
     "nome_en": "Bulldoze",
     "stat_changes": {
       "spe": -1
-    }
+    },
+    "flags": [
+      "sheer_force"
+    ]
   },
   "Bullet Punch": {
     "bp": 40,
@@ -699,7 +731,10 @@
     "nome_en": "Charge Beam",
     "stat_changes": {
       "spa": 1
-    }
+    },
+    "flags": [
+      "sheer_force"
+    ]
   },
   "Charm": {
     "category": "status",
@@ -725,7 +760,8 @@
     },
     "flags": [
       "mirror",
-      "protect"
+      "protect",
+      "sheer_force"
     ]
   },
   "Chilly Reception": {
@@ -850,7 +886,10 @@
     "desc": "Colpisce il bersaglio con una leggera forza telecinetica e può anche confonderlo.",
     "accuracy": 100,
     "nome_it": "Confusione",
-    "nome_en": "Confusion"
+    "nome_en": "Confusion",
+    "flags": [
+      "sheer_force"
+    ]
   },
   "Constrict": {
     "bp": 10,
@@ -860,7 +899,8 @@
     "desc": "Questa mossa non può essere usata. È consigliabile farla dimenticare al Pokémon. Tuttavia, una volta dimenticata, non potrà più essere ricordata.",
     "accuracy": 100,
     "flags": [
-      "contact"
+      "contact",
+      "sheer_force"
     ],
     "nome_it": "Limitazione",
     "nome_en": "Constrict",
@@ -959,6 +999,7 @@
     "desc": "Attacco con zanne avvelenate che può anche avvelenare il Pokémon colpito. Probabile brutto colpo.",
     "flags": [
       "contact",
+      "sheer_force",
       "slicing"
     ],
     "accuracy": 100,
@@ -972,8 +1013,9 @@
     "effect_chance": 50,
     "desc": "Colpisce il bersaglio con artigli robusti e affilati che possono ridurne la Difesa.",
     "flags": [
-      "slicing",
-      "contact"
+      "contact",
+      "sheer_force",
+      "slicing"
     ],
     "accuracy": 95,
     "nome_it": "Tritartigli",
@@ -1009,7 +1051,8 @@
     "effect_chance": 20,
     "desc": "Chi la usa emana un’aura impregnata di oscuri pensieri. Può anche far tentennare il Pokémon colpito.",
     "flags": [
-      "pulse"
+      "pulse",
+      "sheer_force"
     ],
     "accuracy": 100,
     "nome_it": "Neropulsar",
@@ -1086,6 +1129,7 @@
       "contact",
       "mirror",
       "protect",
+      "sheer_force",
       "slicing"
     ],
     "accuracy": 100,
@@ -1108,7 +1152,10 @@
     "desc": "Chi la usa colpisce i Pokémon che ha intorno con un bagliore elettrico. Può anche paralizzarli.",
     "accuracy": 100,
     "nome_it": "Scarica",
-    "nome_en": "Discharge"
+    "nome_en": "Discharge",
+    "flags": [
+      "sheer_force"
+    ]
   },
   "Dive": {
     "bp": 80,
@@ -1130,7 +1177,8 @@
     "desc": "Questa mossa non può essere usata. È consigliabile farla dimenticare al Pokémon. Tuttavia, una volta dimenticata, non potrà più essere ricordata.",
     "flags": [
       "contact",
-      "punch"
+      "punch",
+      "sheer_force"
     ],
     "accuracy": 100,
     "nome_it": "Stordipugno",
@@ -1202,7 +1250,10 @@
     "desc": "Investe il bersaglio con una raffica potentissima che arreca danni. Può anche paralizzarlo.",
     "accuracy": 100,
     "nome_it": "Dragospiro",
-    "nome_en": "Dragon Breath"
+    "nome_en": "Dragon Breath",
+    "flags": [
+      "sheer_force"
+    ]
   },
   "Dragon Cheer": {
     "category": "status",
@@ -1269,7 +1320,8 @@
     "effect_chance": 20,
     "desc": "Chi la usa attacca con fare minaccioso e in questo modo può anche far tentennare il bersaglio.",
     "flags": [
-      "contact"
+      "contact",
+      "sheer_force"
     ],
     "accuracy": 75,
     "nome_it": "Dragofuria",
@@ -1366,7 +1418,8 @@
     "desc": "Colpisce il bersaglio con un pugno davvero forte. Se va a segno, lo confonde.",
     "flags": [
       "contact",
-      "punch"
+      "punch",
+      "sheer_force"
     ],
     "accuracy": 50,
     "nome_it": "Dinamipugno",
@@ -1383,7 +1436,10 @@
     "nome_en": "Earth Power",
     "stat_changes": {
       "spd": -1
-    }
+    },
+    "flags": [
+      "sheer_force"
+    ]
   },
   "Earthquake": {
     "bp": 100,
@@ -1453,7 +1509,10 @@
     "nome_en": "Electroweb",
     "stat_changes": {
       "spe": -1
-    }
+    },
+    "flags": [
+      "sheer_force"
+    ]
   },
   "Embargo": {
     "category": "status",
@@ -1471,7 +1530,10 @@
     "desc": "Il bersaglio viene colpito da fiammelle che possono anche scottarlo.",
     "accuracy": 100,
     "nome_it": "Braciere",
-    "nome_en": "Ember"
+    "nome_en": "Ember",
+    "flags": [
+      "sheer_force"
+    ]
   },
   "Encore": {
     "category": "status",
@@ -1488,7 +1550,8 @@
     "effect_chance": 10,
     "desc": "Chi la usa attinge energia dalla natura e la scaglia contro il bersaglio. Può anche ridurne la Difesa Speciale.",
     "flags": [
-      "bullet"
+      "bullet",
+      "sheer_force"
     ],
     "accuracy": 100,
     "nome_it": "Energipalla",
@@ -1565,7 +1628,8 @@
     "effect_chance": 100,
     "desc": "Mossa ad alta priorità che fa tentennare il bersaglio. Funziona solo appena scesi in campo.",
     "flags": [
-      "contact"
+      "contact",
+      "sheer_force"
     ],
     "accuracy": 100,
     "nome_it": "Bruciapelo",
@@ -1635,7 +1699,10 @@
     "desc": "Investe il bersaglio con un’intensa fiammata che fa terra bruciata. Può anche scottarlo.",
     "accuracy": 85,
     "nome_it": "Fuocobomba",
-    "nome_en": "Fire Blast"
+    "nome_en": "Fire Blast",
+    "flags": [
+      "sheer_force"
+    ]
   },
   "Fire Fang": {
     "bp": 65,
@@ -1644,8 +1711,9 @@
     "effect_chance": 10,
     "desc": "Chi la usa morde con denti infuocati. Può anche scottare o far tentennare il bersaglio.",
     "flags": [
+      "bite",
       "contact",
-      "bite"
+      "sheer_force"
     ],
     "accuracy": 95,
     "nome_it": "Rogodenti",
@@ -1658,7 +1726,8 @@
     "effect_chance": 100,
     "desc": "Colpisce il bersaglio con una frusta infuocata e ne riduce la Difesa.",
     "flags": [
-      "contact"
+      "contact",
+      "sheer_force"
     ],
     "accuracy": 100,
     "nome_it": "Frusta di Fuoco",
@@ -1675,7 +1744,8 @@
     "desc": "Colpisce il bersaglio con un pugno ardente che può scottarlo.",
     "flags": [
       "contact",
-      "punch"
+      "punch",
+      "sheer_force"
     ],
     "accuracy": 100,
     "nome_it": "Fuocopugno",
@@ -1739,7 +1809,8 @@
     "effect_chance": 100,
     "desc": "Chi la usa si copre di fuoco e attacca il bersaglio. Concentrandosi aumenta, inoltre, la propria Velocità.",
     "flags": [
-      "contact"
+      "contact",
+      "sheer_force"
     ],
     "accuracy": 100,
     "nome_it": "Nitrocarica",
@@ -1755,7 +1826,8 @@
     "effect_chance": 10,
     "desc": "Chi la usa si copre di fuoco e carica il bersaglio. Può anche scottarlo.",
     "flags": [
-      "contact"
+      "contact",
+      "sheer_force"
     ],
     "accuracy": 100,
     "nome_it": "Ruotafuoco",
@@ -1769,7 +1841,10 @@
     "desc": "Il bersaglio viene colpito da intense fiammate che possono anche scottarlo.",
     "accuracy": 100,
     "nome_it": "Lanciafiamme",
-    "nome_en": "Flamethrower"
+    "nome_en": "Flamethrower",
+    "flags": [
+      "sheer_force"
+    ]
   },
   "Flare Blitz": {
     "bp": 120,
@@ -1778,7 +1853,8 @@
     "effect_chance": 10,
     "desc": "Chi la usa si ricopre di fuoco e carica il bersaglio, ma subisce il contraccolpo. Può anche scottare il Pokémon colpito.",
     "flags": [
-      "contact"
+      "contact",
+      "sheer_force"
     ],
     "accuracy": 100,
     "nome_it": "Fuococarica",
@@ -1806,7 +1882,10 @@
     "nome_en": "Flash Cannon",
     "stat_changes": {
       "spd": -1
-    }
+    },
+    "flags": [
+      "sheer_force"
+    ]
   },
   "Flatter": {
     "category": "status",
@@ -1869,7 +1948,8 @@
     "effect_chance": 10,
     "desc": "Chi la usa si concentra e rilascia la sua forza. Può ridurre la Difesa Speciale del Pokémon colpito.",
     "flags": [
-      "bullet"
+      "bullet",
+      "sheer_force"
     ],
     "accuracy": 70,
     "nome_it": "Focalcolpo",
@@ -1892,7 +1972,8 @@
     "effect_chance": 30,
     "desc": "Chi la usa attacca con un’onda d’urto che può anche paralizzare il bersaglio.",
     "flags": [
-      "contact"
+      "contact",
+      "sheer_force"
     ],
     "accuracy": 100,
     "nome_it": "Palmoforza",
@@ -1918,7 +1999,10 @@
     "desc": "Chi la usa raffredda istantaneamente il bersaglio e può congelarlo. Risulta superefficace contro i Pokémon di tipo Acqua.",
     "accuracy": 100,
     "nome_it": "Liofilizzazione",
-    "nome_en": "Freeze-Dry"
+    "nome_en": "Freeze-Dry",
+    "flags": [
+      "sheer_force"
+    ]
   },
   "Frustration": {
     "category": "physical",
@@ -2154,7 +2238,10 @@
     "desc": "Chi la usa attacca il bersaglio con rifiuti sudici che possono anche avvelenarlo.",
     "accuracy": 80,
     "nome_it": "Sporcolancio",
-    "nome_en": "Gunk Shot"
+    "nome_en": "Gunk Shot",
+    "flags": [
+      "sheer_force"
+    ]
   },
   "Gust": {
     "bp": 40,
@@ -2213,7 +2300,8 @@
     "effect_chance": 30,
     "desc": "Chi la usa si lancia diritto di testa contro il bersaglio. Può anche farlo tentennare.",
     "flags": [
-      "contact"
+      "contact",
+      "sheer_force"
     ],
     "accuracy": 100,
     "nome_it": "Bottintesta",
@@ -2253,7 +2341,8 @@
     "effect_chance": 30,
     "desc": "Questa mossa non può essere usata. È consigliabile farla dimenticare al Pokémon. Tuttavia, una volta dimenticata, non potrà più essere ricordata.",
     "flags": [
-      "contact"
+      "contact",
+      "sheer_force"
     ],
     "accuracy": 100,
     "nome_it": "Cuorestampo",
@@ -2278,7 +2367,10 @@
     "desc": "Chi la usa investe i nemici che ha intorno con una folata di vento caldo. Può anche scottarli.",
     "accuracy": 90,
     "nome_it": "Ondacalda",
-    "nome_en": "Heat Wave"
+    "nome_en": "Heat Wave",
+    "flags": [
+      "sheer_force"
+    ]
   },
   "Heavy Slam": {
     "category": "physical",
@@ -2370,7 +2462,10 @@
     "desc": "Chi la usa attacca il bersaglio avvolgendolo con un vento fortissimo. Può anche confonderlo.",
     "accuracy": 70,
     "nome_it": "Tifone",
-    "nome_en": "Hurricane"
+    "nome_en": "Hurricane",
+    "flags": [
+      "sheer_force"
+    ]
   },
   "Hydro Pump": {
     "bp": 110,
@@ -2403,8 +2498,9 @@
     "effect_chance": 10,
     "desc": "Chi la usa morde il bersaglio con i suoi incisivi affilati. Può anche farlo tentennare.",
     "flags": [
+      "bite",
       "contact",
-      "bite"
+      "sheer_force"
     ],
     "accuracy": 90,
     "nome_it": "Iperzanna",
@@ -2438,7 +2534,10 @@
     "desc": "Il bersaglio è colpito da un raggio di energia gelida che può anche congelarlo.",
     "accuracy": 100,
     "nome_it": "Geloraggio",
-    "nome_en": "Ice Beam"
+    "nome_en": "Ice Beam",
+    "flags": [
+      "sheer_force"
+    ]
   },
   "Ice Fang": {
     "bp": 65,
@@ -2447,8 +2546,9 @@
     "effect_chance": 10,
     "desc": "Chi la usa morde con denti ghiacciati. Può anche congelare o far tentennare il bersaglio.",
     "flags": [
+      "bite",
       "contact",
-      "bite"
+      "sheer_force"
     ],
     "accuracy": 95,
     "nome_it": "Gelodenti",
@@ -2479,7 +2579,8 @@
     "desc": "Colpisce il bersaglio con un pugno di ghiaccio che può congelarlo.",
     "flags": [
       "contact",
-      "punch"
+      "punch",
+      "sheer_force"
     ],
     "accuracy": 100,
     "nome_it": "Gelopugno",
@@ -2515,7 +2616,9 @@
     "type": "ice",
     "effect_chance": 30,
     "desc": "Chi la usa attacca violentemente il bersaglio con grosse stalattiti di ghiaccio che possono anche farlo tentennare.",
-    "flags": [],
+    "flags": [
+      "sheer_force"
+    ],
     "accuracy": 90,
     "nome_it": "Scagliagelo",
     "nome_en": "Icicle Crash"
@@ -2540,7 +2643,10 @@
     "nome_en": "Icy Wind",
     "stat_changes": {
       "spe": -1
-    }
+    },
+    "flags": [
+      "sheer_force"
+    ]
   },
   "Infernal Parade": {
     "bp": 65,
@@ -2553,7 +2659,8 @@
     "nome_en": "Infernal Parade",
     "flags": [
       "mirror",
-      "protect"
+      "protect",
+      "sheer_force"
     ]
   },
   "Iron Defense": {
@@ -2573,7 +2680,8 @@
     "effect_chance": 20,
     "desc": "Chi la usa colpisce il bersaglio con la sua testa dura come l’acciaio. Può anche farlo tentennare.",
     "flags": [
-      "contact"
+      "contact",
+      "sheer_force"
     ],
     "accuracy": 100,
     "nome_it": "Metaltestata",
@@ -2586,7 +2694,8 @@
     "effect_chance": 30,
     "desc": "Il bersaglio viene colpito da una robusta coda d’acciaio. Può anche ridurne la Difesa.",
     "flags": [
-      "contact"
+      "contact",
+      "sheer_force"
     ],
     "accuracy": 75,
     "nome_it": "Codacciaio",
@@ -2673,7 +2782,10 @@
     "desc": "Chi la usa lancia fiamme scarlatte su tutti i Pokémon nelle vicinanze, danneggiandoli. Può anche scottarli.",
     "accuracy": 100,
     "nome_it": "Lavasbuffo",
-    "nome_en": "Lava Plume"
+    "nome_en": "Lava Plume",
+    "flags": [
+      "sheer_force"
+    ]
   },
   "Leaf Blade": {
     "bp": 90,
@@ -2712,7 +2824,10 @@
     "nome_en": "Leaf Tornado",
     "stat_changes": {
       "accuracy": -1
-    }
+    },
+    "flags": [
+      "sheer_force"
+    ]
   },
   "Leech Life": {
     "bp": 80,
@@ -2761,7 +2876,8 @@
     "desc": "Chi la usa colpisce il bersaglio con la forza dell’acqua. Può anche ridurne la Difesa.",
     "accuracy": 100,
     "flags": [
-      "contact"
+      "contact",
+      "sheer_force"
     ],
     "nome_it": "Idrobreccia",
     "nome_en": "Liquidation",
@@ -2795,7 +2911,8 @@
     "desc": "Chi la usa colpisce con un attacco fulmineo la parte inferiore del corpo del bersaglio, riducendone la Velocità.",
     "accuracy": 100,
     "flags": [
-      "contact"
+      "contact",
+      "sheer_force"
     ],
     "nome_it": "Calciobasso",
     "nome_en": "Low Sweep",
@@ -2817,7 +2934,8 @@
     "effect_chance": 100,
     "desc": "Chi la usa si lancia con tutte le sue forze sul bersaglio e ne riduce l’Attacco.",
     "flags": [
-      "contact"
+      "contact",
+      "sheer_force"
     ],
     "accuracy": 100,
     "nome_it": "Assalto",
@@ -2922,6 +3040,7 @@
     "desc": "Colpisce il bersaglio con artigli d’acciaio. Può anche aumentare l’Attacco di chi la usa.",
     "flags": [
       "contact",
+      "sheer_force",
       "slicing"
     ],
     "accuracy": 95,
@@ -2963,7 +3082,8 @@
     "desc": "Colpisce il bersaglio con un pugno veloce come una meteora. Può far salire l’Attacco di chi la usa.",
     "flags": [
       "contact",
-      "punch"
+      "punch",
+      "sheer_force"
     ],
     "accuracy": 90,
     "nome_it": "Meteorpugno",
@@ -2999,7 +3119,10 @@
     "nome_en": "Moonblast",
     "stat_changes": {
       "spa": -1
-    }
+    },
+    "flags": [
+      "sheer_force"
+    ]
   },
   "Moonlight": {
     "category": "status",
@@ -3023,7 +3146,8 @@
     "effect_chance": 30,
     "flags": [
       "mirror",
-      "protect"
+      "protect",
+      "sheer_force"
     ],
     "accuracy": 85,
     "nome_it": "Soffio d’Iceberg",
@@ -3036,7 +3160,8 @@
     "effect_chance": 30,
     "desc": "Questa mossa non può essere usata. È consigliabile farla dimenticare al Pokémon. Tuttavia, una volta dimenticata, non potrà più essere ricordata.",
     "flags": [
-      "bullet"
+      "bullet",
+      "sheer_force"
     ],
     "accuracy": 85,
     "nome_it": "Pantanobomba",
@@ -3056,7 +3181,10 @@
     "nome_en": "Mud Shot",
     "stat_changes": {
       "spe": -1
-    }
+    },
+    "flags": [
+      "sheer_force"
+    ]
   },
   "Mud Slap": {
     "bp": 20,
@@ -3064,7 +3192,9 @@
     "type": "ground",
     "effect_chance": 100,
     "desc": "Chi la usa butta fango in faccia al bersaglio per arrecargli danni e ridurne la precisione.",
-    "flags": [],
+    "flags": [
+      "sheer_force"
+    ],
     "accuracy": 100,
     "nome_it": "Fangosberla",
     "nome_en": "Mud-Slap",
@@ -3079,7 +3209,9 @@
     "type": "water",
     "effect_chance": 30,
     "desc": "Chi la usa attacca i nemici che ha intorno con un getto di fango che può anche ridurne la precisione.",
-    "flags": [],
+    "flags": [
+      "sheer_force"
+    ],
     "accuracy": 85,
     "nome_it": "Fanghiglia",
     "nome_en": "Muddy Water",
@@ -3108,7 +3240,10 @@
     "nome_en": "Night Daze",
     "stat_changes": {
       "accuracy": -1
-    }
+    },
+    "flags": [
+      "sheer_force"
+    ]
   },
   "Night Shade": {
     "category": "special",
@@ -3155,7 +3290,8 @@
     "desc": "Chi la usa strofina le guance elettrizzate contro il bersaglio, paralizzandolo.",
     "accuracy": 100,
     "flags": [
-      "contact"
+      "contact",
+      "sheer_force"
     ],
     "nome_it": "Elettrococcola",
     "nome_en": "Nuzzle"
@@ -3184,7 +3320,10 @@
       "spa": 1,
       "spd": 1,
       "spe": 1
-    }
+    },
+    "flags": [
+      "sheer_force"
+    ]
   },
   "Outrage": {
     "bp": 120,
@@ -3286,7 +3425,8 @@
     "desc": "Chi la usa attacca il bersaglio con delle carinerie. Può anche ridurne l’Attacco.",
     "accuracy": 90,
     "flags": [
-      "contact"
+      "contact",
+      "sheer_force"
     ],
     "nome_it": "Carineria",
     "nome_en": "Play Rough",
@@ -3313,8 +3453,9 @@
     "effect_chance": 50,
     "desc": "Chi la usa morde il bersaglio con denti avvelenati che possono anche iperavvelenarlo.",
     "flags": [
+      "bite",
       "contact",
-      "bite"
+      "sheer_force"
     ],
     "accuracy": 100,
     "nome_it": "Velenodenti",
@@ -3335,7 +3476,8 @@
     "effect_chance": 30,
     "desc": "Il bersaglio è colpito da un tentacolo o da un arto intriso di una sostanza tossica che può anche avvelenarlo.",
     "flags": [
-      "contact"
+      "contact",
+      "sheer_force"
     ],
     "accuracy": 100,
     "nome_it": "Velenpuntura",
@@ -3359,7 +3501,8 @@
     "effect_chance": 10,
     "desc": "Chi la usa colpisce con la coda e può avvelenare il bersaglio. Probabile brutto colpo.",
     "flags": [
-      "contact"
+      "contact",
+      "sheer_force"
     ],
     "accuracy": 100,
     "nome_it": "Velenocoda",
@@ -3414,7 +3557,10 @@
     "desc": "Colpisce il bersaglio con un raggio speciale. Può anche confonderlo.",
     "accuracy": 100,
     "nome_it": "Psicoraggio",
-    "nome_en": "Psybeam"
+    "nome_en": "Psybeam",
+    "flags": [
+      "sheer_force"
+    ]
   },
   "Psych Up": {
     "category": "status",
@@ -3434,7 +3580,10 @@
     "nome_en": "Psychic",
     "stat_changes": {
       "spd": -1
-    }
+    },
+    "flags": [
+      "sheer_force"
+    ]
   },
   "Psychic Fangs": {
     "bp": 85,
@@ -3484,7 +3633,8 @@
     "flags": [
       "contact",
       "mirror",
-      "protect"
+      "protect",
+      "sheer_force"
     ],
     "accuracy": 90,
     "nome_it": "Barrierassalto",
@@ -3551,9 +3701,7 @@
     "category": "status",
     "type": "water",
     "desc": "Chi la usa provoca una forte pioggia per cinque turni, potenziando le mosse di tipo Acqua e riducendo la potenza di quelle di tipo Fuoco.",
-    "flags": [
-      "dance"
-    ],
+    "flags": [],
     "nome_it": "Pioggiadanza",
     "nome_en": "Rain Dance"
   },
@@ -3565,7 +3713,8 @@
     "desc": "Attacco rotante che elimina gli effetti di mosse come Legatutto, Avvolgibotta e Parassiseme. Aumenta anche la Velocità di chi la usa.",
     "accuracy": 100,
     "flags": [
-      "contact"
+      "contact",
+      "sheer_force"
     ],
     "nome_it": "Rapigiro",
     "nome_en": "Rapid Spin",
@@ -3593,6 +3742,7 @@
     "desc": "Chi la usa colpisce il bersaglio con il suo guscio affilato. Il colpo può anche ridurre la Difesa del bersaglio.",
     "flags": [
       "contact",
+      "sheer_force",
       "slicing"
     ],
     "accuracy": 95,
@@ -3727,7 +3877,10 @@
     "desc": "I nemici vengono colpiti con violenza da grandi massi che possono anche farli tentennare.",
     "accuracy": 90,
     "nome_it": "Frana",
-    "nome_en": "Rock Slide"
+    "nome_en": "Rock Slide",
+    "flags": [
+      "sheer_force"
+    ]
   },
   "Rock Smash": {
     "bp": 40,
@@ -3736,7 +3889,8 @@
     "effect_chance": 50,
     "desc": "Chi la usa colpisce il bersaglio con un pugno che può anche ridurne la Difesa.",
     "flags": [
-      "contact"
+      "contact",
+      "sheer_force"
     ],
     "accuracy": 100,
     "nome_it": "Spaccaroccia",
@@ -3760,7 +3914,9 @@
     "type": "rock",
     "effect_chance": 100,
     "desc": "Colpisce il bersaglio con rocce. Inoltre, lo rallenta riducendone la Velocità.",
-    "flags": [],
+    "flags": [
+      "sheer_force"
+    ],
     "accuracy": 95,
     "nome_it": "Rocciotomba",
     "nome_en": "Rock Tomb",
@@ -3795,7 +3951,8 @@
     "effect_chance": 30,
     "desc": "Questa mossa non può essere usata. È consigliabile farla dimenticare al Pokémon. Tuttavia, una volta dimenticata, non potrà più essere ricordata.",
     "flags": [
-      "contact"
+      "contact",
+      "sheer_force"
     ],
     "accuracy": 85,
     "nome_it": "Calciorullo",
@@ -3838,7 +3995,9 @@
     "type": "fire",
     "effect_chance": 50,
     "desc": "Colpisce il bersaglio con un fuoco mistico di enorme intensità che può anche causargli una scottatura.",
-    "flags": [],
+    "flags": [
+      "sheer_force"
+    ],
     "accuracy": 95,
     "nome_it": "Magifuoco",
     "nome_en": "Sacred Fire"
@@ -3853,7 +4012,8 @@
     "nome_en": "Salt Cure",
     "flags": [
       "mirror",
-      "protect"
+      "protect",
+      "sheer_force"
     ]
   },
   "Sand Attack": {
@@ -3892,7 +4052,10 @@
     "desc": "Chi la usa attacca il bersaglio con un getto d’acqua bollente che può anche scottarlo.",
     "accuracy": 100,
     "nome_it": "Idrovampata",
-    "nome_en": "Scald"
+    "nome_en": "Scald",
+    "flags": [
+      "sheer_force"
+    ]
   },
   "Scary Face": {
     "category": "status",
@@ -3956,7 +4119,8 @@
       "spd": -1
     },
     "flags": [
-      "bullet"
+      "bullet",
+      "sheer_force"
     ]
   },
   "Shadow Claw": {
@@ -4028,7 +4192,10 @@
     "desc": "Questa mossa non può essere usata. È consigliabile farla dimenticare al Pokémon. Tuttavia, una volta dimenticata, non potrà più essere ricordata.",
     "accuracy": 100,
     "nome_it": "Segnoraggio",
-    "nome_en": "Signal Beam"
+    "nome_en": "Signal Beam",
+    "flags": [
+      "sheer_force"
+    ]
   },
   "Silver Wind": {
     "bp": 60,
@@ -4045,7 +4212,10 @@
       "spa": 1,
       "spd": 1,
       "spe": 1
-    }
+    },
+    "flags": [
+      "sheer_force"
+    ]
   },
   "Simple Beam": {
     "category": "status",
@@ -4099,7 +4269,9 @@
     "type": "flying",
     "effect_chance": 30,
     "desc": "Attacco in due turni e probabile brutto colpo. Può anche far tentennare il bersaglio.",
-    "flags": [],
+    "flags": [
+      "sheer_force"
+    ],
     "accuracy": 90,
     "nome_it": "Aeroattacco",
     "nome_en": "Sky Attack"
@@ -4167,7 +4339,10 @@
     "desc": "Chi la usa lancia fango malsano sul bersaglio. Può anche avvelenarlo.",
     "accuracy": 100,
     "nome_it": "Fango",
-    "nome_en": "Sludge"
+    "nome_en": "Sludge",
+    "flags": [
+      "sheer_force"
+    ]
   },
   "Sludge Bomb": {
     "bp": 90,
@@ -4176,7 +4351,8 @@
     "effect_chance": 30,
     "desc": "Chi la usa lancia fango malsano sul bersaglio. Può anche avvelenarlo.",
     "flags": [
-      "bullet"
+      "bullet",
+      "sheer_force"
     ],
     "accuracy": 100,
     "nome_it": "Fangobomba",
@@ -4190,7 +4366,10 @@
     "desc": "Lancia un’onda di fango che attacca tutti i Pokémon nelle vicinanze. Può anche avvelenarli.",
     "accuracy": 100,
     "nome_it": "Fangonda",
-    "nome_en": "Sludge Wave"
+    "nome_en": "Sludge Wave",
+    "flags": [
+      "sheer_force"
+    ]
   },
   "Smack Down": {
     "bp": 50,
@@ -4244,6 +4423,7 @@
     "effect_chance": 100,
     "desc": "Chi la usa si mette a urlare per un po’, riducendo l’Attacco Speciale dei nemici intorno.",
     "flags": [
+      "sheer_force",
       "sound"
     ],
     "accuracy": 95,
@@ -4314,7 +4494,8 @@
     "desc": "Colpisce il bersaglio con una scarica elettrica e può anche paralizzarlo.",
     "accuracy": 100,
     "flags": [
-      "contact"
+      "contact",
+      "sheer_force"
     ],
     "nome_it": "Scintilla",
     "nome_en": "Spark"
@@ -4341,7 +4522,8 @@
     "desc": "Chi la usa attacca il bersaglio con un tale impeto da fargli perdere la voglia di lottare e ne riduce l’Attacco Speciale.",
     "accuracy": 100,
     "flags": [
-      "contact"
+      "contact",
+      "sheer_force"
     ],
     "nome_it": "Frantumanima",
     "nome_en": "Spirit Break",
@@ -4354,7 +4536,9 @@
     "category": "physical",
     "type": "ghost",
     "desc": "Chi la usa attacca il bersaglio e fissa la sua ombra a terra impedendogli di fuggire.",
-    "flags": [],
+    "flags": [
+      "sheer_force"
+    ],
     "accuracy": 100,
     "nome_it": "Cucitura d’Ombra",
     "nome_en": "Spirit Shackle"
@@ -4497,7 +4681,10 @@
     "nome_en": "Struggle Bug",
     "stat_changes": {
       "spa": -1
-    }
+    },
+    "flags": [
+      "sheer_force"
+    ]
   },
   "Stun Spore": {
     "category": "status",
@@ -4605,7 +4792,8 @@
     "flags": [
       "bullet",
       "mirror",
-      "protect"
+      "protect",
+      "sheer_force"
     ]
   },
   "Tackle": {
@@ -4678,7 +4866,8 @@
     "effect_chance": 100,
     "desc": "Chi viene colpito da questa mossa prova un dolore lancinante e non può più usare mosse basate sul suono per due turni.",
     "flags": [
-      "contact"
+      "contact",
+      "sheer_force"
     ],
     "accuracy": 100,
     "nome_it": "Colpo Infernale",
@@ -4692,7 +4881,10 @@
     "desc": "Il bersaglio è colpito da un fulmine molto violento che può anche paralizzarlo.",
     "accuracy": 70,
     "nome_it": "Tuono",
-    "nome_en": "Thunder"
+    "nome_en": "Thunder",
+    "flags": [
+      "sheer_force"
+    ]
   },
   "Thunder Fang": {
     "bp": 65,
@@ -4701,8 +4893,9 @@
     "effect_chance": 10,
     "desc": "Chi la usa morde con denti elettrificati che possono anche paralizzare o far tentennare il bersaglio.",
     "flags": [
+      "bite",
       "contact",
-      "bite"
+      "sheer_force"
     ],
     "accuracy": 95,
     "nome_it": "Fulmindenti",
@@ -4716,7 +4909,8 @@
     "desc": "Colpisce il bersaglio con un pugno elettrico che può paralizzarlo.",
     "flags": [
       "contact",
-      "punch"
+      "punch",
+      "sheer_force"
     ],
     "accuracy": 100,
     "nome_it": "Tuonopugno",
@@ -4730,7 +4924,10 @@
     "desc": "Danneggia il bersaglio con una scarica elettrica che può anche paralizzarlo.",
     "accuracy": 100,
     "nome_it": "Tuonoshock",
-    "nome_en": "Thunder Shock"
+    "nome_en": "Thunder Shock",
+    "flags": [
+      "sheer_force"
+    ]
   },
   "Thunder Wave": {
     "category": "status",
@@ -4748,7 +4945,10 @@
     "desc": "Il bersaglio viene colpito da una potente scarica elettrica che può anche paralizzarlo.",
     "accuracy": 100,
     "nome_it": "Fulmine",
-    "nome_en": "Thunderbolt"
+    "nome_en": "Thunderbolt",
+    "flags": [
+      "sheer_force"
+    ]
   },
   "Tickle": {
     "category": "status",
@@ -4803,7 +5003,8 @@
     "flags": [
       "contact",
       "mirror",
-      "protect"
+      "protect",
+      "sheer_force"
     ]
   },
   "Tri Attack": {
@@ -4814,7 +5015,10 @@
     "desc": "Colpisce il bersaglio con tre raggi di luce che possono paralizzarlo, scottarlo o congelarlo.",
     "accuracy": 100,
     "nome_it": "Tripletta",
-    "nome_en": "Tri Attack"
+    "nome_en": "Tri Attack",
+    "flags": [
+      "sheer_force"
+    ]
   },
   "Trick": {
     "category": "status",
@@ -4851,7 +5055,8 @@
     "effect_chance": 100,
     "desc": "Chi la usa colpisce il bersaglio con un potente calcio sfruttando una tecnica originaria dei paesi tropicali e ne riduce l’Attacco.",
     "flags": [
-      "contact"
+      "contact",
+      "sheer_force"
     ],
     "accuracy": 100,
     "nome_it": "Tropicalcio",
@@ -4866,7 +5071,9 @@
     "type": "bug",
     "effect_chance": 20,
     "desc": "Questa mossa non può essere usata. È consigliabile farla dimenticare al Pokémon. Tuttavia, una volta dimenticata, non potrà più essere ricordata.",
-    "flags": [],
+    "flags": [
+      "sheer_force"
+    ],
     "accuracy": 100,
     "nome_it": "Doppio Ago",
     "nome_en": "Twineedle"
@@ -4935,7 +5142,8 @@
     "effect_chance": 10,
     "desc": "Chi la usa si carica di elettricità e poi attacca. Può paralizzare il bersaglio. Il contraccolpo causa seri danni.",
     "flags": [
-      "contact"
+      "contact",
+      "sheer_force"
     ],
     "accuracy": 100,
     "nome_it": "Locomovolt",
@@ -4978,8 +5186,8 @@
     "effect_chance": 20,
     "desc": "Il bersaglio viene colpito da un getto d’acqua potentissimo che può anche confonderlo.",
     "flags": [
-      "bullet",
-      "pulse"
+      "pulse",
+      "sheer_force"
     ],
     "accuracy": 100,
     "nome_it": "Idropulsar",
@@ -5011,7 +5219,8 @@
     "effect_chance": 20,
     "desc": "Carica il bersaglio a grande velocità e può farlo tentennare.",
     "flags": [
-      "contact"
+      "contact",
+      "sheer_force"
     ],
     "accuracy": 100,
     "nome_it": "Cascata",
@@ -5167,7 +5376,8 @@
     "effect_chance": 20,
     "desc": "Chi la usa concentra le energie psichiche nella testa e si lancia contro il bersaglio. Può anche farlo tentennare.",
     "flags": [
-      "contact"
+      "contact",
+      "sheer_force"
     ],
     "accuracy": 90,
     "nome_it": "Cozzata Zen",
@@ -5180,7 +5390,8 @@
     "effect_chance": 30,
     "desc": "Chi la usa colpisce il bersaglio investendolo con una potente scarica elettrica che può anche farlo tentennare.",
     "flags": [
-      "contact"
+      "contact",
+      "sheer_force"
     ],
     "accuracy": 100,
     "nome_it": "Elettropizzico",
@@ -5286,7 +5497,8 @@
       "contact",
       "mirror",
       "non-sky-battle",
-      "protect"
+      "protect",
+      "sheer_force"
     ],
     "accuracy": 100,
     "type_it": "Normale",
@@ -5348,7 +5560,8 @@
     "desc": "Colpisce il bersaglio con un aculeo tossico che può anche avvelenarlo.",
     "flags": [
       "mirror",
-      "protect"
+      "protect",
+      "sheer_force"
     ],
     "accuracy": 100,
     "type_it": "Veleno",
@@ -5566,7 +5779,8 @@
     "flags": [
       "contact",
       "mirror",
-      "protect"
+      "protect",
+      "sheer_force"
     ],
     "accuracy": 100,
     "type_it": "Spettro",
@@ -5580,7 +5794,8 @@
     "desc": "Colpisce il bersaglio con una scarica di gas maleodoranti. Può anche avvelenarlo.",
     "flags": [
       "mirror",
-      "protect"
+      "protect",
+      "sheer_force"
     ],
     "accuracy": 70,
     "type_it": "Veleno",
@@ -5663,7 +5878,8 @@
     "desc": "Questa mossa non può essere usata. È consigliabile farla dimenticare al Pokémon. Tuttavia, una volta dimenticata, non potrà più essere ricordata.",
     "flags": [
       "mirror",
-      "protect"
+      "protect",
+      "sheer_force"
     ],
     "accuracy": 100,
     "type_it": "Acqua",
@@ -5820,6 +6036,7 @@
       "authentic",
       "mirror",
       "protect",
+      "sheer_force",
       "sound"
     ],
     "accuracy": 100,
@@ -5861,7 +6078,8 @@
     "desc": "Attacca i nemici che ha intorno con una raffica di neve farinosa e può anche congelarli.",
     "flags": [
       "mirror",
-      "protect"
+      "protect",
+      "sheer_force"
     ],
     "accuracy": 100,
     "type_it": "Ghiaccio",
@@ -5891,7 +6109,8 @@
     "flags": [
       "bullet",
       "mirror",
-      "protect"
+      "protect",
+      "sheer_force"
     ],
     "accuracy": 85,
     "type_it": "Acqua",
@@ -5909,7 +6128,8 @@
     "flags": [
       "bullet",
       "mirror",
-      "protect"
+      "protect",
+      "sheer_force"
     ],
     "accuracy": 50,
     "type_it": "Elettro",
@@ -5970,7 +6190,8 @@
     "flags": [
       "contact",
       "mirror",
-      "protect"
+      "protect",
+      "sheer_force"
     ],
     "accuracy": 90,
     "type_it": "Acciaio",
@@ -6101,7 +6322,8 @@
     "desc": "Un potente tornado si abbatte sui nemici nei paraggi. Può anche farli tentennare.",
     "flags": [
       "mirror",
-      "protect"
+      "protect",
+      "sheer_force"
     ],
     "accuracy": 100,
     "type_it": "Drago",
@@ -6117,7 +6339,8 @@
       "bite",
       "contact",
       "mirror",
-      "protect"
+      "protect",
+      "sheer_force"
     ],
     "accuracy": 100,
     "type_it": "Buio",
@@ -6358,7 +6581,8 @@
     "desc": "Questa mossa non può essere usata. È consigliabile farla dimenticare al Pokémon. Tuttavia, una volta dimenticata, non potrà più essere ricordata.",
     "flags": [
       "mirror",
-      "protect"
+      "protect",
+      "sheer_force"
     ],
     "accuracy": 100,
     "type_it": "Normale",
@@ -6387,7 +6611,8 @@
     "desc": "Chi la usa scatena un’esplosione abbagliante che può anche ridurre la Difesa Speciale del Pokémon colpito.",
     "flags": [
       "mirror",
-      "protect"
+      "protect",
+      "sheer_force"
     ],
     "accuracy": 100,
     "type_it": "Psico",
@@ -6405,7 +6630,8 @@
     "flags": [
       "bullet",
       "mirror",
-      "protect"
+      "protect",
+      "sheer_force"
     ],
     "accuracy": 100,
     "type_it": "Psico",
@@ -6485,7 +6711,8 @@
     "flags": [
       "contact",
       "mirror",
-      "protect"
+      "protect",
+      "sheer_force"
     ],
     "accuracy": 100,
     "type_it": "Erba",
@@ -6589,7 +6816,8 @@
     "desc": "Chi la usa attacca con una misteriosa forza invisibile. Può far tentennare il bersaglio.",
     "flags": [
       "mirror",
-      "protect"
+      "protect",
+      "sheer_force"
     ],
     "accuracy": 100,
     "type_it": "Psico",
@@ -6698,7 +6926,8 @@
       "distance",
       "gravity",
       "mirror",
-      "protect"
+      "protect",
+      "sheer_force"
     ],
     "accuracy": 85,
     "type_it": "Volante",
@@ -7027,7 +7256,8 @@
     "desc": "Questa mossa non può essere usata. È consigliabile farla dimenticare al Pokémon. Tuttavia, una volta dimenticata, non potrà più essere ricordata.",
     "flags": [
       "mirror",
-      "protect"
+      "protect",
+      "sheer_force"
     ],
     "accuracy": 85,
     "type_it": "Acciaio",
@@ -7045,7 +7275,8 @@
     "flags": [
       "contact",
       "mirror",
-      "protect"
+      "protect",
+      "sheer_force"
     ],
     "accuracy": 85,
     "type_it": "Normale",
@@ -7129,6 +7360,7 @@
       "distance",
       "mirror",
       "protect",
+      "sheer_force",
       "sound"
     ],
     "accuracy": 100,
@@ -7244,7 +7476,8 @@
     "desc": "Chi la usa genera un’onda d’urto dal suo corpo. Può anche ridurre di molto la Difesa Speciale del bersaglio.",
     "flags": [
       "mirror",
-      "protect"
+      "protect",
+      "sheer_force"
     ],
     "accuracy": 85,
     "type_it": "Erba",
@@ -7477,7 +7710,8 @@
     "desc": "Il bersaglio viene avvolto da intense fiammate che causano scottature.",
     "flags": [
       "mirror",
-      "protect"
+      "protect",
+      "sheer_force"
     ],
     "accuracy": 50,
     "type_it": "Fuoco",
@@ -7553,7 +7787,8 @@
     "flags": [
       "contact",
       "mirror",
-      "protect"
+      "protect",
+      "sheer_force"
     ],
     "accuracy": 100,
     "type_it": "Coleottero",
@@ -7613,7 +7848,8 @@
     "flags": [
       "bullet",
       "mirror",
-      "protect"
+      "protect",
+      "sheer_force"
     ],
     "accuracy": 100,
     "type_it": "Fuoco",
@@ -7643,6 +7879,7 @@
       "authentic",
       "mirror",
       "protect",
+      "sheer_force",
       "sound"
     ],
     "accuracy": 100,
@@ -7672,7 +7909,8 @@
     "desc": "Chi la usa attacca i nemici intorno con una folata d’aria gelida e ne riduce anche la Velocità.",
     "flags": [
       "mirror",
-      "protect"
+      "protect",
+      "sheer_force"
     ],
     "accuracy": 95,
     "type_it": "Ghiaccio",
@@ -7689,7 +7927,8 @@
     "desc": "Chi la usa attacca il bersaglio avvolgendolo con magnifiche e intense fiamme blu che possono anche scottarlo.",
     "flags": [
       "mirror",
-      "protect"
+      "protect",
+      "sheer_force"
     ],
     "accuracy": 85,
     "type_it": "Fuoco",
@@ -7704,7 +7943,8 @@
     "flags": [
       "dance",
       "mirror",
-      "protect"
+      "protect",
+      "sheer_force"
     ],
     "accuracy": 100,
     "type_it": "Fuoco",
@@ -7722,7 +7962,8 @@
     "flags": [
       "charge",
       "mirror",
-      "protect"
+      "protect",
+      "sheer_force"
     ],
     "accuracy": 90,
     "type_it": "Ghiaccio",
@@ -7737,7 +7978,8 @@
     "flags": [
       "charge",
       "mirror",
-      "protect"
+      "protect",
+      "sheer_force"
     ],
     "accuracy": 90,
     "type_it": "Ghiaccio",
@@ -8054,7 +8296,8 @@
     "desc": "Colpisce i nemici che ha intorno con una tempesta di diamanti. Può anche aumentare di molto la Difesa di chi la usa.",
     "flags": [
       "mirror",
-      "protect"
+      "protect",
+      "sheer_force"
     ],
     "accuracy": 95,
     "type_it": "Roccia",
@@ -8072,7 +8315,8 @@
     "flags": [
       "defrost",
       "mirror",
-      "protect"
+      "protect",
+      "sheer_force"
     ],
     "accuracy": 95,
     "type_it": "Acqua",
@@ -8099,7 +8343,8 @@
     "desc": "Colpisce il bersaglio soffiandogli contro delle fiammate incredibilmente roventi, riducendone l’Attacco Speciale.",
     "flags": [
       "mirror",
-      "protect"
+      "protect",
+      "sheer_force"
     ],
     "accuracy": 100,
     "type_it": "Fuoco",
@@ -8275,7 +8520,8 @@
       "contact",
       "mirror",
       "protect",
-      "punch"
+      "punch",
+      "sheer_force"
     ],
     "accuracy": 100,
     "type_it": "Lotta",
@@ -8631,6 +8877,7 @@
       "authentic",
       "mirror",
       "protect",
+      "sheer_force",
       "sound"
     ],
     "accuracy": 100,
@@ -8733,7 +8980,8 @@
     "flags": [
       "contact",
       "mirror",
-      "protect"
+      "protect",
+      "sheer_force"
     ],
     "accuracy": 100,
     "type_it": "Acciaio",
@@ -8869,7 +9117,10 @@
     "desc": "Questa mossa non può essere usata. È consigliabile farla dimenticare al Pokémon. Tuttavia, una volta dimenticata, non potrà più essere ricordata.",
     "type_it": "Elettro",
     "nome_it": "Elettrosurf Folgorante",
-    "nome_en": "Stoked Sparksurfer"
+    "nome_en": "Stoked Sparksurfer",
+    "flags": [
+      "sheer_force"
+    ]
   },
   "Pulverizing Pancake": {
     "bp": 210,
@@ -8906,7 +9157,10 @@
     "desc": "Questa mossa non può essere usata. È consigliabile farla dimenticare al Pokémon. Tuttavia, una volta dimenticata, non potrà più essere ricordata.",
     "type_it": "Psico",
     "nome_it": "Supernova delle Origini",
-    "nome_en": "Genesis Supernova"
+    "nome_en": "Genesis Supernova",
+    "flags": [
+      "sheer_force"
+    ]
   },
   "Shell Trap": {
     "bp": 150,
@@ -8945,7 +9199,8 @@
     "desc": "Chi la usa colpisce il bersaglio con un osso in cui alberga uno spirito. Può anche ridurne la Difesa.",
     "flags": [
       "mirror",
-      "protect"
+      "protect",
+      "sheer_force"
     ],
     "accuracy": 100,
     "type_it": "Spettro",
@@ -9170,6 +9425,7 @@
     "desc": "Questa mossa non può essere usata. È consigliabile farla dimenticare al Pokémon. Tuttavia, una volta dimenticata, non potrà più essere ricordata.",
     "flags": [
       "authentic",
+      "sheer_force",
       "sound"
     ],
     "type_it": "Drago",
@@ -9208,7 +9464,8 @@
     "desc": "Questa mossa non può essere usata. È consigliabile farla dimenticare al Pokémon. Tuttavia, una volta dimenticata, non potrà più essere ricordata.",
     "flags": [
       "mirror",
-      "protect"
+      "protect",
+      "sheer_force"
     ],
     "accuracy": 100,
     "type_it": "Acqua",
@@ -9224,7 +9481,8 @@
       "contact",
       "gravity",
       "mirror",
-      "protect"
+      "protect",
+      "sheer_force"
     ],
     "accuracy": 95,
     "type_it": "Volante",
@@ -9266,7 +9524,8 @@
     "desc": "Questa mossa non può essere usata. È consigliabile farla dimenticare al Pokémon. Tuttavia, una volta dimenticata, non potrà più essere ricordata.",
     "flags": [
       "mirror",
-      "protect"
+      "protect",
+      "sheer_force"
     ],
     "accuracy": 100,
     "type_it": "Elettro",
@@ -9282,7 +9541,8 @@
       "contact",
       "defrost",
       "mirror",
-      "protect"
+      "protect",
+      "sheer_force"
     ],
     "accuracy": 100,
     "type_it": "Fuoco",
@@ -9383,7 +9643,8 @@
       "contact",
       "mirror",
       "protect",
-      "punch"
+      "punch",
+      "sheer_force"
     ],
     "accuracy": 100,
     "type_it": "Acciaio",
@@ -9745,7 +10006,8 @@
     "desc": "Chi la usa percuote il proprio tamburo per controllarne le radici e attaccare il bersaglio, riducendone la Velocità.",
     "flags": [
       "mirror",
-      "protect"
+      "protect",
+      "sheer_force"
     ],
     "accuracy": 100,
     "type_it": "Erba",
@@ -9764,7 +10026,8 @@
       "bullet",
       "defrost",
       "mirror",
-      "protect"
+      "protect",
+      "sheer_force"
     ],
     "accuracy": 90,
     "type_it": "Fuoco",
@@ -9778,7 +10041,8 @@
     "desc": "Chi la usa emette l’energia accumulata nelle guance per attaccare e aumentare la propria Velocità. Il tipo della mossa cambia in base alla forma assunta da Morpeko.",
     "flags": [
       "mirror",
-      "protect"
+      "protect",
+      "sheer_force"
     ],
     "accuracy": 100,
     "type_it": "Elettro",
@@ -9796,7 +10060,8 @@
     "flags": [
       "contact",
       "mirror",
-      "protect"
+      "protect",
+      "sheer_force"
     ],
     "accuracy": 100,
     "type_it": "Drago",
@@ -9844,7 +10109,8 @@
     "desc": "Chi la usa fa cadere una mela sul bersaglio da una grande altezza, infliggendogli danni e riducendone la Difesa.",
     "flags": [
       "mirror",
-      "protect"
+      "protect",
+      "sheer_force"
     ],
     "accuracy": 100,
     "type_it": "Erba",
@@ -9861,7 +10127,8 @@
     "desc": "Chi la usa attacca il bersaglio con getti di vapore che possono anche confonderlo.",
     "flags": [
       "mirror",
-      "protect"
+      "protect",
+      "sheer_force"
     ],
     "accuracy": 95,
     "type_it": "Folletto",
@@ -9947,7 +10214,8 @@
     "desc": "Il Pokémon esegue un attacco fisico o speciale, in base a quale causa danni maggiori. Può anche avvelenare il bersaglio.",
     "flags": [
       "mirror",
-      "protect"
+      "protect",
+      "sheer_force"
     ],
     "accuracy": 100,
     "type_it": "Veleno",
@@ -9976,7 +10244,8 @@
     "flags": [
       "contact",
       "mirror",
-      "protect"
+      "protect",
+      "sheer_force"
     ],
     "accuracy": 90,
     "type_it": "Coleottero",
@@ -9993,7 +10262,8 @@
     "desc": "Chi la usa attacca con la forza dell’invidia, causando una scottatura a tutti i Pokémon le cui statistiche sono aumentate durante quel turno.",
     "flags": [
       "mirror",
-      "protect"
+      "protect",
+      "sheer_force"
     ],
     "accuracy": 100,
     "type_it": "Fuoco",
@@ -10068,7 +10338,8 @@
     "flags": [
       "defrost",
       "mirror",
-      "protect"
+      "protect",
+      "sheer_force"
     ],
     "accuracy": 100,
     "type_it": "Terra",
@@ -10139,7 +10410,8 @@
     "desc": "Il Pokémon attacca rilasciando energia psichica dagli occhi. Può congelare il bersaglio.",
     "flags": [
       "mirror",
-      "protect"
+      "protect",
+      "sheer_force"
     ],
     "accuracy": 100,
     "type_it": "Psico",
@@ -10153,7 +10425,8 @@
     "desc": "Il Pokémon attacca trasformando la sua rabbia in un’aura simile a fiamme. Può anche far tentennare i nemici.",
     "flags": [
       "mirror",
-      "protect"
+      "protect",
+      "sheer_force"
     ],
     "accuracy": 100,
     "type_it": "Buio",
@@ -10168,7 +10441,8 @@
     "flags": [
       "contact",
       "mirror",
-      "protect"
+      "protect",
+      "sheer_force"
     ],
     "accuracy": 100,
     "type_it": "Lotta",
@@ -10201,6 +10475,7 @@
       "authentic",
       "mirror",
       "protect",
+      "sheer_force",
       "sound"
     ],
     "accuracy": 100,
@@ -10233,6 +10508,7 @@
       "contact",
       "mirror",
       "protect",
+      "sheer_force",
       "slicing"
     ]
   },
@@ -10247,7 +10523,8 @@
     "nome_en": "Springtide Storm",
     "flags": [
       "mirror",
-      "protect"
+      "protect",
+      "sheer_force"
     ]
   },
   "Mystical Power": {
@@ -10261,7 +10538,8 @@
     "nome_en": "Mystical Power",
     "flags": [
       "mirror",
-      "protect"
+      "protect",
+      "sheer_force"
     ]
   },
   "Raging Fury": {
@@ -10347,7 +10625,8 @@
     "nome_en": "Barb Barrage",
     "flags": [
       "mirror",
-      "protect"
+      "protect",
+      "sheer_force"
     ]
   },
   "Esper Wing": {
@@ -10361,7 +10640,8 @@
     "nome_en": "Esper Wing",
     "flags": [
       "mirror",
-      "protect"
+      "protect",
+      "sheer_force"
     ]
   },
   "Bitter Malice": {
@@ -10375,7 +10655,8 @@
     "nome_en": "Bitter Malice",
     "flags": [
       "mirror",
-      "protect"
+      "protect",
+      "sheer_force"
     ]
   },
   "Shelter": {
@@ -10401,7 +10682,8 @@
     "nome_en": "Triple Arrows",
     "flags": [
       "mirror",
-      "protect"
+      "protect",
+      "sheer_force"
     ]
   },
   "Ceaseless Edge": {
@@ -10417,6 +10699,7 @@
       "contact",
       "mirror",
       "protect",
+      "sheer_force",
       "slicing"
     ]
   },
@@ -10431,7 +10714,8 @@
     "nome_en": "Bleakwind Storm",
     "flags": [
       "mirror",
-      "protect"
+      "protect",
+      "sheer_force"
     ]
   },
   "Wildbolt Storm": {
@@ -10445,7 +10729,8 @@
     "nome_en": "Wildbolt Storm",
     "flags": [
       "mirror",
-      "protect"
+      "protect",
+      "sheer_force"
     ]
   },
   "Sandsear Storm": {
@@ -10459,7 +10744,8 @@
     "nome_en": "Sandsear Storm",
     "flags": [
       "mirror",
-      "protect"
+      "protect",
+      "sheer_force"
     ]
   },
   "Lunar Blessing": {
@@ -10528,7 +10814,8 @@
     "flags": [
       "contact",
       "mirror",
-      "protect"
+      "protect",
+      "sheer_force"
     ]
   },
   "Last Respects": {
@@ -10559,7 +10846,8 @@
     },
     "flags": [
       "mirror",
-      "protect"
+      "protect",
+      "sheer_force"
     ]
   },
   "Order Up": {
@@ -10690,7 +10978,8 @@
     "flags": [
       "contact",
       "mirror",
-      "protect"
+      "protect",
+      "sheer_force"
     ]
   },
   "Doodle": {
@@ -10767,6 +11056,7 @@
     "flags": [
       "mirror",
       "protect",
+      "sheer_force",
       "sound"
     ]
   },
@@ -10907,7 +11197,8 @@
     "flags": [
       "contact",
       "mirror",
-      "protect"
+      "protect",
+      "sheer_force"
     ]
   },
   "Hyper Drill": {
@@ -11029,7 +11320,8 @@
     "nome_it": "Turboustione",
     "nome_en": "Blazing Torque",
     "flags": [
-      "protect"
+      "protect",
+      "sheer_force"
     ]
   },
   "Wicked Torque": {
@@ -11042,7 +11334,8 @@
     "nome_it": "Turbotenebra",
     "nome_en": "Wicked Torque",
     "flags": [
-      "protect"
+      "protect",
+      "sheer_force"
     ]
   },
   "Noxious Torque": {
@@ -11055,7 +11348,8 @@
     "nome_it": "Turbotossina",
     "nome_en": "Noxious Torque",
     "flags": [
-      "protect"
+      "protect",
+      "sheer_force"
     ]
   },
   "Combat Torque": {
@@ -11068,7 +11362,8 @@
     "nome_it": "Turborissa",
     "nome_en": "Combat Torque",
     "flags": [
-      "protect"
+      "protect",
+      "sheer_force"
     ]
   },
   "Magical Torque": {
@@ -11081,7 +11376,8 @@
     "nome_it": "Turboincanto",
     "nome_en": "Magical Torque",
     "flags": [
-      "protect"
+      "protect",
+      "sheer_force"
     ]
   },
   "Blood Moon": {
@@ -11109,7 +11405,8 @@
     "nome_en": "Matcha Gotcha",
     "flags": [
       "mirror",
-      "protect"
+      "protect",
+      "sheer_force"
     ]
   },
   "Ivy Cudgel": {
@@ -11252,6 +11549,7 @@
     "flags": [
       "mirror",
       "protect",
+      "sheer_force",
       "sound"
     ]
   },
@@ -11297,6 +11595,7 @@
     "flags": [
       "mirror",
       "protect",
+      "sheer_force",
       "sound"
     ]
   },
@@ -11312,7 +11611,8 @@
     "flags": [
       "contact",
       "mirror",
-      "protect"
+      "protect",
+      "sheer_force"
     ]
   },
   "Malignant Chain": {
@@ -11325,7 +11625,8 @@
     "nome_it": "Intossicatena",
     "nome_en": "Malignant Chain",
     "flags": [
-      "protect"
+      "protect",
+      "sheer_force"
     ]
   },
   "Shadow Rush": {
