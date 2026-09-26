@@ -1,662 +1,802 @@
-# Graph Report - C:\Progetti\Progetti_Python\Web app\personal-hub-v2  (2026-09-21)
+# Graph Report - .  (2026-09-26)
 
 ## Corpus Check
-- 35 files · ~960,721 words
+- 131 files · ~1,154,456 words
 - Verdict: corpus is large enough that graph structure adds value.
 
 ## Summary
-- 1321 nodes · 2291 edges · 221 communities (104 shown, 117 thin omitted)
-- Extraction: 94% EXTRACTED · 6% INFERRED · 0% AMBIGUOUS · INFERRED: 130 edges (avg confidence: 0.85)
-- Token cost: 388,169 input · 0 output
+- 2337 nodes · 4677 edges · 183 communities (148 shown, 35 thin omitted)
+- Extraction: 96% EXTRACTED · 4% INFERRED · 0% AMBIGUOUS · INFERRED: 186 edges (avg confidence: 0.78)
+- Token cost: 794,265 input · 0 output
 
 ## Community Hubs (Navigation)
-- Moveset: integrazioni, toppe ed eredità
-- pokeapi.py — lettura del dump
-- Route Pokémon e regulation
-- API Pokémon e indice del catalogo
-- Gaming: import Steam e giochi
-- Editor abilità e archivi
-- Verifica moveset e fonti esterne
-- Motore abilità del calcolatore
-- Salvataggio catalogo e script dati
-- Avvio app e helper condivisi
-- Pannello import specie
-- Route Arduino, Gaming e PC Builder
-- Costanti e dati del calcolatore
-- build_catalog.py — il catalogo
-- Import dei dati nel DB
-- Voci aperte del backlog
-- Tabella JS dell'editor abilità
-- Cache delle uscite IGDB
-- Nomi italiani e inglesi
-- Nomi presi dal wiki
-- Amministrazione e permessi
-- Dashboard e tracker Python
-- Proprietà dei dati e sezioni
-- Guide e collaudo finale
-- Sweep sintattico e dipendenze
-- Bootstrap del calcolatore
-- Team builder e mega_map
-- Editor mosse e indice forme
-- Prove dell'import dati
-- Calcolo del danno
-- Import roster di Champions
-- Export dei dati
-- Stat Preview del calcolatore
-- Utenti, sezioni e sidebar
-- Mosse per regulation e Mega
-- Bachi noti e oggetti
-- Creazione e salvataggio regulation
-- Formula stat e caso di prova
-- Tabelle tipi e nature
-- Tendine oggetti e voce catalogo
-- Pagina Gaming e filtri
-- Regole di lavoro e branch
-- Client IGDB
-- Catalogo, chiavi e lingua
-- Dati Champions nel calcolatore
-- Controllo del proprietario
-- Controllo dell'esposizione
-- Prove dell'export completo
-- Categorie oggetti nell'editor
-- Pagine Arduino e Gaming
-- Contenuti della regulation
-- Proprietario e due export
-- Switch lingua e traduzioni
-- Login e password
-- Salvataggio voce di catalogo
-- Creazione di una regulation
-- Documenti di progetto
-- Struttura del progetto
+- Fantacalcio: route e pagine
+- Moveset da PokéAPI
+- three.js OrbitControls
+- Export dati e prove
+- Editor regulation e team (JS)
+- Editor catalogo e PC (JS)
+- API regulation Pokémon
+- Arduino, Stampa 3D, team
+- App, auth, sessioni
+- Storico: script e sezioni
+- Catalogo PC OpenDB
+- Editor e archivio abilità
+- Ripristino dati (importa_dati)
+- API Pokémon e aggiornamento catalogo
+- Fonti regulation e mega_map
+- Arduino: circuiti e piedini
+- Integrazioni e toppe moveset
+- Python: esecuzione e sorgenti
+- Admin utenti e log
+- Motore abilità (calcolatori-core)
+- Gaming: giochi e cache
+- Fantacalcio: fonti
+- Python tracker
+- Fantacalcio: consiglio e difesa
+- Build catalogo
+- Temi e contrasti
+- Dati del calcolatore (JS)
+- Contesto: struttura calcolatore
+- Storico: toppe Champions
+- Gaming: attesa e filtri
+- PC Builder route
+- PC negozi e link
+- Storico: Fantacalcio
+- Storico: slug e main
+- Import specie Pokémon
+- salva_catalogo e categorie
+- fflate: unzip
+- Flag delle mosse
+- Storico: catalogo e regulation
+- Fantacalcio: listone
+- Stampa 3D: backend
+- Contesto: blueprint
+- Nomi per lingua
+- Nomi dal wiki
+- Stampa 3D: anteprima
+- fflate: compressione
+- fflate: sync e UTF-8
+- Backlog: trappole e push
+- DxDiag import
+- Log dell'hub
+- Verifica moveset
+- Storico: proprietà dei dati
+- Fantacalcio: stemmi e scadenza
+- three.js 3MF e geometrie
+- Storico: export e ripristino
 - Layout base e sidebar
-- Sonda IGDB
+- Backlog: app online e Debian
+- Gaming: raggruppamenti
 - Speed Tier
-- Funzioni di traduzione
-- Collegamento a Steam
-- Import da interfaccia e cache
-- I documenti del progetto
-- Pesca e import di una specie
-- Meteo e abilità nel calcolo
-- Prove di build_catalog
-- Pagine Pokémon e regulation
-- La pagina dei calcolatori
-- Formula stat di Champions
-- Interfaccia e fallback silenziosi
-- Controllo delle traduzioni
-- Modali di Arduino e PC Builder
-- Linguette e archivio oggetti
-- Controllo delle abilità
-- Meccaniche della regulation
-- Arricchimento generi e tag
-- Campi e meccaniche in editor
-- Fusione abilità doppie
-- Fusione doppioni per nome
-- Migrazione di una regulation
-- Abilità nel catalogo Pokémon
-- Prove del catalogo vivo
-- Prove dell'import specie
-- Prove della regulation nuova
-- Tracker Python
-- _solo_admin_sugli_editor()
-- toggleTheme
-- readFile()
-- Mosse non trovate su PokéAPI (Bolt Tackle, Hi …
-- Personal Hub: web app Flask a blueprint
-- Classic script non moduli: gli handler inline …
-- Eliminazione bloccata dai team collegati
-- before_request
-- route
-- Come parlare — italiano, niente ripassi, numer…
-- Regola 2 — non inventare nomi di file, variabi…
-- Doc stale: nessuna cartella static/, CSS e JS …
-- Verifica dei template eseguendo i blocchi inli…
-- Prompt di inizio sessione con PROJECT_CONTEXT.…
-- Dati Flask da un solo blocco application/json
-- calcolatori-stat.js
-- Convenzioni sui prefissi degli ID HTML dei cal…
-- Stage multipliers (stageMult)
-- TYPE_CHART e l'unica type chart del progetto
-- I 33 giochi persi e la guardia sull'export
-- scripts/aggiungi_slug_forme.py
-- scripts/allinea_dati_mosse_champions.py
-- scripts/allinea_mosse_regulation.py
-- /api/team/<id> — il quarto endpoint fantasma
-- scripts/applica_nomi_decisi.py
-- scripts/applica_toppe_champions.py
-- scripts/assegna_categorie_oggetti.py
-- 5 bug trovati dal grafo graphify (07/08/2026)
-- scripts/build_catalog.py
-- Bulbapedia (fonte)
-- Il catalogo si aggiorna mentre l'app gira
-- chiave_di_sessione() e SECRET_KEY
-- scripts/completa_abilita_pokemon.py
-- scripts/completa_mega_map.py
-- scripts/controlla_abilita.py
-- scripts/controlla_proprietario.py
-- scripts/controlla_traduzioni.py
-- scripts/correggi_mega_meowstic.py
-- scripts/deconverti_mega_catalogo.py
-- Si deviano i file che il codice sotto prova SC…
-- disfa_toppe() — misurare sullo stato del dump
-- Il dump CSV di PokeAPI
-- eredita_da — la lista dichiarata derivata
-- scripts/esporta_dati.py
-- esporta_dati.py --completo --uscita
-- /export e la Dashboard: i permessi erano decor…
-- Le 460 mosse di MA non erano un elenco di lega…
-- Il doppione di Floette Fiore Eterno
-- scripts/fondi_abilita_doppie.py
-- scripts/fondi_doppioni_nome.py
-- Uscite multipiattaforma fuse in una riga
-- Game8 (fonte)
-- game_releases — il calendario delle uscite
-- /graphify . --update
-- HUB_DEBUG — il debugger non si accende piu' da…
-- hypes — il filtro «quanto e' atteso»
-- Idempotenza provata in processi separati
-- IGDB come fonte delle uscite
-- Import di una specie da PokeAPI dall'interfacc…
-- scripts/importa_dati.py
-- scripts/importa_evoluzioni.py
-- scripts/importa_mosse_specie.py
-- scripts/importa_nomi_lingua.py (PokeAPI)
-- scripts/importa_nomi_wiki.py (Pokemon Central)
-- scripts/importa_roster_champions.py
-- scripts/importa_variazioni_stat.py
-- Verificare sempre con una seconda fonte indipe…
-- indent=1 e sorted(): un diff leggibile e un md…
-- Una voce senza slug sparisce dal moveset e sem…
-- scripts/integra_moveset_bulbapedia.py
-- MAI_SOVRASCRITTE e regulations.created_at
-- Le due Mega Meowstic
-- Morpeko (Hangry Mode)
-- Nota ufficiale di aggiornamento 1.2.0 (9 sette…
-- Gli oggetti del calcolatore davano il numero s…
-- password_di_default() — l'avviso che spariva p…
-- Le password non rientrano dall'export committa…
-- STORICO — memoria dei lavori chiusi
-- PIATTAFORME_TENUTE
-- «PokeAPI non la conosce» quasi mai voleva dire…
-- pokeapi.py — una regola sola per due scrittori
-- Pokemon Zone (fonte)
-- scripts/prova_build_catalog.py
-- scripts/prova_catalogo_vivo.py
-- scripts/prova_champions_1_2_0.py
-- scripts/prova_esporta_completo.py
-- scripts/prova_import_specie.py
-- scripts/prova_importa_dati.py
-- scripts/prova_mosse_regulation.py
-- scripts/prova_moveset_main.py
-- scripts/prova_regulation_nuova.py
-- python_progress(user_id, topic_id, done)
-- python_topics: gli id li semina init_db() nell…
-- Una regulation nata dall'interfaccia e' usabil…
-- Una regulation vuota si dichiara invece di dar…
-- scripts/ricollega_megasolar.py
-- Champions ha un roster suo: non applicare assu…
-- Password migrate a scrypt
-- Serebii (fonte)
-- Il caso Sheer Force — due chiavi, lo stesso no…
-- solo_mie() — si legge con ambito_utente, si sc…
-- Tag da SteamSpy
-- Suggerimenti dalla libreria stessa (log(N/df))
-- scripts/sweep_pagine.py
-- Lo sweep statico non basta: va caricata la pag…
-- _team_upsert(): un UPDATE a vuoto non dice nie…
-- Le prove girano su una COPIA di hub.db
-- Il tetto a 300 righe
-- Utenti e permessi per sezione (/admin/utenti)
-- Validazione di /api/catalogo/<db>/salva: due e…
-- scripts/verifica_moveset.py
-- Champions e' un version group del dump (id 32)
-- wsgi.py (wsgi:application)
-- regola CSS textarea.form-control{min-height:70…
-- Tab Reference + overlay tipi/nature
-- login.html (standalone, no base)
-- switchTab() (pcbuilder)
-- toggleRawJson
-- modalita guida quando manca STEAM_API_KEY
+- Backlog: proprietà e permessi
+- Python: note e frammenti (UI)
+- Import roster Champions
+- Aggiornamento Pokédex
+- Contesto: admin e sicurezza
+- Contesto: dump e moveset
+- Controllo proprietario
+- fflate: gunzip
+- three.js OBJLoader
+- Fantacalcio: formazione (UI)
+- Fantacalcio: leghe (UI)
+- Contesto: eredità e toppe
+- Fantacalcio: cartella download
+- Contesto: calcolatore e sprite
+- Pyodide e pannello Esegui
+- Calcolo danno
+- Tabelle di riferimento
+- Editor mosse
+- IGDB
+- Fantamedia e rigori
+- Controllo abilità
+- Progetto Python (UI)
+- Backlog: collaudo e guide
+- Motore abilità data-driven
+- Contesto: decisioni sui dati
+- Controllo esposizione
+- Prova export completo
+- Prova log
+- Categorie oggetti e abilità
+- Scheda giocatore listone
+- Backlog: Arduino e PC
+- Backlog: export e ripristino
+- Backlog: moveset e dati mancanti
+- README e istruzioni
+- Contesto: sezioni nuove
+- Sonda IGDB
+- Stat Preview
+- Arduino (UI)
+- Contenuti regulation e Steam (JS)
+- Editor catalogo (route)
+- Contesto: abilità
+- Contesto: proprietà dei dati
+- Formula stat e regola #8
+- Controllo sprite
+- Prova build catalogo
+- Prova resta collegato
+- Gaming (UI)
+- Fantamedia di lega
+- Contesto: export e calendario
+- Contesto: sweep e conferme
+- Completa abilità Pokémon
+- fflate: decompress
+- fflate: zip
+- Storico: PC Builder
+- Risoluzione per nome
+- Blocco admin
+- Deconversione Mega
+- Fusione Floette
+- Prova preferenze
+- three.js 3MFLoader
+- three.js STLLoader
+- Storico: abilità e flag
+- Archivi degli editor
+- Bootstrap del calcolatore
+- Steam: arricchimento
+- Editor roster e oggetti
+- Backlog: flag e potenza
+- Steam: tag SteamSpy
+- Copia dati utente
+- Calendario e stemmi
+- fanta.py (piccola)
+- fondi_abilita_doppie.py (piccola)
+- fondi_doppioni_nome.py (piccola)
+- migra_regulation.py (piccola)
+- patch_catalog_abilities.py (piccola)
+- prova_catalogo_vivo.py (piccola)
+- prova_import_specie.py (piccola)
+- prova_regulation_nuova.py (piccola)
+- calcolatori-ui.js (piccola)
+- fantacalcio.py (piccola)
+- pokemon.py (piccola)
+- BACKLOG.md (piccola)
+- CLAUDE.md (piccola)
+- fetch_desc_report.txt (piccola)
+- catalog_editor.html (piccola)
+- items_editor.html (piccola)
+- regulations_list.html (piccola)
+- BACKLOG.md (piccola)
+- varie (piccola)
+- CLAUDE.md (piccola)
+- CLAUDE.md (piccola)
+- CLAUDE.md (piccola)
+- CLAUDE.md (piccola)
+- CLAUDE.md (piccola)
+- CLAUDE.md (piccola)
+- CLAUDE.md (piccola)
+- CLAUDE.md (piccola)
+- CLAUDE.md (piccola)
+- CLAUDE.md (piccola)
+- CLAUDE.md (piccola)
+- DOCUMENTAZIONE_PersonalHub.md (piccola)
+- DOCUMENTAZIONE_PersonalHub.md (piccola)
+- DOCUMENTAZIONE_PersonalHub.md (piccola)
+- howtouse.txt (piccola)
+- varie (piccola)
+- varie (piccola)
+- abilities_editor.html (piccola)
+- moves_editor.html (piccola)
+- moves_editor.html (piccola)
+- roster_editor.html (piccola)
+- steam_import.html (piccola)
 
 ## God Nodes (most connected - your core abstractions)
-1. `get_db()` - 46 edges
-2. `login_required()` - 36 edges
-3. `load_catalog()` - 33 edges
-4. `_list_regulation_files()` - 33 edges
-5. `salva_catalogo()` - 32 edges
-6. `voci_catalogo()` - 26 edges
-7. `ambito_utente()` - 23 edges
-8. `_load_filtro()` - 22 edges
-9. `utente_id()` - 18 edges
-10. `_archive_dir()` - 17 edges
+1. `STORICO — memoria dei lavori chiusi` - 175 edges
+2. `login_required()` - 126 edges
+3. `get_db()` - 104 edges
+4. `ambito_utente()` - 55 edges
+5. `OrbitControls` - 49 edges
+6. `salva_catalogo()` - 43 edges
+7. `voci_catalogo()` - 36 edges
+8. `load_catalog()` - 35 edges
+9. `_list_regulation_files()` - 35 edges
+10. `utente_id()` - 29 edges
 
 ## Surprising Connections (you probably didn't know these)
-- `Read with ambito_utente(), write with solo_mie()` --references--> `solo_mie()`  [AMBIGUOUS]
-  BACKLOG.md → extensions.py
-- `showMsg() — banner esito nel roster` --semantically_similar_to--> `rendi() - render catalog table`  [AMBIGUOUS] [semantically similar]
+- `showMsg() — banner esito nel roster` --semantically_similar_to--> `rendi()`  [AMBIGUOUS] [semantically similar]
   templates/roster_editor.html → templates/catalog_editor.html
-- `Catalog keys are never renamed (use nome_it/nome_en)` --references--> `salva_catalogo()`  [EXTRACTED]
-  CLAUDE.md → blueprints/pokemon.py
-- `Diffida dei fallback silenziosi` --semantically_similar_to--> `sorgente_moveset() — un campo che manca vale «main»`  [INFERRED] [semantically similar]
-  CLAUDE.md → BACKLOG.md
-- `README-GitHub (vetrina pubblica del progetto)` --semantically_similar_to--> `README Personal Hub v11.1a`  [INFERRED] [semantically similar]
-  README-GitHub.md → README.md
+- `admin_utenti.html (Utenti e permessi)` --references--> `utenti()`  [INFERRED]
+  templates/admin_utenti.html → blueprints/admin.py
+- `admin_log.html (Log dell'hub)` --references--> `log()`  [INFERRED]
+  templates/admin_log.html → blueprints/admin.py
+- `applica_eredita_dichiarata()` --conceptually_related_to--> `applica_integrazioni_moveset()`  [INFERRED]
+  STORICO.md → blueprints/pokemon.py
+- `chiave_di_sessione() e SECRET_KEY` --references--> `chiave_di_sessione()`  [EXTRACTED]
+  STORICO.md → extensions.py
 
 ## Import Cycles
 - None detected.
 
 ## Hyperedges (group relationships)
-- **Le reti di controllo che rispondono alle domande che non danno errore da sole** — backlog_controlla_proprietario, backlog_controlla_abilita, backlog_controlla_traduzioni, backlog_verifica_moveset, backlog_prova_moveset_main, backlog_fallback_silenziosi [INFERRED 0.85]
-- **La pipeline del moveset: dump → voci → toppe → eredita → riallineamento delle forme** — backlog_pokeapi_dump, backlog_pokemon_moves_json, backlog_moveset_integrazioni_json, backlog_due_livelli_di_toppa, backlog_sezione_eredita, backlog_eredita_costruita_prima, backlog_importa_mosse_specie, backlog_applica_toppe_champions [EXTRACTED 1.00]
-- **Il giro di collaudo finale: tre lavori che si fanno insieme, col grafo rifatto prima** — backlog_5_giro_di_collaudo_finale, backlog_5_1_giro_completo_web_app, backlog_5_2_verifica_moveset, backlog_5_3_inventario_codice_morto, claude_grafo_e_una_fotografia [EXTRACTED 1.00]
-- **Silent-failure class: wrong numbers instead of errors** — claude_fallback_silenziosi, backlog_endpoint_fantasma, backlog_moveset_default_main, storico_regulation_vuota_200, backlog_trappola_slug_mancante, backlog_oggetti_calcolatore [INFERRED 0.85]
-- **Ownership and access control rules (fail-closed routes, owner-filtered queries)** — backlog_1_1_dati_proprietario, backlog_1_2_editor_solo_admin, backlog_route_pokemon_nasce_chiusa, backlog_query_nasce_scoperta, backlog_ambito_utente_vs_solo_mie, backlog_rowcount_scritture_filtrate [EXTRACTED 1.00]
-- **Pre-push workflow: update BACKLOG/STORICO, export data, propose push on sviluppo** — claude_regola_d_oro_push, backlog, scripts_esporta_dati, claude_branch_sviluppo_main_archivio [EXTRACTED 1.00]
-- **Stored values/keys stay untranslated; only display text is translated** — templates_calcolatori_type_value_italian_key, templates_gaming_untranslated_status_platform, templates_items_editor_category_keys, templates_regulation_editor_mechanics_untranslated, templates_team_form_tera_types_untranslated [INFERRED 0.95]
-- **Admin-only ?utente= owner filter and owner badge across sections** — templates_arduino, templates_gaming, templates_pcbuilder, templates_pokemon, templates_arduino_admin_owner_filter [INFERRED 0.95]
-- **Regulation metadata, mega_map and movesets flowing from editor to team builder** — templates_regulation_editor_savemeta, templates_regulation_editor_megamap, templates_team_form_initregulations, templates_team_form_loadregulationdata, templates_team_form_mega_map, templates_regulations_list_moveset_source [INFERRED 0.85]
-- **Lo switch lingua IT/EN: dizionario, funzioni gemelle e pulsante confinato** — templates_base_t, templates_base_tf, templates_base_nomevis, templates_base_sezioni_tradotte, templates_base_togglelingua [EXTRACTED 1.00]
+- **Livelli sopra il dump PokeAPI del moveset (voci, toppe, eredita, scelta del VG)** — backlog_moveset_integrazioni, backlog_applica_toppe_champions, backlog_propagazione_toppe_forme, backlog_eredita_forme, backlog_vg_fuori_serie, backlog_moveset_champions_mb [EXTRACTED 1.00]
+- **Controlli basati su elenchi scritti a mano che non vedono il nuovo** — backlog_tabella_fuori_raggio, backlog_controlla_proprietario, backlog_sweep_pagine, backlog_tabelle_utente_figlie_di, claude_esporta_dati [INFERRED 0.85]
+- **Flusso prima del push (backlog, export, branch, tag)** — claude_regola_d_oro_push, claude_backlog_vs_storico, claude_esporta_dati, claude_branch_sviluppo, claude_tag_lavoro [EXTRACTED 1.00]
+- **Una sola sorgente contro le copie che divergono in silenzio** — project_context_una_copia_sola, project_context_type_chart, project_context_stage_mult, project_context_tabelle_utente, project_context_mega_data_rimossa [EXTRACTED 1.00]
+- **Ciclo di vita dei dati di un utente (travaso, copia, export)** — project_context_tabelle_utente, project_context_figlie_di, project_context_tabelle_senza_regola, project_context_copia_dati_utente, project_context_travaso_utente_eliminato, project_context_export_import_backup, project_context_sessioni_ricordate [EXTRACTED 1.00]
+- **Catena del moveset: dump, integrazioni, regulation, calcolatore** — project_context_dump_pokeapi_csv, project_context_pokemon_moves_json, project_context_load_moveset, project_context_mosse_regulation_derivate, project_context_main_vs_champions, project_context_moves_null [INFERRED 0.85]
+- **Giro di backup e ripristino dell'hub (export, export completo, import)** — storico_esporta_dati, storico_export_completo, storico_importa_dati, storico_chiave_di_schema, storico_da_completare, storico_fondi_fantacalcio_vecchio [EXTRACTED 1.00]
+- **Pipeline del moveset di Champions (dump, integrazioni, toppe, eredita', derivazione delle regulation)** — storico_importa_mosse_specie, storico_integra_moveset_bulbapedia, storico_applica_toppe_moveset, storico_applica_eredita_dichiarata, storico_riallinea_forme_eredi, storico_allinea_mosse_regulation [INFERRED 0.85]
+- **Flusso del consiglio del Fantacalcio (probabili, fasce, modificatore, campo)** — storico_fanta_probabili, storico_fanta_consiglio, storico_fanta_modificatore_difesa, storico_fanta_formazione, storico_fanta_controlla_schierati [INFERRED 0.85]
+- **Macro Jinja condivise del Fantacalcio (stemma, icone, statistiche, timer, allerta)** — templates_fanta_stemma_stemma, templates_fanta_icone_icona, templates_fanta_statistiche_statistiche, templates_fanta_timer_timer, templates_fanta_allerta_avviso [INFERRED 0.85]
+- **Sistema dei temi: variabili in _temi.html, elenchi JS e menu in base.html, controllo in prova_temi.py** — templates_temi, templates_base_temi, templates_base_sceglitema, templates_base_updatethemeicon, scripts_prova_temi [EXTRACTED 1.00]
+- **Helper i18n lato client definiti nel <head> di base.html** — templates_base_t, templates_base_tf, templates_base_nomevis, templates_base_tipoit, templates_base_tipovis, templates_base_tipi_en_it [EXTRACTED 1.00]
+- **Fantacalcio section pages (§4.6)** — templates_fantacalcio, templates_fanta_lega, templates_fanta_formazione, templates_fanta_chi_gioca, templates_fanta_listone, templates_fanta_rosa_incolla [EXTRACTED 1.00]
+- **Regulation data flow (editor -> team builder)** — templates_regulation_editor_savemeta, api_pokemon_regulations, api_pokemon_regulations_save, templates_team_form_initregulations, templates_team_form_loadregulationdata, api_regulation_data [INFERRED 0.85]
+- **Python run panel (PyEsegui)** — templates_python, templates_python_progetto, templates_python_esegui, static_js_python_esegui [EXTRACTED 1.00]
+- **Admin-only ?utente= owner filter and owner badge across sections** — templates_arduino, templates_gaming, templates_pcbuilder, templates_pokemon [INFERRED 0.95]
 - **Pattern editor: tabella e textarea JSON sincronizzati nei due sensi** — templates_abilities_editor_rendertable, templates_items_editor_rendertable, templates_moves_editor_rendertable, templates_catalog_editor_rendi, templates_roster_editor_synctagstojson [INFERRED 0.85]
 - **Flusso archivio/ripristino condiviso dagli editor** — templates_catalog_editor_caricaarchivi, templates_abilities_editor_loadabilityarchives, templates_roster_editor_loadarchives, templates_roster_editor_trappola_apostrofo_confirm, templates_moves_editor_tojson_apici_singoli [INFERRED 0.85]
-- **Cambio regulation nel Team Builder: roster, oggetti, meccaniche, mosse legali** — templates_team_form_initregulations, templates_team_form_loadregulationdata, templates_team_form_scrivimosse, templates_team_form_updatemechanicoptions, templates_team_form_updatemechanicvalue, templates_team_form_fetchpkmn, templates_team_form_mega_map [EXTRACTED 1.00]
 - **Flusso di selezione dei contenuti di una regulation** — templates_regulation_content_filtrati, templates_regulation_content_rendi, templates_regulation_content_commuta, templates_regulation_content_spuntafiltrati, templates_regulation_content_salva, templates_regulation_content_cambiatutto [EXTRACTED 1.00]
-- **Ciclo di vita di una regulation: crea, modifica, copia, elimina** — templates_regulations_list_createregulation, templates_regulations_list_deleteregulation, templates_regulation_editor_savemeta, templates_regulation_editor_copiada, templates_regulation_content_salva [INFERRED 0.85]
 - **Pipeline Steam: import libreria, generi, tag e suggerimenti** — templates_steam_import_disegna, templates_steam_import_conta_generi, templates_steam_import_conta_tag, templates_gaming_suggerimenti_dalla_libreria, templates_game_form_collegamento_steam_appid [INFERRED 0.85]
 
-## Communities (221 total, 117 thin omitted)
+## Communities (183 total, 35 thin omitted)
 
-### Community 0 - "Moveset: integrazioni, toppe ed eredità"
+### Community 0 - "Fantacalcio: route e pagine"
 Cohesion: 0.05
-Nodes (68): applica_eredita_dichiarata(), applica_integrazioni_moveset(), applica_toppe_moveset(), file_integrazioni_moveset(), load_catalog(), load_moveset(), mosse_legali(), Il file delle liste che il dump non ha, prese da un'altra fonte a mano. Letto a… (+60 more)
+Nodes (85): _aggiorna_calendario(), _allerta(), api_giocatore(), api_giocatori(), _calendario_se_vecchio(), carica_listone(), chi_gioca(), _consiglio() (+77 more)
 
-### Community 1 - "pokeapi.py — lettura del dump"
-Cohesion: 0.08
-Nodes (51): _abilita_per_pokemon(), evoluzioni(), file_mancanti(), _firma(), _forme_per_pokemon(), _indice_pokemon(), _indice_specie(), leggi() (+43 more)
+### Community 1 - "Moveset da PokéAPI"
+Cohesion: 0.05
+Nodes (67): Rimette alle forme che dichiarano `eredita_da` i blocchi della loro base. ⚠️…, riallinea_forme_eredi(), _abilita_per_pokemon(), evoluzioni(), file_mancanti(), _firma(), _forme_per_pokemon(), _indice_pokemon() (+59 more)
 
-### Community 2 - "Route Pokémon e regulation"
+### Community 2 - "three.js OrbitControls"
+Cohesion: 0.05
+Nodes (17): _changeEvent, _endEvent, onKeyDown(), onMouseDown(), onMouseMove(), onMouseWheel(), onPointerDown(), onPointerUp() (+9 more)
+
+### Community 3 - "Export dati e prove"
+Cohesion: 0.06
+Nodes (51): cali_sospetti(), dentro_a_un_repo(), leggibile(), main(), La cartella che conterrà `percorso` sta dentro un repo git? Torna la radice. ⚠️…, Il percorso relativo alla radice se ci sta dentro, altrimenti quello intero., I dati sono gli stessi del file già sul disco, a parte il blocco `_meta`?, Le righe di una tabella, in ordine stabile, senza le colonne escluse. `escluse`… (+43 more)
+
+### Community 4 - "Editor regulation e team (JS)"
+Cohesion: 0.05
+Nodes (48): GET /api/moves?reg=, GET /api/pokemon/<name>?reg=, GET /pokemon/api/regulations, POST /pokemon/api/regulations/save, POST /pokemon/api/regulation/<id>/copia-da, GET /api/regulation/<id>/data, POST /pokemon/api/regulation/<id>/fonti, POST /pokemon/api/regulation/<id>/mega-map (+40 more)
+
+### Community 5 - "Editor catalogo e PC (JS)"
+Cohesion: 0.05
+Nodes (45): GET /pcbuilder/api/catalogo?cat=, POST /pcbuilder/import_dxdiag, t(), tf(), TIPI_EN_IT, tipoIT(), tipoVis(), aggDifferenze() (+37 more)
+
+### Community 6 - "API regulation Pokémon"
+Cohesion: 0.10
+Nodes (53): api_regulation_data(), Restituisce il roster Pokémon della regulation richiesta. Usato dallo Speed…, api_catalogo_elimina(), api_regulation_content_save(), api_regulation_copia_da(), api_regulation_mega_map(), api_regulations_create(), api_regulations_delete() (+45 more)
+
+### Community 7 - "Arduino, Stampa 3D, team"
 Cohesion: 0.12
-Nodes (40): api_regulation_data(), Restituisce il roster Pokémon della regulation richiesta. Usato dallo Speed…, api_regulation_content_save(), api_regulations_list(), _build_full_roster(), calcolatori(), _dal_catalogo(), _filtra() (+32 more)
+Nodes (48): api_team(), arduino(), arduino_delete(), arduino_save(), _link(), route, Il link del form se è del sito giusto. Se non lo è, lo si dice e non si salva., dashboard() (+40 more)
 
-### Community 3 - "API Pokémon e indice del catalogo"
+### Community 8 - "App, auth, sessioni"
+Cohesion: 0.07
+Nodes (45): create_app(), Personal Hub — entry point. Ogni area funzionale vive in blueprints/., _accendi_sessione(), login(), logout(), _metti_cookie(), preferenze(), route (+37 more)
+
+### Community 9 - "Storico: script e sezioni"
+Cohesion: 0.07
+Nodes (48): scripts/allinea_dati_mosse_champions.py, Anteprima 3D dei file con three.js (STL, 3MF, OBJ), scripts/applica_nomi_decisi.py, Arduino: Tinkercad, Wokwi e la tabella dei piedini, 5 bug trovati dal grafo graphify (07/08/2026), calcolatori.html spacchettato in 7 moduli calcolatori-*.js, Catalogo unico + regulation come filtro di nomi, chiave_di_sessione() e SECRET_KEY (+40 more)
+
+### Community 10 - "Catalogo PC OpenDB"
 Cohesion: 0.09
-Nodes (33): aggiorna_catalogo(), api_moves(), api_pokemon(), _build_slug(), _costruisci_indice(), _find_in_catalog(), _firma_file(), _generate_alt_keys() (+25 more)
+Nodes (37): _abbina(), aggiorna(), _anno(), _asin(), _compatta(), configurazione(), _connettori_gpu(), controlli() (+29 more)
 
-### Community 4 - "Gaming: import Steam e giochi"
+### Community 11 - "Editor e archivio abilità"
+Cohesion: 0.09
+Nodes (35): abilities_archive(), abilities_archives(), abilities_editor(), abilities_restore(), api_abilities_delete(), api_abilities_list(), api_abilities_update(), api_catalogo_aggiorna_anteprima() (+27 more)
+
+### Community 12 - "Ripristino dati (importa_dati)"
+Cohesion: 0.09
+Nodes (35): argomenti_disallineati(), chiave_di(), fondi_fantacalcio_vecchio(), indice(), inserisci(), leggibile(), main(), piano_tabella() (+27 more)
+
+### Community 13 - "API Pokémon e aggiornamento catalogo"
+Cohesion: 0.09
+Nodes (34): app_template_global, aggiorna_catalogo(), api_moves(), api_pokemon(), _build_slug(), _costruisci_indice(), _find_in_catalog(), _firma_file() (+26 more)
+
+### Community 14 - "Fonti regulation e mega_map"
 Cohesion: 0.10
-Nodes (35): 4.1 Gaming release calendar (IGDB), _campi(), game_new(), route, Butta la cache. E' rigenerabile per definizione, quindi non c'e' niente da…, Da quello che l'utente incolla ricava uno steamID64. Accetta: 17 cifre,…, Giochi posseduti + ore giocate. Unico endpoint che richiede la chiave., Importa gli appid scelti. Aggiorna le ore se il gioco c'e' gia', non duplica. (+27 more)
+Nodes (31): applica_collegamenti(), base_attesa(), collega_mega(), `Mega Raichu X` -> `Raichu`; `Mega Meowstic (Male)` -> `Meowstic (Male)`., Le Mega del roster non ancora raggiungibili, divise per cosa serve a…, Aggiunge le coppie `(base, mega)` alla mega_map, ordinata. Torna la nuova., applica(), bulbapedia() (+23 more)
 
-### Community 5 - "Editor abilità e archivi"
-Cohesion: 0.13
-Nodes (32): abilities_archive(), abilities_archives(), abilities_editor(), abilities_restore(), api_abilities_delete(), api_abilities_list(), api_abilities_update(), api_catalogo_prepara_fonte() (+24 more)
+### Community 15 - "Arduino: circuiti e piedini"
+Cohesion: 0.08
+Nodes (32): analizza(), _base(), dati(), incorpora(), leggi_diagramma(), leggibile(), link_valido(), _pin_num() (+24 more)
 
-### Community 6 - "Verifica moveset e fonti esterne"
+### Community 16 - "Integrazioni e toppe moveset"
+Cohesion: 0.12
+Nodes (29): applica_eredita_dichiarata(), applica_integrazioni_moveset(), applica_toppe_moveset(), file_integrazioni_moveset(), load_catalog(), load_moveset(), mosse_legali(), Il file delle liste che il dump non ha, prese da un'altra fonte a mano. Letto a… (+21 more)
+
+### Community 17 - "Python: esecuzione e sorgenti"
 Cohesion: 0.10
-Nodes (30): §5.2 Le mosse assegnate sono davvero quelle giuste?, scripts/aggiungi_slug_forme.py, scripts/allinea_dati_mosse_champions.py, scripts/applica_toppe_champions.py, Bulbapedia — la fonte indipendente indicata da Davide, scripts/correggi_mega_meowstic.py, I dati delle mosse sono quelli di Champions, non di Scarlatto/Violetto, Due livelli di toppa sopra il dump: voci e toppe (+22 more)
+Nodes (27): blueprints/python_tracker.py, Pyodide in un Web Worker (python-worker.js), python_esegui.py — esecuzione sul PC (solo admin, HUB_ESEGUI_CODICE), attivo(), _chiudi_albero(), esegui(), interprete(), _leggi() (+19 more)
 
-### Community 7 - "Motore abilità del calcolatore"
-Cohesion: 0.13
+### Community 18 - "Admin utenti e log"
+Cohesion: 0.11
+Nodes (27): log(), route, Gestione utenti e permessi per sezione — solo per gli amministratori. Il…, Revoca tutti i «resta collegato» di un utente, senza toccargli la password., Duplica i contenuti di `uid` su un altro utente. Aggiunge, non sostituisce. ⚠️…, Il log dell'hub, dal più recente. I filtri stanno nell'URL, così un filtro si…, Le spunte del form -> valore per la colonna. ⚠️ Tre casi, non due, ed è il…, _sezioni_dal_form() (+19 more)
+
+### Community 19 - "Motore abilità (calcolatori-core)"
+Cohesion: 0.12
 Nodes (21): ABILITA_POKEMON, abilityEffect(), abilityIncideSulDanno(), abilityIncideSulleStat(), aggiornaNotaMeteo(), applicaMeteoAllaMossa(), catalogEntry(), catalogIndex() (+13 more)
 
-### Community 8 - "Salvataggio catalogo e script dati"
-Cohesion: 0.14
-Nodes (19): api_catalogo_elimina(), Scrive un database del catalogo, tenendo da parte la versione precedente.…, Le voci di un database del catalogo, sempre come dizionario piatto., salva_catalogo(), voci_catalogo(), main(), main(), abilita_ufficiali() (+11 more)
-
-### Community 9 - "Avvio app e helper condivisi"
-Cohesion: 0.14
-Nodes (23): create_app(), Personal Hub — entry point. Ogni area funzionale vive in blueprints/., _etichetta(), raggruppa_per_mese(), `tag:Souls-like` -> `Souls-like`: il prefisso è interno, non si mostra., Cosa giocare dopo, **partendo dalla libreria stessa**. Steam non espone «giochi…, `[(etichetta_mese, [voce, …]), …]`, nell'ordine in cui arrivano. Il…, Le prossime `STRISCIA` uscite per la striscia in cima a /gaming. Torna… (+15 more)
-
-### Community 10 - "Pannello import specie"
+### Community 20 - "Gaming: giochi e cache"
 Cohesion: 0.11
-Nodes (23): loadAbilityArchives, Una sola modale per crea e modifica, caricaArchivi(), esc() (catalog_editor), impCerca() - PokeAPI preview, impFonte() - download PokeAPI dump, impMsg(), impProblemi() (+15 more)
+Nodes (27): game_new(), route, Butta la cache. E' rigenerabile per definizione, quindi non c'e' niente da…, Da quello che l'utente incolla ricava uno steamID64. Accetta: 17 cifre,…, Giochi posseduti + ore giocate. Unico endpoint che richiede la chiave., Importa gli appid scelti. Aggiorna le ore se il gioco c'e' gia', non duplica., Quanti giochi Steam sono senza genere. Nessuna chiave richiesta., Riempie il genere dei giochi importati leggendolo da appdetails. Endpoint… (+19 more)
 
-### Community 11 - "Route Arduino, Gaming e PC Builder"
-Cohesion: 0.22
-Nodes (22): api_team(), arduino(), arduino_delete(), arduino_save(), route, game_delete(), game_edit(), _game_upsert() (+14 more)
+### Community 21 - "Fantacalcio: fonti"
+Cohesion: 0.11
+Nodes (26): abbina_squadre(), che_file_e(), chiave_api(), classifica(), _decimale(), _intero(), _mantra(), ora_italiana() (+18 more)
 
-### Community 12 - "Costanti e dati del calcolatore"
+### Community 22 - "Python tracker"
+Cohesion: 0.19
+Nodes (25): _aggiungi(), _esecuzione(), _file_di(), frammento_elimina(), frammento_salva(), nota_salva(), _progetto(), progetto_carica() (+17 more)
+
+### Community 23 - "Fantacalcio: consiglio e difesa"
+Cohesion: 0.10
+Nodes (23): modificatore_difesa(), I punti che la tabella dà a quella media, o `0`. ⚠️ `None` vuol dire «non lo…, _chiave(), consiglia_formazione(), consiglia_moduli(), controlla_schierati(), eta_calendario(), giornata_corrente() (+15 more)
+
+### Community 24 - "Build catalogo"
+Cohesion: 0.16
+Nodes (23): base_curata(), carica_json(), costruisci_abilita(), costruisci_mosse(), costruisci_oggetti(), costruisci_pokemon(), intatte(), leggi() (+15 more)
+
+### Community 25 - "Temi e contrasti"
+Cohesion: 0.11
+Nodes (18): contrasto(), esito(), leggi(), luminanza(), main(), admin_utenti.html (Utenti e permessi), Conferme onsubmit costruite con |tojson (trappola N'Dicka), salvaPreferenza() (+10 more)
+
+### Community 26 - "Dati del calcolatore (JS)"
 Cohesion: 0.09
 Nodes (21): ALIAS, BS, CALC_BOOTSTRAP, FORM_BASE, FORM_VARIANTS, METEO_LABEL, MOSSE_METEO, NM (+13 more)
 
-### Community 13 - "build_catalog.py — il catalogo"
-Cohesion: 0.21
-Nodes (18): base_curata(), carica_json(), costruisci_abilita(), costruisci_mosse(), costruisci_oggetti(), costruisci_pokemon(), leggi(), main() (+10 more)
-
-### Community 14 - "Import dei dati nel DB"
-Cohesion: 0.18
-Nodes (18): argomenti_disallineati(), chiave_di(), indice(), inserisci(), leggibile(), main(), piano_tabella(), Il path relativo alla radice se ci sta dentro, altrimenti quello assoluto. Un… (+10 more)
-
-### Community 15 - "Voci aperte del backlog"
-Cohesion: 0.13
-Nodes (18): §1.3 Aggiungere dati dalla web app, §1.5 Mettere l'app online, §2.2 Le abilità da fondere — erano già fuse, §4.1 Gaming — il calendario delle uscite, Un file che si modifica mentre l'app gira non si legge una volta sola (cache sull'mtime), scripts/controlla_abilita.py, Historical data files kept as fallback until final collaudo, IGDB — fonte scelta per il calendario delle uscite (+10 more)
-
-### Community 16 - "Tabella JS dell'editor abilità"
+### Community 27 - "Contesto: struttura calcolatore"
 Cohesion: 0.14
-Nodes (18): Tipi di effetto abilita supportati, Motore abilita data-driven da abilities.json, I nomi in abilities.json non sono sempre quelli ufficiali, addAbility, deleteAbility, formatJson() — textarea -> abData, renderTable (abilita), saveDesc (abilita) (+10 more)
+Nodes (22): Blocco calc-bootstrap: un solo punto di passaggio dei dati Flask, calcolatori-danno.js, calcolatori-data.js, templates/calcolatori.html, calcolatori-ref.js, calcolatori-speed.js, calcolatori-stat.js, CHAMPIONS_BST (+14 more)
 
-### Community 17 - "Cache delle uscite IGDB"
+### Community 28 - "Storico: toppe Champions"
+Cohesion: 0.14
+Nodes (22): applica_eredita_dichiarata(), scripts/applica_toppe_champions.py, applica_toppe_moveset(), Bulbapedia (fonte), scripts/dichiara_eredita.py, disfa_toppe() — misurare sullo stato del dump, eredita_da — la lista dichiarata derivata, Game8 (fonte) (+14 more)
+
+### Community 29 - "Gaming: attesa e filtri"
+Cohesion: 0.15
+Nodes (20): cache_ha_attesa(), _campi(), filtra_per_attesa(), _fra_giorni(), leggi_uscite(), _oggi(), piattaforme_in_cache(), _quanto_precisa() (+12 more)
+
+### Community 30 - "PC Builder route"
+Cohesion: 0.16
+Nodes (20): api_catalogo(), catalogo_aggiorna(), import_dxdiag(), _numero(), pcbuilder(), pcbuilder_delete(), pcbuilder_ricontrollato(), pcbuilder_save() (+12 more)
+
+### Community 31 - "PC negozi e link"
+Cohesion: 0.14
+Nodes (19): asin(), avvisi(), confronti(), data_valore(), _giorno(), link(), link_valido(), I link ai negozi e gli avvisi del PC Builder. **Nessuna lettura automatica.**… (+11 more)
+
+### Community 32 - "Storico: Fantacalcio"
+Cohesion: 0.17
+Nodes (20): Si deviano i file che il codice sotto prova SCRIVE, non quelli che il test legge, Il consiglio: prima la fascia di titolarita', poi il merito, controlla_schierati() — la formazione contro le probabili, Gli Excel del Fantacalcio presi dai download, Il campo per schierare la formazione, La rosa si incolla: anteprima e scrittura in due tempi, Modificatore di difesa (fasce, quarti di voto), Probabili formazioni (percentuale di titolarita') (+12 more)
+
+### Community 33 - "Storico: slug e main"
+Cohesion: 0.11
+Nodes (19): VG_FUORI_SERIE e scegli_vg_main(), scripts/aggiungi_slug_forme.py, scripts/build_catalog.py, scripts/correggi_mega_meowstic.py, Il dump CSV di PokeAPI, Il doppione di Floette Fiore Eterno, Import di una specie da PokeAPI dall'interfaccia, scripts/importa_evoluzioni.py (+11 more)
+
+### Community 34 - "Import specie Pokémon"
+Cohesion: 0.14
+Nodes (17): api_catalogo_importa(), api_catalogo_pesca(), `{chiave pescata: chiave già in catalogo}` per chi ha lo **stesso slug**. ⚠️ Il…, Anteprima dell'import: cosa entrerebbe, cosa sovrascriverebbe, cosa non torna., Scrive le voci pescate: catalogo, moveset e — se chiesto — le regulation., Aggiorna l'elenco di nomi di una regulation migrata. True se ha scritto., _salva_filtro(), _stesso_slug_altrove() (+9 more)
+
+### Community 35 - "salva_catalogo e categorie"
+Cohesion: 0.20
+Nodes (11): Scrive un database del catalogo, tenendo da parte la versione precedente.…, Le voci di un database del catalogo, sempre come dizionario piatto., salva_catalogo(), voci_catalogo(), main(), main(), main(), leggi() (+3 more)
+
+### Community 36 - "fflate: unzip"
+Cohesion: 0.14
+Nodes (13): RFC-1951, AsyncUnzipInflate(), DecodeUTF8(), decompressSync(), gunzipSync(), inflateSync(), TODO: Better tree shaking, TODO: find out how this code works (debt) (+5 more)
+
+### Community 37 - "Flag delle mosse"
+Cohesion: 0.22
+Nodes (16): da_bulbapedia(), da_showdown(), main(), csv_dump(), da_elenco(), flag_infobox(), identificatore(), main() (+8 more)
+
+### Community 38 - "Storico: catalogo e regulation"
 Cohesion: 0.12
-Nodes (17): cache_ha_attesa(), filtra_per_attesa(), _fra_giorni(), leggi_uscite(), _oggi(), piattaforme_in_cache(), _quanto_precisa(), Le uscite in cache da oggi in avanti, gia' ordinate per data. ⚠️ Il confine e'… (+9 more)
+Nodes (19): scripts/allinea_mosse_regulation.py, scripts/assegna_categorie_oggetti.py, Il catalogo si aggiorna mentre l'app gira, scripts/completa_effetti_oggetti.py, scripts/controlla_sprite.py, Diffidare dei fallback silenziosi: un errore muto da' il numero sbagliato, Le 460 mosse di MA non erano un elenco di legalita', Guantone, Plessimetro e Semi nel motore del danno (+11 more)
 
-### Community 18 - "Nomi italiani e inglesi"
+### Community 39 - "Fantacalcio: listone"
+Cohesion: 0.12
+Nodes (18): _ids_in_rosa(), _listone(), Il listone da sfogliare. I ceduti si vedono solo chiedendolo, e dichiarati., Il listone intero, per abbinare una rosa incollata. Condiviso, non filtrato. ⚠️…, L'anteprima della rosa incollata: **legge e mostra, non scrive niente.**, rosa_incolla(), analizza_riga_rosa(), chiave_nome() (+10 more)
+
+### Community 40 - "Stampa 3D: backend"
+Cohesion: 0.13
+Nodes (14): cerca_makerworld(), esiste(), link_valido(), misura(), percorso(), La logica della sezione Stampa 3D: link, file allegati, bobine. Come per il PC…, Scrive il file caricato in `CARTELLA` col nome della sua impronta. Torna…, Cancella dal disco i file che nessuna riga di `stampa_file` nomina più. Si… (+6 more)
+
+### Community 41 - "Contesto: blueprint"
+Cohesion: 0.17
+Nodes (17): app.py — create_app(), blueprints/api_pokemon.py, blueprints/fantacalcio.py (§4.6), blueprints/gaming.py, blueprints/pokemon.py, Consiglio di formazione (fasce di titolarità), fanta_calendario.inizio in ora italiana, fidata solo se TIMED, Il grafo e' una fotografia, non uno specchio (+9 more)
+
+### Community 42 - "Nomi per lingua"
 Cohesion: 0.24
 Nodes (16): abilita_per_nome_italiano(), chiave_confronto(), imposta(), main(), nomi_localizzati(), per_nome_inglese(), pokemon_per_specie(), (italiano, inglese) dal blocco `names`, con None se la lingua manca. (+8 more)
 
-### Community 19 - "Nomi presi dal wiki"
+### Community 43 - "Nomi dal wiki"
 Cohesion: 0.21
 Nodes (16): cerca(), cerca_articolo(), chiave_confronto(), indice_elenco(), main(), nome_pagina(), pulisci(), I titoli che la ricerca della wiki restituisce per una frase esatta. (+8 more)
 
-### Community 20 - "Amministrazione e permessi"
-Cohesion: 0.23
-Nodes (15): _blocca_non_admin(), before_request, route, Gestione utenti e permessi per sezione — solo per gli amministratori. Il…, Come login_required, ma richiede anche il ruolo. Applicato a tutto il blueprint., Il controllo sta qui e non sulle singole viste: una route nuova nasce protetta., Le spunte del form -> valore per la colonna. ⚠️ Tre casi, non due, ed è il…, _sezioni_dal_form() (+7 more)
-
-### Community 21 - "Dashboard e tracker Python"
-Cohesion: 0.20
-Nodes (14): dashboard(), export_data(), route, route, python_toggle(), python_tracker(), password_di_default(), puo_vedere() (+6 more)
-
-### Community 22 - "Proprietà dei dati e sezioni"
+### Community 44 - "Stampa 3D: anteprima"
 Cohesion: 0.18
-Nodes (15): 1.1 Data ownership (user_id, 78/78 queries), §1.2 Gli editor Pokémon solo per gli admin, 1.4 Full DB export (--completo mode), 1.5 Put the app online (PythonAnywhere free / Cloudflare tunnel), 4.2 Fantacalcio section (to be defined), Read with ambito_utente(), write with solo_mie(), APERTE_A_TUTTI — una route nuova sotto /pokemon/* nasce chiusa, scripts/controlla_proprietario.py (+7 more)
+Nodes (13): apri(), carica(), chiudiAnteprima(), colore(), scrivi(), smonta(), unita3mf(), UNITA_MM (+5 more)
 
-### Community 23 - "Guide e collaudo finale"
-Cohesion: 0.19
-Nodes (15): 1.6 Two guides: architecture and new-PC restore, §5.1 Il giro completo della web app, 5.3 Dead code inventory, 5. Final collaudo round (full web app test), §5 Il giro di collaudo finale, DOCUMENTAZIONE_PersonalHub.md — ferma al 07/08/2026 e dice cose false, Trap: phantom endpoints swallowed by empty catch, Calculator items: per-effect conditions (effect engine) (+7 more)
-
-### Community 24 - "Sweep sintattico e dipendenze"
+### Community 45 - "fflate: compressione"
 Cohesion: 0.16
-Nodes (11): Trap: static sweep is not enough (load pages, count rows), Trap: |tojson inside double-quoted attributes, Sweep new Function() on scripts and inline handlers, esprima (for sweep_pagine.py syntax check), WSGI server per OS (waitress on Windows, gunicorn on Linux), werkzeug declared explicitly, controlla(), main() (+3 more)
+Nodes (8): AsyncDeflate(), AsyncGzip(), AsyncZlib(), deflate, gzip, gzipSync(), zlib, zlibSync()
 
-### Community 25 - "Bootstrap del calcolatore"
-Cohesion: 0.21
-Nodes (14): abData — abilities.json vivo nel textarea, calc-bootstrap JSON (moves, abilities, reg_id, natures, champions), Datalist roster + mega con nomi visualizzati, align-items:stretch sulla griglia Attaccante/Mossa/Difensore, Ordine obbligatorio degli script del calcolatore, Stat Preview tab (Pokemon A/B compare), Tab Danno del calcolatore, Tab Speed Tier del calcolatore (+6 more)
-
-### Community 26 - "Team builder e mega_map"
-Cohesion: 0.19
-Nodes (13): megaMap() - complete mega_map (preview/write), Moveset source (main vs champions), fetchPkmn() - /api/pokemon/<name>?reg=, Il formato del team resta testo libero non tradotto, initRegulations(), loadRegulationData(), MEGA_MAP (follows selected regulation), onPokemonChange() (+5 more)
-
-### Community 27 - "Editor mosse e indice forme"
+### Community 46 - "fflate: sync e UTF-8"
 Cohesion: 0.17
-Nodes (12): API documentate ma mai implementate, _INDICE / catalogIndex per le 84 forme annidate in forms, Sprite da pokemondb, non dal repo pokesprite, syncTableFromJson(), addMove, deleteMove, fetchFromPokeAPI, syncJson (mosse) (+4 more)
+Nodes (8): deflateSync(), EncodeUTF8(), strFromU8(), strToU8(), UnzipInflate(), zip, ZipDeflate(), zipSync()
 
-### Community 28 - "Prove dell'import dati"
-Cohesion: 0.28
-Nodes (12): app_regge(), conta(), db_vergine(), esegui(), esito(), gira(), io_json(), main() (+4 more)
+### Community 47 - "Backlog: trappole e push"
+Cohesion: 0.13
+Nodes (16): BACKLOG.md - Personal Hub, Un file di dati si riscrive come lo scrivono gli altri (indent=1, sorted), Le trappole che valgono ancora, Passo 1 prima del push — aggiornare BACKLOG.md e STORICO.md, BACKLOG.md vs STORICO.md (potatura 13/08/2026), Branch archivio/... (fotografie immutabili), Branch main (ufficiale), Branch sviluppo (zona test) (+8 more)
 
-### Community 29 - "Calcolo del danno"
+### Community 48 - "DxDiag import"
+Cohesion: 0.25
+Nodes (15): _parse_dxdiag(), _pulisci_cpu(), `AMD Ryzen 7 7800X3D 8-Core Processor (16 CPUs), ~4.2GHz` → `AMD Ryzen 7…, I pezzi che un DxDiag.txt dice davvero, più le note su quello che non dice. ⚠️…, esito(), form(), main(), prove_catalogo() (+7 more)
+
+### Community 49 - "Log dell'hub"
+Cohesion: 0.19
+Nodes (14): cartella(), _chi_e_da_dove(), _file(), leggi(), Il log dell'hub: avvii, accessi, azioni sugli utenti, import, errori (§4,…, Per il segnale `got_request_exception` di Flask: ogni 500, con il traceback. È…, Gli eventi dal più recente, filtrati. Torna `{"righe", "trovate",…, `logs/` accanto al DB in uso. Letta ogni volta: vedi il docstring del modulo. (+6 more)
+
+### Community 50 - "Verifica moveset"
 Cohesion: 0.23
-Nodes (11): applicaMosseLegali(), calcDamage(), loadMovesDB(), loadSide(), loadTimers, oggettoScelto(), recalcSide(), specieCombacia() (+3 more)
+Nodes (15): blocchi(), candidati(), chiave_confronto(), elenco_pagine(), file_pagina(), indice_specie(), main(), parole() (+7 more)
 
-### Community 30 - "Import roster di Champions"
+### Community 51 - "Storico: proprietà dei dati"
+Cohesion: 0.12
+Nodes (16): ambito_utente(), /api/team/<id> — il quarto endpoint fantasma, scripts/controlla_proprietario.py, Copia i dati in un altro utente (FIGLIE_DI, figlie_senza_regola), |tojson fra apici singoli negli handler inline (trappola N'Dicka), scripts/prova_ricorda.py, scripts/prova_travaso_utente.py, python_progress(user_id, topic_id, done) (+8 more)
+
+### Community 52 - "Fantacalcio: stemmi e scadenza"
+Cohesion: 0.16
+Nodes (15): conto_stemmi(), La scadenza nella forma del timer (`_fanta_timer.html`), o `None`. ⚠️ Si fida…, `{squadra_slug: url}` per le squadre di cui la classifica ha lo stemma. ⚠️…, `(con lo stemma, squadre in classifica)`, o `None` se la classifica è vuota. ⚠️…, scadenza(), stemmi(), football-data.org, fanta.py / fanta_fonti.py — logica e letture del Fantacalcio (+7 more)
+
+### Community 53 - "three.js 3MF e geometrie"
+Cohesion: 0.17
+Nodes (5): deepCloneAttribute(), deinterleaveAttribute(), deinterleaveGeometry(), mergeAttributes(), mergeGeometries()
+
+### Community 54 - "Storico: export e ripristino"
+Cohesion: 0.14
+Nodes (15): I 33 giochi persi e la guardia sull'export, chiave_di(): la chiave primaria si chiede allo schema, DA_COMPLETARE in importa_dati.py (vuoto nel DB → si completa), scripts/esporta_dati.py, esporta_dati.py --completo --uscita, scripts/importa_dati.py, MAI_SOVRASCRITTE e regulations.created_at, Le password non rientrano dall'export committabile (+7 more)
+
+### Community 55 - "Layout base e sidebar"
+Cohesion: 0.20
+Nodes (5): base.html (layout comune), Sidebar filtrata per sezioni_permesse, Probabili di fantacalcio.it in iframe, Fantamedia ricalcolata con le regole della lega, Anteprima prima di scrivere (rosa incollata)
+
+### Community 56 - "Backlog: app online e Debian"
+Cohesion: 0.18
+Nodes (14): Mettere l'app online - par. 1.5, Le chiavi su Debian (fuori da setx e registro), Esecuzione di codice sul PC (HUB_ESEGUI_CODICE), Fantacalcio con le fonti in regola - par. 4.6, football-data.org (piano gratuito), Gaming: calendario delle uscite IGDB - par. 4.1, Log dell'hub (log_hub.py, /admin/log) - par. 4.11, NULL esplicito scavalca il DEFAULT in SQLite (+6 more)
+
+### Community 57 - "Gaming: raggruppamenti"
+Cohesion: 0.20
+Nodes (14): _etichetta(), gaming(), raggruppa_per_mese(), `tag:Souls-like` -> `Souls-like`: il prefisso è interno, non si mostra., Cosa giocare dopo, **partendo dalla libreria stessa**. Steam non espone «giochi…, `[(etichetta_mese, [voce, …]), …]`, nell'ordine in cui arrivano. Il…, Le prossime `STRISCIA` uscite per la striscia in cima a /gaming. Torna…, striscia_uscite() (+6 more)
+
+### Community 58 - "Speed Tier"
+Cohesion: 0.24
+Nodes (12): intestazioneSpeed(), loadRegSpeed(), loadSpePkmn(), onBoostSelect(), popolaBoost(), renderSpeed(), updateSpeed(), calcolatori.html (Calcolatori VGC) (+4 more)
+
+### Community 59 - "Backlog: proprietà e permessi"
+Cohesion: 0.15
+Nodes (12): Leggere con ambito_utente(), scrivere con solo_mie(), controlla_proprietario.py, Route /pokemon/* nascono chiuse (APERTE_A_TUTTI), rowcount sulle scritture filtrate, sweep_pagine.py (GET e PAGINE_POST), Tabella/pagina nuova fuori dal raggio dei controlli, TABELLE_UTENTE e FIGLIE_DI (extensions.py), |tojson ed escape negli handler inline (+4 more)
+
+### Community 60 - "Python: note e frammenti (UI)"
+Cohesion: 0.20
+Nodes (5): POST /python/nota/<id>, apri(), apriFrammento(), apriNota(), salvaNota()
+
+### Community 61 - "Import roster Champions"
 Cohesion: 0.23
 Nodes (7): HTMLParser, carica(), leggi_csv(), main(), Estrae dalle tabelle: numero dex, nome, tipi e file dello sprite., scarica_elenco(), TabellaWiki
 
-### Community 31 - "Export dei dati"
+### Community 62 - "Aggiornamento Pokédex"
 Cohesion: 0.24
-Nodes (11): cali_sospetti(), dentro_a_un_repo(), leggibile(), main(), Il percorso relativo alla radice se ci sta dentro, altrimenti quello intero., I dati sono gli stessi del file già sul disco, a parte il blocco `_meta`?, Le righe di una tabella, in ordine stabile, senza le colonne escluse. `escluse`…, Tabelle che nell'export precedente avevano righe e ora sono **vuote**. Serve… (+3 more)
+Nodes (11): anteprima(), applica(), _bc(), _differenze_pokemon(), _nuove_chiavi(), _nuove_forme(), Aggiornare il Pokédex dalla fonte: **aggiunge il nuovo, mostra il diverso.**…, Cosa entrerebbe e cosa è diverso. **Non scrive niente.** `aggiorna_fonte=True`… (+3 more)
 
-### Community 32 - "Stat Preview del calcolatore"
-Cohesion: 0.24
-Nodes (7): STAT_KEYS, clearStatB(), loadStatPkmn(), resetStEVs(), updateStatPreview(), updStEV(), loadTeamPkmn()
+### Community 63 - "Contesto: admin e sicurezza"
+Cohesion: 0.27
+Nodes (12): blueprints/admin.py — utenti e log, Cookie secure solo se request.is_secure, Copia dei dati in un altro utente, extensions.py — DB e helper condivisi, FIGLIE_DI — figlie che ereditano il proprietario, log_hub.py — il log dell'hub (/admin/log), Password migrate a scrypt al login, sessioni_ricordate — «resta collegato 30 giorni» (+4 more)
 
-### Community 33 - "Utenti, sezioni e sidebar"
+### Community 64 - "Contesto: dump e moveset"
 Cohesion: 0.20
-Nodes (10): Form «Nuovo utente» con le spunte per sezione, mostraSezioni() — nasconde le spunte per gli admin, admin_utenti.html — utenti e permessi, sezioni_tradotte — l'elenco che accende il pulsante lingua, Sidebar filtrata su sezioni_permesse, Default admin password warning, I pannelli «recenti» filtrati sui permessi, I riquadri contatore, uno per sezione permessa (+2 more)
+Nodes (12): Catalogo che segue l'mtime (copia in memoria), Dump CSV di PokéAPI, Import di specie da PokéAPI dall'interfaccia (/pesca, /importa), load_moveset() e mosse_legali(), Due elenchi mosse per voce: main e champions, mega_map delle regulation, Elenco mosse delle regulation derivato dal roster, moves: null non e' «nessuna mossa» ma «non lo sappiamo» (+4 more)
 
-### Community 34 - "Mosse per regulation e Mega"
+### Community 65 - "Controllo proprietario"
+Cohesion: 0.26
+Nodes (11): fuori_dal_raggio(), main(), nomi_innestati(), normalizza(), query_del_file(), Il testo di una stringa SQL, anche quando è una f-string. Le f-string qui…, I nomi di variabile innestati in una f-string, quando sono nomi e basta. ⚠️…, Ogni stringa SQL che nomina una tabella di contenuto, con la sua funzione. (+3 more)
+
+### Community 66 - "fflate: gunzip"
+Cohesion: 0.21
+Nodes (7): AsyncGunzip(), AsyncInflate(), AsyncUnzlib(), gunzip, inflate, unzlib, ParserState()
+
+### Community 67 - "three.js OBJLoader"
 Cohesion: 0.18
-Nodes (11): 2.3 Moves per regulation: data needing a source, 5.2 Verify moveset against Bulbapedia, scripts/build_catalog.py, Le Mega — la firma «+75 HP» vale specie per specie, non stat per stat, scripts/importa_evoluzioni.py e puo_evolversi, Dove esiste una fonte si importa, dove non esiste il dato si dichiara mancante, moves: null significa «non lo sappiamo», non «nessuna mossa», Regulation M-A (+3 more)
+Nodes (7): _ab, _cb, _color, OBJLoader, _vA, _vB, _vC
 
-### Community 35 - "Bachi noti e oggetti"
-Cohesion: 0.22
-Nodes (11): §3 Bachi noti, scripts/allinea_mosse_regulation.py, scripts/assegna_categorie_oggetti.py, Default del DB — regulation_id TEXT DEFAULT 'ma' in extensions.py, Un effetto che il motore non conosce non si attiva (e lo dice), L'elenco moves di una regulation è derivato, non curato, Fallback silenziosi — nessun errore, il numero sbagliato, sorgente_moveset() — un campo che manca vale «main» (+3 more)
+### Community 68 - "Fantacalcio: formazione (UI)"
+Cohesion: 0.41
+Nodes (11): apriScelta(), cambiaModulo(), caselleDi(), chiudiScelta(), disegna(), disegnaPanchina(), scegli(), statHtml() (+3 more)
 
-### Community 36 - "Creazione e salvataggio regulation"
+### Community 69 - "Fantacalcio: leghe (UI)"
+Cohesion: 0.36
+Nodes (10): aggiornaSoglie(), aggiungiSoglia(), altroSeServe(), apriLega(), comeSiFaLaMedia(), modificaLega(), mostraDifesa(), rigaSoglia() (+2 more)
+
+### Community 70 - "Contesto: eredità e toppe"
 Cohesion: 0.24
-Nodes (11): api_regulation_copia_da(), api_regulations_create(), api_regulations_save(), Quale dei due elenchi usa la regulation: `main` o `champions`., Gli elenchi che il moveset contiene davvero, `main` per primo. Letti dal file…, Riscrive data/regulations.json. Rifiuta un registro vuoto o malformato. Il file…, Copia gli elenchi di un'altra regulation dentro questa. Serve a non ricostruire…, regulation_editor() (+3 more)
+Nodes (11): applica_toppe_champions.py (TOPPE_A_MANO, disfa_toppe), Eredita delle forme (eredita_da, riallinea_forme_eredi), Moveset di Champions fermo a M-B (versione 1.2.0), moveset_integrazioni.json (voci, toppe, eredita), Toppe propagate alle forme con lista identica, Bulbapedia, Pokémon Champions versione 1.2.0, Motore effetti abilità sul danno (flag_boost, contact_guard, -ate) (+3 more)
 
-### Community 37 - "Formula stat e caso di prova"
+### Community 71 - "Fantacalcio: cartella download"
 Cohesion: 0.18
-Nodes (11): blueprints/api_pokemon.py, Caso di prova Incineroar -> Amoonguss, catalogIndex() / catalogEntry() — gemello JS di _INDICE, Convenzione SP Champions: ogni SP vale +2, cap 32, data.py — costanti statiche, Formula Stat Champions (calcSt), _INDICE di api_pokemon.py, Regola #8 — caso di prova Incineroar -> Amoonguss (+3 more)
+Nodes (11): cartella_download(), _colonna(), _download_linux(), _download_windows(), excel_nei_download(), leggi_xlsx(), `XDG_DOWNLOAD_DIR` da `user-dirs.dirs`: su un Debian in italiano è «Scaricati»., Dove cercare i due Excel. Vedi sopra per l'ordine. (+3 more)
 
-### Community 38 - "Tabelle tipi e nature"
+### Community 72 - "Contesto: calcolatore e sprite"
+Cohesion: 0.18
+Nodes (11): ABILITIES_CALC rimossa, calcolatori-ui.js, controlla_sprite.py — sprite rotti da 333 a 0, data.py — costanti statiche, Gli endpoint fantasma, Diffidare dei fallback silenziosi, regulation_default(), SLUG_OVERRIDES (+3 more)
+
+### Community 73 - "Pyodide e pannello Esegui"
+Cohesion: 0.29
+Nodes (9): completa(), main(), browser(), chiedi(), collega(), mostra(), nuovoWorker(), pc() (+1 more)
+
+### Community 74 - "Calcolo danno"
+Cohesion: 0.27
+Nodes (9): applicaMosseLegali(), calcDamage(), loadMovesDB(), loadSide(), loadTimers, oggettoScelto(), recalcSide(), specieCombacia() (+1 more)
+
+### Community 75 - "Tabelle di riferimento"
 Cohesion: 0.33
 Nodes (9): abbrTipo(), EFF_CELLA, htmlTabellaNature(), htmlTabellaTipi(), openRef(), preparaTabelleRiferimento(), riempiUnaVolta(), showRef() (+1 more)
 
-### Community 39 - "Tendine oggetti e voce catalogo"
-Cohesion: 0.25
-Nodes (10): Tendine Item ATK/DEF filtrate per categoria e modifier, apri() - load catalog entry, La chiave si mostra solo se dice qualcosa in piu' del nome, elimina(), INDICE (indice-dati del catalogo), messaggio(), rendi() - render catalog table, salvaVoce() (+2 more)
-
-### Community 40 - "Pagina Gaming e filtri"
-Cohesion: 0.20
-Nodes (9): Filters/sort carried together in querystring (coda), 'Se ti e piaciuto' library suggestions (tags/genres), Jinja loop variable must not be named t, games.status / games.platform stay Italian stored values, Upcoming releases strip (game_releases IGDB cache), Aggiorna calendario batch loop (POST /gaming/uscite/aggiorna), Truncated / filtered lists must declare it, IGDB credentials only in environment variables (+1 more)
-
-### Community 41 - "Regole di lavoro e branch"
+### Community 76 - "Editor mosse"
 Cohesion: 0.22
-Nodes (9): Trap: entry without slug disappears from moveset, CLAUDE.md (project instructions), Branch model: sviluppo / main / archivio + tags, Catalog keys are never renamed (use nome_it/nome_en), Due zone: sviluppo, main, archivio/… più un tag per blocco, L'unico innesco su cui contare è il commit (non so quanti token restano), Pokemon-ability link passes through nome_en, Regola d'oro: mettere al sicuro il lavoro (propose push) (+1 more)
+Nodes (11): saveDesc (abilita), addMove, deleteMove, fetchFromPokeAPI, renderTable (mosse), saveDesc(el) — salva descrizione inline (mosse), La variabile di ciclo si chiama `tipo`, non `t`, startEditDesc (mosse) (+3 more)
 
-### Community 42 - "Client IGDB"
+### Community 77 - "IGDB"
 Cohesion: 0.22
 Nodes (10): igdb_credenziali(), igdb_query(), igdb_token(), _mappa_uscita(), Un lotto di uscite future da IGDB. Il client richiama finche' `finito`.…, `(client_id, client_secret)` dall'ambiente. Stringhe vuote se non impostate., Token applicativo, preso una volta e riusato. Ritorna (token, errore)., POST Apicalypse su IGDB. Ritorna (dati, errore). ⚠️ IGDB **non** usa la… (+2 more)
 
-### Community 43 - "Catalogo, chiavi e lingua"
-Cohesion: 0.22
-Nodes (10): APERTE_A_TUTTI, blueprints/pokemon.py, Catalogo = i dati, regulation = il filtro, Le chiavi del catalogo non si rinominano, extensions.py — DB e helper condivisi, La lingua sta in un cookie (hub_lang), non in localStorage, login_required, nome_vis() / nomeVis() e risolviChiave() (+2 more)
+### Community 78 - "Fantamedia e rigori"
+Cohesion: 0.20
+Nodes (10): fantamedia_regole(), `"1 / 2"` → `(1, 2)`. La fonte scrive i rigori come frazione, non come numero.…, La fantamedia **rifatta con le regole di questa lega**. `(valore, pezzi)`.…, rigori_segnati_tirati(), I numeri di stagione di un giocatore, come li mostra il campo (25/09/2026).…, statistiche(), DISEGNI (dizionario simboli SVG statistiche), icona() macro (+2 more)
 
-### Community 44 - "Dati Champions nel calcolatore"
-Cohesion: 0.27
-Nodes (10): calcolatori-danno.js, calcolatori-data.js, calcolatori-ref.js, CHAMPIONS_BST, MEGA_DATA rimossa — la terza copia delle stat, puo_evolversi (true/false/assente), SCHERMO_DOPPIE = 2732/4096, STAGE_MULT / stageMult() (+2 more)
+### Community 79 - "Controllo abilità"
+Cohesion: 0.24
+Nodes (9): attivo(), carica(), main(), scripts/controlla_abilita.py, scripts/flag_forza_bruta.py (flag sheer_force su 207 mosse), scripts/fondi_abilita_doppie.py, scripts/fondi_doppioni_nome.py, scripts/ricollega_megasolar.py (+1 more)
 
-### Community 45 - "Controllo del proprietario"
-Cohesion: 0.31
-Nodes (9): fuori_dal_raggio(), main(), normalizza(), query_del_file(), Il testo di una stringa SQL, anche quando è una f-string. Le f-string qui…, Ogni stringa SQL che nomina una tabella di contenuto, con la sua funzione., Gli script che nominano una tabella di contenuto: dichiarati, non controllati.…, sorgenti() (+1 more)
+### Community 80 - "Progetto Python (UI)"
+Cohesion: 0.25
+Nodes (4): POST /python/progetto/<id>/salva, apri(), disegna(), salva()
 
-### Community 46 - "Controllo dell'esposizione"
+### Community 81 - "Backlog: collaudo e guide"
+Cohesion: 0.25
+Nodes (9): Il giro di collaudo finale - par. 5, Cache in memoria che seguono l'mtime, Due guide: com'e fatto e PC nuovo - par. 1.6, Endpoint fantasma e catch muti, File storici di fallback (pokemon_catalog.json, abilities.json...), Inventario di cosa non serve piu - par. 5.3, Stampa 3D - par. 4.8, Diffidare dei fallback silenziosi (+1 more)
+
+### Community 82 - "Motore abilità data-driven"
+Cohesion: 0.25
+Nodes (9): Tipi di effetto abilita supportati, Motore abilita data-driven da abilities.json, I nomi in abilities.json non sono sempre quelli ufficiali, abData — abilities.json vivo nel textarea, addAbility, deleteAbility, formatJson() — textarea -> abData, renderTable (abilita) (+1 more)
+
+### Community 83 - "Contesto: decisioni sui dati"
+Cohesion: 0.28
+Nodes (9): Catalogo = i dati, regulation = il filtro, Le chiavi del catalogo non si rinominano, La lingua sta in un cookie (hub_lang), non in localStorage, Divieto di localStorage/sessionStorage (regola #9), nome_vis() / nomeVis() e risolviChiave(), salva_catalogo() / _save_abilities(), sezioni_tradotte — solo Pokemon e Gaming, Switch lingua IT ⇄ EN (+1 more)
+
+### Community 84 - "Controllo esposizione"
 Cohesion: 0.42
 Nodes (8): chiave_di_sessione(), cosa_segue_git(), debugger(), dipendenze(), main(), password_admin(), punto_wsgi(), voce()
 
-### Community 47 - "Prove dell'export completo"
+### Community 85 - "Prova export completo"
 Cohesion: 0.39
 Nodes (8): db_vergine(), esito(), esporta(), importa(), main(), prove(), Un DB come lo crea `init_db()` su un PC nuovo: schema, `admin`, i 53 argomenti., valore()
 
-### Community 48 - "Categorie oggetti nell'editor"
+### Community 86 - "Prova log"
+Cohesion: 0.36
+Nodes (8): esito(), _grezzo(), _impronta_vera(), main(), prove(), Dimensione e data di ogni file del `logs/` vero, per dire che non è cambiato., Le righe del log corrente, dalla più vecchia., _righe()
+
+### Community 87 - "Categorie oggetti e abilità"
 Cohesion: 0.28
 Nodes (8): CAT_LABELS abilita' da categorie('abilities'), Le chiavi di categoria restano tecniche in entrambe le lingue, bindActions(), CAT_LABELS oggetti da categorie('items'), confirmAdd(), deleteItem(), editItem(), renderTable() (items)
 
-### Community 49 - "Pagine Arduino e Gaming"
-Cohesion: 0.28
-Nodes (9): Arduino Projects, Form gioco, Filtri, ricerca e ordinamento in un solo form, Gaming Tracker, Stati e piattaforme sono valori salvati, Variabile di ciclo che ombra t(), Regulation Editor, Chiave Steam solo in variabile d'ambiente (+1 more)
+### Community 88 - "Scheda giocatore listone"
+Cohesion: 0.50
+Nodes (7): GET /fantacalcio/api/giocatori?q=, casella(), disegna(), esc(), n(), Scheda giocatore caricata dal server, stemmaHtml()
 
-### Community 50 - "Contenuti della regulation"
-Cohesion: 0.33
-Nodes (9): commuta, esc, filtrati, rendi, spuntaFiltrati, Tetto di 400 righe renderizzate, disegna, Preselezione dei nuovi con ore > 0 (+1 more)
-
-### Community 51 - "Proprietario e due export"
-Cohesion: 0.32
-Nodes (8): §1.1 I dati hanno un proprietario, §1.4 Esportare tutto il DB, utenti e personalizzazioni comprese, Ci sono due export, e uno non deve mai entrare in git, scripts/esporta_dati.py, scripts/importa_dati.py, user_id a NULL — il travaso ad admin gira solo quando la colonna nasce, Passo 2 prima del push — python scripts/esporta_dati.py, esporta_dati.py --completo --uscita — il backup vero, fuori da ogni repo
-
-### Community 52 - "Switch lingua e traduzioni"
-Cohesion: 0.32
-Nodes (8): §2.1 Switch lingua — t() e tf(), La chiave del dizionario è la frase italiana: una parola, due inglesi, controlla_traduzioni.py legge il file grezzo, commenti Jinja compresi, scripts/controlla_traduzioni.py, Le desc sono italiane per scelta — desc_en non esiste e non va aggiunto, sezioni_tradotte — solo Pokémon e Gaming sono tradotte, `t` come variabile di loop ombrerebbe la funzione t() delle traduzioni, t/tf definite nel <head> di base.html e l'ordine degli script
-
-### Community 53 - "Login e password"
-Cohesion: 0.36
-Nodes (7): login(), logout(), route, hash_password(), Hash nuovo (scrypt con sale). Da usare per ogni scrittura da oggi in poi., `(corretta, da_riscrivere)`. `da_riscrivere` e' True quando la verifica e'…, verifica_password()
-
-### Community 54 - "Salvataggio voce di catalogo"
+### Community 89 - "Backlog: Arduino e PC"
 Cohesion: 0.25
-Nodes (7): api_catalogo_salva(), catalog_editor(), Riga compatta per la tabella dell'editor: evita di mandare al browser 449 KB di…, `(errori, avvisi)` per una voce del catalogo. ⚠️ **Due elenchi e non uno**,…, Crea o aggiorna una singola voce del catalogo., _riga_indice(), _valida_voce()
+Nodes (8): allinea_mosse_regulation.py (elenco moves derivato), Arduino: Tinkercad, Wokwi e i piedini - par. 4.9, data/arduino_piedini.json derivato (importa_piedini_wokwi.py), BuildCores OpenDB (compatibilita, pc_catalogo.py), Stato crackato/non crackato (crackrelease.com, non verificata), Un indirizzo dichiarato non e un indirizzo che funziona, Mosse per regulation - par. 2.3, PC Builder: wishlist, prezzi, link ai negozi - par. 4.7
 
-### Community 55 - "Creazione di una regulation"
-Cohesion: 0.32
-Nodes (8): Procedura di creazione di una nuova regulation, Dati passati via script application/json, Pagina Contenuti Regulation, salva (contenuti regulation), copiaDa, Regulation as filter on the catalog (filter_file), Regulation come filtro sul catalogo, createRegulation
+### Community 90 - "Backlog: export e ripristino"
+Cohesion: 0.29
+Nodes (8): Tabelle senza colonna id: la chiave si chiede allo schema, Due export, uno mai in git, Foreign key verso tabella non esportata (fanta_players), Ripristino importa_dati.py (MAI_SOVRASCRITTE, DA_COMPLETARE), esporta_dati.py --completo --uscita (backup con hash), esporta_dati.py (export leggibile per il push), esporta_dati.py --completo --uscita — il backup vero, fuori da ogni repo, hub.db (escluso da git)
 
-### Community 56 - "Documenti di progetto"
+### Community 91 - "Backlog: moveset e dati mancanti"
+Cohesion: 0.25
+Nodes (8): moves: null = non lo sappiamo, 'PokeAPI non la conosce' non vuol dire 'inventata', Il Pokedex mostra solo le mosse di Champions, Voce senza slug sparisce dal moveset (aggiungi_slug_forme.py), Sprite di una forma dal catalogo (SUFFISSI_PDB, controlla_sprite.py), Non inventare dati (regola #3), Regola #8: caso noto Incineroar -> Amoonguss, Le regole di lavoro di Davide
+
+### Community 92 - "README e istruzioni"
 Cohesion: 0.25
 Nodes (8): howtouse — istruzioni di avvio e credenziali, Obiettivo: accesso fuori dal PC e a PC spento, Autore e link placeholder ([Tuo Nome], tuonome), README-GitHub (vetrina pubblica del progetto), README Personal Hub v11.1a, Checklist post-avvio delle route da testare, Avvio rapido (pip install -r requirements.txt; python app.py), Note di sicurezza (SECRET_KEY da env, hub.db non esposto, reverse proxy)
 
-### Community 57 - "Struttura del progetto"
+### Community 93 - "Contesto: sezioni nuove"
 Cohesion: 0.25
-Nodes (7): app.py — create_app(), blueprints/gaming.py, Il grafo e' una fotografia, non uno specchio, hours_hltb contro hours_played, init_db(), Personal Hub (progetto Flask), Tabelle SQLite di hub.db
+Nodes (8): Anteprima 3D con three.js 0.186.1 (stampa3d-anteprima.js), blueprints/stampa3d.py (Stampa 3D), Fantacalcio con fonti in regola, PC Builder (pcbuilder, pc_negozi, pc_catalogo), pc_catalogo.py — compatibilità dal catalogo BuildCores OpenDB, PC Builder: solo link ai negozi, nessuna lettura, Stampa 3D: solo link e file da scaricare, File di stampa su disco per impronta sha256
 
-### Community 58 - "Layout base e sidebar"
-Cohesion: 0.25
-Nodes (8): extra_head sta fuori dallo <style> di base.html, salva_catalogo / _save_abilities unico punto di scrittura protetto, abilities_editor.html - editor abilita, block extra_head, base.html — layout sidebar, topbar, blocchi Jinja, toggleSidebar, moves_editor.html - editor mosse, roster_editor.html - editor roster
-
-### Community 59 - "Sonda IGDB"
+### Community 94 - "Sonda IGDB"
 Cohesion: 0.39
 Nodes (7): credenziali(), interroga(), main(), mostra(), prendi_token(), Token applicativo (client_credentials). Ritorna (token, scadenza_s, errore)., POST Apicalypse su IGDB. Ritorna (dati, errore).
 
-### Community 60 - "Speed Tier"
-Cohesion: 0.46
-Nodes (7): intestazioneSpeed(), loadRegSpeed(), loadSpePkmn(), onBoostSelect(), popolaBoost(), renderSpeed(), updateSpeed()
+### Community 95 - "Stat Preview"
+Cohesion: 0.39
+Nodes (5): clearStatB(), loadStatPkmn(), resetStEVs(), updateStatPreview(), updStEV()
 
-### Community 61 - "Funzioni di traduzione"
+### Community 96 - "Arduino (UI)"
 Cohesion: 0.25
-Nodes (8): nomeVis() — il nome del dato nella lingua attiva, t() — traduzione delle etichette (JS), tf() — frasi con segnaposto (JS), TIPI_EN_IT — mappa dei 18 tipi, tipoIT(), tipoVis(), toggleLingua() — scrive il cookie e ricarica, window.T e window.LANG
+Nodes (3): arduino.html (Arduino Projects), closeModal(), closeModal() (items)
 
-### Community 62 - "Collegamento a Steam"
-Cohesion: 0.36
-Nodes (8): aggiornaAnteprima, cerca (autocomplete Steam), Collegamento a Steam via steam_appid, collegato, msg (stato ricerca Steam), Debounce e scarto delle risposte sorpassate, scegli, conta / ciclo di arricchimento generi
+### Community 97 - "Contenuti regulation e Steam (JS)"
+Cohesion: 0.39
+Nodes (8): commuta, esc, filtrati, rendi, spuntaFiltrati, Tetto di 400 righe renderizzate, disegna, visibili
 
-### Community 63 - "Import da interfaccia e cache"
+### Community 98 - "Editor catalogo (route)"
 Cohesion: 0.29
-Nodes (7): 1.3 Add data from the web app (PokeAPI species import), In-memory cache must follow file mtime, moves: null means 'unknown', not 'no moves', Trap: missing moveset field falls back to main, Due elenchi mosse per voce: main e champions, data/catalog/pokemon_moves.json, data/regulations.json — registro delle regulation
+Nodes (7): api_catalogo_salva(), catalog_editor(), Crea o aggiorna una singola voce del catalogo., Riga compatta per la tabella dell'editor: evita di mandare al browser 449 KB di…, `(errori, avvisi)` per una voce del catalogo. ⚠️ **Due elenchi e non uno**,…, _riga_indice(), _valida_voce()
 
-### Community 64 - "I documenti del progetto"
-Cohesion: 0.43
-Nodes (7): BACKLOG Personal Hub (solo ciò che è aperto), STORICO.md — una riga per lavoro chiuso, Le trappole che valgono ancora, Passo 1 prima del push — aggiornare BACKLOG.md e STORICO.md, Istruzioni per Claude — Personal Hub, Regola 1 — niente fuori scope, un altro baco si segnala, Regola 5 — BACKLOG.md e PROJECT_CONTEXT.md aggiornati insieme al codice
-
-### Community 65 - "Pesca e import di una specie"
+### Community 99 - "Contesto: abilità"
 Cohesion: 0.33
-Nodes (7): api_catalogo_importa(), api_catalogo_pesca(), `{chiave pescata: chiave già in catalogo}` per chi ha lo **stesso slug**. ⚠️ Il…, Anteprima dell'import: cosa entrerebbe, cosa sovrascriverebbe, cosa non torna., Scrive le voci pescate: catalogo, moveset e — se chiesto — le regulation., _stesso_slug_altrove(), _voci_gia_presenti()
+Nodes (6): Abilità doppie fuse e indiceNomi(), ABILITIES_DATA e abilityEffect(), calcolatori-core.js, Il legame Pokemon -> abilita' passa da nome_en, meteoEffettivo(), MOSSE_METEO / applicaMeteoAllaMossa()
 
-### Community 66 - "Meteo e abilità nel calcolo"
-Cohesion: 0.29
-Nodes (6): ABILITIES_CALC rimossa, ABILITIES_DATA e abilityEffect(), calcolatori-core.js, Il legame Pokemon -> abilita' passa da nome_en, meteoEffettivo(), MOSSE_METEO / applicaMeteoAllaMossa()
+### Community 100 - "Contesto: proprietà dei dati"
+Cohesion: 0.38
+Nodes (7): Si legge con ambito_utente(), si scrive con solo_mie(), APERTE_A_TUTTI, controlla_proprietario.py — rete sulle query, I dati hanno un proprietario (§1.1), Fallire chiuso: liste di inclusi, non di esclusi, login_required, Permessi per sezione con before_request su request.blueprint
 
-### Community 67 - "Prove di build_catalog"
+### Community 101 - "Formula stat e regola #8"
+Cohesion: 0.43
+Nodes (7): calc_stat_champions() rimossa, calcSt() — formula stat Champions, Caso di prova Incineroar -> Amoonguss, Convenzione SP Champions: ogni SP vale +2, cap 32, Regola #8 — caso di prova Incineroar -> Amoonguss, Regole SP/EV di Champions (32 per stat, 66 totali), updateSpeed() — la formula gemella
+
+### Community 102 - "Controllo sprite"
+Cohesion: 0.43
+Nodes (6): carica_cache(), main(), `[(etichetta, nome per l'API, slug del catalogo)]`, specie e forme annidate. Lo…, Il codice HTTP dell'URL. Dalla cache se c'è, altrimenti una HEAD., stato(), voci_del_catalogo()
+
+### Community 103 - "Prova build catalogo"
 Cohesion: 0.48
 Nodes (6): carica_modulo(), esito(), main(), prove(), `build_catalog` importato senza eseguirlo: `requests` c'è, la rete non serve., scrivi()
 
-### Community 68 - "Pagine Pokémon e regulation"
-Cohesion: 0.33
-Nodes (3): Team quick-load (?team=N), Hiding editor buttons is cosmetic; before_request is the real check, Mechanics values (mega/tera/zmove/dynamax) not translated
+### Community 104 - "Prova resta collegato"
+Cohesion: 0.48
+Nodes (6): _cookie(), esito(), main(), prove(), _quante(), Il valore del cookie, o `None`. Werkzeug ne ha cambiato l'API più volte.
 
-### Community 69 - "La pagina dei calcolatori"
-Cohesion: 0.33
-Nodes (6): Blocco calc-bootstrap: un solo punto di passaggio dei dati Flask, templates/calcolatori.html, La chiave del dizionario i18n e' la frase italiana stessa, Ordine obbligato dei 6 script del calcolatore, Il SyntaxError che azzera un intero blocco, t(), tf() e nomeVis() devono stare nel <head>
+### Community 105 - "Gaming (UI)"
+Cohesion: 0.29
+Nodes (7): Form gioco, Filtri, ricerca e ordinamento in un solo form, Gaming Tracker, Stati e piattaforme sono valori salvati, Chiave Steam solo in variabile d'ambiente, Importa da Steam, Preselezione dei nuovi con ore > 0
 
-### Community 70 - "Formula stat di Champions"
+### Community 106 - "Fantamedia di lega"
 Cohesion: 0.33
-Nodes (6): calc_stat_champions() rimossa, calcolatori-speed.js, calcSt() — formula stat Champions, Regole SP/EV di Champions (32 per stat, 66 totali), stat_changes sulle mosse, updateSpeed() — la formula gemella
+Nodes (6): fantamedia_lega(), partita_di(), La partita di un giocatore nella giornata, con l'avversario in classifica. Tre…, La fantamedia rifatta con le regole della lega, **autogol compreso**. È…, Una riga per giocatore: fantamedia della lega e la sua partita. `escluso` è la…, valuta_rosa()
 
-### Community 71 - "Interfaccia e fallback silenziosi"
+### Community 107 - "Contesto: export e calendario"
 Cohesion: 0.33
-Nodes (6): calcolatori-ui.js, Gli endpoint fantasma, Diffidare dei fallback silenziosi, load_moveset() e mosse_legali(), moves: null non e' «nessuna mossa» ma «non lo sappiamo», NON_ALIASABILI
+Nodes (6): Calendario uscite in Gaming (IGDB, game_releases), La chiave primaria si chiede allo schema (PRAGMA table_info), Export completo --completo --uscita (con hash password), Export e ripristino: esporta_dati.py / importa_dati.py, Filtro «quanto è atteso» (hypes), esporta_dati.py si rifiuta se una tabella crolla a zero
 
-### Community 72 - "Controllo delle traduzioni"
+### Community 108 - "Contesto: sweep e conferme"
+Cohesion: 0.40
+Nodes (6): Rosa incollata con anteprima in due tempi, Conferme onsubmit con |tojson, non |e, Sweep delle pagine con new Function() (sweep_pagine.py), Il SyntaxError che azzera un intero blocco, t(), tf() e nomeVis() devono stare nel <head>, Le prove girano su una copia di hub.db
+
+### Community 109 - "Completa abilità Pokémon"
+Cohesion: 0.53
+Nodes (5): abilita_ufficiali(), leggi(), main(), slug -> elenco di abilità in ordine di slot, le nascoste comprese., scarica_cache()
+
+### Community 112 - "Storico: PC Builder"
 Cohesion: 0.47
-Nodes (5): chiavi_doppie(), chiavi_nel_codice(), main(), Ogni frase passata a t() o tf(), con i file in cui compare., Le chiavi ripetute nel file, che `json.load()` non può vedere. Il dizionario si…
+Nodes (6): Amazon e Keepa dall'ASIN del catalogo, Import DxDiag: nessuna scheda madre inventata, BuildCores OpenDB (fonte, ODC-By 1.0), PC Builder: compatibilita' fra i pezzi (pc_catalogo.py), PC Builder: wishlist, prezzi datati e link ai negozi (pc_negozi.py), scripts/prova_pcbuilder.py
 
-### Community 73 - "Modali di Arduino e PC Builder"
-Cohesion: 0.33
-Nodes (4): Admin owner filter (?utente=) on Arduino, closeModal, openModal, closeModal() (items)
+### Community 113 - "Risoluzione per nome"
+Cohesion: 0.50
+Nodes (5): Risoluzione per nome (risolviChiave, _INDICE), Le chiavi del catalogo non si rinominano, controlla_abilita.py, Legame Pokemon-abilita via nome_en, Risoluzione per nome ambigua (indiceNomi)
 
-### Community 74 - "Linguette e archivio oggetti"
+### Community 114 - "Blocco admin"
 Cohesion: 0.40
-Nodes (4): Reference tab + overlay (types / natures tables), Speed Tier tab, Item category keys are data; only labels translated, Archive confirm used missing 'regulation' variable
+Nodes (5): _blocca_non_admin(), before_request, Come login_required, ma richiede anche il ruolo. Applicato a tutto il blueprint., Il controllo sta qui e non sulle singole viste: una route nuova nasce protetta., solo_admin()
 
-### Community 75 - "Controllo delle abilità"
+### Community 115 - "Deconversione Mega"
 Cohesion: 0.60
-Nodes (4): 2.2 Abilities merge (already merged; Megasolar relinked), attivo(), carica(), main()
+Nodes (4): deconverti(), e_mega(), main(), Vero solo per le Mega vere: "Meganium" non ha lo spazio, e non entra.
 
-### Community 76 - "Meccaniche della regulation"
+### Community 116 - "Fusione Floette"
+Cohesion: 0.60
+Nodes (4): filtro_percorso(), main(), I membri di team salvati che citano uno di questi nomi. Vuoto = si puo'., team_che_citano()
+
+### Community 117 - "Prova preferenze"
+Cohesion: 0.70
+Nodes (4): _colonne(), esito(), main(), prove()
+
+### Community 120 - "Storico: abilità e flag"
+Cohesion: 0.50
+Nodes (5): Affilama e Aura Guard (Ondascudo): effetti flag_boost e contact_guard, Antiproiettile: effetto flag_immunity sulle mosse bullet, scripts/effetti_abilita.py, scripts/integra_flag_mosse.py (flag delle mosse Gen 8-9 da Bulbapedia), scripts/togli_flag_sbagliati.py (23 flag di troppo da moves_ma.json)
+
+### Community 121 - "Archivi degli editor"
+Cohesion: 0.50
+Nodes (5): loadAbilityArchives, Il confirm di archiviazione usa current_reg.label, Attributo onsubmit ad apici singoli quando dentro c'e' |tojson, loadArchives (roster), Niente apostrofi nel confirm dentro onsubmit
+
+### Community 122 - "Bootstrap del calcolatore"
 Cohesion: 0.40
-Nodes (5): Flusso dinamico della regulation nel Team Builder, addMech, removeMech, showToast, msg (stato libreria)
+Nodes (5): calc-bootstrap (JSON iniettato da Flask), cambiaTutto, Dati passati via script application/json, Pagina Contenuti Regulation, salva (contenuti regulation)
 
-### Community 77 - "Arricchimento generi e tag"
+### Community 123 - "Steam: arricchimento"
 Cohesion: 0.50
 Nodes (5): Suggerimenti dalla libreria per tag rari, Arricchimento a lotti interrompibile, conta (generi da arricchire), conta (tag da arricchire), Generi da Steam, tag da SteamSpy — due blocchi separati
 
-### Community 78 - "Campi e meccaniche in editor"
-Cohesion: 0.50
-Nodes (5): campiFile, getMechs, Meccaniche non tradotte, Salvataggio che non azzera i campi assenti, saveMeta
+### Community 124 - "Editor roster e oggetti"
+Cohesion: 0.40
+Nodes (4): syncTableFromJson(), addPkmn (verifica il nome contro /api/pokemon), showMsg() — banner esito nel roster, syncTagsToJson
 
-### Community 79 - "Fusione abilità doppie"
+### Community 125 - "Backlog: flag e potenza"
+Cohesion: 0.50
+Nodes (4): Effetto che calcDamage() non conosce non si attiva, Flag delle mosse (integra_flag_mosse.py, flag_forza_bruta.py), Potenza in un passo solo (modAbilitaPotenza x modOggPotenza), Baco: tre mosse senza sheer_force per disaccordo fra fonti
+
+### Community 126 - "Steam: tag SteamSpy"
+Cohesion: 0.50
+Nodes (4): `(elenco_tag_ordinati_per_voti, errore)`. Elenco vuoto = risposta senza tag., Riempie i tag leggendoli da SteamSpy, a lotti come per i generi. Lotto piu'…, steam_arricchisci_tag(), _steamspy_tag()
+
+### Community 127 - "Copia dati utente"
+Cohesion: 0.50
+Nodes (4): copia_dati_utente(), _inserisci_copia(), Riscrive una riga con dei valori sostituiti. `None` vuol dire «togli la…, Duplica i contenuti dell'utente `da` su `a`. Torna `{tabella: quante righe}`.…
+
+### Community 128 - "Calendario e stemmi"
+Cohesion: 0.50
+Nodes (4): aggiorna_calendario(), Rilegge partite e classifica da football-data.org. Torna il rapporto. Due…, L'indirizzo dello stemma se è un `https://`, altrimenti `None`. Finisce…, _stemma_buono()
+
+### Community 129 - "fanta.py (piccola)"
+Cohesion: 0.50
+Nodes (4): importa_listone(), Quante volte ognuno di quegli id è in una rosa **visibile da `ambito`**. Il…, Porta i due Excel in `fanta_players`. Torna il rapporto. ⚠️ **Le quotazioni…, _rose()
+
+### Community 130 - "fondi_abilita_doppie.py (piccola)"
 Cohesion: 0.83
 Nodes (3): attivo(), carica(), main()
 
-### Community 80 - "Fusione doppioni per nome"
+### Community 131 - "fondi_doppioni_nome.py (piccola)"
 Cohesion: 0.67
 Nodes (3): main(), piu_ricca(), Quanto è completa una voce: campi non vuoti, con peso a `effect`.
 
-### Community 81 - "Migrazione di una regulation"
+### Community 132 - "migra_regulation.py (piccola)"
 Cohesion: 0.83
 Nodes (3): carica(), main(), scrivi()
 
-### Community 82 - "Abilità nel catalogo Pokémon"
+### Community 133 - "patch_catalog_abilities.py (piccola)"
 Cohesion: 0.67
 Nodes (3): main(), patch_catalog(), Itera il catalogo e aggiunge le abilità alle forme che le mancano. Restituisce…
 
-### Community 83 - "Prove del catalogo vivo"
+### Community 134 - "prova_catalogo_vivo.py (piccola)"
 Cohesion: 0.83
 Nodes (3): esito(), main(), prove()
 
-### Community 84 - "Prove dell'import specie"
+### Community 135 - "prova_import_specie.py (piccola)"
 Cohesion: 0.83
 Nodes (3): esito(), main(), prove()
 
-### Community 85 - "Prove della regulation nuova"
+### Community 136 - "prova_regulation_nuova.py (piccola)"
 Cohesion: 0.83
 Nodes (3): esito(), main(), prove()
 
-### Community 86 - "Tracker Python"
-Cohesion: 0.50
-Nodes (4): Python Tracker (W3Schools), Spunta che invia il form al change, toggleCat, cambiaTutto
+### Community 138 - "fantacalcio.py (piccola)"
+Cohesion: 0.67
+Nodes (3): `stemmi` in ogni pagina della sezione: `{squadra_slug: url}` (25/09/2026). Una…, _stemmi(), context_processor
 
-### Community 87 - "_solo_admin_sugli_editor()"
+### Community 139 - "pokemon.py (piccola)"
 Cohesion: 0.67
 Nodes (3): before_request, Il controllo sta qui e non sulle singole viste: una route nuova nasce protetta., _solo_admin_sugli_editor()
 
-### Community 88 - "toggleTheme"
-Cohesion: 0.67
-Nodes (3): Divieto di localStorage/sessionStorage (regola #9), toggleTheme, updateThemeIcon
-
 ## Ambiguous Edges - Review These
-- `Divieto di localStorage/sessionStorage (regola #9)` → `toggleTheme`  [AMBIGUOUS]
-  templates/base.html · relation: references
-- `API documentate ma mai implementate` → `fetchFromPokeAPI`  [AMBIGUOUS]
-  templates/moves_editor.html · relation: conceptually_related_to
-- `Arduino Projects` → `Stati e piattaforme sono valori salvati`  [AMBIGUOUS]
-  templates/arduino.html · relation: conceptually_related_to
-- `rendi() - render catalog table` → `showMsg() — banner esito nel roster`  [AMBIGUOUS]
+- `showMsg() — banner esito nel roster` → `rendi()`  [AMBIGUOUS]
   templates/roster_editor.html · relation: semantically_similar_to
-- `Variabile di ciclo che ombra t()` → `Python Tracker (W3Schools)`  [AMBIGUOUS]
-  templates/python.html · relation: conceptually_related_to
-- `solo_mie()` → `Read with ambito_utente(), write with solo_mie()`  [AMBIGUOUS]
-  BACKLOG.md · relation: references
-- `calcolatori.html` → `Archive confirm used missing 'regulation' variable`  [AMBIGUOUS]
+- `Archive confirm used missing 'regulation' variable` → `calcolatori.html (Calcolatori VGC)`  [AMBIGUOUS]
   templates/items_editor.html · relation: conceptually_related_to
-- `Ci sono due export, e uno non deve mai entrare in git` → `user_id a NULL — il travaso ad admin gira solo quando la colonna nasce`  [AMBIGUOUS]
-  BACKLOG.md · relation: semantically_similar_to
 
 ## Knowledge Gaps
-- **162 isolated node(s):** `Autore e link placeholder ([Tuo Nome], tuonome)`, `Checklist post-avvio delle route da testare`, `Report fetch descrizioni mosse (315/317 aggiornate)`, `Mosse non trovate su PokéAPI (Bolt Tackle, Hi Jump Kick)`, `Obiettivo: accesso fuori dal PC e a PC spento` (+157 more)
+- **118 isolated node(s):** `Autore e link placeholder ([Tuo Nome], tuonome)`, `Checklist post-avvio delle route da testare`, `Report fetch descrizioni mosse (315/317 aggiornate)`, `Mosse non trovate su PokéAPI (Bolt Tackle, Hi Jump Kick)`, `Obiettivo: accesso fuori dal PC e a PC spento` (+113 more)
   These have ≤1 connection - possible missing edges or undocumented components.
-- **117 thin communities (<3 nodes) omitted from report** — run `graphify query` to explore isolated nodes.
+- **35 thin communities (<3 nodes) omitted from report** — run `graphify query` to explore isolated nodes.
 
 ## Suggested Questions
 _Questions this graph is uniquely positioned to answer:_
 
-- **What is the exact relationship between `Divieto di localStorage/sessionStorage (regola #9)` and `toggleTheme`?**
-  _Edge tagged AMBIGUOUS (relation: references) - confidence is low._
-- **What is the exact relationship between `API documentate ma mai implementate` and `fetchFromPokeAPI`?**
-  _Edge tagged AMBIGUOUS (relation: conceptually_related_to) - confidence is low._
-- **What is the exact relationship between `Arduino Projects` and `Stati e piattaforme sono valori salvati`?**
-  _Edge tagged AMBIGUOUS (relation: conceptually_related_to) - confidence is low._
-- **What is the exact relationship between `rendi() - render catalog table` and `showMsg() — banner esito nel roster`?**
+- **What is the exact relationship between `showMsg() — banner esito nel roster` and `rendi()`?**
   _Edge tagged AMBIGUOUS (relation: semantically_similar_to) - confidence is low._
-- **What is the exact relationship between `Variabile di ciclo che ombra t()` and `Python Tracker (W3Schools)`?**
+- **What is the exact relationship between `Archive confirm used missing 'regulation' variable` and `calcolatori.html (Calcolatori VGC)`?**
   _Edge tagged AMBIGUOUS (relation: conceptually_related_to) - confidence is low._
-- **What is the exact relationship between `solo_mie()` and `Read with ambito_utente(), write with solo_mie()`?**
-  _Edge tagged AMBIGUOUS (relation: references) - confidence is low._
-- **What is the exact relationship between `calcolatori.html` and `Archive confirm used missing 'regulation' variable`?**
-  _Edge tagged AMBIGUOUS (relation: conceptually_related_to) - confidence is low._
+- **Why does `STORICO — memoria dei lavori chiusi` connect `Storico: script e sezioni` to `Storico: Fantacalcio`, `Storico: slug e main`, `Storico: catalogo e regulation`, `Controllo abilità`, `Storico: PC Builder`, `Storico: proprietà dei dati`, `Storico: export e ripristino`, `Storico: abilità e flag`, `Storico: toppe Champions`?**
+  _High betweenness centrality (0.123) - this node is a cross-community bridge._
+- **Why does `base.html (layout comune)` connect `Layout base e sidebar` to `Arduino (UI)`, `Fantacalcio: formazione (UI)`, `Fantacalcio: leghe (UI)`, `Editor catalogo e PC (JS)`, `Editor regulation e team (JS)`, `Editor e archivio abilità`, `Stampa 3D: anteprima`, `Progetto Python (UI)`, `Admin utenti e log`, `Scheda giocatore listone`, `Temi e contrasti`, `Speed Tier`, `Python: note e frammenti (UI)`?**
+  _High betweenness centrality (0.107) - this node is a cross-community bridge._
+- **Why does `login_required()` connect `Python tracker` to `Fantacalcio: route e pagine`, `Import specie Pokémon`, `Editor catalogo (route)`, `Contesto: proprietà dei dati`, `API regulation Pokémon`, `Fantacalcio: listone`, `Arduino, Stampa 3D, team`, `App, auth, sessioni`, `Editor e archivio abilità`, `API Pokémon e aggiornamento catalogo`, `IGDB`, `Admin utenti e log`, `Gaming: giochi e cache`, `PC Builder route`, `Gaming: raggruppamenti`, `Gaming: attesa e filtri`, `Steam: tag SteamSpy`?**
+  _High betweenness centrality (0.103) - this node is a cross-community bridge._
+- **What connects `Autore e link placeholder ([Tuo Nome], tuonome)`, `Checklist post-avvio delle route da testare`, `Report fetch descrizioni mosse (315/317 aggiornate)` to the rest of the system?**
+  _118 weakly-connected nodes found - possible documentation gaps or missing edges._
+- **Should `Fantacalcio: route e pagine` be split into smaller, more focused modules?**
+  _Cohesion score 0.049895506792058515 - nodes in this community are weakly interconnected._
