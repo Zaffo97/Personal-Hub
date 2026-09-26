@@ -11,7 +11,11 @@ M-C. Misurato lo stesso giorno, prima di scrivere una riga:
   rispetto alla regulation prima («Newly Useable Pokémon», icone `026-a.png`) e — la
   parte che nessun'altra fonte dava — **«Newly Added Items»**
 - le due concordano **specie per specie** su M-A (186) e M-B (208); in M-C l'unica
-  differenza è Kingambit
+  differenza è Kingambit. ⚠️ Chiusa il 26/09/2026: è un **buco di Bulbapedia**, che lo
+  ha in M-A e M-B e in M-C no, unica specie a «sparire» senza che nessuno ne parli.
+  Game8 (roster completo di M-C) e MetaVGC lo danno legale, e la notizia ufficiale di
+  pokemon.com non annuncia rimozioni. Il confronto continua a stamparlo, ed è giusto: le
+  due fonti del modulo non concordano, e la regola 1 lo lascia com'è — nel roster
 
 **Le regole**, che sono il punto di questo modulo:
 

@@ -115,8 +115,8 @@ il collaudo va alla fine, le guide dopo il collaudo, e **mettere l'app online pe
 1. §4 — le sezioni sono fatte: Stampa 3D (§4.8), Arduino (§4.9), Python (§4.10) e il
    **Log** (§4.11, 26/09). Restano le prove nel Chrome di Davide (Arduino: rimandata da lui
    il 25/09; il Log: aprire `/admin/log` sull'hub vero) e ciò che aspetta la stampante
-2. I residui Pokémon: Kingambit e Game8 (§4.3). Le due abilità di M-C sono chiuse
-   (26/09); restano da decidere le tre sorelle senza effetto e la posizione di Unghiedure (§3)
+2. I residui Pokémon: le abilità di M-C e Kingambit sono chiusi (26/09); restano da
+   decidere le tre sorelle senza effetto, la posizione di Unghiedure e il flag `bullet` (§3)
 3. §5 — il giro di collaudo, l'inventario del codice morto
 4. §1.6 — le due guide, **dopo** il collaudo
 5. §1.5 — l'app online
@@ -370,8 +370,6 @@ Fatte: il pulsante che aggiorna il Pokédex, quello che confronta una regulation
 fonti, gli sprite, i quattro temi, «resta collegato», il travaso fra utenti (vedi
 `STORICO.md`). Aperto:
 
-- ⬜ **Kingambit in M-C**: Serebii lo dà, Bulbapedia no. Resta nel roster, e «Confronta» lo
-  ristampa. **Game8** come terzo voto non è ancora stato letto
 - ⬜ **Proteggere l'accesso al GitHub** «per non farmi rubare il lavoro». La parte veloce è
   già vera: `controlla_esposizione.py` dice che né `hub.db` né la chiave di sessione sono
   versionati, e l'export è senza password. Il resto — repo privato, 2FA, chiavi di firma,

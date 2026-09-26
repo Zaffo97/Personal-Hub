@@ -53,6 +53,15 @@ Lucario Z **30-36 → 15-18** con Aura Guard; Sgranocchio e Frana invariati. Swe
 11/11, moveset 19/19. Chiusa anche la prova del log sull'hub vero: Davide ha aperto
 `/admin/log` e il suo rientro c'è.
 
+**Kingambit in M-C (§4.3)** — il disaccordo fra Serebii e Bulbapedia è un **buco di
+Bulbapedia**: con le pagine riscaricate il 26/09 lo ha ancora in M-A e M-B e non in M-C,
+unica specie a mancare da una regulation cumulativa. **Game8** (roster completo di M-C,
+«tutti i Pokémon di M-A e M-B» più le aggiunte) e **MetaVGC** (260 legali, senza
+rimozioni) lo danno legale; la notizia ufficiale di pokemon.com annuncia 24 aggiunte e
+nessuna rimozione. Resta nel roster, com'era: nessun dato cambiato. «Confronta» continua a
+stamparlo, di proposito (le due fonti del modulo non concordano); il verdetto è scritto
+in `regulation_fonti.py`.
+
 ---
 
 ## 25/09/2026
