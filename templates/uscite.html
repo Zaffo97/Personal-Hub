@@ -202,6 +202,20 @@
           {% endif %}
         </div>
       </div>
+      {# Wishlist: la riga va nella libreria con stato «Wishlist». Se un gioco con lo
+         stesso titolo c'è già, si dice in che stato è invece di offrire un doppione. #}
+      {% set stato_mio = in_libreria.get(chiave_titolo(u.title)) %}
+      {% if stato_mio %}
+      <span class="badge {% if stato_mio=='Wishlist' %}badge-warning{% else %}badge-neutral{% endif %}"
+            title="{{ t('Già nella tua libreria') }}">&#10003; {{ t(stato_mio) }}</span>
+      {% else %}
+      <button type="button" class="btn btn-secondary btn-sm us-wish" data-rid="{{ u.igdb_release_id }}"
+              title="{{ t('Aggiungi alla wishlist') }}">&#9734;</button>
+      {% endif %}
+      {% if link_crack(u.title) %}
+      <a href="{{ link_crack(u.title) }}" target="_blank" rel="noopener noreferrer"
+         class="btn btn-secondary btn-sm" title="{{ t('Stato crack su crackrelease.com') }}">&#128275;</a>
+      {% endif %}
       {% if u.igdb_url %}
       <a href="{{ u.igdb_url }}" target="_blank" rel="noopener noreferrer"
          class="btn btn-secondary btn-sm" title="{{ t('Apri su IGDB') }}">&#8599;</a>
@@ -235,6 +249,32 @@
   </p>
 </div>
 {% endif %}
+
+{# Fuori dall'`if chiavi_presenti`: la cache resta leggibile anche se le credenziali
+   IGDB spariscono, e con lei i pulsanti ☆. #}
+<script>
+document.addEventListener('click', async function (ev) {
+  const btn = ev.target.closest('.us-wish');
+  if (!btn || btn.disabled) return;
+  btn.disabled = true;
+  try {
+    const r = await fetch('/gaming/uscite/wishlist', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ igdb_release_id: Number(btn.dataset.rid) })
+    });
+    const d = await r.json();
+    if (!r.ok) { btn.disabled = false; alert('⚠️ ' + (d.errore || t('errore'))); return; }
+    // Il posto del pulsante lo prende lo stesso distintivo che la pagina mostra ai
+    // giochi già in libreria: ricaricando, la riga resta com'è adesso.
+    const b = document.createElement('span');
+    b.className = 'badge ' + (d.stato === 'Wishlist' ? 'badge-warning' : 'badge-neutral');
+    b.title = d.gia ? t('Già nella tua libreria') : t('Aggiunto alla wishlist');
+    b.textContent = '✓ ' + t(d.stato);
+    btn.replaceWith(b);
+  } catch (e) { btn.disabled = false; alert('⚠️ ' + t('Rete non disponibile')); }
+});
+</script>
 
 {% if chiavi_presenti %}
 <script>

@@ -59,6 +59,30 @@ def steam_cover(appid):
     return f"https://cdn.cloudflare.steamstatic.com/steam/apps/{appid}/header.jpg"
 
 
+# --- Stato crack ------------------------------------------------------------
+# Solo un link, per scelta (26/09/2026): i termini di crackrelease.com vietano lo
+# scraping «senza autorizzazione», non c'è un'API, e le richieste senza browser
+# ricevono 406 — leggerlo in automatico vorrebbe dire aggirare quel filtro.
+# ⚠️ Il link è alla **ricerca**, non alla pagina del gioco: l'indirizzo non si ricava
+# dal titolo («DYNASTY WARRIORS 3: Complete Edition Remastered» sta su
+# `/dynasty-warriors-3-remastered/`), e uno costruito a stima porterebbe a una pagina
+# vuota o a un articolo.
+CRACK_CERCA = "https://crackrelease.com/?s="
+# ⚠️ Con ® o ™ nel titolo la ricerca del sito risponde «Nothing found» (misurato il
+# 26/09: «Assassin's Creed® Shadows» 0 risultati, senza ® 1). Sono i titoli che
+# arrivano da Steam: 3 su 33 nella libreria di Davide quel giorno.
+_SIMBOLI_MARCHIO = re.compile(r"[®™©℠]")
+
+
+@bp.app_template_global()
+def link_crack(titolo):
+    """Indirizzo della ricerca di `titolo` su crackrelease.com; `None` se vuoto."""
+    pulito = " ".join(_SIMBOLI_MARCHIO.sub(" ", titolo or "").split())
+    if not pulito:
+        return None
+    return CRACK_CERCA + urllib.parse.quote_plus(pulito)
+
+
 def _steam_json(url):
     """GET su Steam. Ritorna (dati, None) oppure (None, messaggio_errore)."""
     req = urllib.request.Request(url, headers={"User-Agent": STEAM_UA})
@@ -1165,6 +1189,105 @@ def uscite_svuota():
     return jsonify({"tolte": n})
 
 
+# --- Wishlist dal calendario ------------------------------------------------
+# Chiesta da Davide il 26/09/2026: «costruirmi una wishlist di ciò che non ho». La
+# wishlist **è la libreria** con stato `Wishlist`, che c'era già: il calendario
+# aggiunge la riga, non tiene una lista sua.
+#
+# Da piattaforma IGDB (quelle di `PIATTAFORME_TENUTE`) al valore di `GAME_PLATFORMS`.
+# I visori autonomi e visionOS non hanno una voce loro: vanno in «Altro».
+# ⚠️ Un nome IGDB che non è qui dentro diventa «Altro» e non un errore: la riga
+# della libreria ha **una** piattaforma sola, e le note le elencano comunque tutte.
+PIATTAFORMA_LIBRERIA = {
+    "PC (Microsoft Windows)": "PC", "SteamVR": "PC",
+    "PlayStation 5": "PlayStation 5", "PlayStation VR2": "PlayStation 5",
+    "Xbox Series X|S": "Xbox",
+    "Nintendo Switch": "Nintendo Switch", "Nintendo Switch 2": "Nintendo Switch",
+}
+
+
+def chiave_titolo(titolo):
+    """Il titolo ridotto per il confronto «ce l'ho già»: minuscolo, senza ® e ™.
+
+    ⚠️ È un confronto per **nome**, perché la libreria viene da Steam (appid) e il
+    calendario da IGDB (id suo): non c'è una chiave comune. Due edizioni con nomi
+    diversi («… Remastered») restano due giochi, e va bene così.
+    """
+    return " ".join(_SIMBOLI_MARCHIO.sub(" ", titolo or "").lower().split())
+
+
+def titoli_in_libreria():
+    """`{chiave_titolo: stato}` dei giochi **miei**, per marcare il calendario.
+
+    `solo_mie()` e non `ambito_utente()`, come nell'import da Steam: all'admin, che
+    vede la libreria di tutti, un gioco di un altro utente non deve risultare suo.
+    """
+    cond, par = solo_mie()
+    db = get_db()
+    righe = db.execute(f"SELECT title, status FROM games WHERE {cond}", par).fetchall()
+    db.close()
+    return {chiave_titolo(r["title"]): r["status"] for r in righe}
+
+
+@bp.route("/uscite/wishlist", methods=["POST"])
+@login_required
+def uscite_wishlist():
+    """Aggiunge alla libreria, con stato `Wishlist`, un'uscita del calendario.
+
+    Il client manda solo `igdb_release_id`: titolo, copertina e date si rileggono
+    dalla cache, non si prendono dalla richiesta.
+    """
+    rid = _i((request.get_json(silent=True) or {}).get("igdb_release_id"))
+    db = get_db()
+    riga = db.execute("SELECT * FROM game_releases WHERE igdb_release_id=?",
+                      (rid,)).fetchone() if rid else None
+    if not riga:
+        db.close()
+        return jsonify({"errore": t("Uscita non trovata nella cache")}), 404
+
+    cond, par = solo_mie()
+    gia = [r for r in db.execute(f"SELECT id, title, status FROM games WHERE {cond}", par)
+           if chiave_titolo(r["title"]) == chiave_titolo(riga["title"])]
+    if gia:
+        db.close()
+        return jsonify({"gia": True, "id": gia[0]["id"], "stato": gia[0]["status"]})
+
+    # Le piattaforme sono quelle **dello stesso gioco nello stesso giorno**, come la
+    # riga fusa che si vede nel calendario.
+    if riga["igdb_game_id"]:
+        sorelle = db.execute(
+            "SELECT platform FROM game_releases WHERE igdb_game_id=? AND release_date=?",
+            (riga["igdb_game_id"], riga["release_date"])).fetchall()
+    else:
+        sorelle = [riga]
+    nomi_igdb = sorted({s["platform"] for s in sorelle if s["platform"]})
+    mie = {PIATTAFORMA_LIBRERIA.get(n, "Altro") for n in nomi_igdb}
+    # Una sola piattaforma per riga: la prima nell'ordine di `GAME_PLATFORMS`, che
+    # comincia da PC. Le altre restano scritte nelle note.
+    piattaforma = next((p for p in GAME_PLATFORMS if p in mie), "Altro")
+
+    # La data esatta solo se IGDB la sa: altrimenti la forma di IGDB («Q4 2026»),
+    # come nel calendario — il primo giorno del trimestre spacciato per uscita no.
+    quando = (riga["release_date"] if riga["precisione"] == "giorno"
+              else (riga["human"] or riga["release_date"]))
+    # In italiano e senza `tf()`: è un valore salvato, come `status` e `platform`, e
+    # non deve dipendere dalla lingua che avevi il giorno in cui l'hai aggiunto.
+    note = (f"Esce: {quando} ({', '.join(nomi_igdb)}). "
+            f"Da IGDB: {riga['igdb_url'] or '—'}")
+    # `t_cover_small` (90x128) va bene nel riquadro del calendario, non in una scheda
+    # della libreria: la stessa immagine a 264x374.
+    copertina = (riga["cover_url"] or "").replace("/t_cover_small/", "/t_cover_big/") or None
+
+    cur = db.execute(
+        "INSERT INTO games(title,platform,status,cover_url,notes,user_id)"
+        " VALUES(?,?,?,?,?,?)",
+        (riga["title"], piattaforma, "Wishlist", copertina, note, utente_id()))
+    db.commit()
+    nuovo = cur.lastrowid
+    db.close()
+    return jsonify({"ok": True, "id": nuovo, "stato": "Wishlist"})
+
+
 @bp.route("/uscite")
 @login_required
 def uscite():
@@ -1217,6 +1340,7 @@ def uscite():
         piattaforme=piattaforme_in_cache(), platform=piattaforma, entro=entro,
         q=cerca, attesa=attesa, attesa_pronta=attesa_pronta,
         nascoste_attesa=nascoste_attesa,
+        in_libreria=titoli_in_libreria(), chiave_titolo=chiave_titolo,
         finestre=[(k, ETICHETTE_FINESTRA[k]) for k, _ in FINESTRE],
         attese=[(k, ETICHETTE_ATTESA[k]) for k, _ in ATTESE],
         # Se il default cambia, il pulsante "azzera" lo segue da solo: ricopiare

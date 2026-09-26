@@ -20,6 +20,26 @@ pagina ed esegue `new Function()` su ogni blocco `<script>` **e** su ogni handle
 
 ## 26/09/2026
 
+**Stato crack e wishlist dal calendario (§4.1)** — la fonte indicata da Davide,
+crackrelease.com, letta nel browser: `robots.txt` non vieta niente, ma i termini (21/08/2026)
+vietano lo scraping «senza autorizzazione», non c'è un'API (il `wp-json` ha solo gli
+articoli) e le richieste senza browser prendono 406. Quindi **un link** (`link_crack()` in
+`blueprints/gaming.py`), alla **ricerca** del sito e non alla pagina del gioco, perché
+l'indirizzo non si ricava dal titolo; ® e ™ si tolgono, perché con quelli la ricerca dà
+«Nothing found» (3 giochi su 33 della libreria). Provato su 9 titoli veri: 8 trovano la
+pagina del gioco, «Call of Duty» (il launcher di Steam) dà l'elenco della serie; uno
+inventato dà «Nothing found». Pulsante 🔓 su
+**33/33** schede della libreria e **300/300** righe del calendario. Poi la wishlist «di ciò
+che non ho»: lo stato `Wishlist` c'era già, mancava il modo di riempirla. Pulsante ☆ sulle
+righe del calendario → `POST /gaming/uscite/wishlist` (solo l'`igdb_release_id`, il resto
+riletto dalla cache): titolo, copertina a `t_cover_big`, **una** piattaforma
+(`PIATTAFORMA_LIBRERIA`, la prima nell'ordine di `GAME_PLATFORMS`) e nelle note data e
+tutte le piattaforme IGDB. Chi è già in libreria (confronto per titolo senza ®/™,
+`solo_mie()`) mostra il suo stato al posto della ☆. Prova su copia del DB **11 su 11**
+(doppione, HELLDIVERS™ 2 contro HELLDIVERS 2, id inesistente 404, corpo non JSON 404,
+un altro utente non eredita i giochi dell'admin) e un clic vero nel browser su un hub
+avviato sulla copia; sweep completo a zero errori, traduzioni 671/671.
+
 **Il log dell'hub (§4.11)** — la domanda rimandata il 25/09: Davide sceglie i **log
 dell'hub** (non un diario, non la console su file). `log_hub.py`: una riga JSON per evento
 in `logs/hub.log` (fuori da git), **accanto al DB** così prove e sweep scrivono nella loro

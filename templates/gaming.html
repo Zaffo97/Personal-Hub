@@ -179,6 +179,10 @@
     {% endif %}
     <div class="flex gap-1">
       <a href="/gaming/{{ g.id }}/edit" class="btn btn-secondary btn-sm">&#9998;</a>
+      {% if link_crack(g.title) %}
+      <a href="{{ link_crack(g.title) }}" target="_blank" rel="noopener noreferrer"
+         class="btn btn-secondary btn-sm" title="{{ t('Stato crack su crackrelease.com') }}">&#128275;</a>
+      {% endif %}
       <form method="POST" action="/gaming/{{ g.id }}/delete" onsubmit="return confirm(t('Eliminare?'))">
         <button class="btn btn-danger btn-sm">&#128465;</button>
       </form>

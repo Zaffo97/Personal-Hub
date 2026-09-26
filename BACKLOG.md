@@ -371,17 +371,22 @@ Tutti gli altri bachi elencati qui fino al 26/09/2026 sono chiusi: vedi `STORICO
 Chiuso il 16-17/08/2026 (IGDB, piattaforme 4.1a, ricerca 4.1b, attesa 4.1c): vedi
 `STORICO.md`. Il tetto delle 300 righe resta di proposito (senza, 3,3 MB e 4224 immagini).
 
-- ⬜ **Lo stato «crackato / non crackato» di un gioco** (richiesta di Davide del 25/09/2026).
-  **Fonte indicata da Davide: crackrelease.com** (all'inizio aveva detto CrackWatch, poi
-  corretto: `crackwatch.com` comunque non si risolve più, è chiuso). ⚠️ **Non ancora
-  verificata**: il 25/09/2026 crackrelease.com risponde **406** a una richiesta senza browser,
-  sia la home sia `robots.txt` — probabilmente un filtro anti-bot, quindi termini d'uso e
-  `robots.txt` vanno letti **nel browser**. Prima di scrivere codice (il metodo di §4.7): i
-  termini, se ha un'API o un feed, se permette la lettura automatica; se no, **un link** al
-  gioco su crackrelease.com come per Versus e Keepa. Alternative da tenere presenti se non
-  si può: gamestatus.info, crackwatcher.com, predb.ovh (nessuna verificata). Escluse a priori
-  le fonti che sono **siti di download**: l'hub mostra uno stato, non manda a scaricare. Da
-  chiedere a Davide dove va il dato (una colonna sul gioco, un badge nella libreria, un filtro)
+- ✅ **Lo stato crack e la wishlist dal calendario** (26/09/2026, `STORICO.md`): un link
+  alla ricerca di crackrelease.com, perché i termini vietano lo scraping, e la ☆ nel
+  calendario che aggiunge alla libreria con stato `Wishlist`. Quello che resta:
+  - ⚠️ **Il link è alla ricerca, non alla pagina del gioco**: un titolo generico (il
+    «Call of Duty» di Steam) apre l'elenco della serie. Se crackrelease.com cambia motore di
+    ricerca, il link si rompe **senza errore**: si cambia `CRACK_CERCA`
+  - ⚠️ **«Ce l'ho già» è un confronto per titolo** (minuscolo, senza ® e ™): la libreria ha
+    l'appid di Steam, il calendario l'id di IGDB, e nessuna chiave in comune. Un nome
+    scritto diverso («… Remastered», «Game of the Year Edition») vuol dire un doppione
+    possibile
+  - **La piattaforma è una sola** (la prima di `GAME_PLATFORMS` fra quelle dell'uscita,
+    quindi PC se c'è): le altre stanno nelle note. Visori autonomi e visionOS → «Altro»
+  - **Le date della wishlist non si aggiornano**: le note dicono quando usciva il giorno
+    in cui l'hai aggiunta. Se IGDB la sposta, lo dice il calendario, non la libreria
+  - **Non chiesti**: la ☆ nella striscia in cima a `/gaming`, prezzi e avvisi come nel PC
+    Builder, lo stato crack letto e mostrato come dato
 - ⬜ **La cache va aggiornata una volta** perché il dato dell'attesa entri: fino ad allora il
   filtro è spento e la pagina lo dice. È un'azione di Davide
 - ⬜ **La striscia in cima a `/gaming`** mostra le 6 uscite più vicine senza guardare
