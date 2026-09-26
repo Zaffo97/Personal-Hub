@@ -58,10 +58,12 @@
       "nome_en": "Adaptability"
     },
     "Affilama": {
-      "desc": "Powers up slicing moves.",
+      "desc": "Potenzia del 50% le mosse da taglio.",
       "category": "other",
       "effect": {
-        "type": "none"
+        "type": "flag_boost",
+        "flag": "slicing",
+        "value": 1.5
       },
       "nome_it": "Affilama",
       "nome_en": "Sharpness"
@@ -3647,10 +3649,11 @@
       "nome_it": "Fire Mane"
     },
     "Aura Guard": {
-      "desc": "",
+      "desc": "Dimezza il danno subito dalle mosse che comportano un contatto.",
       "category": "other",
       "effect": {
-        "type": "none"
+        "type": "contact_guard",
+        "value": 0.5
       },
       "nome_en": "Aura Guard"
     }

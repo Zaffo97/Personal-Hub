@@ -390,6 +390,9 @@ function calcDamage(){
     if (contact)             abilityDmgMult *= 0.5;
     if (mvType === 'Fuoco')  abilityDmgMult *= 2.0;
   }
+  // contact_guard: Aura Guard di Mega Lucario Z, ×0.5 sul danno da contatto (fonti
+  // ufficiali Nintendo e Serebii, 26/09/2026). `contact` tiene già conto del Guantone.
+  if (dFx.type === 'contact_guard' && contact)               abilityDmgMult *= (dFx.value || 0.5);
   if (dFx.type === 'multiscale')                             abilityDmgMult *= 0.5;
   if (dFx.type === 'filter' && typeEff > 1.0)                abilityDmgMult *= (dFx.value || 0.75);
   if (dFx.type === 'thick_fat' && (mvType === 'Fuoco' || mvType === 'Ghiaccio')) abilityDmgMult *= 0.5;
@@ -491,6 +494,16 @@ function calcDamage(){
   // quando la pioggia forte viene scelta a mano dalla tendina.
   const fuocoBloccato = weather === 'heavyrain' ||
     (meteoFonte ? (ABILITIES_DATA[meteoFonte] || {}).fire_blocked === true : false);
+
+  // ── Abilità sulla POTENZA: flag_boost ({flag:'slicing', value:1.5}, Affilama) ──
+  // Dal 26/09/2026. Nei giochi Affilama moltiplica la potenza, non il danno finale,
+  // e i due posti non danno lo stesso numero: Incineroar con Nottesferza (70) su
+  // Amoonguss fa 90-106 così e 90-108 sul danno finale. Per questo sta qui, accanto
+  // alla potenza degli oggetti, e non in `abilityDmgMult` come Unghiedure.
+  // Il flag si legge dalla mossa scelta dall'elenco, come `pugno`: una mossa scritta
+  // a mano non ha flag, e l'abilità resta ferma invece di indovinare.
+  if (aFx.type === 'flag_boost' && aFx.flag && (mossa?.flags || []).includes(aFx.flag))
+    bpEff = Math.floor(bpEff * (aFx.value || 1.0));
 
   // ── Formula danno base Gen 9 ──────────────────────────────────────────────────
   const base = Math.floor(Math.floor(Math.floor(2 * parseInt(aLvl) / 5 + 2) * bpEff * A / D) / 50) + 2;

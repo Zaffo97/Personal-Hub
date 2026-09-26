@@ -38,6 +38,21 @@ fantacalcio 111, pcbuilder 105, preferenze 17, python 50, stampa3d 43, arduino 5
 ripristino 35, completo 21 — tutte passate; sweep 0 errori (con `/admin/log`), query 0
 scoperte.
 
+**Le due abilità di Regulation M-C senza effetto (§3)** — **Affilama** (Sharpness, Mega
+Absol Z): mosse da taglio ×1.5 sulla **potenza** (Serebii, Bulbapedia); **Aura Guard** (Mega
+Lucario Z): contatto ×0.5 sul danno (Nintendo of America, Pokémon Champions, Serebii).
+Effetti nuovi del motore `flag_boost` e `contact_guard`, dati scritti da
+`scripts/effetti_abilita_mc.py` con `_save_abilities()`. Il flag `slicing` mancava a **6
+mosse** su 31 della lista di Bulbapedia (Aerial Ace, Behemoth Blade, Metal Claw, Razor
+Leaf, Sacred Sword, Secret Sword): il giro normale di `integra_flag_mosse.py` guarda solo
+Gen 8+, ora c'è `--da-elenco slicing`. Provate nel calcolatore su un hub di prova (porta
+5001, DB temporaneo), casi calcolati a mano prima: regola #8 **85-102**, Mega Absol Z
+Nottesferza su Amoonguss **75-88 → 109-130** con Affilama, Incineroar Nottesferza su Mega
+Lucario Z **30-36 → 15-18** con Aura Guard; Sgranocchio e Frana invariati. Sweep 0 errori
+(calcolatori, abilità), `controlla_abilita.py` pulito, champions 40/40, catalogo vivo
+11/11, moveset 19/19. Chiusa anche la prova del log sull'hub vero: Davide ha aperto
+`/admin/log` e il suo rientro c'è.
+
 ---
 
 ## 25/09/2026

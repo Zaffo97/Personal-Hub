@@ -369,7 +369,8 @@
     "desc": "Chi la usa si trasforma in un’enorme spada e attacca. Se il bersaglio è dynamaxizzato, causa il doppio dei danni.",
     "accuracy": 100,
     "flags": [
-      "contact"
+      "contact",
+      "slicing"
     ],
     "nome_it": "Taglio Maestoso",
     "nome_en": "Behemoth Blade"
@@ -2911,7 +2912,8 @@
     "effect_chance": 10,
     "desc": "Colpisce il bersaglio con artigli d’acciaio. Può anche aumentare l’Attacco di chi la usa.",
     "flags": [
-      "contact"
+      "contact",
+      "slicing"
     ],
     "accuracy": 95,
     "nome_it": "Ferrartigli",
@@ -3571,7 +3573,10 @@
     "desc": "Foglie taglienti sferzano i nemici intorno. Probabile brutto colpo.",
     "accuracy": 95,
     "nome_it": "Foglielama",
-    "nome_en": "Razor Leaf"
+    "nome_en": "Razor Leaf",
+    "flags": [
+      "slicing"
+    ]
   },
   "Razor Shell": {
     "bp": 75,
@@ -6620,7 +6625,8 @@
       "contact",
       "distance",
       "mirror",
-      "protect"
+      "protect",
+      "slicing"
     ],
     "type_it": "Volante",
     "nome_it": "Aeroassalto",
@@ -7521,7 +7527,8 @@
     "flags": [
       "contact",
       "mirror",
-      "protect"
+      "protect",
+      "slicing"
     ],
     "accuracy": 100,
     "type_it": "Lotta",
@@ -7640,7 +7647,8 @@
     "desc": "Chi la usa attacca il bersaglio tagliandolo con una spada mistica. La misteriosa energia sprigionata provoca danni fisici.",
     "flags": [
       "mirror",
-      "protect"
+      "protect",
+      "slicing"
     ],
     "accuracy": 100,
     "type_it": "Lotta",

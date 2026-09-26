@@ -3645,6 +3645,14 @@
       },
       "nome_en": "Fire Mane",
       "nome_it": "Fire Mane"
+    },
+    "Aura Guard": {
+      "desc": "",
+      "category": "other",
+      "effect": {
+        "type": "none"
+      },
+      "nome_en": "Aura Guard"
     }
   }
 }

@@ -115,7 +115,8 @@ il collaudo va alla fine, le guide dopo il collaudo, e **mettere l'app online pe
 1. §4 — le sezioni sono fatte: Stampa 3D (§4.8), Arduino (§4.9), Python (§4.10) e il
    **Log** (§4.11, 26/09). Restano le prove nel Chrome di Davide (Arduino: rimandata da lui
    il 25/09; il Log: aprire `/admin/log` sull'hub vero) e ciò che aspetta la stampante
-2. I residui Pokémon: le due abilità senza effetto (§3), Kingambit e Game8 (§4.3)
+2. I residui Pokémon: Kingambit e Game8 (§4.3). Le due abilità di M-C sono chiuse
+   (26/09); restano da decidere le tre sorelle senza effetto e la posizione di Unghiedure (§3)
 3. §5 — il giro di collaudo, l'inventario del codice morto
 4. §1.6 — le due guide, **dopo** il collaudo
 5. §1.5 — l'app online
@@ -315,9 +316,12 @@ mancante e **lo si dichiara**. Non si riempie a stima.
 
 | | Baco | Stato |
 |---|---|---|
-| ⬜ | **Due abilità senza effetto nel motore** | Trovate il 23/09/2026. **Affilama** (Sharpness, di Mega Absol Z) ha `effect: none` e dovrebbe potenziare le mosse **da taglio** — che hanno il flag `slicing`, quindi il motore potrebbe leggerlo. **Aura Guard** (Mega Lucario Z) è nuova e senza descrizione. Tutti e due i valori vanno presi da una fonte, non da memoria |
+| ⬜ | **Tre abilità della stessa famiglia di Affilama, ancora senza effetto** | Trovate il 26/09/2026 chiudendo Affilama. **Ferropugno** (Iron Fist, `punch`), **Ferromascella** (Strong Jaw, `bite`) e **Megalancio** (Mega Launcher, `pulse`) hanno `effect: none`. I **flag ci sono già tutti** (misurati contro le liste di Bulbapedia: 25 `punch`, 10 `bite`, 7 `pulse`, zero mancanti), e il motore ha da quel giorno `flag_boost`: basta il dato — `{"type": "flag_boost", "flag": "punch", "value": …}` — ma il **valore** va preso da una fonte, non da memoria. Non fatto perché fuori dalla voce chiesta |
+| ⬜ | **Unghiedure e Tecnico moltiplicano il danno finale, non la potenza** | Trovato il 26/09/2026. Nei giochi sono modificatori della **potenza**; il motore le mette in `abilityDmgMult`, sul danno. I due posti non danno lo stesso numero: su Affilama, lo stesso errore avrebbe dato 90-108 invece di 90-106 (Incineroar, Nottesferza, Amoonguss), cioè **il roll alto sbagliato di 2 PS, senza nessun errore**. Affilama sta già al posto giusto, accanto alla potenza degli oggetti. Spostare le altre due cambia dei numeri che oggi si leggono: va deciso, e provato con un caso calcolato a mano |
+| ⬜ | **Il flag `bullet` ha cinque buchi, e tre flag non tornano con le liste** | Misurato il 26/09/2026 contro le liste di Bulbapedia: **Barrage, Beak Blast, Electro Ball, Gyro Ball, Shadow Ball** non hanno `bullet` (lo legge Antiproiettile); nel verso opposto **Water Pulse** ha `bullet`, **Muddy Water** ha `pulse`, **Rain Dance** ha `dance`, e le liste no. Il primo si chiude con `integra_flag_mosse.py --da-elenco bullet` (aggiunge e non toglie); il secondo va guardato mossa per mossa |
+| ⬜ | **Aura Guard non ha un nome italiano** | Nessuna delle fonti lette il 26/09/2026 lo dà: la voce resta senza `nome_it` e a schermo si legge «Aura Guard». Non si inventa |
 
-Tutti gli altri bachi elencati qui fino al 23/09/2026 sono chiusi: vedi `STORICO.md`.
+Tutti gli altri bachi elencati qui fino al 26/09/2026 sono chiusi: vedi `STORICO.md`.
 
 ---
 
@@ -645,9 +649,6 @@ Nel docx: «una funzione di salvataggio log». Il 26/09 Davide ha chiarito che i
 
 **⬜ Resta aperto:**
 
-- **La prova sull'hub vero**: aprire `/admin/log` dal Chrome di Davide. La pagina è provata
-  sul test client e guardata nel pannello (anche a 375 px), ma sull'hub vero il log ha per
-  ora solo l'avvio del 26/09
 - **Gli script da riga di comando non scrivono nel log**: `importa_dati.py` (il ripristino),
   `importa_listone.py`, `esporta_dati.py`. Sarebbero «import eseguiti» a tutti gli effetti;
   non chiesto, e uno script con `--db` dovrebbe scrivere accanto a **quel** DB

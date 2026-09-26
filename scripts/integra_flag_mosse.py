@@ -136,16 +136,66 @@ def flag_infobox(testo):
     return {flag for campo, flag in INFOBOX.items() if campi.get(campo, "").lower() == "yes"}
 
 
+def da_elenco(voci, flag, args):
+    """`--da-elenco <flag>`: il flag di **una** pagina-elenco su **tutto** il catalogo.
+
+    Dal 26/09/2026, per Affilama. Il giro normale guarda solo le mosse di Gen 8+ senza
+    righe nel dump, e per quasi tutti i flag basta: il dump li ha. Non per `slicing`,
+    che nasce in Gen 9 — il dump non lo dà a nessuna mossa vecchia — e che Champions
+    ha allargato alle mosse «artiglio»: così Aerial Ace, Sacred Sword, Razor Leaf e
+    altre tre restavano fuori, e Affilama ci sarebbe passata sopra **senza errore**.
+    Misurato quel giorno su tutte le liste: mancavano solo queste sei (e cinque di
+    `bullet`, lasciate fuori perché nessuno l'aveva chiesto). Aggiunge e non toglie,
+    come il giro normale; un nome della lista che il catalogo non ha si **dice**.
+    """
+    titolo = next((t for t, f in ELENCHI.items() if f == flag), None)
+    if not titolo:
+        print(f"`{flag}` non viene da nessuna pagina-elenco: {sorted(ELENCHI.values())}")
+        return 1
+    nomi = {n.strip() for n in MOVELIST.findall(pagina(titolo, args.aggiorna) or "")}
+    if not nomi:
+        print(f"elenco «{titolo}»: nessuna riga {{{{movelist}}}}, non scrivo niente.")
+        return 1
+    per_nome_en = {(v.get("nome_en") or k): k for k, v in voci.items()}
+    fuori = sorted(n for n in nomi if n not in per_nome_en)
+    da_scrivere = sorted(per_nome_en[n] for n in nomi if n in per_nome_en
+                         and flag not in (voci[per_nome_en[n]].get("flags") or []))
+    senza_lista = sorted(k for k, v in voci.items() if flag in (v.get("flags") or [])
+                         and (v.get("nome_en") or k) not in nomi)
+    print(f"elenco «{titolo}»: {len(nomi)} mosse, {len(da_scrivere)} senza `{flag}`")
+    for chiave in da_scrivere:
+        print(f"+ {chiave}")
+    for n in fuori:
+        print(f"? {n}: nella lista, non nel catalogo (non la invento)")
+    for chiave in senza_lista:
+        print(f"≠ {chiave}: ha `{flag}` ma non è nella lista (resta)")
+    if not da_scrivere:
+        print("Niente da fare.")
+        return 0
+    if args.dry_run:
+        print("--dry-run: file non toccato.")
+        return 0
+    for chiave in da_scrivere:
+        voci[chiave]["flags"] = sorted(set(voci[chiave].get("flags") or []) | {flag})
+    salva_catalogo("moves", voci)
+    print("Scritto data/catalog/moves.json (copia precedente in data/archive/).")
+    return 0
+
+
 def main():
     ap = argparse.ArgumentParser(description=__doc__.splitlines()[0])
     ap.add_argument("--dry-run", action="store_true", help="dice cosa farebbe e non scrive niente")
     ap.add_argument("--aggiorna", action="store_true", help="riscarica le pagine di Bulbapedia")
+    ap.add_argument("--da-elenco", metavar="FLAG",
+                    help="porta il flag di una pagina-elenco su tutto il catalogo (es. slicing)")
     args = ap.parse_args()
 
     voci = voci_catalogo("moves")
     if not voci:
         print("Catalogo mosse vuoto o illeggibile: non tocco niente.")
         return 1
+    if args.da_elenco:
+        return da_elenco(voci, args.da_elenco, args)
 
     problemi = []
     per_elenco = {}
